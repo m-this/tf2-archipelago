@@ -1,0 +1,16 @@
+* text=auto eol=lf
+
+*.go text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+*.sh text eol=lf
+*.sp text eol=lf
+*.inc text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+
+*.smx binary
+*.png binary
+*.vpk binary
+*.bsp binary

@@ -1,0 +1,23 @@
+bin/
+tmp/
+*.log
+
+# Compiled SourcePawn output. The source in plugin/ is the artefact we keep.
+*.smx
+
+# Built apworld bundle. Rebuilt from apworld/tf2_mvm/ on demand.
+*.apworld
+
+# Bridge runtime state (check queue, unlock set) when running outside compose.
+data/
+*.bolt
+*.db
+
+# Python bytecode from the apworld
+__pycache__/
+*.py[cod]
+
+.idea/
+.vscode/
+*.swp
+.DS_Store
