@@ -1,0 +1,59 @@
+# plugin
+
+SourcePawn. Runs inside the `srcds` container. The only component that sees the
+game. Read [ADR
+0002](../docs/adr/0002-server-side-plugin-with-a-go-bridge.md) first.
+
+Nothing exists yet.
+
+## What it does
+
+Two directions, and nothing else.
+
+**Observe.** Detect MvM objectives and report them to the bridge:
+`wave_cleared`, `mission_cleared`, `tank_destroyed`, `giant_killed`,
+`money_bonus`. Game events and `SDKHooks` do the work.
+
+**Apply.** Receive grants from the bridge and enforce them: lock and unlock
+weapon slots, restrict classes, gate upgrades at the station, hand out
+canteens, spawn allied bots with an unlocked template, fire traps.
+
+## What it must not do
+
+- **Know anything about Archipelago.** No item ids, no location ids, no slot,
+  no seed. It speaks MvM vocabulary; the bridge translates. This is what lets
+  the plugin be reloaded, rewritten or debugged without touching the
+  multiworld.
+- **Hold authoritative state.** After a reload, a map change or an `srcds`
+  crash, ask the bridge for the full unlock set and apply it. Never try to
+  remember what was already granted.
+- **Block a game frame.** Every bridge call is asynchronous. A blocking HTTP
+  call stalls the server for everyone on it.
+
+## Dependencies
+
+- SourceMod, current stable.
+- [`ripext`](https://github.com/ErikMinekus/sm-ripext) (REST in Pawn) for
+  non-blocking HTTP and JSON.
+
+Both go into the `srcds` image (`deploy/`), pinned.
+
+## The player-facing surface
+
+Chat, HUD text and annotations. That is the whole list, because there is no
+client mod (ADR 0002). Anything the player needs to know about a received item
+or a fired trap has to fit through one of those three.
+
+## Open questions that land here
+
+From [`../docs/spec.md`](../docs/spec.md), the ones this component has to
+answer before its part of the spec can be finished:
+
+1. **Shop check injection.** Can a plugin add an arbitrary purchasable entry to
+   the MvM upgrade station UI, or only intercept purchases of existing ones?
+   The entire `shop_checks` location group depends on the answer.
+2. **Allied bot upgrade sharing.** Does the RED bot upgrade path still exist in
+   current TF2? Needs testing on a live server.
+3. **Wave counts.** Either parse the `.pop` files or hardcode the Valve
+   missions. Parsing probably belongs in `gamedata/` at build time rather than
+   here at runtime, but the plugin is where the ground truth can be checked.

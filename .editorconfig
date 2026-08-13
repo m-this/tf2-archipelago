@@ -1,0 +1,34 @@
+# top-most EditorConfig file
+root = true
+
+# Unix-style newlines with a newline ending every file
+[*]
+end_of_line = lf
+insert_final_newline = true
+
+[Makefile]
+indent_style = tab
+
+[*.go]
+charset = utf-8
+trim_trailing_whitespace = true
+indent_style = tab
+
+[*.py]
+charset = utf-8
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.sp]
+charset = utf-8
+trim_trailing_whitespace = true
+indent_style = tab
+
+[{*.yml,*.yaml,*.json}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+insert_final_newline = false
+trim_trailing_whitespace = false
