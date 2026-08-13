@@ -1,95 +1,266 @@
 # TODO
 
-Ordered by what unblocks what. Nothing here is started.
+`docs/spec.md` says what we are building and why. This file says what to build,
+in what order, with the exact contracts. Where a fact here was verified against
+a real artefact, it says so; where it is still a guess, it is marked
+**UNVERIFIED**.
 
-## Blocking unknowns
+Goal: `docker compose up` gives a playable MvM Archipelago server, configured
+by one `.env`.
 
-These gate design, not implementation. Answer them before writing the tables,
-because each one can change what an item or a location is.
+## Verified facts
 
-- [ ] **Shop check injection.** Can a SourceMod plugin add an arbitrary
-      purchasable entry to the MvM upgrade station UI, or only hook purchases
-      of existing upgrades? Blocks the whole `shop_checks` location group.
-      Needs a live server and an afternoon.
-- [ ] **Allied bot upgrade sharing.** Do RED `tf_bot`s still work in MvM, and
-      can they inherit the player's purchased upgrades? Blocks `Allied Mercs`
-      and `Merc Loadouts`. The thread raised it and nobody knew.
-- [ ] **Wave counts per mission.** Parse the `.pop` files in `gamedata/` at
-      build time, or hardcode the Valve missions and refuse community ones in
-      v1? Blocks the location count, which blocks everything.
-- [ ] **Community mission identity.** Potato.tf and Moonlight.tf missions have
-      no stable global id. Pick a naming scheme that survives a rename or a
-      pack update, probably `map_name/pop_file_basename`. Blocks id assignment,
-      which is append-only and therefore unfixable later.
-- [ ] **DeathLink semantics.** Individual death is noise in MvM. Wave failure,
-      or death outside the respawn grace window? Blocks nothing, but decide
-      before the option ships.
+Checked 2026-08-13 on moon18.
 
-## Data
+| Thing | Value | How it was checked |
+| --- | --- | --- |
+| Archipelago | `0.6.7`, released 2026-04-01 | GitHub releases API |
+| Python for AP | `>=3.11.9, <3.14` | `docs/running from source.md` |
+| apworld drop dir | `custom_worlds/` when running from source | `worlds/__init__.py:20` |
+| Generate | `python Generate.py`, reads YAMLs from `Players/`, writes a `.zip` to `output/` | AP docs |
+| Host | `python MultiServer.py <archive.zip>` | AP docs |
+| srcds image | `cm2network/tf2:sourcemod`, 326 MB, runs as `steam` | `docker image inspect` |
+| SourceMod / Metamod | 1.12 / 1.12, preinstalled in that tag | image env |
+| Game download | ~14 GB, done, in volume `tf2-archipelago_tf2game` | `du -sh` |
+| ripext | `1.3.2`, released 2025-07-20, `sm-ripext-1.3.2-linux.zip` | GitHub releases API |
+| MvM maps on disk | 7 `.bsp` | `ls tf/maps` |
+| Pop files | inside `tf2_misc_dir.vpk`, not loose on disk | `find` returned 0, `strings` found them |
 
-- [ ] Port the tables from ALPHAMARIOX's `worlds/tf2/Items.py` to Go structs.
-      556 lines, 14 dicts. See `docs/prior-art.md`.
-- [ ] Port the `Group(IntFlag)` enum to a Go bitmask with the same member
-      names.
-- [ ] Pick the game name string, once. The fork disagrees with itself.
-- [ ] Id assignment plus the stability test (uniqueness, and no committed id
-      ever changes value).
-- [ ] The JSON exporter, and the CI check that the committed export matches.
+The `.pop` files being inside the VPK matters: nothing can read them from the
+host without a VPK extractor. Wave counts therefore come from the table below,
+not from parsing, and open question 4 in `spec.md` is answered: **hardcode the
+Valve missions, refuse community missions in v1.**
 
-## Bridge
+## The mission table
 
-- [ ] Archipelago websocket client. `Connect`, `LocationChecks`,
-      `ReceivedItems`, `StatusUpdate`, `Bounced`, `Say`. Both `ws://` and
-      `wss://`.
-- [ ] Reconnect with backoff, and replay of the queue on reconnect.
-- [ ] Durable check queue on disk. Write, then 200, then send.
-- [ ] Received-item dedup. AP replays the full list on every reconnect.
-- [ ] Unlock-set persistence, and the resync endpoint the plugin calls after a
-      reload.
-- [ ] Long-poll endpoint for grants.
+Pop file names extracted from `tf2_misc_dir.vpk`. Wave counts and difficulties
+from the official TF2 wiki. 29 missions, which matches the wiki's own count.
 
-## apworld
+| Pop file | Mission | Map | Difficulty | Waves |
+| --- | --- | --- | --- | --- |
+| `mvm_decoy` | Doe's Drill | mvm_decoy | Normal | 8 |
+| `mvm_decoy_intermediate` | Doe's Doom | mvm_decoy | Intermediate | 7 |
+| `mvm_decoy_intermediate2` | Day of Wreckening | mvm_decoy | Intermediate | 6 |
+| `mvm_decoy_advanced` | Disk Deletion | mvm_decoy | Advanced | 8 |
+| `mvm_decoy_advanced2` | Data Demolition | mvm_decoy | Advanced | 6 |
+| `mvm_decoy_advanced3` | Disintegration | mvm_decoy | Advanced | 6 |
+| `mvm_decoy_expert1` | Desperation | mvm_decoy | Expert | 7 |
+| `mvm_coaltown` | Crash Course | mvm_coaltown | Normal | 6 |
+| `mvm_coaltown_intermediate` | Cave-in | mvm_coaltown | Intermediate | 6 |
+| `mvm_coaltown_intermediate2` | Quarry | mvm_coaltown | Intermediate | 6 |
+| `mvm_coaltown_advanced` | Ctrl+Alt+Destruction | mvm_coaltown | Advanced | 7 |
+| `mvm_coaltown_advanced2` | CPU Slaughter | mvm_coaltown | Advanced | 6 |
+| `mvm_coaltown_expert1` | Cataclysm | mvm_coaltown | Expert | 7 |
+| `mvm_mannworks` | Mann-euvers | mvm_mannworks | Normal | 7 |
+| `mvm_mannworks_intermediate` | Mean Machines | mvm_mannworks | Intermediate | 6 |
+| `mvm_mannworks_intermediate2` | Mannhunt | mvm_mannworks | Intermediate | 6 |
+| `mvm_mannworks_advanced` | Machine Massacre | mvm_mannworks | Advanced | 7 |
+| `mvm_mannworks_ironman` | Mech Mutilation | mvm_mannworks | Advanced | 3 |
+| `mvm_mannworks_expert1` | Mannslaughter | mvm_mannworks | Expert | 5 |
+| `mvm_bigrock` | Benign Infiltration | mvm_bigrock | Normal | 6 |
+| `mvm_bigrock_advanced1` | Broken Parts | mvm_bigrock | Advanced | 7 |
+| `mvm_bigrock_advanced2` | Bone Shaker | mvm_bigrock | Advanced | 8 |
+| `mvm_mannhattan` | Big Apple Barricade | mvm_mannhattan | Intermediate | 6 |
+| `mvm_mannhattan_advanced1` | Empire Escalation | mvm_mannhattan | Advanced | 6 |
+| `mvm_mannhattan_advanced2` | Metro Malice | mvm_mannhattan | Advanced | 6 |
+| `mvm_rottenburg` | Village Vanguard | mvm_rottenburg | Intermediate | 7 |
+| `mvm_rottenburg_advanced1` | Hamlet Hostility | mvm_rottenburg | Advanced | 7 |
+| `mvm_rottenburg_advanced2` | Bavarian Botbash | mvm_rottenburg | Advanced | 7 |
+| `mvm_ghost_town_666` | Caliginous Caper | mvm_ghost_town | Nightmare | 1 |
 
-- [ ] `Options.py`, adapted by hand from the fork. Add Roseburst's missing
-      options: Mission Order, Goal, Tour Size, Allied Mercs, Merc Loadouts,
-      Giants and Bosses, and the whole Check Options block.
-- [ ] `__init__.py`: read the export, build items and locations, build the
-      region graph.
-- [ ] Access rules. The sphere 0 guarantee first: at least one class with at
-      least one usable weapon, or wave 1 is unwinnable.
-- [ ] The three goals: Final Boss, Missionsanity, Australium Hunt.
-- [ ] Setup guide and game info page.
+Total: 176 waves, which is the upper bound on the wave-clear location group.
 
-## Plugin
+- [ ] **UNVERIFIED: the pop-file-to-mission mapping within a difficulty tier.**
+      The pop file names and the mission names are both certain, and the
+      pairing is certain wherever a tier has one entry. It is a guess for
+      `mvm_decoy_intermediate` vs `_intermediate2` (Doe's Doom / Day of
+      Wreckening), `mvm_coaltown_intermediate` vs `_intermediate2` (Cave-in /
+      Quarry), `mvm_mannworks_intermediate` vs `_intermediate2` (Mean Machines
+      / Mannhunt), and the three `_advanced*` groups. Resolve by reading
+      `resource/tf_english.txt` in the VPK, which keys mission display names by
+      pop file name. A wrong pairing gives the player the wrong mission name in
+      chat, nothing worse, but fix it before the first seed is played.
 
-- [ ] Objective detection: wave, mission, tank, giant, money bonus.
-- [ ] Grant application: weapon slots, weapons, classes, upgrade gating,
-      canteens.
-- [ ] Resync from the bridge on load and on map change.
-- [ ] Allied bot spawning and template assignment.
-- [ ] Traps.
-- [ ] Player-facing output through chat, HUD text and annotations.
+## Milestone 1: gamedata
 
-## Deploy
+Go package, no dependencies. See ADR 0001 for the id rules.
 
-- [ ] Pick and pin the Archipelago server image.
-- [ ] Pick and pin the TF2 dedicated server image. Verify `cm2network/tf2`.
-- [ ] Compose file. 27015/udp public, everything else loopback, RCON never.
-- [ ] Bridge Dockerfile.
-- [ ] `deploy/ansible/`, once the stack actually comes up.
+- [ ] `Mission{ID, PopFile, Name, Map, Difficulty, Waves}`, the 29 rows above.
+- [ ] `Map{ID, Name}`, the 7 maps.
+- [ ] `Class{ID, Name}`, the 9 classes.
+- [ ] `WeaponSlot{ID, Name}`: Primary, Secondary, Melee.
+- [ ] `Difficulty` enum: Normal, Intermediate, Advanced, Expert, Nightmare.
+- [ ] The game name string, exactly once: `"Team Fortress 2 Mann vs Machine"`.
+- [ ] AP base id offset, one constant. Pick a number and never move it.
+- [ ] Data format version constant.
+- [ ] Location id derivation: `base + mission.ID*100 + wave` for wave clears,
+      `base + mission.ID*100 + 99` for mission clears. The `*100` bound holds
+      because no mission has more than 8 waves; assert it in the test.
+- [ ] JSON exporter writing `apworld/tf2_mvm/data/{missions,items,meta}.json`.
+- [ ] Test: ids unique across the whole space.
+- [ ] Test: every id in the committed export still has the same value.
+- [ ] Test: `wave_count <= 99` for every mission.
+
+Deliberately **not** in v1: weapons (210 lines in the fork's table), upgrade
+lines, canteens, robot templates, traps. Weapon *slots* are enough to make a
+progression, and the full weapon table is the single biggest chunk of data
+entry in the project. Add it in v2.
+
+## Milestone 2: apworld
+
+Python, `apworld/tf2_mvm/`. Model it on `worlds/checksfinder/` in the AP tree,
+which is the smallest world that exists (134 lines).
+
+- [ ] `__init__.py`: `World` subclass, `game`, `item_name_to_id`,
+      `location_name_to_id` built from the JSON.
+- [ ] `create_regions`: `Menu` region, one region per mission, an `Entrance`
+      per mission gated on that mission's ticket.
+- [ ] Locations: `"<Mission> Wave <N>"` per wave, `"<Mission> Complete"` per
+      mission.
+- [ ] Items: one `Mission Ticket: <Mission>` per mission (progression),
+      `Progressive Weapon Slot` x3 (progression), one `Class: <Name>` per class
+      (progression), filler to pad the pool.
+- [ ] Access rule: mission M's locations need M's ticket, at least one class,
+      and at least one weapon slot.
+- [ ] **Sphere 0 guarantee**: one Normal mission's ticket, one class and one
+      weapon slot are placed as starting inventory. Without this the seed is
+      dead. This is the single most important rule in the world.
+- [ ] Goal: `completion_condition` = the flagged final mission is complete.
+- [ ] `Options.py`, hand-written: `mission_count` (Range 1-29),
+      `difficulty_pool` (Choice), `goal` (Choice), `death_link` (DeathLink).
+      Adapt from the fork's `Options.py`, which is its one complete file.
+- [ ] `fill_slot_data`: the mission list the bridge needs, plus the data
+      format version.
+- [ ] `docs/setup_en.md` and `docs/en_TF2MvM.md`, which AP's WebHost expects.
+- [ ] Refuse to load a `data/` whose format version is unknown.
+
+**Acceptance**: `python Generate.py` produces a seed with no exception, and the
+spoiler log shows a reachable path to the goal.
+
+## Milestone 3: bridge
+
+Go. See ADR 0002 for the invariants; they are not repeated here.
+
+### Northbound, Archipelago websocket
+
+- [ ] Connect, then send `Connect` with `game`, `name`, `password`, `uuid`,
+      `version`, `items_handling`, `tags`.
+- [ ] Handle `RoomInfo`, `Connected`, `ConnectionRefused`, `ReceivedItems`,
+      `PrintJSON`, `Bounced`.
+- [ ] Send `LocationChecks` with the location ids.
+- [ ] Send `StatusUpdate` = `CLIENT_GOAL` when the goal mission completes.
+- [ ] Reconnect with exponential backoff, capped. Both `ws://` and `wss://`.
+- [ ] Dedup received items by index. AP replays the whole list on reconnect.
+
+### Southbound, HTTP on 127.0.0.1
+
+Wire contract. The plugin speaks MvM, never Archipelago.
+
+| Method | Path | Body | Returns |
+| --- | --- | --- | --- |
+| `POST` | `/objective` | `{"kind":"wave_cleared","popfile":"mvm_coaltown","wave":3}` | `204` once durably queued |
+| `POST` | `/objective` | `{"kind":"mission_cleared","popfile":"mvm_coaltown"}` | `204` |
+| `GET` | `/unlocks` | | `{"seq":42,"classes":[...],"slots":[...],"missions":[...]}` |
+| `GET` | `/grants?since=42` | | long-poll, returns new grants or `204` on timeout |
+| `GET` | `/healthz` | | `200` plus AP connection state |
+
+- [ ] Durable queue on disk. Write, then `204`, then send upstream.
+- [ ] Idempotent by location id, because the plugin retries on timeout.
+- [ ] Unlock set persisted, survives a bridge restart.
+- [ ] Config from env only. No config file.
+
+**Acceptance**: point it at a real AP server hosting a generated seed, drive
+`/objective` with `curl`, watch the check land in the AP server log.
+
+## Milestone 4: plugin
+
+SourcePawn, SourceMod 1.12, `ripext` 1.3.2. Every bridge call asynchronous.
+
+- [ ] Detect wave clear. Candidate: the `mvm_wave_complete` game event, or
+      watch `m_nMannVsMachineWaveCount` on `tf_objective_resource`.
+      **UNVERIFIED, needs a live server.**
+- [ ] Detect mission clear: `mvm_mission_complete`, same caveat.
+- [ ] Read the current pop file so objectives can name it.
+- [ ] `POST /objective` on each, with retry.
+- [ ] `GET /unlocks` on plugin load and on `OnMapStart`, then apply.
+- [ ] Long-poll `/grants`, apply as they arrive.
+- [ ] Enforce weapon slots: block the locked ones.
+- [ ] Enforce classes: refuse the locked ones at the class menu.
+- [ ] Announce received items in chat.
+- [ ] Compile with `spcomp` in CI, Dockerised.
+
+## Milestone 5: compose
+
+- [ ] `deploy/Dockerfile.archipelago`: pinned AP 0.6.7 source, Python 3.13,
+      `ModuleUpdate.py`, our apworld into `custom_worlds/`.
+- [ ] Entrypoint: if `output/` has no `.zip`, run `Generate.py` from the YAML
+      rendered out of env, then `MultiServer.py` on the result.
+- [ ] `deploy/Dockerfile.srcds`: `FROM cm2network/tf2:sourcemod`, add ripext
+      and the compiled plugin.
+- [ ] `deploy/Dockerfile.bridge`: Go build, distroless.
+- [ ] `deploy/compose.yml`, three services, `.env` for everything.
+- [ ] Reuse the existing volume `tf2-archipelago_tf2game` so the 14 GB download
+      is not repeated. Check whether compose accepts a pre-existing volume with
+      no compose labels; if not, declare it `external: true`.
+
+### Env contract
+
+| Variable | Default | What it does |
+| --- | --- | --- |
+| `AP_SLOT_NAME` | `tf2` | The multiworld slot name. One slot for the whole server. |
+| `AP_PASSWORD` | empty | Multiworld password. |
+| `AP_PORT` | `38281` | AP server port, loopback. |
+| `MVM_MISSION_COUNT` | `8` | Missions in the run. |
+| `MVM_DIFFICULTY` | `intermediate` | Lowest tier in the pool. |
+| `MVM_GOAL` | `final_boss` | `final_boss` or `missionsanity`. |
+| `SRCDS_HOSTNAME` | | Passed through to the image. |
+| `SRCDS_RCONPW` | | Required, no default. Never exposed. |
+| `SRCDS_PW` | | Server join password. |
+| `SRCDS_PORT` | `27015` | **The only public port.** |
+| `SRCDS_MAXPLAYERS` | `6` | MvM RED team size. |
+
+- [ ] `27015/udp` public, everything else `127.0.0.1`. RCON never exposed.
+- [ ] `.env.example` committed, `.env` gitignored.
+
+## Milestone 6: verify and document
+
+- [ ] Seed generates.
+- [ ] AP server hosts it and accepts a connection.
+- [ ] Bridge completes the handshake and appears in the AP server log.
+- [ ] `curl POST /objective` lands a check visible to AP.
+- [ ] srcds boots into an MvM map with the plugin loaded.
+- [ ] **Cannot be verified without a human and a TF2 client**: that a wave
+      clear in-game actually fires the objective, and that a granted weapon
+      slot is actually enforced. Say so in the docs rather than implying it
+      was tested.
+- [ ] `docs/archipelago-101.md`: what a multiworld, a slot, a check, an item
+      and a seed are, for someone who has never played one.
+- [ ] `docs/running.md`: `.env`, `docker compose up`, joining, what to expect.
+- [ ] `.forgejo/workflows/ci.yml`: gofumpt, vet, golangci-lint, go fix, build,
+      race tests, govulncheck, export freshness, `spcomp`, and a generation
+      smoke test.
+- [ ] Makefile.
+
+## Carried over from spec.md
+
+Still open, still not blocking v1 because each one is behind an option that
+ships off:
+
+- [ ] Shop check injection: can a plugin add a purchasable entry to the upgrade
+      station UI? Blocks the `shop_checks` group entirely.
+- [ ] Allied bot upgrade sharing: do RED bots still work in MvM, and can they
+      inherit purchased upgrades? Blocks `Allied Mercs`.
+- [ ] DeathLink semantics: individual death is noise in MvM. Wave failure, or
+      death outside the respawn grace window?
 
 ## Community
 
-- [ ] Ask in the Discord thread for a link to Snolid Ice's MvM Manual. It was
-      mentioned twice and never linked, and it likely has usable item and
-      location naming.
+- [ ] Ask the Discord thread for Snolid Ice's MvM Manual. Mentioned twice,
+      never linked.
 - [ ] Tell Damonj17 and Roseburst this exists. The design is theirs.
 
 ## Repo
 
-- [ ] `.forgejo/workflows/ci.yml`, once there is code to check. Mirror the
-      `simple-webapp` kit gate: gofumpt, vet, golangci-lint, go fix, build,
-      race tests, govulncheck, plus the export freshness check.
-- [ ] Makefile, same time.
-- [ ] Decide whether this repo goes public. It is private today, and the design
-      came from a public Discord thread.
+- [ ] Decide whether this goes public. It is private today, and the design came
+      from a public thread. Note that the Forgejo instance forces new repos
+      private, so this needs a deliberate flip in the UI.
