@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/apclient"
+	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/chat"
 	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/config"
 	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/httpapi"
 	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/state"
@@ -28,6 +29,10 @@ const (
 	// shutdownGrace is how long in-flight long-polls get to finish after a
 	// signal.
 	shutdownGrace = 5 * time.Second
+
+	// chatHistory is how many multiworld messages are kept for a plugin that
+	// reconnects. Chat is not state: what falls off the end is gone.
+	chatHistory = 200
 
 	// healthTimeout bounds the health check. It talks to loopback, so anything
 	// slower than this is a bridge that has stopped answering.
@@ -81,16 +86,21 @@ func run(logger *slog.Logger) error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
+	// The multiworld says more in an evening than anyone reads, so the log
+	// keeps the last few hundred lines and no more.
+	messages := chat.New(chatHistory)
+
 	client := apclient.New(apclient.Options{
 		URL:      cfg.ArchipelagoURL,
 		SlotName: cfg.SlotName,
 		Password: cfg.Password,
 		Store:    store,
+		Chat:     messages,
 		Logger:   logger,
 	})
 	server := &http.Server{
 		Addr:              cfg.Listen,
-		Handler:           httpapi.New(store, client, cfg.PollTimeout, logger).Handler(),
+		Handler:           httpapi.New(store, client, messages, cfg.PollTimeout, logger).Handler(),
 		ReadHeaderTimeout: 5 * time.Second,
 
 		// No write timeout: GET /grants is a long poll and holding it open is

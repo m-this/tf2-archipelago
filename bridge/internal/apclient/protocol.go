@@ -56,6 +56,11 @@ type syncMessage struct {
 	Cmd string `json:"cmd"`
 }
 
+type sayMessage struct {
+	Cmd  string `json:"cmd"`
+	Text string `json:"text"`
+}
+
 type roomInfo struct {
 	SeedName string `json:"seed_name"`
 	Password bool   `json:"password"`

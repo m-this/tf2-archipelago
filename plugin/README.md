@@ -31,11 +31,29 @@ should be told why rather than deciding the randomizer is broken.
 Repeated bridge failures are said once. The retry loop would otherwise fill
 chat with the same line every five seconds.
 
+## Talking to the multiworld
+
+Players have no Archipelago client, so the plugin is theirs:
+
+| Typed in chat | What it does |
+| --- | --- |
+| `!ap` | One line of help |
+| `!ap hint Scout` | Runs an Archipelago server command. The `!` is added if it is missing, so `!ap hint`, `!ap missing`, `!ap status` and `!ap release` all work |
+| `!apchat <text>` | Says something to the other players in the multiworld, prefixed with the sender's name |
+
+What the multiworld says comes back into chat, so a hint answered or an item
+someone else found shows up in game. `tf2ap_chat 0` turns that off.
+
+Anyone joining gets a chat welcome eight seconds after they spawn in: what the
+server is, which mission is loaded, what is unlocked so far, and how to use
+`!ap`. Eight seconds because a message printed during the map load scrolls past
+before anyone can read it.
+
 ## Commands
 
 | Command | Flag | What it does |
 | --- | --- | --- |
-| `sm_ap` | generic | The whole picture: mission, wave, which events exist, the unlock set, the queue depth, the last bridge error |
+| `sm_ap_status` | generic | The whole picture: mission, wave, which events exist, the unlock set, the queue depth, the last bridge error |
 | `sm_ap_resync` | generic | Fetch the unlock set again |
 | `sm_ap_report <kind> [wave]` | root | Report an objective by hand |
 
@@ -48,6 +66,7 @@ check gets sent when the game did not fire the event it should have.
 | --- | --- | --- |
 | `tf2ap_bridge_url` | `http://127.0.0.1:24680` | Base URL of the bridge. Loopback. |
 | `tf2ap_announce` | `1` | Announce grants and cleared waves in chat |
+| `tf2ap_chat` | `1` | Show what the rest of the multiworld says |
 | `tf2ap_debug` | `0` | Echo every bridge call and game event |
 
 ## What is UNVERIFIED
@@ -57,7 +76,7 @@ no Team Fortress 2 server was available while it was written.
 
 - `mvm_begin_wave`, `mvm_wave_complete`, `mvm_mission_complete` are hooked with
   `HookEventEx`, so a missing one is a log line and a degraded mode rather than
-  a failed load. `sm_ap` prints which of the three exist.
+  a failed load. `sm_ap_status` prints which of the three exist.
 - If `mvm_wave_complete` turns out not to exist, a one-second timer watches
   `m_nMannVsMachineWaveCount` instead and reports a wave when the counter goes
   up.

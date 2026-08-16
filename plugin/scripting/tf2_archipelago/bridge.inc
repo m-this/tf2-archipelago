@@ -35,8 +35,11 @@ enum struct Objective
 }
 
 ConVar g_CvarBridgeURL;
+ConVar g_CvarChat;
 
 ArrayList g_Pending;
+bool g_PollingChat;
+int g_ChatSeq = -1;
 int g_NextObjectiveID = 1;
 bool g_Polling;
 int g_GrantSeq;
@@ -46,6 +49,8 @@ void Bridge_Init()
 {
     g_CvarBridgeURL = CreateConVar("tf2ap_bridge_url", "http://127.0.0.1:24680",
         "Base URL of the Archipelago bridge. Loopback only.");
+    g_CvarChat = CreateConVar("tf2ap_chat", "1",
+        "Show what the rest of the multiworld says in chat.", _, true, 0.0, true, 1.0);
     g_Pending = new ArrayList(sizeof(Objective));
     CreateTimer(RetryInterval, Timer_DrainPending, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 }
@@ -377,4 +382,100 @@ static void Bridge_NoteError(const char[] format, any ...)
 static void Bridge_ClearError()
 {
     g_LastBridgeError[0] = '\0';
+}
+
+
+/**
+ * The multiworld's chat.
+ *
+ * The bridge holds this request open the same way it does for grants. The
+ * first poll asks with a negative sequence, which means "start from now": a
+ * server joining an evening late must not replay hours of other people's
+ * conversation into everyone's chat.
+ */
+void Bridge_PollMessages()
+{
+    if (g_PollingChat)
+    {
+        return;
+    }
+    char path[64];
+    FormatEx(path, sizeof(path), "/messages?since=%d", g_ChatSeq);
+
+    HTTPRequest request = BridgeRequest(path);
+    request.Timeout = 60;
+    g_PollingChat = true;
+    request.Get(OnMessages);
+}
+
+static void OnMessages(HTTPResponse response, any value, const char[] error)
+{
+    g_PollingChat = false;
+
+    if (!StrEqual(error, "") || response.Status != HTTPStatus_OK)
+    {
+        // Quiet on purpose: the objective and grant paths already say when the
+        // bridge is unreachable, and chat is the least important of the three.
+        AP_Debug("the message poll failed, retrying");
+        CreateTimer(RetryInterval, Timer_PollMessagesAgain);
+        return;
+    }
+
+    JSONObject payload = view_as<JSONObject>(response.Data);
+    g_ChatSeq = payload.GetInt("seq");
+
+    JSONArray messages = view_as<JSONArray>(payload.Get("messages"));
+    if (messages != null)
+    {
+        bool show = g_CvarChat.BoolValue;
+        for (int index = 0; index < messages.Length; index++)
+        {
+            JSONObject message = view_as<JSONObject>(messages.Get(index));
+            char text[254];
+            message.GetString("text", text, sizeof(text));
+            if (show && text[0] != '\0')
+            {
+                PrintToChatAll("%s\x07AAAAAA%s", AP_TAG, text);
+            }
+            delete message;
+        }
+        delete messages;
+    }
+    Bridge_PollMessages();
+}
+
+static Action Timer_PollMessagesAgain(Handle timer)
+{
+    Bridge_PollMessages();
+    return Plugin_Stop;
+}
+
+/**
+ * Pass a line to the multiworld. Not queued: a message that lands ten minutes
+ * after it was typed is worse than one that was refused, and the player who
+ * typed it is standing right there to be told.
+ */
+void Bridge_Say(int client, const char[] text)
+{
+    JSONObject body = new JSONObject();
+    body.SetString("text", text);
+
+    HTTPRequest request = BridgeRequest("/say");
+    request.Timeout = 10;
+    request.Post(body, OnSaid, client > 0 ? GetClientUserId(client) : 0);
+    delete body;
+}
+
+static void OnSaid(HTTPResponse response, any value, const char[] error)
+{
+    int client = value > 0 ? GetClientOfUserId(value) : 0;
+    if (StrEqual(error, "") && response.Status == HTTPStatus_NoContent)
+    {
+        return;
+    }
+    if (client > 0)
+    {
+        AP_PrintToClient(client, "The multiworld did not take that: it is not connected.");
+    }
+    AP_Debug("say failed with status %d %s", response.Status, error);
 }

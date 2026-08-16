@@ -17,6 +17,7 @@ import (
 
 	"github.com/coder/websocket"
 
+	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/chat"
 	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/state"
 	"git-ssh.croque.top/mathis/tf2-archipelago/gamedata"
 )
@@ -45,12 +46,18 @@ type errPermanent struct{ err error }
 func (e errPermanent) Error() string { return e.err.Error() }
 func (e errPermanent) Unwrap() error { return e.err }
 
+// ErrNotConnected is what a chat line gets when there is no multiworld to say
+// it to. Unlike a check, it is not worth queueing: a message that arrives ten
+// minutes late is worse than one that was refused.
+var ErrNotConnected = errors.New("not connected to archipelago")
+
 // Options is everything the session needs.
 type Options struct {
 	URL      string
 	SlotName string
 	Password string
 	Store    *state.Store
+	Chat     *chat.Log
 	Logger   *slog.Logger
 }
 
@@ -62,6 +69,7 @@ type Client struct {
 	writeMu sync.Mutex
 
 	mu        sync.Mutex
+	conn      *websocket.Conn
 	connected bool
 	slot      SlotData
 	lastError string
@@ -139,6 +147,15 @@ func (c *Client) session(ctx context.Context) error {
 	defer conn.CloseNow()
 	conn.SetReadLimit(readLimitBytes)
 
+	c.mu.Lock()
+	c.conn = conn
+	c.mu.Unlock()
+	defer func() {
+		c.mu.Lock()
+		c.conn = nil
+		c.mu.Unlock()
+	}()
+
 	ready := make(chan struct{})
 	pumped := make(chan error, 1)
 	go func() { pumped <- c.pump(ctx, conn, ready) }()
@@ -192,7 +209,9 @@ func (c *Client) handle(
 	case "PrintJSON":
 		var printed printJSON
 		if err := json.Unmarshal(message, &printed); err == nil {
-			c.opts.Logger.Info("archipelago", "message", printed.text())
+			text := printed.text()
+			c.opts.Logger.Info("archipelago", "message", text)
+			c.opts.Chat.Append(text)
 		}
 		return nil
 	case "Bounced":
@@ -354,6 +373,19 @@ func (c *Client) pump(ctx context.Context, conn *websocket.Conn, ready chan stru
 			}
 		}
 	}
+}
+
+// Say passes a line to the multiworld. Anything starting with ! is a server
+// command there, which is how a player runs !hint or !status from inside the
+// game.
+func (c *Client) Say(ctx context.Context, text string) error {
+	c.mu.Lock()
+	conn, connected := c.conn, c.connected
+	c.mu.Unlock()
+	if !connected || conn == nil {
+		return ErrNotConnected
+	}
+	return c.send(ctx, conn, sayMessage{Cmd: "Say", Text: text})
 }
 
 func (c *Client) send(ctx context.Context, conn *websocket.Conn, messages ...any) error {

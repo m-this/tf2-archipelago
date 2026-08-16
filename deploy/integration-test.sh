@@ -131,6 +131,21 @@ status=$(curl -fsS -o /dev/null -w '%{http_code}' -X POST "$bridge/objective" \
 waitfor "Archipelago recorded the goal" "$check_timeout" \
 	archipelago_logged "has completed their goal"
 
+log "a player talking to the multiworld"
+status=$(curl -fsS -o /dev/null -w '%{http_code}' -X POST "$bridge/say" \
+	-d '{"text":"!missing"}')
+[ "$status" = "204" ] && pass "the multiworld took the line" || fail "say answered $status"
+
+# The plugin starts from a negative sequence so a server joining late does not
+# replay the evening into everyone's chat.
+start=$(curl -fsS "$bridge/messages?since=-1" | json "json.load(sys.stdin)['seq']")
+[ -n "$start" ] && pass "chat starts from sequence $start" || fail "no chat sequence"
+
+curl -fsS -o /dev/null -X POST "$bridge/say" -d '{"text":"hello from the test"}'
+messages=$(curl -fsS "$bridge/messages?since=$start" | json "len(json.load(sys.stdin)['messages'])")
+[ "${messages:-0}" -ge 1 ] && pass "the multiworld answered with $messages line(s)" \
+	|| fail "the multiworld said nothing back"
+
 log "the state survives a restart"
 $compose restart bridge >/dev/null
 waitfor "the bridge came back and reconnected" "$check_timeout" bridge_connected

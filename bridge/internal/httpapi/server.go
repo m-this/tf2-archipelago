@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/apclient"
+	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/chat"
 	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/state"
 	"git-ssh.croque.top/mathis/tf2-archipelago/gamedata"
 )
@@ -33,18 +34,38 @@ type grantsResponse struct {
 	Grants []state.Grant `json:"grants"`
 }
 
+// sayRequest is a player talking to the multiworld. Anything starting with !
+// is a command there, which is how !hint and !status work from inside a game
+// that has no Archipelago client of its own.
+type sayRequest struct {
+	Text string `json:"text"`
+}
+
+type messagesResponse struct {
+	Seq      int            `json:"seq"`
+	Messages []chat.Message `json:"messages"`
+}
+
 // Server serves the plugin.
 type Server struct {
 	store       *state.Store
 	client      *apclient.Client
+	chat        *chat.Log
 	pollTimeout time.Duration
 	logger      *slog.Logger
 }
 
 func New(
-	store *state.Store, client *apclient.Client, pollTimeout time.Duration, logger *slog.Logger,
+	store *state.Store, client *apclient.Client, messages *chat.Log,
+	pollTimeout time.Duration, logger *slog.Logger,
 ) *Server {
-	return &Server{store: store, client: client, pollTimeout: pollTimeout, logger: logger}
+	return &Server{
+		store:       store,
+		client:      client,
+		chat:        messages,
+		pollTimeout: pollTimeout,
+		logger:      logger,
+	}
 }
 
 // Handler wires the routes. Four of them, and the plugin needs all four.
@@ -53,6 +74,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("POST /objective", s.postObjective)
 	mux.HandleFunc("GET /unlocks", s.getUnlocks)
 	mux.HandleFunc("GET /grants", s.getGrants)
+	mux.HandleFunc("GET /messages", s.getMessages)
+	mux.HandleFunc("POST /say", s.postSay)
 	mux.HandleFunc("GET /healthz", s.getHealth)
 	return mux
 }
@@ -127,6 +150,56 @@ func (s *Server) getGrants(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+// getMessages long-polls the multiworld's chat. A negative sequence asks only
+// where the conversation is, so a game server joining an evening late does not
+// dump the backlog into everyone's chat.
+func (s *Server) getMessages(w http.ResponseWriter, r *http.Request) {
+	since, err := strconv.Atoi(r.URL.Query().Get("since"))
+	if err != nil {
+		http.Error(w, "since must be a sequence number", http.StatusBadRequest)
+		return
+	}
+
+	timeout := time.NewTimer(s.pollTimeout)
+	defer timeout.Stop()
+	for {
+		changed := s.chat.Watch()
+		messages, latest := s.chat.Since(since)
+		if len(messages) > 0 || since < 0 {
+			writeJSON(w, s.logger, messagesResponse{Seq: latest, Messages: messages})
+			return
+		}
+		select {
+		case <-changed:
+		case <-timeout.C:
+			writeJSON(w, s.logger, messagesResponse{Seq: latest, Messages: nil})
+			return
+		case <-r.Context().Done():
+			return
+		}
+	}
+}
+
+// postSay passes a line to the multiworld. Unlike a check it is not queued: a
+// message that lands ten minutes after it was typed is worse than one that was
+// refused, and the player is standing right there to be told.
+func (s *Server) postSay(w http.ResponseWriter, r *http.Request) {
+	var request sayRequest
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&request); err != nil {
+		http.Error(w, "unreadable body", http.StatusBadRequest)
+		return
+	}
+	if request.Text == "" {
+		http.Error(w, "nothing to say", http.StatusBadRequest)
+		return
+	}
+	if err := s.client.Say(r.Context(), request.Text); err != nil {
+		http.Error(w, err.Error(), http.StatusServiceUnavailable)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (s *Server) getHealth(w http.ResponseWriter, r *http.Request) {

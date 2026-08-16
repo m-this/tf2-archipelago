@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/apclient"
+	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/chat"
 	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/state"
 	"git-ssh.croque.top/mathis/tf2-archipelago/gamedata"
 )
@@ -23,8 +24,11 @@ func newTestServer(t *testing.T, pollTimeout time.Duration) (*state.Store, http.
 		t.Fatal(err)
 	}
 	logger := slog.New(slog.DiscardHandler)
-	client := apclient.New(apclient.Options{SlotName: "tf2", Store: store, Logger: logger})
-	return store, New(store, client, pollTimeout, logger).Handler()
+	messages := chat.New(8)
+	client := apclient.New(apclient.Options{
+		SlotName: "tf2", Store: store, Chat: messages, Logger: logger,
+	})
+	return store, New(store, client, messages, pollTimeout, logger).Handler()
 }
 
 func post(t *testing.T, handler http.Handler, body string) *httptest.ResponseRecorder {
@@ -215,5 +219,39 @@ func decode(t *testing.T, recorder *httptest.ResponseRecorder, into any) {
 	}
 	if err := json.Unmarshal(body, into); err != nil {
 		t.Fatalf("%s: %v", body, err)
+	}
+}
+
+func TestSayNeedsAMultiworld(t *testing.T) {
+	_, handler := newTestServer(t, time.Second)
+	request := httptest.NewRequest(http.MethodPost, "/say", strings.NewReader(`{"text":"!hint"}`))
+	recorder := httptest.NewRecorder()
+	handler.ServeHTTP(recorder, request)
+
+	// Nothing is connected in this test, and a line with nowhere to go is
+	// refused rather than queued.
+	if recorder.Code != http.StatusServiceUnavailable {
+		t.Fatalf("code = %d, want 503", recorder.Code)
+	}
+}
+
+func TestSayRejectsAnEmptyLine(t *testing.T) {
+	_, handler := newTestServer(t, time.Second)
+	request := httptest.NewRequest(http.MethodPost, "/say", strings.NewReader(`{"text":""}`))
+	recorder := httptest.NewRecorder()
+	handler.ServeHTTP(recorder, request)
+	if recorder.Code != http.StatusBadRequest {
+		t.Fatalf("code = %d, want 400", recorder.Code)
+	}
+}
+
+func TestMessagesStartFromNow(t *testing.T) {
+	store, handler := newTestServer(t, time.Second)
+	_ = store
+
+	var response messagesResponse
+	decode(t, get(t, handler, "/messages?since=-1"), &response)
+	if len(response.Messages) != 0 {
+		t.Fatalf("a negative sequence returned %d message(s)", len(response.Messages))
 	}
 }
