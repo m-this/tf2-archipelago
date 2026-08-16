@@ -26,6 +26,16 @@ Checked 2026-08-13 on moon18.
 | MvM maps on disk | 7 `.bsp` | `ls tf/maps` |
 | Pop files | inside `tf2_misc_dir.vpk`, not loose on disk | `find` returned 0, `strings` found them |
 
+Checked 2026-08-16 against an AP 0.6.7 checkout, while building milestone 2.
+
+| Thing | Value | How it was checked |
+| --- | --- | --- |
+| `custom_worlds/` | takes `.apworld` **zips only**. A plain folder there is found and then fails to import: only zips get a meta-path finder (`worlds/__init__.py:182`). A folder has to sit in `worlds/`. | tried both |
+| Packaging | `python Launcher.py "Build APWorlds" -- "<game>"` writes `build/apworlds/tf2_mvm.apworld` and stamps the manifest | ran it |
+| `pkgutil.get_data` | reads `data/*.json` out of the zip, so the data files survive packaging | generated from the built `.apworld` |
+| Headless generation | needs `SKIP_REQUIREMENTS_UPDATE=1`, or `ModuleUpdate` blocks on `input()` for every world's optional deps | `Generate.py` hung otherwise |
+| `pkg_resources` | `ModuleUpdate` imports it, so setuptools must be `<81`. 84 has dropped it. | pinned 80.9.0 |
+
 The `.pop` files being inside the VPK matters: nothing can read them from the
 host without a VPK extractor. Wave counts therefore come from the table below,
 not from parsing, and open question 4 in `spec.md` is answered: **hardcode the
@@ -124,36 +134,53 @@ The item pool the export declares: 29 mission tickets, 9 class items, one
 `Progressive Weapon Slot` in 3 copies, and `Cash Bundle` filler worth 200
 credits. 40 named items against 210 locations, so filler carries the rest.
 
-## Milestone 2: apworld
+## Milestone 2: apworld — done
 
-Python, `apworld/tf2_mvm/`. Model it on `worlds/checksfinder/` in the AP tree,
-which is the smallest world that exists (134 lines).
+Python, `apworld/tf2_mvm/`.
 
-- [ ] `__init__.py`: `World` subclass, `game`, `item_name_to_id`,
+- [x] `__init__.py`: `World` subclass, `game`, `item_name_to_id`,
       `location_name_to_id` built from the JSON.
-- [ ] `create_regions`: `Menu` region, one region per mission, an `Entrance`
+- [x] `create_regions`: `Menu` region, one region per mission, an `Entrance`
       per mission gated on that mission's ticket.
-- [ ] Locations: `"<Mission> Wave <N>"` per wave, `"<Mission> Complete"` per
+- [x] Locations: `"<Mission> Wave <N>"` per wave, `"<Mission> Complete"` per
       mission.
-- [ ] Items: one `Mission Ticket: <Mission>` per mission (progression),
+- [x] Items: one `Mission Ticket: <Mission>` per mission (progression),
       `Progressive Weapon Slot` x3 (progression), one `Class: <Name>` per class
-      (progression), filler to pad the pool.
-- [ ] Access rule: mission M's locations need M's ticket, at least one class,
-      and at least one weapon slot.
-- [ ] **Sphere 0 guarantee**: one Normal mission's ticket, one class and one
-      weapon slot are placed as starting inventory. Without this the seed is
-      dead. This is the single most important rule in the world.
-- [ ] Goal: `completion_condition` = the flagged final mission is complete.
-- [ ] `Options.py`, hand-written: `mission_count` (Range 1-29),
-      `difficulty_pool` (Choice), `goal` (Choice), `death_link` (DeathLink).
-      Adapt from the fork's `Options.py`, which is its one complete file.
-- [ ] `fill_slot_data`: the mission list the bridge needs, plus the data
-      format version.
-- [ ] `docs/setup_en.md` and `docs/en_TF2MvM.md`, which AP's WebHost expects.
-- [ ] Refuse to load a `data/` whose format version is unknown.
+      (progression), `Cash Bundle` filler to pad the pool.
+- [x] Access rule: mission M's locations need M's ticket and a number of
+      classes and weapon slots that climbs with M's tier (`rules.py`). A flat
+      "one of each" rule put every mission in sphere 1 and made the run a list
+      of tickets; the tier ladder is what gives a seed spheres.
+- [x] **Sphere 0 guarantee**: the easiest mission drawn is the starting one,
+      and its ticket plus exactly what its tier asks for are precollected. AP's
+      own `test_empty_state_can_reach_something` guards it on every option set
+      in `test/`.
+- [x] Goal: `final_boss` = the hardest mission drawn is reachable;
+      `missionsanity` = a share of the missions drawn are.
+- [x] `options.py`, hand-written: `mission_count` (Range 1-29),
+      `difficulty_pool` (Choice), `goal` (Choice), `missionsanity_percentage`
+      (Range), `death_link` (DeathLink). `difficulty_pool`'s tiers are checked
+      against the export at import, not trusted.
+- [x] `fill_slot_data`: the mission pop files, the goal, the goal mission, the
+      missionsanity target, death link, and the data format version.
+- [x] `docs/setup_en.md` and `docs/en_Team Fortress 2 Mann vs Machine.md`.
+      The game-info file name has to be `<lang>_<game name>.md`, spaces and all.
+- [x] Refuse to load a `data/` whose format version is unknown, per file.
+- [x] `archipelago.json` manifest and an `.apignore` that keeps `test/` out of
+      the built artifact.
+- [x] `test/`, six option sets. AP's `WorldTestBase` contributes fill,
+      all-state reachability and sphere 0 to each.
 
-**Acceptance**: `python Generate.py` produces a seed with no exception, and the
-spoiler log shows a reachable path to the goal.
+**Acceptance, done 2026-08-16 against AP 0.6.7**: seeds generate for
+normal/1, normal/29, intermediate/8, expert/4, advanced/29 and both goals; the
+spoiler log for the default YAML shows five spheres ending at the goal; AP's
+own `test/general` suite passes for this world; the packaged `.apworld`
+generates from `custom_worlds/`.
+
+Known and deliberate: `difficulty_pool: haunted` cannot generate, because the
+one haunted mission is 2 checks against 4 unlock items. It raises an
+`OptionError` naming the option instead of producing a broken seed, and it
+starts working the day a second haunted mission exists.
 
 ## Milestone 3: bridge
 
@@ -210,7 +237,8 @@ SourcePawn, SourceMod 1.12, `ripext` 1.3.2. Every bridge call asynchronous.
 ## Milestone 5: compose
 
 - [ ] `deploy/Dockerfile.archipelago`: pinned AP 0.6.7 source, Python 3.13,
-      `ModuleUpdate.py`, our apworld into `custom_worlds/`.
+      `ModuleUpdate.py`, our apworld into `custom_worlds/`. It has to be built
+      into an `.apworld` first; a bind-mounted folder there does not load.
 - [ ] Entrypoint: if `output/` has no `.zip`, run `Generate.py` from the YAML
       rendered out of env, then `MultiServer.py` on the result.
 - [ ] `deploy/Dockerfile.srcds`: `FROM cm2network/tf2:sourcemod`, add ripext
