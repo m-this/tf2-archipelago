@@ -1,13 +1,9 @@
 """What a mission asks for before its waves are considered beatable.
 
-A mission needs its ticket, some number of classes, and some number of loadout
-slots. The counts climb with the tier, which is what turns a flat list of 29
-missions into a progression: an Expert mission drawn in the first sphere is not
-reachable until the run has handed out most of a team.
-
-The numbers are a judgement call about MvM, not a fact about it. They are
-deliberately below what a real team would want, because the logic decides what
-is *possible*, and a wave that is merely hard is still possible.
+The counts climb with the tier, which is what turns a flat list of missions into
+a progression. They are a judgement call, and deliberately below what a real
+team would want: the logic decides what is *possible*, and a wave that is merely
+hard is still possible.
 """
 
 from dataclasses import dataclass
@@ -17,9 +13,7 @@ from . import data
 
 @dataclass(frozen=True, slots=True)
 class Requirement:
-    """Items a mission's region asks for. Both counts are always satisfiable:
-    the pool holds every class and every weapon slot in every seed.
-    """
+    """Both counts are always satisfiable: every seed's pool holds every class and weapon slot."""
 
     classes: int
     slots: int
@@ -33,8 +27,7 @@ REQUIREMENTS: dict[str, Requirement] = {
     "haunted": Requirement(classes=5, slots=3),
 }
 
-# A tier with no entry here would raise a KeyError deep inside region building,
-# so it is caught at import instead.
+# A tier with no entry here would KeyError deep inside region building; catch it at import instead.
 if tuple(REQUIREMENTS) != data.DIFFICULTIES:
     raise data.DataFormatError(
         f"requirements cover {tuple(REQUIREMENTS)}, the export has {data.DIFFICULTIES}"

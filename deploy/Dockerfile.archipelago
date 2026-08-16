@@ -1,15 +1,10 @@
 # Archipelago, pinned, headless, with our apworld built in.
 #
-# Two things this image knows that the Archipelago documentation does not say
-# out loud, both learned the hard way:
-#
-#   - custom_worlds/ takes .apworld zips only. A folder dropped there is found
-#     and then fails to import, because only zips get a meta-path finder. So
-#     the world is packaged during the build rather than copied.
-#   - the pinned dependency versions are load-bearing. websockets 14 removed
-#     ServerConnection.open, which MultiServer.py calls on every client
-#     connection, and setuptools 81 dropped pkg_resources, which ModuleUpdate
-#     imports at startup.
+# custom_worlds/ takes .apworld zips only: a folder there is found and then
+# fails to import, so the world is packaged during the build.
+# websockets 14 removed ServerConnection.open, which MultiServer.py calls on
+# every connection, and setuptools 81 dropped pkg_resources, which ModuleUpdate
+# imports at startup. Both pins are load-bearing.
 
 FROM python:3.13-slim AS build
 
@@ -23,9 +18,8 @@ WORKDIR /ap
 RUN curl -fsSL "https://github.com/ArchipelagoMW/Archipelago/archive/refs/tags/${ARCHIPELAGO_VERSION}.tar.gz" \
 	| tar xz --strip-components=1
 
-# Kivy and KivyMD are the launcher's GUI and Pymem is a Windows debugger
-# binding. Nothing headless needs any of them, and KivyMD is a git dependency
-# that would drag a toolchain into the image.
+# The launcher's GUI and a Windows debugger binding: nothing headless needs
+# them, and KivyMD is a git dependency that would drag in a toolchain.
 RUN grep -vE '^(kivy|kivymd|Pymem)' requirements.txt > /tmp/requirements.txt \
 	&& pip install --no-cache-dir -r /tmp/requirements.txt "setuptools<81"
 
@@ -36,9 +30,8 @@ RUN SKIP_REQUIREMENTS_UPDATE=1 python Launcher.py "Build APWorlds" -- "Team Fort
 	&& cp /ap/build/apworlds/tf2_mvm.apworld /ap/custom_worlds/
 
 
-# The world's own tests need Archipelago to run inside, so they run here. The
-# folder goes back into worlds/ and the packaged copy is dropped: loading both
-# would be the same game declared twice.
+# The world's tests need Archipelago around them. Loading the folder and the
+# packaged copy at once would declare the same game twice, so the zip goes.
 FROM build AS apworld-test
 
 ENV SKIP_REQUIREMENTS_UPDATE=1
@@ -49,8 +42,7 @@ CMD ["python", "-m", "unittest", "discover", "-s", "worlds/tf2_mvm/test", "-t", 
 
 FROM python:3.13-slim
 
-# ModuleUpdate.py blocks on input() asking to install every world's optional
-# dependencies. There is no terminal here, so it must not run at all.
+# ModuleUpdate.py blocks on input() over every world's optional dependencies.
 ENV SKIP_REQUIREMENTS_UPDATE=1 \
 	PYTHONUNBUFFERED=1
 
@@ -60,9 +52,8 @@ COPY --from=build /usr/local/bin /usr/local/bin
 COPY --from=build --chown=archipelago:archipelago /ap /ap
 COPY --chown=archipelago:archipelago deploy/archipelago-entrypoint.sh /usr/local/bin/entrypoint.sh
 
-# A named volume takes its ownership from the directory it covers, so this has
-# to exist and belong to the right user before VOLUME declares it. Otherwise
-# generation runs to completion and then cannot write the archive.
+# A named volume takes its ownership from the directory it covers, so this must
+# exist and belong to the right user before VOLUME declares it.
 RUN mkdir -p /ap/output /ap/Players \
 	&& chown archipelago:archipelago /ap/output /ap/Players
 
@@ -74,9 +65,8 @@ EXPOSE 38281
 # A real WebSocket handshake, not a bare TCP connect: the multiworld server
 # answers a plain connection with 400 and a log line, so the naive check both
 # lies and fills the log.
-# close_timeout is the load-bearing argument: the multiworld server does not
-# hurry to answer a close frame, and the default ten-second wait outlives the
-# check itself.
+# close_timeout matters: the server is slow to answer a close frame, and the
+# ten-second default outlives the check itself.
 HEALTHCHECK --interval=15s --timeout=10s --start-period=180s --retries=5 \
 	CMD python -c "import os; from websockets.sync.client import connect; connect('ws://127.0.0.1:' + os.environ.get('AP_PORT', '38281'), open_timeout=3, close_timeout=1).close()" || exit 1
 

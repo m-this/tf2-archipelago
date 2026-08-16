@@ -18,8 +18,7 @@ import (
 	"git-ssh.croque.top/mathis/tf2-archipelago/gamedata"
 )
 
-// fakeRoom is an Archipelago server that does the handshake and then records
-// what the bridge says to it.
+// fakeRoom does the handshake and records what the bridge says to it.
 type fakeRoom struct {
 	seed     string
 	slotData any
@@ -27,8 +26,7 @@ type fakeRoom struct {
 	heard    chan map[string]json.RawMessage
 	refuse   []string
 
-	// dropFirst hangs up on the first connection right after the handshake,
-	// which is what an Archipelago server restarting mid-run looks like.
+	// dropFirst hangs up right after the first handshake, the way a server restarting mid-run does.
 	dropFirst bool
 
 	mu       sync.Mutex
@@ -171,8 +169,7 @@ func runClientWith(t *testing.T, room *fakeRoom, store *state.Store) *Client {
 	return client
 }
 
-// waitFor polls until the condition holds. The session runs in its own
-// goroutines, so every assertion about it is eventually-true.
+// waitFor polls: the session runs in goroutines, so assertions about it are eventually-true.
 func waitFor(t *testing.T, what string, condition func() bool) {
 	t.Helper()
 	deadline := time.Now().Add(3 * time.Second)
@@ -279,7 +276,6 @@ func TestGoalIsAnnouncedOnce(t *testing.T) {
 	}
 	waitFor(t, "the win to be recorded", store.GoalSent)
 
-	// A further check must not announce the win again.
 	if _, err := store.AddCheck(goalMission.WaveLocationID(1)); err != nil {
 		t.Fatal(err)
 	}
@@ -308,8 +304,7 @@ func TestChecksTakenWhileDownAreReplayed(t *testing.T) {
 		slotData: slotDataFor("final_boss", "mvm_decoy", "mvm_decoy"),
 	}
 
-	// The wave was cleared with nothing upstream to tell: the plugin was
-	// answered anyway and the bridge now owes the multiworld this check.
+	// The wave was cleared with nothing upstream to tell, and the plugin was answered anyway.
 	store := newStore(t)
 	if _, err := store.AddCheck(mission.WaveLocationID(1)); err != nil {
 		t.Fatal(err)
@@ -349,7 +344,6 @@ func TestMissionsanityCountsClearedMissions(t *testing.T) {
 	client, store := runClient(t, room)
 	waitFor(t, "the handshake", func() bool { return client.Health().Connected })
 
-	// One mission short of the target is not a win.
 	if _, err := store.AddCheck(first.ClearLocationID()); err != nil {
 		t.Fatal(err)
 	}

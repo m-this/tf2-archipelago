@@ -18,18 +18,13 @@ type Mission struct {
 // Missions is the 29 Valve missions. Pop file names come from
 // tf2_misc_dir.vpk; display names, tiers and wave counts from the TF2 wiki.
 //
-// Community missions are out of scope for v1: their .pop files live inside the
-// VPK too, nothing on the host can read a wave count out of them, and a
-// downloaded pack can change under a seed that already references it.
+// UNVERIFIED: inside a tier with more than one entry, the pairing of display
+// name to pop file is a guess. Settle it against resource/tf_english.txt in the
+// VPK before the first seed is played: the name is baked into location names.
 //
-// UNVERIFIED: which display name goes with which pop file inside a tier that
-// has more than one entry, so both intermediate2 rows, both mannhattan
-// advanced rows and their kin are a guess. The pop file names and the mission
-// names are each certain; only the pairing is not. Settle it against
-// resource/tf_english.txt in the VPK, which keys mission names by pop file. A
-// wrong pairing shows the player the wrong mission name and nothing worse, but
-// the name is baked into location names, so fix it before the first seed is
-// played.
+// Community missions are out of scope for v1: nothing on the host can read a
+// wave count out of a .pop file, and a downloaded pack can change under a seed
+// that already references it.
 var Missions = []Mission{
 	{1, "mvm_decoy", "Doe's Drill", MapDecoy, DifficultyNormal, 8},
 	{2, "mvm_decoy_intermediate", "Doe's Doom", MapDecoy, DifficultyIntermediate, 7},
@@ -90,8 +85,7 @@ func MissionByID(id MissionID) (Mission, bool) {
 }
 
 // MissionByPopFile returns the mission the plugin means when it reports an
-// objective. The pop file name is what the game knows; everything else here
-// is ours.
+// objective. The pop file name is the only part of a mission the game knows.
 func MissionByPopFile(popFile string) (Mission, bool) {
 	m, ok := missionsByPopFile[popFile]
 	return m, ok

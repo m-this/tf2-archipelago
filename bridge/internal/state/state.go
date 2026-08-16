@@ -1,13 +1,10 @@
-// Package state holds everything the bridge must not lose: which checks the
-// plugin has reported, and which items Archipelago has sent.
+// Package state holds everything the bridge must not lose: the checks the
+// plugin reported and the items Archipelago sent.
 //
-// Both lists are written to disk before anything else happens with them. A
-// wave clear costs ten minutes of play, and an Archipelago server that has
-// been down for an hour must not cost a single one of them, so the order is
-// always: record, acknowledge, then send upstream.
-//
-// Everything the bridge serves is derived from those two lists. There is no
-// second copy of the unlock set to fall out of step with them.
+// A wave clear costs ten minutes of play, and an Archipelago server down for an
+// hour must not cost one of them, so the order is always record, acknowledge,
+// then send upstream. Everything the bridge serves is derived from those two
+// lists, so there is no second copy to fall out of step.
 package state
 
 import (
@@ -22,12 +19,10 @@ import (
 )
 
 // ErrDesync means Archipelago sent an item list that does not continue the one
-// we hold. The caller answers it with a Sync, which makes the server resend
-// the whole inventory.
+// we hold. The caller answers with a Sync to have the inventory resent.
 var ErrDesync = errors.New("received items do not continue the held list")
 
-// Store is the durable state, and the only place in the bridge where anything
-// is remembered.
+// Store is the durable state, and the only place in the bridge where anything is remembered.
 type Store struct {
 	path string
 
@@ -62,13 +57,10 @@ func (s *Store) Watch() <-chan struct{} {
 	return s.updated
 }
 
-// BindSeed ties the state to one multiworld. A different seed means the old
-// run is gone, so its checks and items are dropped rather than replayed into a
-// world where those ids mean something else. Reports whether it wiped.
-//
-// Learning the seed for the first time keeps what is already held: the bridge
-// answers the plugin before it has ever reached Archipelago, so a run can
-// legitimately have checks before it has a seed name.
+// BindSeed ties the state to one multiworld and reports whether it wiped. A
+// different seed drops the old run rather than replay ids that now mean
+// something else. Learning the seed for the first time keeps what is held: the
+// bridge answers the plugin before it has ever reached Archipelago.
 func (s *Store) BindSeed(seed string) (bool, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -84,9 +76,8 @@ func (s *Store) BindSeed(seed string) (bool, error) {
 	return true, s.persist()
 }
 
-// AddCheck records a location the plugin reported. Reports whether it was new;
-// the plugin retries on timeout and cannot know whether its first attempt
-// landed, so a repeat has to be a no-op.
+// AddCheck records a location the plugin reported and reports whether it was
+// new. The plugin retries on timeout, so a repeat has to be a no-op.
 func (s *Store) AddCheck(id int64) (bool, error) {
 	if _, known := gamedata.LocationByID(id); !known {
 		return false, fmt.Errorf("location id %d is not in the tables", id)
@@ -105,9 +96,8 @@ func (s *Store) AddCheck(id int64) (bool, error) {
 	return true, nil
 }
 
-// Checks is every location reported so far. The whole set is what gets sent on
-// every reconnect: Archipelago ignores repeats, and 210 ids is not worth
-// tracking acknowledgements for.
+// Checks is every location reported so far. The whole set goes upstream every
+// time; Archipelago ignores repeats, so nothing tracks acknowledgements.
 func (s *Store) Checks() []int64 {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -115,8 +105,8 @@ func (s *Store) Checks() []int64 {
 }
 
 // ApplyItems takes a ReceivedItems payload. index is where Archipelago thinks
-// the list continues from: zero means it is sending the whole inventory,
-// anything else has to line up with what we hold or the two have diverged.
+// the list continues from: zero is the whole inventory, anything past what we
+// hold is a desync.
 func (s *Store) ApplyItems(index int, itemIDs []int64) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -127,7 +117,7 @@ func (s *Store) ApplyItems(index int, itemIDs []int64) error {
 	case index > len(s.data.Items):
 		return ErrDesync
 	default:
-		// A replay of items we already hold, plus possibly some new ones.
+		// A replay of items we already hold, plus possibly new ones.
 		s.data.Items = append(s.data.Items[:index], itemIDs...)
 	}
 
@@ -151,7 +141,7 @@ func (s *Store) GrantsSince(seq int) []Grant {
 	return slices.Clone(s.grants[seq:])
 }
 
-// Unlocks is what should be true right now.
+// Unlocks is everything that should be true right now.
 func (s *Store) Unlocks() Unlocks {
 	s.mu.Lock()
 	defer s.mu.Unlock()

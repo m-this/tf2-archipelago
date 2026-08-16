@@ -2,10 +2,9 @@ package gamedata
 
 import "fmt"
 
-// Validate re-checks every invariant the id scheme rests on. The tests call
-// it, and so does the exporter before it writes anything, because a broken
-// table that reaches apworld/tf2_mvm/data/ is a broken seed nobody can detect
-// at play time.
+// Validate re-checks every invariant the id scheme rests on. The exporter runs
+// it first: a broken table that reaches the apworld is a broken seed nobody can
+// detect at play time.
 func Validate() error {
 	if err := validateEntities(); err != nil {
 		return err

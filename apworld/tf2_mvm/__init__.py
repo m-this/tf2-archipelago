@@ -1,9 +1,9 @@
 """Team Fortress 2 Mann vs Machine.
 
-The item and location tables are not written here. They come from ``gamedata/``
-in Go and are read out of ``data/`` by :mod:`.data`; see ADR 0001. What lives
-here is the part that is not data: which missions a seed draws, how they gate
-each other, what the goal is, and what the server needs to know afterwards.
+The item and location tables come from ``gamedata/`` in Go and are read out of
+``data/`` by :mod:`.data`; see ADR 0001. What lives here is the part that is not
+data: which missions a seed draws, how they gate each other, what the goal is,
+and what the server needs to know afterwards.
 """
 
 import logging
@@ -51,11 +51,11 @@ class TF2MvMWeb(WebWorld):
 
 
 class TF2MvMWorld(World):
-    """Mann vs Machine is Team Fortress 2's co-operative wave defence mode. A
-    run draws a set of missions; clearing a wave is a check, and the tickets,
-    classes and loadout slots you need to attempt the next mission are the
-    items. The whole server plays one slot, so progression is shared by
-    everyone on it and no client mod is needed.
+    """Mann vs Machine is the co-operative mode of Team Fortress 2. A run draws
+    a set of missions. Each wave that the team clears is a check. The mission
+    tickets, the mercenary classes and the loadout slots are the items. The
+    whole server plays one slot, so all the players share the unlocks and
+    nobody installs a modification.
     """
 
     game = data.GAME
@@ -80,9 +80,7 @@ class TF2MvMWorld(World):
         drawn = self.random.sample(available, wanted)
         spare = [mission for mission in available if mission not in drawn]
 
-        # Widening the run is what closes a shortfall: another mission brings
-        # its waves as checks and costs one ticket. Bounded by the pool, which
-        # is why the check below can still fail.
+        # Widening closes a shortfall: a mission adds more waves as checks than the ticket it costs.
         while self._shortfall(drawn) > 0 and spare:
             drawn.append(spare.pop(self.random.randrange(len(spare))))
         if self._shortfall(drawn) > 0:
@@ -158,8 +156,7 @@ class TF2MvMWorld(World):
         return self.random.choice(data.FILLER_NAMES)
 
     def fill_slot_data(self) -> dict[str, object]:
-        # What the bridge cannot work out from gamedata alone: which missions
-        # this seed drew, and what ends it.
+        # Only what the bridge cannot work out from gamedata alone.
         return {
             "format_version": data.FORMAT_VERSION,
             "missions": [mission.pop_file for mission in self.missions],
@@ -168,8 +165,6 @@ class TF2MvMWorld(World):
             "missionsanity_target": self.missionsanity_target,
             "death_link": bool(self.options.death_link.value),
         }
-
-    # Mission drawing.
 
     def _available_missions(self) -> list[data.Mission]:
         floor = data.DIFFICULTIES.index(self.options.difficulty_pool.current_key)
@@ -185,9 +180,7 @@ class TF2MvMWorld(World):
         return sum(mission.waves + 1 for mission in missions)
 
     def _shortfall(self, missions: list[data.Mission]) -> int:
-        """Unlock items the run owes minus the checks it has room for. The fill
-        needs the two to match exactly, and filler can only close a surplus.
-        """
+        """Unlock items owed minus the checks there is room for; filler only closes a surplus."""
         requirement = REQUIREMENTS[min(missions, key=self._tier_order).difficulty]
         unlocks = (
             len(missions)
@@ -198,8 +191,6 @@ class TF2MvMWorld(World):
             - requirement.slots
         )
         return unlocks - self._check_count(missions)
-
-    # Access rules.
 
     def _deploy_rule(self, mission: data.Mission) -> Callable[[CollectionState], bool]:
         ticket = data.TICKET_NAMES[mission.id]

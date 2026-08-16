@@ -174,9 +174,6 @@ func TestLearningTheSeedKeepsChecksTakenBeforeIt(t *testing.T) {
 	store := openTemp(t)
 	mission := firstMission(t)
 
-	// Archipelago was unreachable when the wave was cleared, so the check
-	// exists before the run has a seed name. Adopting the name must not throw
-	// it away.
 	if _, err := store.AddCheck(mission.WaveLocationID(1)); err != nil {
 		t.Fatal(err)
 	}

@@ -8,17 +8,12 @@ import (
 	"testing"
 )
 
-// freeze adds ids that are not in the frozen file yet. It never rewrites one
-// that is already there, so the append-only rule holds even when the tool that
-// maintains the file is the test itself.
+// freeze only adds ids; it never rewrites one already in the file.
 var freeze = flag.Bool("freeze", false, "record new ids in "+frozenIDsFile)
 
-// exportDir is the committed copy the apworld ships with.
 const exportDir = "../apworld/tf2_mvm/data"
 
-// frozenIDsFile pins every id that has ever been exported. Adding a name to it
-// is routine; changing the id next to a name that is already there is not, and
-// the diff is meant to be loud in review. See ADR 0001.
+// frozenIDsFile pins every id ever exported; a changed id next to an existing name must be loud.
 const frozenIDsFile = "testdata/ids-frozen.json"
 
 func TestValidate(t *testing.T) {
@@ -207,7 +202,7 @@ func TestItemPoolCoversEveryGate(t *testing.T) {
 		case ItemWeaponSlot:
 			slots += int(it.Count)
 		case ItemCredits:
-			// Filler. Counted by the pool builder, not by this test.
+			// Filler, counted by the pool builder rather than here.
 		}
 		if it.Classification == Progression && it.Count == 0 {
 			t.Errorf("%q is progression with no copies in the pool", it.Name)

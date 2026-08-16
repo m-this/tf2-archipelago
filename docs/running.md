@@ -1,48 +1,48 @@
-# Running it
+# Host a server
 
-For the person hosting. Players need [archipelago-101.md](archipelago-101.md)
-and the server address, nothing else.
+This page is for the host. A player needs
+[archipelago-101.md](archipelago-101.md) and the address of the server.
 
 ## What you need
 
 - Docker with the compose plugin.
-- About 20 GB of disk. The game server downloads roughly 14 GB on first start.
-- Two cores and 4 GB of RAM is enough for six players.
-- A UDP port reachable by your friends. One, and it is the game's.
+- About 20 GB of disk space. The game server downloads about 14 GB at the first
+  start.
+- Two cores and 4 GB of memory for six players.
+- One UDP port that your friends can reach. The game uses it.
 
-## Starting it
+## Start the stack
 
-```sh
-cp deploy/.env.example .env
-$EDITOR .env          # SRCDS_RCONPW has no default and the stack refuses to start without it
-make up
-make logs
-```
+1. Copy the example environment file: `cp deploy/.env.example .env`.
+2. Set `SRCDS_RCONPW`. It has no default and the stack refuses to start without
+   it.
+3. Start the stack: `make up`.
+4. Read the output: `make logs`.
 
 `make up` builds three images and starts them:
 
-| Service | What it is | Ports |
+| Service | What it does | Ports |
 | --- | --- | --- |
-| `archipelago` | The multiworld server, on a seed it generates on first start | none, internal |
-| `srcds` | The Team Fortress 2 dedicated server | `27015/udp` and `/tcp`, the only public ones |
-| `bridge` | Holds the Archipelago session, serves the plugin | none, loopback inside the game server's network namespace |
+| `archipelago` | Hosts the multiworld on the seed that it generates at the first start | none, internal |
+| `srcds` | Runs the Team Fortress 2 dedicated server | `27015/udp` and `/tcp`, the only public ports |
+| `bridge` | Holds the Archipelago session and answers the plugin | none, loopback inside the network namespace of the game server |
 
-First start is slow: the game files download before the server comes up. Later
-starts take seconds.
+The first start is slow: the game files arrive before the server does. Each
+later start takes seconds.
 
-## The run's shape
+## The shape of the run
 
-Set in `.env` before the first start, because the seed is generated once and
-kept:
+Set these in `.env` before the first start. The stack generates the seed once
+and then keeps it.
 
 | Variable | Default | What it decides |
 | --- | --- | --- |
-| `MVM_MISSION_COUNT` | `8` | How many missions the run spans. Eight is about an evening. |
-| `MVM_DIFFICULTY` | `intermediate` | The easiest tier that may appear; every harder one comes with it |
+| `MVM_MISSION_COUNT` | `8` | How many missions the run uses. Eight take about one evening. |
+| `MVM_DIFFICULTY` | `intermediate` | The easiest tier that the run can draw. It also draws every tier above it. |
 | `MVM_GOAL` | `final_boss` | `final_boss` or `missionsanity` |
-| `MVM_MISSIONSANITY_PERCENTAGE` | `80` | How much of the run missionsanity wants |
+| `MVM_MISSIONSANITY_PERCENTAGE` | `80` | How much of the run Missionsanity asks for |
 
-Changing these later does nothing on its own. To roll a new run:
+A change to these values does nothing on its own. To start a new run:
 
 ```sh
 docker compose -f deploy/compose.yml down
@@ -50,63 +50,62 @@ docker volume rm tf2-archipelago_apoutput
 make up
 ```
 
-The bridge notices the new seed, drops the previous run's checks, and starts
-over. It does not drop them for any lesser reason.
+The bridge reads the new seed, drops the checks of the previous run and starts
+again. No other event makes it drop them.
 
-## Joining
+## Connect
 
-Players open the console and connect:
+A player opens the console and connects:
 
 ```
 connect your.server.address:27015
-password <SRCDS_PW>      # only if you set one
+password <SRCDS_PW>      // only if you set one
 ```
 
-Everyone joins RED. Which mission is loaded is the server's business:
-`SRCDS_STARTMAP` decides it, and it can be changed between missions with rcon
-or by editing `.env` and restarting.
+All the players join RED. The host selects the mission: `SRCDS_STARTMAP` sets
+it. Change it with rcon between missions, or edit `.env` and restart the stack.
 
 ## What to expect
 
-Eight seconds after a player spawns in, the plugin tells them in chat what the
-server is, which mission is loaded, what is unlocked, and how to use `!ap`.
+The plugin writes a welcome in the chat eight seconds after a player spawns. The
+welcome names the server, the mission, the unlocks and the `!ap` command.
 
-Cleared waves are announced. Received items are announced. So are failures: if
-the bridge cannot reach the multiworld, chat says so rather than leaving people
-to conclude the randomizer is broken.
+The plugin also writes each wave that the team clears and each item that the run
+receives. It writes the failures the same way. The chat says when the bridge
+cannot reach the multiworld, so that nobody decides that the randomizer is
+broken.
 
 ## When something looks wrong
 
+Read the output of the three services:
+
 ```sh
-make logs                                    # all three services
+make logs
 docker compose -f deploy/compose.yml logs bridge
 ```
 
-In game, as an admin:
+An admin has four commands in the game:
 
 ```
-sm_ap_status          # mission, wave, which events exist, unlocks, queue depth, last error
-sm_ap_resync          # ask the bridge for the unlock set again
-sm_ap_report wave_cleared 3    # report a check by hand
-tf2ap_debug 1         # echo every bridge call and game event into chat
+sm_ap_status          // mission, wave, events, unlocks, queue depth, last error
+sm_ap_resync          // ask the bridge for the unlock set again
+sm_ap_report wave_cleared 3    // report a check by hand
+tf2ap_debug 1         // write every bridge call and game event to the chat
 ```
 
-`sm_ap_status` is the first thing to run. The plugin's reading of Mann vs
-Machine has never been checked against a live server, and the line it prints
-about which events exist is the answer to most of what could be wrong.
+Run `sm_ap_status` first. Nobody checked the plugin against a live server, and
+the line about which events exist answers most questions.
 
-**Checks are not lost when things break.** The bridge writes a check to disk
-before it tells the game server it has it, and sends it upstream afterwards. An
-Archipelago server that has been down for an hour costs nothing; the checks
-land when it comes back. The same is true across a restart of any of the three
-services.
+**The bridge does not lose a check.** It writes the check to disk before it
+answers the game server, and it sends the check upstream after that. An
+Archipelago server that is down for an hour costs nothing: the checks arrive
+when it comes back. A restart of any of the three services costs nothing either.
 
-## What has and has not been tested
+## What CI tests, and what nobody tested
 
-Everything up to the plugin's HTTP calls runs in CI, against a real Archipelago
-server on a real generated seed: `make integration`.
+CI runs the part below the plugin against a real Archipelago server on a real
+seed. Start the same test with `make integration`.
 
-The plugin itself has been compiled and never run. No Team Fortress 2 server
-was available while it was written, so the game events it hooks and the entity
-properties it reads are informed guesses with fallbacks. The first session
-should be run with `tf2ap_debug 1`.
+Nobody ran the plugin. This machine had no Team Fortress 2 server. The game
+events that the plugin hooks and the entity properties that it reads are
+guesses with fallbacks. Set `tf2ap_debug 1` for the first session.

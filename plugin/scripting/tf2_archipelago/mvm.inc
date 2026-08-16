@@ -1,23 +1,18 @@
 /**
  * Reading the game.
  *
- * Everything in this file is the plugin's only contact with Mann vs Machine
- * itself, and most of it is UNVERIFIED: the entity properties and the event
- * fields below are what the community documents, checked against nothing but a
- * compiler.
+ * The entity properties and event fields here are UNVERIFIED: what the
+ * community documents, checked against nothing but a compiler.
  *
- * So none of it is read without asking first. A property that does not exist
- * is a warning and a fallback, never a native error: SourceMod turns a bad
- * property name into a runtime error on every call, which would bury the
- * server's console in the middle of a wave.
+ * So nothing is read without asking whether it exists. A missing property is a
+ * warning and a fallback, never a native error: SourceMod turns a bad property
+ * name into a runtime error on every call, burying the console mid-wave.
  */
 
-// TFTeam_Red is the only team players are on in Mann vs Machine. BLU is the
-// robots, and they are bots.
+// Players are on RED in Mann vs Machine; BLU is the robots, and they are bots.
 #define TeamRed 2
 
-// g_WarnedProps keeps each missing-property complaint to one line rather than
-// one per frame.
+// Keeps each missing-property complaint to one line rather than one per frame.
 StringMap g_WarnedProps;
 
 void MvM_Init()
@@ -25,9 +20,6 @@ void MvM_Init()
     g_WarnedProps = new StringMap();
 }
 
-/**
- * Whether a networked property exists, complaining once if it does not.
- */
 static bool HasProp(int entity, const char[] property)
 {
     if (entity > 0 && HasEntProp(entity, Prop_Send, property))
@@ -38,24 +30,17 @@ static bool HasProp(int entity, const char[] property)
     if (!g_WarnedProps.GetValue(property, warned))
     {
         g_WarnedProps.SetValue(property, true);
-        AP_Error("this server has no %s; the plugin is working without it", property);
+        AP_Error("This server has no %s. The plugin works without it.", property);
     }
     return false;
 }
 
-// tf_objective_resource carries the run's state. One exists per map.
 static int FindObjectiveResource()
 {
     return FindEntityByClassname(-1, "tf_objective_resource");
 }
 
-/**
- * Whether this map is running Mann vs Machine at all. Everything the plugin
- * does hangs off this: on a payload map it must be inert.
- *
- * The game rules property is the real answer; the map name is the fallback,
- * and it is a good one because every Mann vs Machine map is named mvm_.
- */
+// The game rules property is the real answer; the mvm_ map prefix is the fallback if it is absent.
 stock bool MvM_IsActive()
 {
     if (FindSendPropInfo("CTFGameRulesProxy", "m_bPlayingMannVsMachine") != -1)
@@ -67,11 +52,7 @@ stock bool MvM_IsActive()
     return strncmp(map, "mvm_", 4, false) == 0;
 }
 
-/**
- * Whether this client is someone the plugin may touch: a human, in game, on
- * RED. The robots are bots on BLU, and stripping a robot's weapons would take
- * the wave apart.
- */
+// Humans on RED only: the robots are bots on BLU, and stripping one would take the wave apart.
 stock bool MvM_IsPlayer(int client)
 {
     return client > 0 && client <= MaxClients
@@ -80,15 +61,7 @@ stock bool MvM_IsPlayer(int client)
         && GetClientTeam(client) == TeamRed;
 }
 
-/**
- * The pop file the server is running, which is the mission's identity
- * everywhere else in this project.
- *
- * UNVERIFIED: m_iszMvMPopfileName. It is documented as holding a path such as
- * scripts/population/mvm_coaltown_advanced.pop, so the directory and the
- * extension are trimmed. Falls back to the map name, which is the correct pop
- * file for every map's default mission.
- */
+// UNVERIFIED m_iszMvMPopfileName: scripts/population/mvm_decoy.pop, trimmed to mvm_decoy.
 stock bool MvM_PopFile(char[] buffer, int maxlength)
 {
     buffer[0] = '\0';
@@ -110,7 +83,6 @@ stock bool MvM_PopFile(char[] buffer, int maxlength)
     return buffer[0] != '\0';
 }
 
-// TrimPopFileName turns scripts/population/mvm_decoy.pop into mvm_decoy.
 static void TrimPopFileName(char[] name, int maxlength)
 {
     int lastSlash = FindCharInString(name, '/', true);
@@ -129,12 +101,7 @@ static void TrimPopFileName(char[] name, int maxlength)
     }
 }
 
-/**
- * The wave being played, counting from 1, or zero when the game will not say.
- *
- * UNVERIFIED: m_nMannVsMachineWaveCount. The mvm_begin_wave event is the
- * primary source and this is the cross-check.
- */
+// UNVERIFIED m_nMannVsMachineWaveCount: the cross-check, mvm_begin_wave is the primary source.
 stock int MvM_WaveFromGame()
 {
     int resource = FindObjectiveResource();
@@ -145,9 +112,7 @@ stock int MvM_WaveFromGame()
     return GetEntProp(resource, Prop_Send, "m_nMannVsMachineWaveCount");
 }
 
-/**
- * How many waves the mission has, or zero. UNVERIFIED, same caveat.
- */
+// UNVERIFIED m_nMannVsMachineMaxWaveCount. Zero when the game will not say.
 stock int MvM_MaxWavesFromGame()
 {
     int resource = FindObjectiveResource();
@@ -158,13 +123,7 @@ stock int MvM_MaxWavesFromGame()
     return GetEntProp(resource, Prop_Send, "m_nMannVsMachineMaxWaveCount");
 }
 
-/**
- * Hand a cash bundle to everyone playing. Credits are per player in Mann vs
- * Machine, so a bundle is worth its amount to each of them rather than being
- * split; the alternative is filler that does nothing on a full team.
- *
- * UNVERIFIED: m_nCurrency on CTFPlayer.
- */
+// UNVERIFIED m_nCurrency on CTFPlayer. Credits are per player, so a bundle pays each of them fully.
 stock void MvM_GrantCredits(int amount)
 {
     if (amount <= 0 || !MvM_IsActive())
@@ -184,10 +143,10 @@ stock void MvM_GrantCredits(int amount)
     }
     if (paid > 0)
     {
-        AP_Announce("Received %d credits for %d player(s).", amount, paid);
+        AP_Announce("The run received %d credits for %d player(s).", amount, paid);
     }
     else
     {
-        AP_Debug("received %d credits with nobody to pay", amount);
+        AP_Debug("The run received %d credits, but there is nobody to pay.", amount);
     }
 }

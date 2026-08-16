@@ -1,10 +1,8 @@
 #!/bin/sh
 # Generate a seed if there is not one already, then host it.
 #
-# The seed is generated once and kept in the output volume. Regenerating on
-# every start would hand the players a different multiworld each evening and
-# invalidate everything the bridge has recorded, so the check for an existing
-# archive is the whole point of this script.
+# Regenerating on every start would hand the players a different multiworld each
+# evening and invalidate everything the bridge has recorded.
 set -eu
 
 AP_PORT="${AP_PORT:-38281}"

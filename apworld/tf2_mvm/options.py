@@ -1,10 +1,7 @@
 """The YAML options, hand-written.
 
-Option classes are not a table: their docstrings are what the Archipelago
-website shows the player, so they are code and they stay code, even though the
-values they range over come from the generated data. Where an option enumerates
-something the Go side owns, the enumeration is checked against the export at
-import time rather than trusted.
+These stay code rather than generated data: their docstrings are what the
+Archipelago website shows the player.
 """
 
 from dataclasses import dataclass
@@ -15,10 +12,10 @@ from . import data
 
 
 class MissionCount(Range):
-    """How many missions the run spans.
+    """How many missions the run uses.
 
-    Missions are drawn from the tiers the difficulty pool allows. Asking for
-    more than that pool holds gets you the whole pool.
+    The run draws them from the tiers that the difficulty pool allows. A
+    request for more missions than the pool holds gives you the whole pool.
     """
 
     display_name = "Mission Count"
@@ -28,10 +25,11 @@ class MissionCount(Range):
 
 
 class DifficultyPool(Choice):
-    """The easiest tier that may appear. Every harder tier is included too.
+    """The easiest tier that the run can draw. The run also draws every tier
+    above it.
 
-    Picking haunted leaves exactly one mission in the pool, which is a very
-    short run.
+    The haunted tier holds one mission. One mission gives too few checks for
+    the items of a run, and generation stops with an error.
     """
 
     display_name = "Difficulty Pool"
@@ -46,8 +44,9 @@ class DifficultyPool(Choice):
 class Goal(Choice):
     """What ends the run.
 
-    Final Boss flags the hardest mission drawn; clearing it wins. Missionsanity
-    wants a share of every mission in the run instead, in any order.
+    Final Boss marks the most difficult mission that the run drew. Clear that
+    mission to win. Missionsanity asks for a part of the missions instead, in
+    any sequence.
     """
 
     display_name = "Goal"
@@ -57,8 +56,10 @@ class Goal(Choice):
 
 
 class MissionsanityPercentage(Range):
-    """How much of the run Missionsanity wants, as a percentage of the missions
-    drawn, rounded up. Ignored by the Final Boss goal.
+    """How much of the run Missionsanity asks for.
+
+    The percentage applies to the missions that the run drew, and it rounds up.
+    The Final Boss goal ignores this option.
     """
 
     display_name = "Missionsanity Percentage"
@@ -81,8 +82,7 @@ option_groups = [
     OptionGroup("Goal", [Goal, MissionsanityPercentage]),
 ]
 
-# DifficultyPool enumerates a table the Go side owns, so it is checked rather
-# than trusted: a tier added there and not here would silently drop missions.
+# Checked rather than trusted: a tier added to the export and not here would silently drop missions.
 if tuple(DifficultyPool.options) != data.DIFFICULTIES:
     raise data.DataFormatError(
         f"difficulty_pool offers {tuple(DifficultyPool.options)}, "

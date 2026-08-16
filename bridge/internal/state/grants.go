@@ -6,9 +6,8 @@ import (
 	"git-ssh.croque.top/mathis/tf2-archipelago/gamedata"
 )
 
-// Grant is one received item, in the plugin's vocabulary. The plugin is never
-// told an item id: it is told that a class is now playable, or that a loadout
-// slot opened, and it applies that.
+// Grant is one received item in the plugin's vocabulary. The plugin is never
+// told an item id, only that a class is playable or a loadout slot opened.
 type Grant struct {
 	// Seq is the grant's position in the run, counting from 1. The plugin
 	// long-polls for anything past the sequence it last applied.
@@ -19,9 +18,8 @@ type Grant struct {
 	// for a grant whose payload is a number.
 	Key string `json:"key,omitempty"`
 
-	// Name is the same thing spelled for a player, because the plugin
-	// announces grants in chat and "Ctrl+Alt+Destruction" reads better than
-	// "mvm_coaltown_advanced".
+	// Name is the same thing spelled for a player; the plugin announces grants
+	// in chat.
 	Name string `json:"name,omitempty"`
 
 	// Amount is the credits a cash bundle is worth. Zero elsewhere.
@@ -29,10 +27,8 @@ type Grant struct {
 }
 
 // Unlocks is everything that should be true right now, which is what a plugin
-// asks for after a reload or a map change.
-//
-// Credits are deliberately absent: a cash bundle is applied once when it
-// arrives, and re-applying it on every map change would print money.
+// asks for after a reload or a map change. Credits are absent on purpose:
+// re-applying a cash bundle on every map change would print money.
 type Unlocks struct {
 	Seq      int      `json:"seq"`
 	Classes  []string `json:"classes"`
@@ -40,13 +36,9 @@ type Unlocks struct {
 	Missions []string `json:"missions"`
 }
 
-// grantsFrom turns the ordered list of received item ids into grants. It is a
-// pure function of that list, which is what makes the sequence numbers stable
-// across a restart: the list is what gets persisted, the grants are derived.
-//
-// An id the tables do not know is skipped. That means a seed generated against
-// a newer gamedata than this binary, which is a real possibility once anything
-// ships, and dropping the item beats crashing the bridge mid-wave.
+// grantsFrom derives grants from the persisted item list, which is what keeps
+// sequence numbers stable across a restart. An id the tables do not know means
+// a seed from a newer gamedata, and skipping it beats crashing mid-wave.
 func grantsFrom(itemIDs []int64) []Grant {
 	grants := make([]Grant, 0, len(itemIDs))
 	slotsGranted := 0
@@ -68,8 +60,8 @@ func grantsFrom(itemIDs []int64) []Grant {
 	return grants
 }
 
-// grantFor is where the progressive weapon slot stops being progressive: copy
-// n of one item name becomes the nth slot in gamedata's order.
+// grantFor is where the progressive weapon slot stops being progressive: copy n
+// becomes the nth slot in gamedata's order.
 func grantFor(item gamedata.Item, slotsGranted int) (Grant, bool) {
 	switch item.Kind {
 	case gamedata.ItemMissionTicket:
@@ -101,8 +93,7 @@ func grantFor(item gamedata.Item, slotsGranted int) (Grant, bool) {
 	}
 }
 
-// unlocksFrom collapses the grant history into the set that should hold now,
-// keeping the order they were received in.
+// unlocksFrom collapses the grant history into the current set, in the order received.
 func unlocksFrom(grants []Grant) Unlocks {
 	unlocks := Unlocks{
 		Seq:      len(grants),

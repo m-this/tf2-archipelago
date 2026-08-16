@@ -1,8 +1,7 @@
 package gamedata
 
 // ObjectiveKind is the plugin's vocabulary for what Archipelago calls a
-// location. The plugin reports an objective in MvM terms and never learns that
-// an id was involved; turning one into the other is this package's job.
+// location. The plugin reports in MvM terms and never learns of an id.
 type ObjectiveKind uint8
 
 const (
@@ -27,8 +26,8 @@ type Location struct {
 	Wave    uint8
 }
 
-// Locations is every check in the game, mission by mission, wave order within
-// a mission, the mission clear last. 176 wave clears and 29 mission clears.
+// Locations is every check in the game, mission by mission, waves in order and
+// the mission clear last.
 var Locations = buildLocations()
 
 func buildLocations() []Location {
@@ -63,15 +62,14 @@ func indexLocations() map[int64]Location {
 	return byID
 }
 
-// LocationByID is how the bridge reads a check back: an id on the wire says
-// nothing, the location it came from says which mission and which wave.
+// LocationByID returns the mission and wave an id came from.
 func LocationByID(id int64) (Location, bool) {
 	l, ok := locationsByID[id]
 	return l, ok
 }
 
 // LocationByObjective resolves what the plugin reported. Wave is ignored for a
-// mission clear. This is the whole southbound translation: the bridge holds no
+// mission clear. It is the whole southbound translation: the bridge holds no
 // id table of its own.
 func LocationByObjective(kind ObjectiveKind, popFile string, wave uint8) (Location, bool) {
 	m, ok := MissionByPopFile(popFile)

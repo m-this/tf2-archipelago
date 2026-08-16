@@ -26,25 +26,19 @@ import (
 )
 
 const (
-	// shutdownGrace is how long in-flight long-polls get to finish after a
-	// signal.
+	// shutdownGrace is how long in-flight long-polls get to finish after a signal.
 	shutdownGrace = 5 * time.Second
 
-	// chatHistory is how many multiworld messages are kept for a plugin that
-	// reconnects. Chat is not state: what falls off the end is gone.
+	// chatHistory is how much a reconnecting plugin can still catch up on; chat is not state.
 	chatHistory = 200
 
-	// healthTimeout bounds the health check. It talks to loopback, so anything
-	// slower than this is a bridge that has stopped answering.
+	// healthTimeout bounds the health check; it talks to loopback, so slower means a stall.
 	healthTimeout = 3 * time.Second
 )
 
-// checkHealth is what the container health check runs. The image has no shell
-// and no curl, so the binary answers for itself.
-//
-// It reports the bridge process being up, not the Archipelago session: a
-// bridge with no multiworld to talk to is still doing its job, queueing checks
-// until one comes back.
+// checkHealth is what the container health check runs: the image has no shell
+// and no curl, so the binary answers for itself. It reports the process being
+// up, not the Archipelago session, which may legitimately be down.
 func checkHealth(listen string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), healthTimeout)
 	defer cancel()
@@ -92,8 +86,6 @@ func run(logger *slog.Logger) error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	// The multiworld says more in an evening than anyone reads, so the log
-	// keeps the last few hundred lines and no more.
 	messages := chat.New(chatHistory)
 
 	client := apclient.New(apclient.Options{
@@ -109,8 +101,7 @@ func run(logger *slog.Logger) error {
 		Handler:           httpapi.New(store, client, messages, cfg.PollTimeout, logger).Handler(),
 		ReadHeaderTimeout: 5 * time.Second,
 
-		// No write timeout: GET /grants is a long poll and holding it open is
-		// the point.
+		// No write timeout: GET /grants is a long poll and holding it open is the point.
 	}
 
 	logger.Info("bridge starting",
@@ -135,7 +126,7 @@ func run(logger *slog.Logger) error {
 
 	select {
 	case <-ctx.Done():
-		logger.Info("signal received, shutting down")
+		logger.Info("signal received, stopping")
 	case err = <-served:
 	case err = <-sessionEnded:
 	}

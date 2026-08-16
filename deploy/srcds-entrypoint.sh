@@ -2,15 +2,10 @@
 # Install the plugin into the game volume, then hand over to the image's own
 # entrypoint.
 #
-# The install cannot happen before SourceMod does, and SourceMod is downloaded
-# by that same entrypoint, into the volume, on first start. So the install runs
-# in the background and waits for SourceMod to appear.
-#
-# It keeps watching for the container's life rather than installing once: the
-# game auto-updates, SourceMod can be reinstalled under it, and a plugin that
-# quietly stopped being there is the kind of failure that gets blamed on the
-# randomizer. The loop is deliberately unbounded; it is a supervisor, not a
-# retry.
+# SourceMod is downloaded by that entrypoint, into the volume, on first start,
+# so the install waits for it in the background. It keeps watching for the
+# container's life because the game auto-updates and SourceMod can be
+# reinstalled under it: a deliberate supervisor loop, not a retry.
 set -eu
 
 STAGE=/opt/tf2-archipelago
