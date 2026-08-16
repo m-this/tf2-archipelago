@@ -9,8 +9,13 @@ import (
 // Grant is one received item in the plugin's vocabulary. The plugin is never
 // told an item id, only that a class is playable or a loadout slot opened.
 type Grant struct {
-	// Seq is the grant's position in the run, counting from 1. The plugin
-	// long-polls for anything past the sequence it last applied.
+	// Seq is the item's position in what Archipelago has sent, counting from 1,
+	// and the cursor the plugin long-polls on.
+	//
+	// It counts items rather than grants on purpose. An id this binary cannot
+	// read is skipped, so counting grants would renumber every later one the
+	// day a larger gamedata makes that id readable, and the plugin would
+	// reapply some grants and miss others without noticing.
 	Seq  int    `json:"seq"`
 	Kind string `json:"kind"`
 
@@ -38,11 +43,12 @@ type Unlocks struct {
 
 // grantsFrom derives grants from the persisted item list, which is what keeps
 // sequence numbers stable across a restart. An id the tables do not know means
-// a seed from a newer gamedata, and skipping it beats crashing mid-wave.
+// a seed from a newer gamedata, and skipping it beats crashing mid-wave. The
+// skip leaves a gap in the sequence rather than moving what follows it.
 func grantsFrom(itemIDs []int64) []Grant {
 	grants := make([]Grant, 0, len(itemIDs))
 	slotsGranted := 0
-	for _, id := range itemIDs {
+	for index, id := range itemIDs {
 		item, known := gamedata.ItemByID(id)
 		if !known {
 			continue
@@ -54,7 +60,7 @@ func grantsFrom(itemIDs []int64) []Grant {
 		if item.Kind == gamedata.ItemWeaponSlot {
 			slotsGranted++
 		}
-		grant.Seq = len(grants) + 1
+		grant.Seq = index + 1
 		grants = append(grants, grant)
 	}
 	return grants
@@ -93,10 +99,12 @@ func grantFor(item gamedata.Item, slotsGranted int) (Grant, bool) {
 	}
 }
 
-// unlocksFrom collapses the grant history into the current set, in the order received.
-func unlocksFrom(grants []Grant) Unlocks {
+// unlocksFrom collapses the grant history into the current set, in the order
+// received. Seq is how far through the item list the set reaches, so it counts
+// the same things Grant.Seq does.
+func unlocksFrom(grants []Grant, itemCount int) Unlocks {
 	unlocks := Unlocks{
-		Seq:      len(grants),
+		Seq:      itemCount,
 		Classes:  []string{},
 		Slots:    []string{},
 		Missions: []string{},

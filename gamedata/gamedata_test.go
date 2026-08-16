@@ -3,8 +3,10 @@ package gamedata
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -13,8 +15,44 @@ var freeze = flag.Bool("freeze", false, "record new ids in "+frozenIDsFile)
 
 const exportDir = "../apworld/tf2_mvm/data"
 
-// frozenIDsFile pins every id ever exported; a changed id next to an existing name must be loud.
+// frozenIDsFile pins every id ever exported; a changed id next to an existing key must be loud.
+//
+// Keyed on what the id derives from, never on the display name: the names are
+// UNVERIFIED and expected to change, and a key that moves with a name reports
+// nine tombstones for a rename that touches no id.
 const frozenIDsFile = "testdata/ids-frozen.json"
+
+// frozenKey identifies an entity the way its id does: by the tables behind it.
+func frozenKey(kind, owner string, index int) string {
+	return fmt.Sprintf("%s/%s/%d", kind, owner, index)
+}
+
+// currentIDs is every id this build produces, under its frozen key.
+func currentIDs() map[string]int64 {
+	ids := make(map[string]int64, len(Locations)+len(Items))
+	for _, l := range Locations {
+		mission, ok := MissionByID(l.Mission)
+		if !ok {
+			continue
+		}
+		ids[frozenKey(l.Kind.Key(), mission.PopFile, int(l.Wave))] = l.ID
+	}
+	for _, it := range Items {
+		switch it.Kind {
+		case ItemMissionTicket:
+			if mission, ok := MissionByID(it.Mission); ok {
+				ids[frozenKey(it.Kind.Key(), mission.PopFile, 0)] = it.ID
+			}
+		case ItemClass:
+			if class, ok := ClassByID(it.Class); ok {
+				ids[frozenKey(it.Kind.Key(), class.Key, 0)] = it.ID
+			}
+		case ItemWeaponSlot, ItemCredits:
+			ids[frozenKey(it.Kind.Key(), "", 0)] = it.ID
+		}
+	}
+	return ids
+}
 
 func TestValidate(t *testing.T) {
 	if err := Validate(); err != nil {
@@ -61,24 +99,43 @@ func TestIDsNeverMove(t *testing.T) {
 	if err := json.Unmarshal(body, &frozen); err != nil {
 		t.Fatal(err)
 	}
-	current := make(map[string]int64, len(Locations)+len(Items))
-	for _, l := range Locations {
-		current[l.Name] = l.ID
-	}
-	for _, it := range Items {
-		current[it.Name] = it.ID
-	}
+	current := currentIDs()
 	if *freeze {
 		if err := recordNewIDs(frozen, current); err != nil {
 			t.Fatal(err)
 		}
 	}
-	for name, id := range frozen {
-		switch got, ok := current[name]; {
+	for key, id := range frozen {
+		switch got, ok := current[key]; {
 		case !ok:
-			t.Errorf("%q is gone; a deleted entity keeps its id as a tombstone", name)
+			t.Errorf("%s is gone; a deleted entity keeps its id as a tombstone", key)
 		case got != id:
-			t.Errorf("%q moved from %d to %d; every seed holding %d now means something else", name, id, got, id)
+			t.Errorf("%s moved from %d to %d; every seed holding %d now means something else", key, id, got, id)
+		}
+	}
+}
+
+// TestFrozenKeysHoldOnlyStableIdentifiers is the reason the frozen file is
+// keyed the way it is. missions.go says the display names are a guess to be
+// corrected before the first seed is played. A key built from a name would
+// report that correction as nine deleted entities.
+func TestFrozenKeysHoldOnlyStableIdentifiers(t *testing.T) {
+	stable := map[string]bool{"": true}
+	for _, m := range Missions {
+		stable[m.PopFile] = true
+	}
+	for _, c := range Classes {
+		stable[c.Key] = true
+	}
+
+	for key := range currentIDs() {
+		parts := strings.Split(key, "/")
+		if len(parts) != 3 {
+			t.Errorf("%q is not kind/owner/index", key)
+			continue
+		}
+		if !stable[parts[1]] {
+			t.Errorf("%q is keyed on %q, which is not a pop file or a class key", key, parts[1])
 		}
 	}
 }
