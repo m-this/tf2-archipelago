@@ -4,7 +4,69 @@ SourcePawn. Runs inside the `srcds` container. The only component that sees the
 game. Read [ADR
 0002](../docs/adr/0002-server-side-plugin-with-a-go-bridge.md) first.
 
-Nothing exists yet.
+## Building
+
+```sh
+./build.sh          # fetches the pinned toolchain into build/, compiles
+```
+
+It produces `build/tf2_archipelago.smx` and treats warnings as errors. The
+compiler and the ripext includes are pinned in the script; nothing else is
+needed to build.
+
+## What you will see in game
+
+There is no client mod, so chat is the whole diagnostic surface. Three levels:
+
+| Level | Goes to | Contains |
+| --- | --- | --- |
+| Announcements | Chat, unless `tf2ap_announce 0` | Waves cleared, items received, classes and slots unlocked |
+| Errors | Chat and the SourceMod log, always | Anything that went wrong, including the bridge being unreachable |
+| Debug | Chat, console and the log, when `tf2ap_debug 1` | Every bridge call, every queued objective, every wave event |
+
+Errors reach chat even with announcements muted. If the bridge is down, the
+players are the ones who will notice their checks are not landing, and they
+should be told why rather than deciding the randomizer is broken.
+
+Repeated bridge failures are said once. The retry loop would otherwise fill
+chat with the same line every five seconds.
+
+## Commands
+
+| Command | Flag | What it does |
+| --- | --- | --- |
+| `sm_ap` | generic | The whole picture: mission, wave, which events exist, the unlock set, the queue depth, the last bridge error |
+| `sm_ap_resync` | generic | Fetch the unlock set again |
+| `sm_ap_report <kind> [wave]` | root | Report an objective by hand |
+
+`sm_ap_report` is how the wiring gets tested without playing a wave, and how a
+check gets sent when the game did not fire the event it should have.
+
+## ConVars
+
+| ConVar | Default | What it does |
+| --- | --- | --- |
+| `tf2ap_bridge_url` | `http://127.0.0.1:24680` | Base URL of the bridge. Loopback. |
+| `tf2ap_announce` | `1` | Announce grants and cleared waves in chat |
+| `tf2ap_debug` | `0` | Echo every bridge call and game event |
+
+## What is UNVERIFIED
+
+Everything this plugin reads out of the game. It has been compiled, never run:
+no Team Fortress 2 server was available while it was written.
+
+- `mvm_begin_wave`, `mvm_wave_complete`, `mvm_mission_complete` are hooked with
+  `HookEventEx`, so a missing one is a log line and a degraded mode rather than
+  a failed load. `sm_ap` prints which of the three exist.
+- If `mvm_wave_complete` turns out not to exist, a one-second timer watches
+  `m_nMannVsMachineWaveCount` instead and reports a wave when the counter goes
+  up.
+- The mission's identity comes from `m_iszMvMPopfileName`, falling back to the
+  map name, which is the right pop file for every map's default mission.
+- `m_nCurrency` is how cash bundles are paid out.
+
+None of the fallbacks change the wire contract, so the bridge cannot tell the
+difference. The first live session should be run with `tf2ap_debug 1`.
 
 ## What it does
 
