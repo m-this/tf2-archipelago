@@ -2,49 +2,56 @@
 
 ## Required software
 
-Players need nothing beyond Team Fortress 2. The randomizer is server-side.
+A player needs Team Fortress 2 and nothing more. The randomizer stays on the
+server.
 
 The host needs:
 
 - Docker with the compose plugin.
-- Roughly 20 GB of disk. The dedicated server downloads about 14 GB of game
-  files on first start.
-- A machine that can hold a Team Fortress 2 dedicated server and an
-  Archipelago server at once. Two cores and 4 GB of RAM is enough for six
+- About 20 GB of disk space. The game server downloads about 14 GB at the first
+  start.
+- A machine that holds a Team Fortress 2 dedicated server and an Archipelago
+  server at the same time. Two cores and 4 GB of memory are enough for six
   players.
 
-Everything else — the Archipelago server, the dedicated server, the SourceMod
-plugin and the bridge that connects them — ships in the compose file for this
-project.
+The compose file of this project holds the other parts. These are the
+Archipelago server, the dedicated server, the SourceMod plugin and the bridge.
 
-## Configuring your YAML
+## Configure your YAML
 
-Options live under `Team Fortress 2 Mann vs Machine`:
+The options are under `Team Fortress 2 Mann vs Machine`:
 
-- `mission_count`: how many missions the run spans. Eight is about an evening.
-- `difficulty_pool`: the easiest tier that may appear. Every harder tier comes
-  with it, so `normal` means anything and `expert` means Expert and Haunted
-  only.
+- `mission_count`: how many missions the run uses. Eight missions take about
+  one evening.
+- `difficulty_pool`: the easiest tier that the run can draw. The run also draws
+  every tier above it. `normal` allows all of them. `expert` allows Expert and
+  Haunted only.
 - `goal`: `final_boss` or `missionsanity`.
-- `missionsanity_percentage`: how much of the run Missionsanity wants.
-- `death_link`: off by default. A death in Mann vs Machine is cheap, so this is
-  noisier here than in most games.
+- `missionsanity_percentage`: how much of the run Missionsanity asks for.
+- `death_link`: off by default. A death in Mann vs Machine is cheap, so
+  DeathLink is noisier here than in most games.
 
-## Joining a game
+## Join a game
 
-1. The host copies `.env.example` to `.env`, sets `SRCDS_RCONPW` and
-   `SRCDS_HOSTNAME`, and runs `docker compose up`.
-2. On first start the stack generates a seed from the YAML and hosts it. On
-   later starts it reuses the seed already in `output/`.
-3. Players open the Team Fortress 2 console and connect to the server's
-   address, with `password <SRCDS_PW>` first if the host set one.
-4. The server picks the missions. There is no map vote and no mission browser:
-   which mission is loaded is part of the run.
+1. Copy `deploy/.env.example` to `.env`.
+2. Set `SRCDS_RCONPW` and `SRCDS_HOSTNAME` in `.env`.
+3. Start the stack with `make up`.
+4. Wait. The first start generates a seed and then hosts it. Each later start
+   uses the seed in `output/`.
+5. Open the Team Fortress 2 console and connect to the address of the server.
+6. Type `password <SRCDS_PW>` first if the host set a password.
+
+The server selects the mission. There is no map vote and no mission browser:
+the run decides which mission you play.
 
 ## Where the state lives
 
-The bridge holds the Archipelago session and the unlock set, on disk, in the
-compose volume. It survives a server restart, a map change and a crash
-mid-wave: checks are queued before they are acknowledged and replayed on
-reconnect. If the Archipelago server is unreachable, the game keeps playing and
-the checks land once it comes back.
+The bridge holds the Archipelago session and the unlock set. It writes both to
+disk in the compose volume.
+
+The state survives a restart of the server, a map change and a crash inside a
+wave. The bridge writes each check to disk before it answers the game server.
+It sends the check again after a reconnection.
+
+The game continues when the Archipelago server is unreachable. The checks
+arrive when that server comes back.

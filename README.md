@@ -3,9 +3,31 @@
 Intégration [Archipelago](https://archipelago.gg) pour un serveur Team Fortress 2
 auto-hébergé, en mode Mann vs Machine.
 
-**État : spec uniquement.** Aucun code pour l'instant. Ce dépôt contient la
-conception, les décisions d'architecture et l'arborescence cible. Lire
-[`docs/spec.md`](./docs/spec.md) en premier.
+**État : les quatre composants sont écrits ; seul le plugin n'a jamais tourné.**
+La génération de seed, le serveur Archipelago et le bridge sont vérifiés bout en
+bout à chaque `make integration`. Le plugin SourceMod compile, mais aucun
+serveur TF2 n'était disponible pour l'exécuter : les événements de jeu et les
+propriétés réseau qu'il lit restent des suppositions, avec des replis et des
+messages d'erreur en jeu pour que la première session dise lesquelles sont
+bonnes.
+
+## Démarrer
+
+```sh
+cp deploy/.env.example .env   # SRCDS_RCONPW n'a pas de défaut
+make up
+make logs
+```
+
+Le premier démarrage télécharge environ 14 Go de fichiers de jeu.
+[`docs/running.md`](./docs/running.md) donne le détail, et
+[`docs/archipelago-101.md`](./docs/archipelago-101.md) est ce qu'il faut
+envoyer aux joueurs qui n'ont jamais touché à un multiworld.
+
+```sh
+make check        # tout ce que la CI lance
+make integration  # Archipelago + bridge en vrai, pilotés comme le plugin le fait
+```
 
 ## Pourquoi MvM
 
@@ -47,10 +69,14 @@ Les joueurs se connectent avec un client TF2 vanilla. Rien à installer.
 | [`apworld/`](./apworld/) | Python | apworld mince : lit le JSON exporté, pose les régions, les règles et les options YAML. |
 | [`plugin/`](./plugin/) | SourcePawn | Détecte les objectifs, applique les déblocages et les pièges. |
 | [`deploy/`](./deploy/) | Compose | Serveur Archipelago + srcds + bridge. |
-| [`docs/`](./docs/) | — | Spec, ADR, état de l'art, fil Discord d'origine. |
+| [`docs/`](./docs/) | — | Spec, ADR, guide d'hébergement, état de l'art, fil Discord d'origine. |
 
 ## Documentation
 
+- [`docs/running.md`](./docs/running.md) — héberger : `.env`, démarrage,
+  connexion, quoi faire quand ça coince.
+- [`docs/archipelago-101.md`](./docs/archipelago-101.md) — pour un joueur qui
+  n'a jamais fait de multiworld : les cinq mots, les commandes de chat.
 - [`docs/spec.md`](./docs/spec.md) — la conception : périmètre, locations,
   items, objectifs, questions ouvertes.
 - [`docs/adr/`](./docs/adr/) — les décisions et pourquoi les alternatives ont

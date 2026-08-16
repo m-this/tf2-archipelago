@@ -1,8 +1,7 @@
 // Package config reads the bridge's configuration from the environment.
 //
-// Environment only, no config file: the bridge runs in a container next to a
-// compose file that already owns every other setting in this stack, and two
-// places to look is one too many.
+// Environment only, no config file: the bridge runs next to a compose file that
+// already owns every other setting in this stack.
 package config
 
 import (
@@ -13,29 +12,25 @@ import (
 	"time"
 )
 
-// Config is everything the bridge needs to start. Nothing here changes while
-// it runs.
+// Config is everything the bridge needs to start. Nothing here changes while it runs.
 type Config struct {
 	// ArchipelagoURL is ws:// or wss://, host and port included.
 	ArchipelagoURL string
 	SlotName       string
 	Password       string
 
-	// Listen is the plugin-facing address. Loopback, always: srcds and the
+	// Listen is the plugin-facing address. Loopback always: srcds and the
 	// bridge share a network namespace and nothing else may reach it.
 	Listen string
 
-	// StatePath is the file holding the check queue and the unlock set.
 	StatePath string
 
-	// PollTimeout is how long GET /grants is held open before answering 204.
-	// Short enough that the plugin's own timeout never fires first.
+	// PollTimeout is how long GET /grants is held open; the plugin's own timeout must be longer.
 	PollTimeout time.Duration
 }
 
 // Load reads the environment. Every value has a default that works inside the
-// compose file; the ones that cannot have a sane default are checked here
-// rather than at first use.
+// compose file, and bad ones are refused here rather than at first use.
 func Load() (Config, error) {
 	host := env("AP_HOST", "archipelago")
 	port := env("AP_PORT", "38281")

@@ -21,12 +21,9 @@ var itemKindKeys = [...]string{
 // Key is the string on the wire between the bridge and the plugin.
 func (k ItemKind) Key() string { return itemKindKeys[k] }
 
-// Item is one entry in the multiworld's item pool.
-//
-// Mission, Class and Credits are the payload of the kind that uses them and
-// zero everywhere else. Count is how many copies the pool must hold; a filler
-// item carries zero, because filler pads the pool to the location count and
-// how many that takes is decided at generation time.
+// Item is one entry in the multiworld's item pool. Mission, Class and Credits
+// are the payload of the kind that uses them and zero elsewhere; Count is zero
+// for filler, whose copy count is decided at generation time.
 type Item struct {
 	ID             int64
 	Name           string
@@ -38,29 +35,23 @@ type Item struct {
 	Credits        uint16
 }
 
-// ProgressiveWeaponSlotName is the one item that unlocks loadout slots. It is
-// progressive: copy n grants WeaponSlots[n-1], so the three copies hand out
-// Primary, then Secondary, then Melee.
+// ProgressiveWeaponSlotName is the one item that unlocks loadout slots: copy n
+// grants WeaponSlots[n-1].
 const ProgressiveWeaponSlotName = "Progressive Weapon Slot"
 
-// progressiveWeaponSlotID sits at offset zero of the weapon slot block, which
-// leaves offsets 1 to 3 free for per-slot items keyed by WeaponSlotID if v2
-// ever drops the progressive shape.
+// progressiveWeaponSlotID takes offset zero, leaving 1 to 3 free for per-slot items later.
 var progressiveWeaponSlotID = BaseID + itemSpaceOffset + itemBlockWeaponSlot
 
-// cashBundleCredits is what one filler item is worth at the next wave start.
-// Small enough that a filler-heavy sphere does not buy a wave outright.
+// cashBundleCredits is kept low so a filler-heavy sphere cannot buy a wave outright.
 const cashBundleCredits uint16 = 200
 
 var cashBundleID = BaseID + itemSpaceOffset + itemBlockCredits + 1
 
-// Items is the whole item pool template: 29 mission tickets, 9 classes, the
-// progressive weapon slot, and the filler that pads the rest.
+// Items is the whole item pool template: a ticket per mission, a class item
+// per class, the progressive weapon slot, and the filler that pads the rest.
 //
-// Weapons, upgrade lines, canteens, robot templates and traps are all v1
-// omissions, not oversights. Slots and classes alone already make a
-// progression, and the weapon table is the largest data-entry job in the
-// project.
+// Weapons, upgrades, canteens, robot templates and traps are out of scope for
+// v1: slots and classes alone already make a progression.
 var Items = buildItems()
 
 var itemsByID = indexItems()
@@ -73,8 +64,8 @@ func indexItems() map[int64]Item {
 	return byID
 }
 
-// ItemByID is how the bridge reads a received item: Archipelago sends an id
-// and nothing else, and the kind behind it is what the plugin is told about.
+// ItemByID resolves an id from a ReceivedItems payload into the kind the
+// plugin is told about.
 func ItemByID(id int64) (Item, bool) {
 	it, ok := itemsByID[id]
 	return it, ok

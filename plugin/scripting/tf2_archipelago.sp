@@ -1,14 +1,12 @@
 /**
  * Team Fortress 2 Mann vs Machine, Archipelago integration.
  *
- * This plugin sees the game and nothing else. It reports objectives to the
- * bridge and applies what the bridge grants; it holds no authoritative state
- * and knows nothing about Archipelago. See docs/adr/0002.
+ * Reports objectives to the bridge and applies what it grants. Holds no
+ * authoritative state and knows nothing about Archipelago (ADR 0002).
  *
  * The MvM events and entity properties it reads are UNVERIFIED against a live
- * server. Every hook is optional and every failure is announced, so the first
- * real session says which of them exist rather than the plugin quietly
- * reporting nothing. `sm_ap_status` prints the whole picture.
+ * server, so every hook is optional and every failure is announced: the first
+ * real session says which of them exist. `sm_ap_status` prints the picture.
  */
 
 #pragma semicolon 1
@@ -27,11 +25,10 @@
 
 #define PLUGIN_VERSION "0.1.0"
 
-// WavePollInterval is only used when the wave events turn out not to exist.
+// Only used when the wave events turn out not to exist.
 #define WavePollInterval 1.0
 
-// WelcomeDelay keeps the welcome out of the map load, where it would scroll
-// past before the player can read it.
+// Keeps the welcome out of the map load, where it would scroll past unread.
 #define WelcomeDelay 8.0
 
 public Plugin myinfo =
@@ -43,24 +40,17 @@ public Plugin myinfo =
     url = "https://git-ssh.croque.top/mathis/tf2-archipelago",
 };
 
-// The wave in progress, from mvm_begin_wave. Zero when no wave is running or
-// when the plugin loaded mid-mission.
+// Zero when no wave is running, or when the plugin loaded mid-mission.
 int g_CurrentWave;
 int g_MaxWaves;
 
-// Which of the game's events actually exist here. Reported by sm_ap, because
-// the answer decides how much of this plugin works.
 bool g_HaveBeginWave;
 bool g_HaveWaveComplete;
 bool g_HaveMissionComplete;
 
-// The last wave count seen by the fallback poller, which only runs when the
-// wave events are missing.
 int g_PolledWave;
 
-// Whether this mission's clear has already been announced. Both detectors fire
-// on purpose and the bridge deduplicates the check, but chat should say it
-// once.
+// Both mission detectors fire on purpose; the bridge dedups, chat should say it once.
 bool g_MissionReported;
 
 public void OnPluginStart()
@@ -80,24 +70,23 @@ public void OnPluginStart()
     AddCommandListener(Command_Say, "say");
     AddCommandListener(Command_Say, "say_team");
     RegAdminCmd("sm_ap_status", Command_Status, ADMFLAG_GENERIC,
-        "Print the Archipelago integration's state");
+        "Show the state of the Archipelago integration");
     RegAdminCmd("sm_ap_report", Command_Report, ADMFLAG_ROOT,
         "Report an objective by hand: sm_ap_report <wave_cleared|mission_cleared> [wave]");
     RegAdminCmd("sm_ap_resync", Command_Resync, ADMFLAG_GENERIC,
-        "Fetch the unlock set from the bridge again");
+        "Ask the bridge for the unlock set again");
 
     AutoExecConfig(true, "tf2_archipelago");
 
     if (!g_HaveWaveComplete)
     {
-        AP_Error("mvm_wave_complete does not exist on this server, watching the wave counter instead");
-        // No TIMER_FLAG_NO_MAPCHANGE: that flag kills the timer at the first
-        // map change, and this one has to outlive every map.
+        AP_Error("This server has no mvm_wave_complete event. The plugin reads the wave counter instead.");
+        // No TIMER_FLAG_NO_MAPCHANGE: it dies at the first map change; this must outlive every map.
         CreateTimer(WavePollInterval, Timer_PollWave, _, TIMER_REPEAT);
     }
     if (!g_HaveBeginWave)
     {
-        AP_Error("mvm_begin_wave does not exist on this server, wave numbers come from the game state");
+        AP_Error("This server has no mvm_begin_wave event. The plugin reads wave numbers from the game.");
     }
 
     Bridge_FetchUnlocks();
@@ -105,13 +94,6 @@ public void OnPluginStart()
     Bridge_PollMessages();
 }
 
-/**
- * Tell an arriving player what they have walked into.
- *
- * There is no client mod and the web MOTD is a panel most people close without
- * reading, so this is chat. Delayed a few seconds: a message printed while the
- * map is still loading is a message nobody sees.
- */
 public void OnClientPutInServer(int client)
 {
     if (IsFakeClient(client))
@@ -132,25 +114,16 @@ public Action Timer_Welcome(Handle timer, any userid)
     char popFile[64];
     MvM_PopFile(popFile, sizeof(popFile));
 
-    AP_PrintToClient(client, "This server is running an Archipelago randomizer.");
-    AP_PrintToClient(client, "Classes and weapon slots are locked until the run finds them, and everyone shares the same unlocks.");
-    AP_PrintToClient(client, "Mission: %s. Clearing a wave is a check.", popFile);
+    AP_PrintToClient(client, "This server runs an Archipelago randomizer.");
+    AP_PrintToClient(client, "The run locks the classes and the weapon slots until it finds them. All players share the unlocks.");
+    AP_PrintToClient(client, "Mission: %s. Each wave you clear is a check.", popFile);
     AP_PrintToClient(client, "Unlocked classes: %s", Status_ClassList());
     AP_PrintToClient(client, "Unlocked slots: %s", Status_SlotList());
-    AP_PrintToClient(client, "Talk to the multiworld with \x07FFD700!ap\x01, for example \x07FFD700!ap hint Scout\x01 or \x07FFD700!ap missing\x01.");
+    AP_PrintToClient(client, "Type \x07FFD700!ap\x01 to speak to the multiworld. Examples: \x07FFD700!ap hint Scout\x01 and \x07FFD700!ap missing\x01.");
     return Plugin_Stop;
 }
 
-/**
- * Chat passing through to the multiworld.
- *
- *   !ap                one line of help
- *   !ap <command>      an Archipelago server command, ! added if it is missing
- *   !apchat <text>     plain talk to the other players in the multiworld
- *
- * Archipelago's own commands are what a player would otherwise need a separate
- * client for: !hint, !missing, !status, !release, !collect.
- */
+// !ap forwards Archipelago server commands, replacing the separate client a player would need.
 public Action Command_Say(int client, const char[] command, int argc)
 {
     if (client <= 0)
@@ -164,8 +137,8 @@ public Action Command_Say(int client, const char[] command, int argc)
 
     if (StrEqual(message, "!ap", false))
     {
-        AP_PrintToClient(client, "!ap <command> talks to the multiworld: try hint, missing, status, release.");
-        AP_PrintToClient(client, "!apchat <text> says something to the other players in it.");
+        AP_PrintToClient(client, "!ap <command> sends a command to the multiworld: hint, missing, status, release.");
+        AP_PrintToClient(client, "!apchat <text> speaks to the other players in the multiworld.");
         return Plugin_Handled;
     }
     if (strncmp(message, "!ap ", 4, false) == 0)
@@ -199,8 +172,7 @@ public void OnMapStart()
     g_PolledWave = 0;
     g_MissionReported = false;
 
-    // The unlock set is the bridge's, and this plugin has just forgotten its
-    // copy. Ask before anyone spawns.
+    // The plugin's copy of the unlock set went with the map; ask before anyone spawns.
     Bridge_FetchUnlocks();
 }
 
@@ -208,14 +180,11 @@ public void OnConfigsExecuted()
 {
     if (!MvM_IsActive())
     {
-        AP_Debug("this map is not Mann vs Machine, the plugin is inert here");
+        AP_Debug("This map is not Mann vs Machine. The plugin does nothing here.");
     }
 }
 
-/**
- * Wave started. This is where the wave number comes from: mvm_wave_complete
- * does not carry one.
- */
+// The only source of the wave number: mvm_wave_complete does not carry one.
 public void Event_BeginWave(Event event, const char[] name, bool dontBroadcast)
 {
     g_CurrentWave = event.GetInt("wave_index") + 1;
@@ -223,17 +192,15 @@ public void Event_BeginWave(Event event, const char[] name, bool dontBroadcast)
     g_PolledWave = g_CurrentWave;
     if (g_CurrentWave == 1)
     {
-        // A mission restarting from wave one is a mission that can be cleared
-        // again.
         g_MissionReported = false;
     }
 
     int fromGame = MvM_WaveFromGame();
     if (fromGame > 0 && fromGame != g_CurrentWave)
     {
-        AP_Debug("wave %d from the event, %d from the game state", g_CurrentWave, fromGame);
+        AP_Debug("Wave %d from the event, wave %d from the game.", g_CurrentWave, fromGame);
     }
-    AP_Debug("wave %d of %d started", g_CurrentWave, g_MaxWaves);
+    AP_Debug("Wave %d of %d started.", g_CurrentWave, g_MaxWaves);
 }
 
 public void Event_WaveComplete(Event event, const char[] name, bool dontBroadcast)
@@ -246,11 +213,6 @@ public void Event_MissionComplete(Event event, const char[] name, bool dontBroad
     ReportMissionCleared();
 }
 
-/**
- * Report a wave, and the mission with it when that was the last one. Reporting
- * the mission from here as well as from mvm_mission_complete is deliberate:
- * both are idempotent at the bridge, and between them one will fire.
- */
 static void ReportWaveCleared(int wave)
 {
     if (!MvM_IsActive())
@@ -260,12 +222,12 @@ static void ReportWaveCleared(int wave)
     char popFile[64];
     if (!MvM_PopFile(popFile, sizeof(popFile)))
     {
-        AP_Error("a wave was cleared but the mission could not be identified, check not reported");
+        AP_Error("The team cleared a wave, but the mission has no name. The plugin did not report the check.");
         return;
     }
     if (wave < 1)
     {
-        AP_Error("a wave was cleared on %s but its number is unknown, check not reported", popFile);
+        AP_Error("The team cleared a wave on %s, but its number is unknown. The plugin did not report the check.", popFile);
         return;
     }
 
@@ -289,12 +251,12 @@ static void ReportMissionCleared()
     char popFile[64];
     if (!MvM_PopFile(popFile, sizeof(popFile)))
     {
-        AP_Error("the mission was cleared but could not be identified, check not reported");
+        AP_Error("The team cleared the mission, but it has no name. The plugin did not report the check.");
         return;
     }
     if (g_MissionReported)
     {
-        AP_Debug("mission clear for %s already reported", popFile);
+        AP_Debug("The plugin already reported the mission clear for %s.", popFile);
         return;
     }
     g_MissionReported = true;
@@ -302,11 +264,7 @@ static void ReportMissionCleared()
     Bridge_ReportObjective("mission_cleared", popFile, 0);
 }
 
-/**
- * The fallback wave detector, running only when mvm_wave_complete is missing.
- * The wave counter going up means the previous wave was beaten; it going back
- * to one means a new mission.
- */
+// Fallback for a missing mvm_wave_complete: a rising wave counter means a wave was beaten.
 public Action Timer_PollWave(Handle timer)
 {
     if (!MvM_IsActive())
@@ -322,8 +280,7 @@ public Action Timer_PollWave(Handle timer)
     return Plugin_Continue;
 }
 
-// Both of these fire for robots too. Enforcement checks the team itself, but
-// the check is repeated here so the intent is visible where the event arrives.
+// Both events fire for robots too; MvM_IsPlayer is what leaves their loadout alone.
 public void Event_InventoryApplied(Event event, const char[] name, bool dontBroadcast)
 {
     int client = GetClientOfUserId(event.GetInt("userid"));
@@ -342,10 +299,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
     }
 }
 
-/**
- * Refuse a locked class at the class menu. The menu issues joinclass, so this
- * is the one place to catch it.
- */
+// The class menu issues joinclass, so this is the one place to refuse a locked class.
 public Action Command_JoinClass(int client, const char[] command, int argc)
 {
     if (!Unlocks_Enforceable() || argc < 1 || !MvM_IsActive() || !MvM_IsPlayer(client))
@@ -360,7 +314,7 @@ public Action Command_JoinClass(int client, const char[] command, int argc)
     {
         return Plugin_Continue;
     }
-    AP_PrintToClient(client, "%s is not unlocked yet.", requested);
+    AP_PrintToClient(client, "The run did not unlock %s yet.", requested);
     return Plugin_Handled;
 }
 
@@ -383,7 +337,7 @@ public Action Command_Status(int client, int argc)
     ReplyToCommand(client, "[AP] slots: %s", Status_SlotList());
     if (lastError[0] != '\0')
     {
-        ReplyToCommand(client, "[AP] last bridge error: %s", lastError);
+        ReplyToCommand(client, "[AP] Last bridge error: %s", lastError);
     }
     return Plugin_Handled;
 }
@@ -422,16 +376,12 @@ static char[] Status_SlotList()
     return list;
 }
 
-/**
- * Report an objective by hand. This is how the wiring gets tested without
- * playing a wave, and how a check gets sent when the game did not fire the
- * event it should have.
- */
+// Tests the wiring without playing a wave, and sends a check the game failed to fire an event for.
 public Action Command_Report(int client, int argc)
 {
     if (argc < 1)
     {
-        ReplyToCommand(client, "[AP] usage: sm_ap_report <wave_cleared|mission_cleared> [wave]");
+        ReplyToCommand(client, "[AP] Usage: sm_ap_report <wave_cleared|mission_cleared> [wave]");
         return Plugin_Handled;
     }
     char kind[24];
@@ -444,7 +394,7 @@ public Action Command_Report(int client, int argc)
     }
     if (!StrEqual(kind, "wave_cleared"))
     {
-        ReplyToCommand(client, "[AP] unknown objective kind %s", kind);
+        ReplyToCommand(client, "[AP] Unknown objective kind: %s", kind);
         return Plugin_Handled;
     }
 
@@ -462,6 +412,6 @@ public Action Command_Report(int client, int argc)
 public Action Command_Resync(int client, int argc)
 {
     Bridge_FetchUnlocks();
-    ReplyToCommand(client, "[AP] asked the bridge for the unlock set");
+    ReplyToCommand(client, "[AP] The plugin asked the bridge for the unlock set.");
     return Plugin_Handled;
 }

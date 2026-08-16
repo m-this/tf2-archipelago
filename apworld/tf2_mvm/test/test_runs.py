@@ -1,11 +1,10 @@
 """Each class here is one YAML the world has to survive.
 
-WorldTestBase brings three tests of its own to every subclass: the seed fills,
-every location is reachable with everything collected, and empty state reaches
-at least one location. That last one is the sphere 0 guarantee, which is the
-single rule this world cannot get wrong, so the option sets below are chosen to
-attack it from the corners: the shortest run, the longest, and the tier where
-the starting requirement is highest.
+WorldTestBase brings three tests of its own to every subclass, one of them being
+the sphere 0 guarantee: empty state reaches at least one location, because the
+easiest mission drawn is the starting one and exactly what its tier requires is
+precollected. That is the rule this world cannot get wrong, so the option sets
+below attack it from the corners: shortest run, longest, hardest starting tier.
 """
 
 import math
@@ -28,9 +27,7 @@ class TestShortestRun(TF2MvMTestBase):
     options: ClassVar[dict[str, Any]] = {"mission_count": 1, "difficulty_pool": "normal"}
 
     def test_unlocks_fit_the_checks(self) -> None:
-        # Asking for one mission can leave fewer checks than the run owes
-        # unlock items, in which case the draw widens rather than the fill
-        # failing. Either way the two end up equal.
+        # One mission can leave fewer checks than unlocks owed; the draw widens rather than failing.
         checks = sum(mission.waves + 1 for mission in self.world.missions)
         self.assertEqual(checks, len(self.multiworld.itempool))
 

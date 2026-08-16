@@ -1,9 +1,8 @@
 // Package chat carries the multiworld's conversation to the game and back.
 //
-// Everything here is deliberately not durable. A check is a fact about a run
-// and must survive anything; a chat line is a thing someone said, and a line
-// missed while the game server was restarting is gone the way it would be in
-// any other chat.
+// Nothing here is durable on purpose. A check is a fact about a run and must
+// survive anything; a chat line is something someone said, and a line missed
+// while the game server was restarting is gone the way it is in any chat.
 package chat
 
 import (
@@ -11,9 +10,8 @@ import (
 	"sync"
 )
 
-// Message is one line from the multiworld, already flattened to text. The
-// plugin renders text, so the structure Archipelago sends is collapsed here
-// rather than shipped through and collapsed in SourcePawn.
+// Message is one line from the multiworld, flattened to text here rather than
+// in SourcePawn.
 type Message struct {
 	Seq  int    `json:"seq"`
 	Text string `json:"text"`
@@ -47,8 +45,8 @@ func (l *Log) Watch() <-chan struct{} {
 	return l.updated
 }
 
-// Append records a line and wakes anyone waiting. The oldest line falls off
-// the end: a server nobody is reading must not grow without bound.
+// Append records a line and wakes anyone waiting. The oldest line falls off the
+// end: a log nobody reads must not grow without bound.
 func (l *Log) Append(text string) {
 	if text == "" {
 		return
@@ -65,10 +63,9 @@ func (l *Log) Append(text string) {
 	l.updated = make(chan struct{})
 }
 
-// Since returns the lines past a sequence, and the sequence to ask from next.
-// A negative sequence means "nothing behind me": the plugin uses it on load so
-// a server that has been running all evening does not dump its backlog into
-// chat.
+// Since returns the lines past a sequence, and the sequence to ask from next. A
+// negative sequence means "nothing behind me", which is what the plugin sends
+// on load so an evening's backlog does not land in chat.
 func (l *Log) Since(seq int) ([]Message, int) {
 	l.mu.Lock()
 	defer l.mu.Unlock()

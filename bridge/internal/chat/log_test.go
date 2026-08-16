@@ -47,8 +47,7 @@ func TestTheRingDropsTheOldest(t *testing.T) {
 	if len(messages) != 2 || messages[0].Text != "two" || messages[1].Text != "three" {
 		t.Fatalf("held %+v", messages)
 	}
-	// The sequence keeps counting even though the message is gone, so a
-	// listener that missed it does not receive it twice under a new number.
+	// The sequence counts past a dropped message, so nothing is served twice under a new number.
 	if latest != 3 || messages[1].Seq != 3 {
 		t.Fatalf("latest = %d, last seq = %d", latest, messages[1].Seq)
 	}

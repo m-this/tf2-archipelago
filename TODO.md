@@ -357,6 +357,35 @@ The versions file is the single source of truth for the Go tools, ruff,
 Archipelago, SourceMod and ripext. `plugin/build.sh` sources it, compose passes
 it as build args, the Makefile includes it. Nothing else holds a version.
 
+## Hardening pass, 2026-08-16
+
+A read of the whole tree with Mann vs Machine's own pitfalls in mind. Five real
+defects, none of which a test would have caught because none of it has run:
+
+- **The robots are bots on BLU**, and slot enforcement did not filter by team.
+  It would have stripped every robot's weapons and taken the wave apart. All
+  enforcement now goes through `MvM_IsPlayer`: human, in game, on RED.
+- **`TIMER_FLAG_NO_MAPCHANGE` kills a timer at the map change.** The objective
+  retry queue and the fallback wave detector both carried it, so both would
+  have stopped working at the first map change and never come back.
+- **Removing the weapon a player is holding** leaves no active weapon: no
+  viewmodel, no attack, and no way out, because the slot they would switch to
+  is the one that was taken. Something is put back in their hands.
+- **Forcing a respawn to change class mid-wave is a free life** in a mode where
+  dying costs you the rest of the wave. The class is queued for the next spawn.
+- **Every unverified network property is now tested before it is read.** A bad
+  property name is a native error on every call in SourceMod, which would have
+  buried the console mid-wave. A missing one is one warning and a fallback.
+
+And three that were about being usable rather than correct:
+
+- `.env` was not gitignored, and it holds the RCON password.
+- `--env-file` replaces the default `.env` rather than adding to it, so the
+  operator's `.env` was never read by compose at all.
+- `/grants` now always answers with the bridge's own sequence, so a plugin that
+  is *ahead* (the seed was regenerated under it) resyncs instead of long-polling
+  forever for grants that will never come.
+
 ## Carried over from spec.md
 
 Still open, still not blocking v1 because each one is behind an option that

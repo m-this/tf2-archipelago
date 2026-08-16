@@ -9,31 +9,24 @@ import (
 )
 
 // FormatVersion is the shape of the state file. A file from a version this
-// binary does not know is an error, not something to guess at: it holds the
-// only record of what a run has already checked.
+// binary does not know is an error rather than a guess: it holds the only
+// record of what a run has already checked.
 const FormatVersion = 1
 
-// snapshot is what sits on disk. Only two lists are recorded, both of them
-// facts the Archipelago server told us or the plugin did; everything the
-// bridge serves is derived from them, so there is no second copy to fall out
-// of step.
+// snapshot is what sits on disk: only facts the server or the plugin told us.
 type snapshot struct {
 	FormatVersion int `json:"format_version"`
 
-	// Seed is the Archipelago room's seed name. A different one means a new
-	// multiworld, and the old checks and items belong to a run that no longer
-	// exists.
+	// Seed is the Archipelago room's seed name. A different one means the held
+	// checks and items belong to a run that no longer exists.
 	Seed string `json:"seed"`
 
-	// Checks are location ids the plugin has reported, in the order reported.
 	Checks []int64 `json:"checks"`
 
-	// Items are received item ids, in the order Archipelago sent them. The
-	// index into this list is the index Archipelago deduplicates on.
+	// Items are received item ids in the order Archipelago sent them; the index
+	// into this list is the index it deduplicates on.
 	Items []int64 `json:"items"`
 
-	// GoalSent records that CLIENT_GOAL went out, so a reconnect does not
-	// announce the win a second time.
 	GoalSent bool `json:"goal_sent"`
 }
 
@@ -48,8 +41,8 @@ func readSnapshot(path string) (snapshot, error) {
 	var loaded snapshot
 	if err := json.Unmarshal(body, &loaded); err != nil {
 		return snapshot{}, fmt.Errorf(
-			"%s cannot be read and it is the only record of this run's checks: %w. "+
-				"Move it aside to start the run over", path, err,
+			"%s cannot be read, and it is the only record of this run's checks: %w. "+
+				"Move the file aside to start the run again", path, err,
 		)
 	}
 	if loaded.FormatVersion != FormatVersion {
@@ -61,8 +54,8 @@ func readSnapshot(path string) (snapshot, error) {
 	return loaded, nil
 }
 
-// writeSnapshot replaces the state file atomically: a torn write here would
-// lose checks that were already acknowledged to the plugin.
+// writeSnapshot replaces the state file atomically: a torn write would lose
+// checks already acknowledged to the plugin.
 func writeSnapshot(path string, data snapshot) error {
 	body, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
@@ -73,7 +66,7 @@ func writeSnapshot(path string, data snapshot) error {
 	if err != nil {
 		return err
 	}
-	// Best effort: on the happy path the rename has already taken the file.
+	// On the happy path the rename has already taken the file.
 	defer func() { _ = os.Remove(temp.Name()) }()
 
 	if _, err := temp.Write(append(body, '\n')); err != nil {
@@ -93,8 +86,7 @@ func writeSnapshot(path string, data snapshot) error {
 	return syncDir(dir)
 }
 
-// syncDir makes the rename itself durable. Without it the file survives a
-// crash but its name may not.
+// syncDir makes the rename durable: without it the file survives a crash but its name may not.
 func syncDir(dir string) error {
 	handle, err := os.Open(dir)
 	if err != nil {

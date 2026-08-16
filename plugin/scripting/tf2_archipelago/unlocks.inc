@@ -1,9 +1,8 @@
 /**
  * The unlock set, and what it does to players.
  *
- * None of this is authoritative. The bridge owns the set; the plugin holds a
- * copy for as long as the map lasts and asks again after every reload or map
- * change. Nothing here is ever written back.
+ * The bridge owns the set. The plugin holds a copy for as long as the map
+ * lasts, asks again after every reload or map change, and never writes back.
  */
 
 enum
@@ -14,17 +13,14 @@ enum
     Slot_Count,
 };
 
-// g_HaveUnlocks stays false until the bridge has answered once. Enforcement is
-// a no-op until then: a server where nobody can hold a weapon because the
-// bridge hiccuped is worse than a wave played with too much kit.
+// False until the bridge answers once; enforcement is a no-op until then, too much kit beats none.
 bool g_HaveUnlocks;
 
 bool g_ClassUnlocked[view_as<int>(TFClass_Engineer) + 1];
 bool g_SlotUnlocked[Slot_Count];
 StringMap g_UnlockedMissions;
 
-// The class keys the bridge speaks, indexed by TFClassType. Verified against
-// tf2.inc: the game's own order is not the order the class menu shows.
+// Indexed by TFClassType, whose order is not the class menu's order. Checked against tf2.inc.
 char g_ClassKeys[view_as<int>(TFClass_Engineer) + 1][] = {
     "",
     "scout",
@@ -88,7 +84,7 @@ void Unlocks_GrantClass(const char[] key)
     TFClassType class = Unlocks_ClassFromKey(key);
     if (class == TFClass_Unknown)
     {
-        LogError("bridge granted class %s, which this plugin does not know", key);
+        LogError("The bridge granted the class %s. This plugin does not know it.", key);
         return;
     }
     g_ClassUnlocked[view_as<int>(class)] = true;
@@ -99,7 +95,7 @@ void Unlocks_GrantSlot(const char[] key)
     int slot = Unlocks_SlotFromKey(key);
     if (slot == -1)
     {
-        LogError("bridge granted weapon slot %s, which this plugin does not know", key);
+        LogError("The bridge granted the weapon slot %s. This plugin does not know it.", key);
         return;
     }
     g_SlotUnlocked[slot] = true;
@@ -116,14 +112,7 @@ bool Unlocks_HasMission(const char[] popFile)
     return g_UnlockedMissions.GetValue(popFile, held);
 }
 
-/**
- * Say something when the server is running a mission the run has not unlocked.
- *
- * The plugin does not refuse to play it: the map is the operator's choice, and
- * a plugin that fights the server's map rotation is a plugin that gets
- * unloaded. The checks are reported either way, so the only failure worth
- * preventing is nobody noticing the run has gone off its own logic.
- */
+// Warns but never refuses: the map rotation is the operator's, and the checks count either way.
 void Unlocks_WarnIfMissionLocked()
 {
     if (!g_HaveUnlocks || !MvM_IsActive())
@@ -135,17 +124,10 @@ void Unlocks_WarnIfMissionLocked()
     {
         return;
     }
-    AP_Error("%s has not been unlocked by this run; its checks will still count", popFile);
+    AP_Error("The run did not unlock %s. Its checks still count.", popFile);
 }
 
-/**
- * Whether there is anything to enforce.
- *
- * An unlock set with no classes or no weapon slots in it cannot be right: the
- * generator guarantees a starting class and a starting slot. Enforcing an
- * empty one would strip everyone of everything and make the server look
- * broken, so it is treated as "the bridge has not told us yet".
- */
+// A slotless set cannot be right, the generator guarantees one: treat it as not told yet.
 bool Unlocks_Enforceable()
 {
     if (!g_HaveUnlocks)
@@ -162,11 +144,7 @@ bool Unlocks_Enforceable()
     return false;
 }
 
-/**
- * Apply the whole set to everyone playing. Called after the bridge answers,
- * because a grant that only takes effect next spawn is a grant the player
- * thinks did not arrive.
- */
+// Runs as soon as the bridge answers: a grant that waits for the next spawn looks like no grant.
 void Unlocks_ApplyToAll()
 {
     if (!Unlocks_Enforceable() || !MvM_IsActive())
@@ -184,16 +162,7 @@ void Unlocks_ApplyToAll()
     }
 }
 
-/**
- * Move a player off a class they are not allowed to be. Classes are only ever
- * unlocked, never taken away, so this fires for someone who was already
- * playing when the plugin loaded rather than as a punishment.
- *
- * The change is queued for the next spawn rather than forced. Respawning
- * someone mid-wave in Mann vs Machine is a free life: the mode makes death
- * cost you the rest of the wave, and a plugin that hands that back is worse
- * than a player finishing a wave as a class the run has not found yet.
- */
+// Queued for the next spawn, never forced: an MvM respawn mid-wave hands back the life death cost.
 void Unlocks_EnforceClass(int client)
 {
     if (!Unlocks_Enforceable() || !MvM_IsPlayer(client))
@@ -208,12 +177,11 @@ void Unlocks_EnforceClass(int client)
     TFClassType allowed = Unlocks_FirstAllowedClass();
     if (allowed == TFClass_Unknown)
     {
-        // Nothing is unlocked to move them to. Leave them alone rather than
-        // leaving them as nothing.
+        // Nothing to move them to; leave them alone rather than as nothing.
         return;
     }
     TF2_SetPlayerClass(client, allowed, false, true);
-    AP_PrintToClient(client, "%s is not unlocked; you spawn as %s next time.",
+    AP_PrintToClient(client, "The run did not unlock %s. You spawn as %s next time.",
         g_ClassKeys[view_as<int>(current)], g_ClassKeys[view_as<int>(allowed)]);
 }
 
@@ -229,11 +197,7 @@ TFClassType Unlocks_FirstAllowedClass()
     return TFClass_Unknown;
 }
 
-/**
- * Take away the weapons in slots the run has not unlocked. Done on every
- * inventory application, which covers spawning, touching a resupply locker and
- * the loadout changes the upgrade station makes.
- */
+// Every inventory application: spawn, resupply locker, and the upgrade station's loadout changes.
 void Unlocks_EnforceSlots(int client)
 {
     if (!Unlocks_Enforceable() || !MvM_IsPlayer(client) || !IsPlayerAlive(client))
@@ -261,14 +225,7 @@ void Unlocks_EnforceSlots(int client)
     }
 }
 
-/**
- * Put something in the player's hands.
- *
- * Removing the weapon a player is holding leaves them with no active weapon,
- * which in Team Fortress 2 means no viewmodel, no attack and no obvious way
- * out. The player cannot fix it themselves because the slot they would switch
- * to is the one that was taken away.
- */
+// Removing the held weapon leaves no viewmodel and no attack, and the player cannot switch back.
 static void SwitchToAnyWeapon(int client)
 {
     for (int slot = 0; slot < Slot_Count; slot++)
@@ -289,5 +246,5 @@ static void SwitchToAnyWeapon(int client)
             return;
         }
     }
-    AP_PrintToClient(client, "Every weapon slot is locked. Nothing to hold yet.");
+    AP_PrintToClient(client, "The run locked every weapon slot. You hold nothing yet.");
 }

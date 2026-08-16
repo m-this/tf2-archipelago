@@ -1,6 +1,5 @@
-// Command export writes the gamedata tables into the apworld's data
-// directory. The output is committed; CI runs this and fails if the working
-// tree differs.
+// Command export writes the gamedata tables into the apworld's data directory.
+// The output is committed; CI runs this and fails if the working tree differs.
 //
 // Usage: go run ./cmd/export ../apworld/tf2_mvm/data
 package main

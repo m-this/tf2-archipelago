@@ -1,13 +1,9 @@
 # The Team Fortress 2 dedicated server, with ripext and our plugin.
 #
-# The 14 GB of game files are not in this image: cm2network/tf2 downloads them
-# into the volume mounted at /home/steam/tf-dedicated on first start, and it
-# downloads SourceMod into that same volume if it is not there yet.
-#
-# That is why nothing is copied into the game directory at build time. A file
-# baked into a path a volume later covers is a file nobody sees. Our additions
-# are staged in /opt instead, and the entrypoint installs them into the volume
-# once SourceMod exists.
+# The game files and SourceMod are downloaded at runtime into the volume at
+# /home/steam/tf-dedicated. A file baked into a path a volume later covers is a
+# file nobody sees, so our additions are staged in /opt and the entrypoint
+# installs them once SourceMod exists.
 
 FROM debian:stable-slim AS build
 

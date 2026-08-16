@@ -1,9 +1,8 @@
 // Package httpapi is the plugin-facing side of the bridge.
 //
-// The wire format here is the whole contract between the bridge and the
-// SourceMod plugin, and it is deliberately in Mann vs Machine's vocabulary:
-// the plugin reports objectives and applies grants, and never learns that an
-// Archipelago id was involved.
+// The wire format is the whole contract with the SourceMod plugin, and it is in
+// Mann vs Machine's vocabulary: the plugin reports objectives and applies
+// grants, never Archipelago ids.
 //
 // Loopback only. Nothing here authenticates, because nothing off the machine
 // can reach it.
@@ -22,26 +21,22 @@ import (
 	"git-ssh.croque.top/mathis/tf2-archipelago/gamedata"
 )
 
-// objectiveRequest is what the plugin posts when something happened in game.
-// Wave is ignored for a mission clear.
+// objectiveRequest is what the plugin posts. Wave is ignored for a mission clear.
 type objectiveRequest struct {
 	Kind    string `json:"kind"`
 	PopFile string `json:"popfile"`
 	Wave    uint8  `json:"wave"`
 }
 
-// grantsResponse always carries the sequence the bridge is at, even when it
-// has nothing new to say. That is how a plugin discovers it is ahead: the only
-// way to be ahead is that the run restarted under it, and then it has to
-// resync rather than wait for grants that will never come.
+// grantsResponse always carries the sequence the bridge is at, even with
+// nothing new to say. That is how a plugin discovers it is ahead, which only
+// happens when the run restarted under it and it has to resync.
 type grantsResponse struct {
 	Seq    int           `json:"seq"`
 	Grants []state.Grant `json:"grants"`
 }
 
-// sayRequest is a player talking to the multiworld. Anything starting with !
-// is a command there, which is how !hint and !status work from inside a game
-// that has no Archipelago client of its own.
+// sayRequest is a player talking to the multiworld; a leading ! is a command there.
 type sayRequest struct {
 	Text string `json:"text"`
 }
@@ -73,7 +68,7 @@ func New(
 	}
 }
 
-// Handler wires the routes. Four of them, and the plugin needs all four.
+// Handler wires the routes.
 func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /objective", s.postObjective)
@@ -86,13 +81,12 @@ func (s *Server) Handler() http.Handler {
 }
 
 // postObjective records a check and answers 204 once it is on disk, before
-// anything is sent upstream. That order is the whole reason the bridge exists:
-// the plugin is free the moment the check is durable, and the Archipelago
-// server can be down for an hour without costing a wave.
+// anything goes upstream: the plugin is free the moment the check is durable,
+// so Archipelago can be down for an hour without costing a wave.
 func (s *Server) postObjective(w http.ResponseWriter, r *http.Request) {
 	var request objectiveRequest
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&request); err != nil {
-		http.Error(w, "unreadable body", http.StatusBadRequest)
+		http.Error(w, "cannot read the body", http.StatusBadRequest)
 		return
 	}
 	kind, known := objectiveKind(request.Kind)
@@ -108,9 +102,9 @@ func (s *Server) postObjective(w http.ResponseWriter, r *http.Request) {
 
 	fresh, err := s.store.AddCheck(location.ID)
 	if err != nil {
-		s.logger.ErrorContext(r.Context(), "could not record a check",
+		s.logger.ErrorContext(r.Context(), "cannot record a check",
 			"location", location.Name, "error", err)
-		http.Error(w, "could not record the check", http.StatusInternalServerError)
+		http.Error(w, "cannot record the check", http.StatusInternalServerError)
 		return
 	}
 	if fresh {
@@ -120,12 +114,12 @@ func (s *Server) postObjective(w http.ResponseWriter, r *http.Request) {
 }
 
 // getUnlocks serves everything that should be true right now. The plugin asks
-// on load and on every map change rather than remembering anything.
+// on load and on every map change rather than remembering it.
 func (s *Server) getUnlocks(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, s.logger, s.store.Unlocks())
 }
 
-// getGrants long-polls. The plugin passes the sequence it last applied and the
+// getGrants long-polls: the plugin passes the sequence it last applied and the
 // request is held open until there is something past it, so nothing has to
 // connect into srcds.
 func (s *Server) getGrants(w http.ResponseWriter, r *http.Request) {
@@ -138,9 +132,7 @@ func (s *Server) getGrants(w http.ResponseWriter, r *http.Request) {
 	timeout := time.NewTimer(s.pollTimeout)
 	defer timeout.Stop()
 
-	// A check landing is a change too, and it has nothing to say to this
-	// request, so a wake-up with no new grant goes back to waiting rather than
-	// sending the plugin round again.
+	// A check is a change too, so a wake-up with no new grant goes back to waiting.
 	for {
 		changed := s.store.Watch()
 		grants := s.store.GrantsSince(since)
@@ -161,8 +153,8 @@ func (s *Server) getGrants(w http.ResponseWriter, r *http.Request) {
 }
 
 // getMessages long-polls the multiworld's chat. A negative sequence asks only
-// where the conversation is, so a game server joining an evening late does not
-// dump the backlog into everyone's chat.
+// where the conversation is, so a server joining late does not dump the backlog
+// into everyone's chat.
 func (s *Server) getMessages(w http.ResponseWriter, r *http.Request) {
 	since, err := strconv.Atoi(r.URL.Query().Get("since"))
 	if err != nil {
@@ -190,13 +182,12 @@ func (s *Server) getMessages(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// postSay passes a line to the multiworld. Unlike a check it is not queued: a
-// message that lands ten minutes after it was typed is worse than one that was
-// refused, and the player is standing right there to be told.
+// postSay passes a line to the multiworld. Unlike a check it is refused rather
+// than queued, and the player is standing right there to be told.
 func (s *Server) postSay(w http.ResponseWriter, r *http.Request) {
 	var request sayRequest
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&request); err != nil {
-		http.Error(w, "unreadable body", http.StatusBadRequest)
+		http.Error(w, "cannot read the body", http.StatusBadRequest)
 		return
 	}
 	if request.Text == "" {
@@ -229,6 +220,6 @@ func objectiveKind(key string) (gamedata.ObjectiveKind, bool) {
 func writeJSON(w http.ResponseWriter, logger *slog.Logger, body any) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(body); err != nil {
-		logger.Error("could not write a response", "error", err)
+		logger.Error("cannot write a response", "error", err)
 	}
 }

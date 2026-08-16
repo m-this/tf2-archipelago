@@ -5,16 +5,14 @@ import (
 	"strings"
 )
 
-// The Archipelago wire format: a JSON array of objects, each with a "cmd".
-// Only the messages this bridge acts on are modelled; anything else is read
-// and dropped. See docs/network protocol.md in the Archipelago tree.
+// The Archipelago wire format: a JSON array of objects, each with a "cmd". Only
+// the messages this bridge acts on are modelled; anything else is read and
+// dropped. See docs/network protocol.md in the Archipelago tree.
 
-// itemsHandling asks for items from other worlds, from our own world, and the
-// starting inventory. The apworld places the starting kit as precollected
-// items, so without the third flag the run begins with nothing playable.
+// itemsHandling: other worlds, our own, starting inventory. Without the third the run starts empty.
 const itemsHandling = 0b111
 
-// ClientStatus values. Only the one that ends a run is used.
+// statusGoal is the ClientStatus that ends a run.
 const statusGoal = 30
 
 type header struct {
@@ -104,9 +102,8 @@ func (p printJSON) text() string {
 	return message.String()
 }
 
-// SlotData is what the apworld put in the seed for us. The bridge learns the
-// mission list and the goal from here and nowhere else: gamedata knows every
-// mission that exists, only the seed knows which ones are in play.
+// SlotData is what the apworld put in the seed. gamedata knows every mission
+// that exists; only the seed knows which ones are in play.
 type SlotData struct {
 	FormatVersion       int      `json:"format_version"`
 	Missions            []string `json:"missions"`

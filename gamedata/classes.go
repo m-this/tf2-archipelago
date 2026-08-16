@@ -16,17 +16,15 @@ const (
 	ClassSpy      ClassID = 9
 )
 
-// Class is one mercenary class. Key is what crosses the wire to the plugin in
-// a grant; the plugin maps it to its own class enum, so nothing here depends
-// on TF2's internal class numbering.
+// Class is one mercenary class. Key is what crosses the wire to the plugin,
+// which maps it to TF2's own class enum.
 type Class struct {
 	ID   ClassID
 	Key  string
 	Name string
 }
 
-// Classes is the nine classes, in the order the class selection menu lists
-// them.
+// Classes is the nine classes, in the order the class selection menu lists them.
 var Classes = []Class{
 	{ClassScout, "scout", "Scout"},
 	{ClassSoldier, "soldier", "Soldier"},

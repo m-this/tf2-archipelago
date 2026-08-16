@@ -144,8 +144,7 @@ func TestGrantsTellAPluginThatIsAhead(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Only a run that restarted underneath the plugin can put it ahead, and
-	// then it has to be told at once rather than held until the poll expires.
+	// Only a restarted run can put a plugin ahead, and then it must be told at once.
 	done := make(chan *httptest.ResponseRecorder, 1)
 	go func() { done <- get(t, handler, "/grants?since=9") }()
 	select {
@@ -165,8 +164,7 @@ func TestGrantsWakeOnANewItem(t *testing.T) {
 	done := make(chan *httptest.ResponseRecorder, 1)
 	go func() { done <- get(t, handler, "/grants?since=0") }()
 
-	// The long poll may not have registered yet; the store's watch channel is
-	// taken before the first read, so a slightly late write still wakes it.
+	// The poll may not have registered yet; the watch channel is taken before the first read.
 	time.Sleep(20 * time.Millisecond)
 	if err := store.ApplyItems(0, []int64{gamedata.Classes[2].ItemID()}); err != nil {
 		t.Fatal(err)
@@ -252,8 +250,6 @@ func TestSayNeedsAMultiworld(t *testing.T) {
 	recorder := httptest.NewRecorder()
 	handler.ServeHTTP(recorder, request)
 
-	// Nothing is connected in this test, and a line with nowhere to go is
-	// refused rather than queued.
 	if recorder.Code != http.StatusServiceUnavailable {
 		t.Fatalf("code = %d, want 503", recorder.Code)
 	}
@@ -270,8 +266,7 @@ func TestSayRejectsAnEmptyLine(t *testing.T) {
 }
 
 func TestMessagesStartFromNow(t *testing.T) {
-	store, handler := newTestServer(t, time.Second)
-	_ = store
+	_, handler := newTestServer(t, time.Second)
 
 	var response messagesResponse
 	decode(t, get(t, handler, "/messages?since=-1"), &response)

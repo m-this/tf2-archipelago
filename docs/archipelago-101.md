@@ -1,73 +1,77 @@
-# Archipelago, for someone who has never played one
+# Archipelago, for a player who never played one
 
-You do not need any of this to play. Join the server, shoot robots, and the
-rest happens around you. Read it if you want to know why your Scout is missing
-a scattergun.
+You do not need this page to play. Connect to the server and shoot robots. Read
+this page if you want to know why your Scout has no scattergun.
 
 ## The idea
 
-A randomizer takes a game and shuffles where its unlocks are found. Archipelago
-does that across several games at once, so the shotgun you need might be sitting
-in someone else's Zelda, and the sword they need might be behind wave 4 of
-Coal Town. Nobody finishes alone.
+A randomizer moves the unlocks of a game to other places. Archipelago does this
+across several games at the same time. The shotgun that you need can sit in the
+Zelda game of another player. The sword that this player needs can sit behind
+wave 4 of Coal Town. Nobody finishes alone.
 
 ## The five words
 
-**Multiworld** — one session spanning everybody playing. Ours can be one game
-or several; the Team Fortress 2 server is one participant in it.
+**Multiworld**
+One session that covers all the players. This one holds one game or several.
+The Team Fortress 2 server is one participant in it.
 
-**Slot** — one participant. In most games a slot is a person. Here it is **the
-server**: everyone on RED shares one slot, so everyone shares the same unlocks.
-Mann vs Machine is balanced around a coordinated team of six, and splitting the
-randomizer per player would leave one friend without a primary weapon while
-another has no melee.
+**Slot**
+One participant. In most games a slot is one person. Here a slot is **the
+server**: all the players on RED share the same unlocks. Valve balances Mann vs
+Machine for a team of six. One slot for each player leaves one player without a
+primary weapon and another player without a melee weapon.
 
-**Check** — a place an item can be hidden, and the act of finding it. Here a
-check is a wave cleared or a mission cleared. Clearing wave 3 of Doe's Doom
-tells the multiworld "whatever was hidden there has been found", and whoever it
-belongs to receives it.
+**Check**
+A place that holds an item, and the act to find it. Here a check is a wave that
+the team cleared or a mission that the team cleared. Wave 3 of Doe's Doom tells
+the multiworld that the team found its item. The owner of that item receives it.
 
-**Item** — what was hidden. Ours are mercenary classes, weapon slots, mission
-tickets and cash. Any of them can turn up in another player's game, and their
-items can turn up in ours.
+**Item**
+What the check held. Ours are the mercenary classes, the weapon slots, the
+mission tickets and cash. Each of them can appear in the game of another player.
+The items of the other players can appear in ours.
 
-**Seed** — one generated multiworld. Fixed once it is made: the same checks
-hold the same items for as long as the run lasts. Deleting it and starting
-again is a new run, not a retry.
+**Seed**
+One generated multiworld. It does not change after generation: the same checks
+hold the same items until the run ends. A new seed is a new run, not a second
+try.
 
-## What that means at the keyboard
+## What this does at the keyboard
 
-You start with less than a full loadout. One or two classes, one weapon slot,
-one mission. Clearing waves finds items; some are yours, some are somebody
-else's, and the ones that are yours arrive in chat and take effect at once.
+You start with a part of a loadout. One or two classes, one weapon slot, one
+mission. Each wave that you clear finds an item. Some items are yours and some
+belong to other players. Your items arrive in the chat and take effect at once.
 
-If a class is greyed out or a weapon is missing, it has not been found yet.
-That is the game, not a bug.
+A class in grey or a weapon that is absent is an item that the run did not find
+yet. This is the game, not a fault.
 
-## Talking to the multiworld
+## Speak to the multiworld
 
-The server does it for you, but you can ask it things in chat:
+The server speaks to the multiworld for you. You can also ask it for
+information in the chat:
 
-| Typed in chat | What it does |
+| Type this in the chat | The server does this |
 | --- | --- |
-| `!ap` | help |
-| `!ap missing` | which checks are still unfound |
-| `!ap status` | where the run is |
-| `!ap hint Scout` | ask where an item is; costs hint points |
-| `!apchat nice one` | talk to the other players in the multiworld |
+| `!ap` | Show the help |
+| `!ap missing` | List the checks that nobody found yet |
+| `!ap status` | Show the state of the run |
+| `!ap hint Scout` | Ask where an item is. This costs hint points. |
+| `!apchat nice one` | Speak to the other players in the multiworld |
 
-What the rest of the multiworld says arrives in chat the same way.
+The lines of the other players arrive in the chat the same way.
 
 ## The goal
 
-One of two, set when the seed is made:
+The seed sets one of two goals:
 
-- **Final Boss** — the hardest mission drawn is flagged. Clear it and the run
-  is over.
-- **Missionsanity** — clear a share of every mission drawn, in any order.
+- **Final Boss**: the run marks the most difficult mission that it drew. Clear
+  that mission to end the run.
+- **Missionsanity**: clear a part of the missions that the run drew, in any
+  sequence.
 
 ## What this is not
 
-- Not a mod you install. Join with a stock client.
+- Not a modification that you install. Connect with a standard client.
 - Not competitive Team Fortress 2. Mann vs Machine only.
-- Not saved to your Steam account. The run belongs to the server.
+- Not stored on your Steam account. The run belongs to the server.

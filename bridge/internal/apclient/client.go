@@ -23,8 +23,7 @@ import (
 )
 
 const (
-	// readLimitBytes bounds one message. RoomInfo carries a checksum per game
-	// in the multiworld, so the default 32 KiB is not enough.
+	// readLimitBytes: RoomInfo carries a checksum per game, past the 32 KiB default.
 	readLimitBytes = 4 << 20
 
 	dialTimeout  = 30 * time.Second
@@ -38,17 +37,15 @@ const (
 // version is the Archipelago release this client is written against.
 var version = Version{Class: "Version", Major: 0, Minor: 6, Build: 7}
 
-// permanentError wraps a failure that reconnecting cannot fix: a wrong slot
-// name, a password the operator has to change, a seed this binary cannot read.
-// The bridge stops rather than hammering the server forever.
+// permanentError wraps a failure reconnecting cannot fix; the bridge stops rather than retry.
 type permanentError struct{ err error }
 
 func (e permanentError) Error() string { return e.err.Error() }
 func (e permanentError) Unwrap() error { return e.err }
 
 // ErrNotConnected is what a chat line gets when there is no multiworld to say
-// it to. Unlike a check, it is not worth queueing: a message that arrives ten
-// minutes late is worse than one that was refused.
+// it to. Unlike a check it is refused rather than queued: a line that lands ten
+// minutes late is worse than one that never landed.
 var ErrNotConnected = errors.New("not connected to archipelago")
 
 // Options is everything the session needs.
@@ -85,16 +82,14 @@ type Health struct {
 
 func New(opts Options) *Client {
 	if opts.Chat == nil {
-		// A session with nowhere to put chat still has to run. One line of
-		// history is enough to keep the append path honest.
+		// A session with nowhere to put chat still has to run.
 		opts.Chat = chat.New(1)
 	}
 	return &Client{opts: opts, uuid: randomUUID()}
 }
 
 // Health reports the session state. The plugin uses it to tell a player the
-// difference between "your check did not register" and "the multiworld is
-// unreachable and your check is queued".
+// difference between a check that did not register and one that is queued.
 func (c *Client) Health() Health {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -114,8 +109,6 @@ func (c *Client) Run(ctx context.Context) error {
 		start := time.Now()
 		err := c.session(ctx)
 		if ctx.Err() != nil {
-			// The bridge is shutting down, and whatever the session was doing
-			// when it was cancelled is not a failure.
 			return nil //nolint:nilerr // a cancelled context is a clean stop
 		}
 		if _, unfixable := errors.AsType[permanentError](err); unfixable {
@@ -123,12 +116,11 @@ func (c *Client) Run(ctx context.Context) error {
 		}
 		c.setDisconnected(err)
 
-		// A session that stayed up was not a bad address or a busy server, so
-		// the next attempt starts from the short delay again.
+		// A session that stayed up was not a bad address, so the next attempt starts short.
 		if time.Since(start) > backoffMax {
 			backoff = backoffFirst
 		}
-		c.opts.Logger.WarnContext(ctx, "archipelago session ended, retrying",
+		c.opts.Logger.WarnContext(ctx, "archipelago session ended, will retry",
 			"error", err, "in", backoff)
 		select {
 		case <-ctx.Done():
@@ -176,9 +168,7 @@ func (c *Client) session(ctx context.Context) error {
 	return err
 }
 
-// readLoop consumes the server's messages until the connection dies. The
-// handshake is part of it: RoomInfo arrives first, Connect goes back, and
-// everything after that is a running session.
+// readLoop reads messages until the connection dies, starting with the RoomInfo/Connect handshake.
 func (c *Client) readLoop(ctx context.Context, conn *websocket.Conn, ready chan struct{}) error {
 	for {
 		kind, body, err := conn.Read(ctx)
@@ -190,7 +180,7 @@ func (c *Client) readLoop(ctx context.Context, conn *websocket.Conn, ready chan 
 		}
 		var messages []json.RawMessage
 		if err := json.Unmarshal(body, &messages); err != nil {
-			return fmt.Errorf("unreadable packet: %w", err)
+			return fmt.Errorf("cannot read the packet: %w", err)
 		}
 		for _, message := range messages {
 			if err := c.handle(ctx, conn, message, ready); err != nil {
@@ -205,7 +195,7 @@ func (c *Client) handle(
 ) error {
 	var head header
 	if err := json.Unmarshal(message, &head); err != nil {
-		return fmt.Errorf("packet without a cmd: %w", err)
+		return fmt.Errorf("packet has no cmd: %w", err)
 	}
 	switch head.Cmd {
 	case "RoomInfo":
@@ -225,9 +215,7 @@ func (c *Client) handle(
 		}
 		return nil
 	case "Bounced":
-		// DeathLink lands here. What a death means in Mann vs Machine is not
-		// settled (docs/spec.md, open question 5), so the bridge does not
-		// claim the tag and nothing acts on this yet.
+		// DeathLink lands here; what a death means in MvM is unsettled, so the tag is not claimed.
 		return nil
 	default:
 		return nil
@@ -244,7 +232,7 @@ func (c *Client) onRoomInfo(ctx context.Context, conn *websocket.Conn, message j
 		return err
 	}
 	if wiped {
-		c.opts.Logger.WarnContext(ctx, "new seed, dropped the state of the previous run",
+		c.opts.Logger.WarnContext(ctx, "new seed, dropped the previous run",
 			"seed", room.SeedName)
 	}
 	return c.send(ctx, conn, connectMessage{
@@ -260,8 +248,7 @@ func (c *Client) onRoomInfo(ctx context.Context, conn *websocket.Conn, message j
 	})
 }
 
-// onConnected records the seed's shape. Nothing is sent from here: the pump
-// wakes on ready and reports everything the run holds.
+// onConnected records the seed's shape and sends nothing: the pump wakes on ready and reports.
 func (c *Client) onConnected(message json.RawMessage, ready chan struct{}) error {
 	var payload connected
 	if err := json.Unmarshal(message, &payload); err != nil {
@@ -269,13 +256,13 @@ func (c *Client) onConnected(message json.RawMessage, ready chan struct{}) error
 	}
 	var slot SlotData
 	if err := json.Unmarshal(payload.SlotData, &slot); err != nil {
-		return permanentError{fmt.Errorf("unreadable slot data: %w", err)}
+		return permanentError{fmt.Errorf("cannot read the slot data: %w", err)}
 	}
 	if err := slot.validate(); err != nil {
 		return permanentError{err}
 	}
 	if slot.DeathLink {
-		c.opts.Logger.Warn("the seed asks for DeathLink, which this bridge does not implement")
+		c.opts.Logger.Warn("the seed asks for DeathLink, which this bridge does not do")
 	}
 
 	c.mu.Lock()
@@ -317,16 +304,15 @@ func (c *Client) onReceivedItems(ctx context.Context, conn *websocket.Conn, mess
 	}
 	err := c.opts.Store.ApplyItems(payload.Index, ids)
 	if errors.Is(err, state.ErrDesync) {
-		c.opts.Logger.WarnContext(ctx, "item list diverged, asking for a resend",
+		c.opts.Logger.WarnContext(ctx, "item list diverged, asked for a resend",
 			"index", payload.Index)
 		return c.send(ctx, conn, syncMessage{Cmd: "Sync"})
 	}
 	return err
 }
 
-// report tells the server everything we hold: every check, and the goal if it
-// has been met. It runs on connect and on every change afterwards. Sending the
-// whole set each time is what makes a reconnect mid-wave a non-event.
+// report sends every check we hold, plus the goal once met. The whole set goes
+// every time, which is what makes a reconnect mid-wave a non-event.
 func (c *Client) report(ctx context.Context, conn *websocket.Conn) error {
 	checks := c.opts.Store.Checks()
 	if len(checks) > 0 {
@@ -351,12 +337,11 @@ func (c *Client) report(ctx context.Context, conn *websocket.Conn) error {
 	return c.opts.Store.MarkGoalSent()
 }
 
-// pump pushes state upstream and keeps the connection honest. It waits for the
-// handshake first: a LocationChecks sent before Connected is dropped.
+// pump pushes state upstream and pings. It waits for the handshake first: a
+// LocationChecks sent before Connected is dropped.
 //
-// The watch channel is taken before reporting, not after. A check recorded
-// while the report is in flight would otherwise close a channel nobody was
-// holding, and sit there until the next unrelated change.
+// The watch channel is taken before reporting, not after: a check recorded
+// while the report is in flight would otherwise sit until the next change.
 func (c *Client) pump(ctx context.Context, conn *websocket.Conn, ready chan struct{}) error {
 	select {
 	case <-ready:
@@ -387,8 +372,7 @@ func (c *Client) pump(ctx context.Context, conn *websocket.Conn, ready chan stru
 }
 
 // Say passes a line to the multiworld. Anything starting with ! is a server
-// command there, which is how a player runs !hint or !status from inside the
-// game.
+// command there, which is how a player runs !hint from inside the game.
 func (c *Client) Say(ctx context.Context, text string) error {
 	c.mu.Lock()
 	conn, connected := c.conn, c.connected
@@ -421,9 +405,7 @@ func (c *Client) setDisconnected(err error) {
 	}
 }
 
-// randomUUID identifies this bridge process to Archipelago. It is not
-// persisted: the server uses it to recognise a reconnect, and a fresh one
-// after a restart costs nothing.
+// randomUUID identifies this process to Archipelago; a fresh one after a restart costs nothing.
 func randomUUID() string {
 	return rand.Text()
 }

@@ -4,17 +4,14 @@
  * Every call is asynchronous: a blocking HTTP call stalls the game frame for
  * everyone on the server (ADR 0002). Nothing here knows what Archipelago is.
  *
- * The plugin's copy of an objective is not durable, so it retries until the
- * bridge takes it. The bridge is where "never lose a check" is actually
- * guaranteed; this queue only has to survive the seconds in between.
+ * The queue below is not durable and does not have to be. The bridge is where
+ * "never lose a check" is guaranteed; this only covers the seconds in between.
  */
 
-// PendingMax bounds the retry queue. A mission is at most nine objectives, so
-// anything approaching this means the bridge has been gone a long time.
+// A mission is at most nine objectives, so nearing this means the bridge has been gone a long time.
 #define PendingMax 64
 
-// RetryInterval is how often the queue is drained. Slow enough not to hammer a
-// bridge that is down, quick enough that a wave clear lands before the next.
+// Slow enough not to hammer a bridge that is down, quick enough to land a wave before the next one.
 #define RetryInterval 5.0
 
 enum
@@ -26,8 +23,7 @@ enum
 
 enum struct Objective
 {
-    // id identifies the objective across a retry. The queue index cannot: an
-    // erase shifts every index after it while requests are still in flight.
+    // The queue index cannot identify a retry: an erase shifts every index after it mid-flight.
     int id;
     char kind[24];
     char popFile[64];
@@ -39,9 +35,12 @@ ConVar g_CvarChat;
 
 ArrayList g_Pending;
 bool g_PollingChat;
+
+// A negative sequence means "start from now": joining late must not replay hours of chat.
 int g_ChatSeq = -1;
+
 int g_NextObjectiveID = 1;
-bool g_Polling;
+bool g_PollingGrants;
 int g_GrantSeq;
 char g_LastBridgeError[192];
 
@@ -50,10 +49,9 @@ void Bridge_Init()
     g_CvarBridgeURL = CreateConVar("tf2ap_bridge_url", "http://127.0.0.1:24680",
         "Base URL of the Archipelago bridge. Loopback only.");
     g_CvarChat = CreateConVar("tf2ap_chat", "1",
-        "Show what the rest of the multiworld says in chat.", _, true, 0.0, true, 1.0);
+        "Write what the other players in the multiworld say to the chat.", _, true, 0.0, true, 1.0);
     g_Pending = new ArrayList(sizeof(Objective));
-    // No TIMER_FLAG_NO_MAPCHANGE: that flag kills the timer at the first map
-    // change, and a queued check has to survive one.
+    // No TIMER_FLAG_NO_MAPCHANGE: it dies at the first map change, a queued check must survive one.
     CreateTimer(RetryInterval, Timer_DrainPending, _, TIMER_REPEAT);
 }
 
@@ -82,15 +80,12 @@ int Bridge_Sequence()
     return g_GrantSeq;
 }
 
-/**
- * Report an objective. Queued first, sent immediately after: if the send
- * fails the objective is already where the retry timer will find it.
- */
+// Queued before it is sent, so a failed send leaves it where the retry timer will find it.
 void Bridge_ReportObjective(const char[] kind, const char[] popFile, int wave)
 {
     if (g_Pending.Length >= PendingMax)
     {
-        AP_Error("the objective queue is full (%d), dropping %s %s wave %d",
+        AP_Error("The objective queue is full at %d. The plugin dropped %s %s wave %d.",
             PendingMax, kind, popFile, wave);
         return;
     }
@@ -102,7 +97,7 @@ void Bridge_ReportObjective(const char[] kind, const char[] popFile, int wave)
     objective.wave = wave;
     g_Pending.PushArray(objective);
 
-    AP_Debug("queued %s %s wave %d", kind, popFile, wave);
+    AP_Debug("The plugin queued %s %s wave %d.", kind, popFile, wave);
     Bridge_SendObjective(objective);
 }
 
@@ -133,11 +128,7 @@ static int Bridge_FindPending(int id)
     return -1;
 }
 
-/**
- * The objective leaves the queue only once the bridge has it on disk. The
- * bridge is idempotent by location id, so a retry after a timeout that
- * actually landed costs nothing.
- */
+// Dequeued only once the bridge has it on disk; it is idempotent, so a needless retry is free.
 static void OnObjectivePosted(HTTPResponse response, any value, const char[] error)
 {
     int index = Bridge_FindPending(value);
@@ -150,26 +141,25 @@ static void OnObjectivePosted(HTTPResponse response, any value, const char[] err
 
     if (!StrEqual(error, ""))
     {
-        Bridge_NoteError("could not reach the bridge: %s", error);
+        Bridge_NoteError("The plugin cannot reach the bridge. %s", error);
         return;
     }
     if (response.Status == HTTPStatus_NoContent)
     {
         g_Pending.Erase(index);
         Bridge_ClearError();
-        AP_Debug("bridge took %s %s wave %d", objective.kind, objective.popFile, objective.wave);
+        AP_Debug("The bridge took %s %s wave %d.", objective.kind, objective.popFile, objective.wave);
         return;
     }
     if (response.Status == HTTPStatus_BadRequest)
     {
-        // The bridge and this plugin disagree about what exists. Retrying
-        // cannot fix that, and keeping it would block the queue forever.
+        // Retrying cannot fix a disagreement about what exists, and keeping it blocks the queue.
         g_Pending.Erase(index);
-        AP_Error("the bridge rejected %s %s wave %d: it does not know that objective",
+        AP_Error("The bridge does not know the objective %s %s wave %d. It refused the check.",
             objective.kind, objective.popFile, objective.wave);
         return;
     }
-    Bridge_NoteError("the bridge answered %d for %s %s wave %d, will retry",
+    Bridge_NoteError("The bridge answered %d for %s %s wave %d. The plugin tries again.",
         response.Status, objective.kind, objective.popFile, objective.wave);
 }
 
@@ -179,7 +169,7 @@ static Action Timer_DrainPending(Handle timer)
     {
         return Plugin_Continue;
     }
-    AP_Debug("retrying %d queued objective(s)", g_Pending.Length);
+    AP_Debug("The plugin sends %d queued objective(s) again.", g_Pending.Length);
     for (int index = 0; index < g_Pending.Length; index++)
     {
         Objective objective;
@@ -189,10 +179,6 @@ static Action Timer_DrainPending(Handle timer)
     return Plugin_Continue;
 }
 
-/**
- * Ask for the whole unlock set. Called on plugin start and on every map
- * change, because the plugin remembers nothing across either.
- */
 void Bridge_FetchUnlocks()
 {
     HTTPRequest request = BridgeRequest("/unlocks");
@@ -204,12 +190,12 @@ static void OnUnlocks(HTTPResponse response, any value, const char[] error)
 {
     if (!StrEqual(error, ""))
     {
-        Bridge_NoteError("could not fetch the unlock set: %s", error);
+        Bridge_NoteError("The plugin cannot get the unlock set. %s", error);
         return;
     }
     if (response.Status != HTTPStatus_OK)
     {
-        Bridge_NoteError("the unlock set came back as %d", response.Status);
+        Bridge_NoteError("The bridge answered %d for the unlock set.", response.Status);
         return;
     }
     JSONObject unlocks = view_as<JSONObject>(response.Data);
@@ -222,7 +208,7 @@ static void OnUnlocks(HTTPResponse response, any value, const char[] error)
     g_HaveUnlocks = true;
     Bridge_ClearError();
 
-    AP_Debug("unlock set at sequence %d applied", g_GrantSeq);
+    AP_Debug("The plugin applied the unlock set at sequence %d.", g_GrantSeq);
     Unlocks_ApplyToAll();
     Unlocks_WarnIfMissionLocked();
 }
@@ -248,13 +234,10 @@ static void ApplyKeyArray(JSONObject unlocks, const char[] field, int kind)
     delete keys;
 }
 
-/**
- * Long-poll for grants. The bridge holds the request open, so this is one
- * connection that mostly sits idle, not a poll loop.
- */
+// The bridge holds the request open: one connection that mostly sits idle, not a poll loop.
 void Bridge_PollGrants()
 {
-    if (g_Polling)
+    if (g_PollingGrants)
     {
         return;
     }
@@ -262,38 +245,35 @@ void Bridge_PollGrants()
     FormatEx(path, sizeof(path), "/grants?since=%d", g_GrantSeq);
 
     HTTPRequest request = BridgeRequest(path);
-    // Longer than the bridge's own poll timeout, so the bridge is what ends
-    // the wait and a timeout here always means something is wrong.
+    // Longer than the bridge's own poll timeout, so a timeout here always means something is wrong.
     request.Timeout = 60;
-    g_Polling = true;
+    g_PollingGrants = true;
     request.Get(OnGrants);
 }
 
 static void OnGrants(HTTPResponse response, any value, const char[] error)
 {
-    g_Polling = false;
+    g_PollingGrants = false;
 
     if (!StrEqual(error, ""))
     {
-        Bridge_NoteError("the grant poll failed: %s", error);
+        Bridge_NoteError("The grant request failed. %s", error);
         CreateTimer(RetryInterval, Timer_PollAgain);
         return;
     }
     if (response.Status != HTTPStatus_OK)
     {
-        Bridge_NoteError("the grant poll answered %d", response.Status);
+        Bridge_NoteError("The bridge answered %d for the grants.", response.Status);
         CreateTimer(RetryInterval, Timer_PollAgain);
         return;
     }
 
     JSONObject payload = view_as<JSONObject>(response.Data);
 
-    // The bridge being behind this plugin means the run restarted underneath
-    // it: a new seed, or the state moved aside. Applying grants from here
-    // would replay a different run, so the whole set is fetched again instead.
+    // A bridge behind this plugin means the run restarted: these grants belong to a different one.
     if (payload.GetInt("seq") < g_GrantSeq)
     {
-        AP_Error("the run restarted; refetching the unlock set");
+        AP_Error("The run restarted. The plugin asks for the unlock set again.");
         g_GrantSeq = 0;
         Bridge_FetchUnlocks();
         CreateTimer(RetryInterval, Timer_PollAgain);
@@ -322,11 +302,6 @@ static Action Timer_PollAgain(Handle timer)
     return Plugin_Stop;
 }
 
-/**
- * One grant. The kinds are the bridge's half of the wire contract; an unknown
- * one is a bridge newer than this plugin, which is worth saying out loud but
- * not worth stopping for.
- */
 static void ApplyGrant(JSONObject grant)
 {
     int seq = grant.GetInt("seq");
@@ -362,7 +337,7 @@ static void ApplyGrant(JSONObject grant)
     }
     else
     {
-        AP_Error("the bridge sent a grant of kind %s, which this plugin does not know", kind);
+        AP_Error("The bridge sent a grant of kind %s. This plugin does not know it.", kind);
     }
 
     if (seq > g_GrantSeq)
@@ -371,10 +346,7 @@ static void ApplyGrant(JSONObject grant)
     }
 }
 
-/**
- * Bridge_NoteError keeps the last failure for sm_ap and says it once. The
- * retry loop would otherwise fill chat with the same line every five seconds.
- */
+// Says a repeated failure once: the retry loop would otherwise fill chat every RetryInterval.
 static void Bridge_NoteError(const char[] format, any ...)
 {
     char message[192];
@@ -393,15 +365,6 @@ static void Bridge_ClearError()
     g_LastBridgeError[0] = '\0';
 }
 
-
-/**
- * The multiworld's chat.
- *
- * The bridge holds this request open the same way it does for grants. The
- * first poll asks with a negative sequence, which means "start from now": a
- * server joining an evening late must not replay hours of other people's
- * conversation into everyone's chat.
- */
 void Bridge_PollMessages()
 {
     if (g_PollingChat)
@@ -423,9 +386,8 @@ static void OnMessages(HTTPResponse response, any value, const char[] error)
 
     if (!StrEqual(error, "") || response.Status != HTTPStatus_OK)
     {
-        // Quiet on purpose: the objective and grant paths already say when the
-        // bridge is unreachable, and chat is the least important of the three.
-        AP_Debug("the message poll failed, retrying");
+        // Quiet on purpose: the objective and grant paths already report an unreachable bridge.
+        AP_Debug("The message request failed. The plugin tries again.");
         CreateTimer(RetryInterval, Timer_PollMessagesAgain);
         return;
     }
@@ -459,11 +421,7 @@ static Action Timer_PollMessagesAgain(Handle timer)
     return Plugin_Stop;
 }
 
-/**
- * Pass a line to the multiworld. Not queued: a message that lands ten minutes
- * after it was typed is worse than one that was refused, and the player who
- * typed it is standing right there to be told.
- */
+// Never queued: a line landing ten minutes late is worse than one refused to the player's face.
 void Bridge_Say(int client, const char[] text)
 {
     JSONObject body = new JSONObject();
@@ -484,7 +442,7 @@ static void OnSaid(HTTPResponse response, any value, const char[] error)
     }
     if (client > 0)
     {
-        AP_PrintToClient(client, "The multiworld did not take that: it is not connected.");
+        AP_PrintToClient(client, "The bridge has no connection to the multiworld. It refused your line.");
     }
-    AP_Debug("say failed with status %d %s", response.Status, error);
+    AP_Debug("The line failed with status %d. %s", response.Status, error);
 }

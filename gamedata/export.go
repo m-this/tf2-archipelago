@@ -8,11 +8,9 @@ import (
 )
 
 // The exported JSON is what the Python apworld reads at import time. It is
-// committed to the repo so the apworld is a standalone artifact, and CI
-// regenerates it to catch a stale copy. See ADR 0001.
-//
-// Every file repeats format_version: the apworld refuses to load one it does
-// not know rather than guessing at a shape that moved.
+// committed so the apworld is standalone, and CI regenerates it to catch a
+// stale copy. Every file repeats format_version so the apworld can refuse a
+// shape it does not know. See ADR 0001.
 
 const (
 	FileMeta     = "meta.json"
