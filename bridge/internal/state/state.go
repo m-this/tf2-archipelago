@@ -73,7 +73,13 @@ func (s *Store) BindSeed(seed string) (bool, error) {
 	}
 	s.data = snapshot{FormatVersion: FormatVersion, Seed: seed}
 	s.grants = nil
-	return true, s.persist()
+	if err := s.persist(); err != nil {
+		return true, err
+	}
+	// The sequence just went back to zero. A plugin blocked on a long poll has
+	// to hear that now rather than at the poll timeout.
+	s.broadcast()
+	return true, nil
 }
 
 // AddCheck records a location the plugin reported and reports whether it was
@@ -111,20 +117,17 @@ func (s *Store) ApplyItems(index int, itemIDs []int64) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	switch {
-	case index == 0:
-		s.data.Items = slices.Clone(itemIDs)
-	case index > len(s.data.Items):
+	if index > len(s.data.Items) {
 		return ErrDesync
-	default:
-		// A replay of items we already hold, plus possibly new ones.
-		s.data.Items = append(s.data.Items[:index], itemIDs...)
 	}
-
-	previous := s.grants
+	// Index zero is Archipelago restating the whole inventory; anything else
+	// continues the list from that point.
+	previousItems, previousGrants := s.data.Items, s.grants
+	s.data.Items = append(slices.Clone(s.data.Items[:index]), itemIDs...)
 	s.grants = grantsFrom(s.data.Items)
+
 	if err := s.persist(); err != nil {
-		s.grants = previous
+		s.data.Items, s.grants = previousItems, previousGrants
 		return err
 	}
 	s.broadcast()
@@ -132,20 +135,27 @@ func (s *Store) ApplyItems(index int, itemIDs []int64) error {
 }
 
 // GrantsSince returns everything past the sequence the plugin last applied.
+// Sequences count items, not grants, so this cannot index the slice.
 func (s *Store) GrantsSince(seq int) []Grant {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if seq < 0 || seq >= len(s.grants) {
+	fresh := make([]Grant, 0, len(s.grants))
+	for _, grant := range s.grants {
+		if grant.Seq > seq {
+			fresh = append(fresh, grant)
+		}
+	}
+	if len(fresh) == 0 {
 		return nil
 	}
-	return slices.Clone(s.grants[seq:])
+	return fresh
 }
 
 // Unlocks is everything that should be true right now.
 func (s *Store) Unlocks() Unlocks {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return unlocksFrom(s.grants)
+	return unlocksFrom(s.grants, len(s.data.Items))
 }
 
 // GoalSent reports whether CLIENT_GOAL has already gone out for this run.
@@ -167,6 +177,7 @@ func (s *Store) MarkGoalSent() error {
 		s.data.GoalSent = false
 		return err
 	}
+	s.broadcast()
 	return nil
 }
 

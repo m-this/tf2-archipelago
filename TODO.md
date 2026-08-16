@@ -386,6 +386,49 @@ And three that were about being usable rather than correct:
   is *ahead* (the seed was regenerated under it) resyncs instead of long-polling
   forever for grants that will never come.
 
+## Architecture pass, 2026-08-16
+
+An exploration of the whole tree for friction, then the six findings whose
+failure mode was real. What was fixed:
+
+- **A sequence now counts received items, not grants.** An item id the bridge
+  cannot read was skipped *and* removed from the numbering, so a later binary
+  with a larger gamedata renumbered every grant after it. The plugin only
+  notices a sequence going backwards, so it would have reapplied some grants
+  and missed others in silence.
+- **`ApplyItems` restored half of what it mutated** when the write failed: the
+  grants went back, the item list did not. That is the one thing the state
+  package promises cannot happen.
+- **The frozen id file was keyed on display names**, which `missions.go` marks
+  UNVERIFIED and expects to be corrected before the first seed. Correcting one
+  reported nine deleted entities for a change that moves no id. It is now keyed
+  on what the id derives from.
+- **The game name had five homes, four of them hand-written.** ADR 0001 says it
+  lives here and is exported; the image and the entrypoint now read it out of
+  the export, and a test holds the apworld manifest to it.
+- **`BindSeed` and `MarkGoalSent` changed state without waking watchers**, so a
+  seed wipe left a long poll blocked until its timeout.
+- **Nothing checked the keys across the language barrier.** The plugin cannot
+  be run here, so gamedata now reads the SourcePawn source and asserts that
+  every class key, every weapon slot key, every grant kind and every objective
+  kind it uses is one this package exports. The pinned Archipelago version is
+  checked the same way against the handshake and the manifest.
+
+Found and left alone, with reasons:
+
+- `maps.go`, `slots.go` and `rules.py` are shallow, but deleting them moves
+  lines rather than concentrating anything.
+- The `chat` and `state` watch loops are the same shape twice. Merging them is
+  real work for a small win, and the `since=-1` asymmetry between `/messages`
+  and `/grants` is deliberate: chat starts from now, grants start from zero.
+- Grant derivation lives in the state package because that is where the item
+  list is. It is translation, not storage, and it would read better beside the
+  wire types — but moving it now buys nothing a test would catch.
+- The dead export surface (`MAP_NAMES`, `BASE_ID`, `map_id`, `class_id` and
+  `credits` cross into Python and nobody reads them; `MissionsByDifficulty`,
+  `Useful` and `Trap` have no caller at all). Harmless, and the mission order
+  and trap work in v2 will want most of it.
+
 ## Carried over from spec.md
 
 Still open, still not blocking v1 because each one is behind an option that

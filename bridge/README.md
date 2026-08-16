@@ -79,6 +79,12 @@ nothing new. That is how the plugin learns it is *ahead*: the only way to be
 ahead is that the run restarted underneath it, and then it has to refetch the
 unlock set rather than wait for grants that will never arrive.
 
+**A sequence counts received items, not grants.** An item id this binary cannot
+read is skipped, and skipping it leaves a gap rather than moving what follows.
+Counting grants instead would renumber every later one the day a larger
+`gamedata` makes that id readable, and the plugin would reapply grants it
+already has and miss ones it does not — with nothing to notice it.
+
 Chat is the one thing here that is not durable. A check is a fact about a run
 and must survive anything; a line someone typed while the game server was
 restarting is gone, the way it would be in any other chat. `/say` refuses

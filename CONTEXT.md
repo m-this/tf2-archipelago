@@ -149,6 +149,12 @@ The plugin's vocabulary for what the bridge calls a received item. The bridge
 sends `grant_weapon_slot{slot}`; the plugin does not know an item id was
 involved.
 
+**Sequence**
+The plugin's cursor over what the bridge has granted, counting received items
+rather than grants. An item the bridge cannot read is skipped and leaves a gap,
+so a sequence means the same thing after the bridge is upgraded. `GET
+/grants?since=N` and the `seq` in an unlock set are both this number.
+
 **Unlock set**
 The full set of grants currently in effect for the slot. Authoritative on the
 bridge, on disk. The plugin re-fetches it after any reload or map change rather

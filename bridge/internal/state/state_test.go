@@ -2,6 +2,7 @@ package state
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -136,6 +137,63 @@ func TestUnknownItemIDsAreSkipped(t *testing.T) {
 	grants := store.GrantsSince(0)
 	if len(grants) != 1 || grants[0].Key != gamedata.Classes[0].Key {
 		t.Fatalf("grants = %+v", grants)
+	}
+}
+
+func TestASkippedItemLeavesAGapRatherThanShifting(t *testing.T) {
+	store := openTemp(t)
+	first := gamedata.Classes[0].ItemID()
+	second := gamedata.Classes[1].ItemID()
+
+	// The middle id is one this binary cannot read, which is what a seed from a
+	// newer gamedata looks like. The item after it must keep the sequence it
+	// would have had, or a later binary that can read the id renumbers it and
+	// the plugin reapplies grants it already has.
+	if err := store.ApplyItems(0, []int64{first, 424242, second}); err != nil {
+		t.Fatal(err)
+	}
+	grants := store.GrantsSince(0)
+	if len(grants) != 2 {
+		t.Fatalf("grants = %+v", grants)
+	}
+	if grants[0].Seq != 1 || grants[1].Seq != 3 {
+		t.Fatalf("sequences are %d and %d, want 1 and 3", grants[0].Seq, grants[1].Seq)
+	}
+	if got := store.Unlocks().Seq; got != 3 {
+		t.Fatalf("unlock sequence is %d, want 3", got)
+	}
+	if got := store.GrantsSince(1); len(got) != 1 || got[0].Seq != 3 {
+		t.Fatalf("since 1: %+v", got)
+	}
+	if got := store.GrantsSince(3); got != nil {
+		t.Fatalf("since 3: %+v", got)
+	}
+}
+
+func TestAFailedWriteLeavesNothingHalfApplied(t *testing.T) {
+	dir := t.TempDir()
+	store, err := Open(filepath.Join(dir, "bridge.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := store.ApplyItems(0, []int64{gamedata.Classes[0].ItemID()}); err != nil {
+		t.Fatal(err)
+	}
+
+	// Nothing can be written once the directory is gone. The item list and the
+	// grants derived from it have to move together or not at all.
+	if err := os.RemoveAll(dir); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.ApplyItems(1, []int64{gamedata.Classes[1].ItemID()}); err == nil {
+		t.Fatal("a write into a missing directory was reported as a success")
+	}
+	unlocks := store.Unlocks()
+	if unlocks.Seq != 1 || len(unlocks.Classes) != 1 {
+		t.Fatalf("the failed write left %+v", unlocks)
+	}
+	if got := store.GrantsSince(0); len(got) != 1 {
+		t.Fatalf("the failed write left %d grant(s)", len(got))
 	}
 }
 

@@ -49,6 +49,12 @@ player the wrong item.
 Adding a mission is a struct literal plus a regenerate. Renaming one is fine.
 Deleting one means a tombstone.
 
+The frozen file is keyed on what an id derives from — `kind/pop file/wave`,
+`class/scout/0` — and never on a display name. The names are UNVERIFIED and
+expected to be corrected before the first seed is played, and a key built from
+one would report that correction as nine deleted entities. `-freeze` only ever
+adds keys, so it cannot retire the old ones for you.
+
 Location and item ids are derived, not written down one by one:
 
 ```

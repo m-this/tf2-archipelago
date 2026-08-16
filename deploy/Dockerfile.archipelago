@@ -24,9 +24,14 @@ RUN grep -vE '^(kivy|kivymd|Pymem)' requirements.txt > /tmp/requirements.txt \
 	&& pip install --no-cache-dir -r /tmp/requirements.txt "setuptools<81"
 
 COPY apworld/tf2_mvm /ap/worlds/tf2_mvm
-RUN SKIP_REQUIREMENTS_UPDATE=1 python Launcher.py "Build APWorlds" -- "Team Fortress 2 Mann vs Machine" \
-	&& rm -rf /ap/worlds/tf2_mvm \
+
+# The game name comes out of the export, which gamedata owns. meta.json is kept
+# beside the packaged world so the entrypoint reads the same one.
+RUN game=$(python -c "import json; print(json.load(open('/ap/worlds/tf2_mvm/data/meta.json'))['game'])") \
+	&& SKIP_REQUIREMENTS_UPDATE=1 python Launcher.py "Build APWorlds" -- "$game" \
 	&& mkdir -p /ap/custom_worlds \
+	&& cp /ap/worlds/tf2_mvm/data/meta.json /ap/custom_worlds/meta.json \
+	&& rm -rf /ap/worlds/tf2_mvm \
 	&& cp /ap/build/apworlds/tf2_mvm.apworld /ap/custom_worlds/
 
 
@@ -43,8 +48,10 @@ CMD ["python", "-m", "unittest", "discover", "-s", "worlds/tf2_mvm/test", "-t", 
 FROM python:3.13-slim
 
 # ModuleUpdate.py blocks on input() over every world's optional dependencies.
+ARG ARCHIPELAGO_VERSION
 ENV SKIP_REQUIREMENTS_UPDATE=1 \
-	PYTHONUNBUFFERED=1
+	PYTHONUNBUFFERED=1 \
+	ARCHIPELAGO_VERSION=${ARCHIPELAGO_VERSION}
 
 RUN useradd --create-home --uid 1000 archipelago
 COPY --from=build /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
