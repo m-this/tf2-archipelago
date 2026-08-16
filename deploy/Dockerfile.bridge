@@ -1,0 +1,32 @@
+# The bridge. Static binary, distroless, nothing else in the image.
+#
+# It has no shell, so the container health check is the binary asking itself:
+# `bridge -health` fetches /healthz off loopback and exits non-zero if the
+# answer is not 200.
+
+FROM golang:1.26 AS build
+
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY gamedata gamedata
+COPY bridge bridge
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /bridge ./bridge/cmd/bridge
+
+# The state directory has to exist in the image and belong to the user that
+# runs: a named volume takes its ownership from the directory it covers, and
+# distroless has no shell to fix it up afterwards.
+RUN mkdir -p /state
+
+
+FROM gcr.io/distroless/static-debian12:nonroot
+
+COPY --from=build /bridge /bridge
+COPY --from=build --chown=nonroot:nonroot /state /data
+VOLUME ["/data"]
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
+	CMD ["/bridge", "-health"]
+
+ENTRYPOINT ["/bridge"]

@@ -1,0 +1,55 @@
+# The Team Fortress 2 dedicated server, with ripext and our plugin.
+#
+# The 14 GB of game files are not in this image: cm2network/tf2 downloads them
+# into the volume mounted at /home/steam/tf-dedicated on first start, and it
+# downloads SourceMod into that same volume if it is not there yet.
+#
+# That is why nothing is copied into the game directory at build time. A file
+# baked into a path a volume later covers is a file nobody sees. Our additions
+# are staged in /opt instead, and the entrypoint installs them into the volume
+# once SourceMod exists.
+
+FROM debian:stable-slim AS build
+
+RUN apt-get update \
+	&& apt-get install --yes --no-install-recommends curl ca-certificates unzip \
+	&& rm -rf /var/lib/apt/lists/*
+
+WORKDIR /plugin
+COPY plugin/build.sh ./build.sh
+COPY plugin/scripting ./scripting
+RUN ./build.sh
+
+
+FROM cm2network/tf2:sourcemod
+
+ARG RIPEXT_VERSION=1.3.2
+
+USER root
+
+# The staged tree mirrors the game directory, so installing it is one copy.
+RUN apt-get update \
+	&& apt-get install --yes --no-install-recommends curl ca-certificates unzip \
+	&& mkdir -p /opt/tf2-archipelago \
+	&& curl -fsSL -o /tmp/ripext.zip \
+		"https://github.com/ErikMinekus/sm-ripext/releases/download/${RIPEXT_VERSION}/sm-ripext-${RIPEXT_VERSION}-linux.zip" \
+	&& unzip -oq /tmp/ripext.zip -d /tmp/ripext \
+	&& cp -r /tmp/ripext/addons /opt/tf2-archipelago/ \
+	&& rm -rf /opt/tf2-archipelago/addons/sourcemod/scripting \
+	&& rm -rf /tmp/ripext.zip /tmp/ripext \
+	&& apt-get purge --yes unzip curl \
+	&& apt-get autoremove --yes \
+	&& rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /plugin/build/tf2_archipelago.smx \
+	/opt/tf2-archipelago/addons/sourcemod/plugins/tf2_archipelago.smx
+COPY deploy/srcds/tf2_archipelago.cfg \
+	/opt/tf2-archipelago/cfg/sourcemod/tf2_archipelago.cfg
+COPY deploy/srcds-entrypoint.sh /usr/local/bin/entrypoint.sh
+
+RUN chown -R steam:steam /opt/tf2-archipelago \
+	&& chmod +x /usr/local/bin/entrypoint.sh
+
+USER steam
+WORKDIR /home/steam
+CMD ["bash", "/usr/local/bin/entrypoint.sh"]

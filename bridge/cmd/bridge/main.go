@@ -8,6 +8,8 @@ package main
 import (
 	"context"
 	"errors"
+	"flag"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -22,8 +24,34 @@ import (
 	"git-ssh.croque.top/mathis/tf2-archipelago/gamedata"
 )
 
-// shutdownGrace is how long in-flight long-polls get to finish after a signal.
-const shutdownGrace = 5 * time.Second
+const (
+	// shutdownGrace is how long in-flight long-polls get to finish after a
+	// signal.
+	shutdownGrace = 5 * time.Second
+
+	// healthTimeout bounds the health check. It talks to loopback, so anything
+	// slower than this is a bridge that has stopped answering.
+	healthTimeout = 3 * time.Second
+)
+
+// checkHealth is what the container health check runs. The image has no shell
+// and no curl, so the binary answers for itself.
+//
+// It reports the bridge process being up, not the Archipelago session: a
+// bridge with no multiworld to talk to is still doing its job, queueing checks
+// until one comes back.
+func checkHealth(listen string) error {
+	client := &http.Client{Timeout: healthTimeout}
+	response, err := client.Get("http://" + listen + "/healthz")
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return fmt.Errorf("healthz answered %d", response.StatusCode)
+	}
+	return nil
+}
 
 func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
@@ -34,9 +62,16 @@ func main() {
 }
 
 func run(logger *slog.Logger) error {
+	health := flag.Bool("health", false,
+		"ask the running bridge for its health and exit; this is the container health check")
+	flag.Parse()
+
 	cfg, err := config.Load()
 	if err != nil {
 		return err
+	}
+	if *health {
+		return checkHealth(cfg.Listen)
 	}
 	store, err := state.Open(cfg.StatePath)
 	if err != nil {

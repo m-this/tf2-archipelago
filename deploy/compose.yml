@@ -1,0 +1,92 @@
+# The whole stack: one Archipelago server, one Team Fortress 2 server, one
+# bridge between them.
+#
+# Run it from the repository root:
+#
+#   cp deploy/.env.example .env && $EDITOR .env
+#   docker compose -f deploy/compose.yml up
+#
+# The project name is pinned so the game volume keeps its name across
+# rebuilds. Re-downloading 14 GB because a directory was renamed is not a
+# mistake worth being able to make.
+name: tf2-archipelago
+
+services:
+  archipelago:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.archipelago
+    restart: unless-stopped
+    environment:
+      AP_PORT: ${AP_PORT:-38281}
+      AP_SLOT_NAME: ${AP_SLOT_NAME:-tf2}
+      AP_PASSWORD: ${AP_PASSWORD:-}
+      MVM_MISSION_COUNT: ${MVM_MISSION_COUNT:-8}
+      MVM_DIFFICULTY: ${MVM_DIFFICULTY:-intermediate}
+      MVM_GOAL: ${MVM_GOAL:-final_boss}
+      MVM_MISSIONSANITY_PERCENTAGE: ${MVM_MISSIONSANITY_PERCENTAGE:-80}
+      MVM_DEATH_LINK: ${MVM_DEATH_LINK:-false}
+    volumes:
+      - apoutput:/ap/output
+    # Deliberately not published. One slot covers the whole game server, so
+    # nothing outside this stack needs to reach Archipelago. Publish
+    # 127.0.0.1:38281:38281 here if a friend wants to play another game in the
+    # same multiworld.
+
+  srcds:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.srcds
+    restart: unless-stopped
+    environment:
+      SRCDS_HOSTNAME: ${SRCDS_HOSTNAME:-Mann vs Archipelago}
+      SRCDS_RCONPW: ${SRCDS_RCONPW:?set SRCDS_RCONPW in .env}
+      SRCDS_PW: ${SRCDS_PW:-}
+      SRCDS_PORT: ${SRCDS_PORT:-27015}
+      SRCDS_MAXPLAYERS: ${SRCDS_MAXPLAYERS:-6}
+      SRCDS_STARTMAP: ${SRCDS_STARTMAP:-mvm_decoy}
+      SRCDS_TOKEN: ${SRCDS_TOKEN:-0}
+    ports:
+      # The only public port in the stack, and it is the game's.
+      - "${SRCDS_PORT:-27015}:${SRCDS_PORT:-27015}/udp"
+      - "${SRCDS_PORT:-27015}:${SRCDS_PORT:-27015}/tcp"
+    volumes:
+      - tf2game:/home/steam/tf-dedicated
+    depends_on:
+      archipelago:
+        condition: service_healthy
+
+  bridge:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.bridge
+    restart: unless-stopped
+    # The bridge lives inside the game server's network namespace, so its API
+    # really is on loopback: the plugin reaches it at 127.0.0.1 and nothing
+    # else can. Archipelago is still reachable by name, because that namespace
+    # is on this stack's network.
+    network_mode: "service:srcds"
+    environment:
+      AP_HOST: archipelago
+      AP_PORT: ${AP_PORT:-38281}
+      AP_SLOT_NAME: ${AP_SLOT_NAME:-tf2}
+      AP_PASSWORD: ${AP_PASSWORD:-}
+      BRIDGE_LISTEN: 127.0.0.1:24680
+      BRIDGE_STATE: /data/bridge.json
+    volumes:
+      - bridgestate:/data
+    depends_on:
+      archipelago:
+        condition: service_healthy
+      srcds:
+        condition: service_started
+
+volumes:
+  # 14 GB of game files. Keep it.
+  tf2game:
+  # The generated seed. Deleting this and restarting rolls a new multiworld,
+  # which also means every check recorded so far belongs to a run that no
+  # longer exists; the bridge notices the new seed and starts over.
+  apoutput:
+  # The bridge's check queue and unlock set.
+  bridgestate:
