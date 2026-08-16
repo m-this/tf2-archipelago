@@ -70,14 +70,15 @@ func writeSnapshot(path string, data snapshot) error {
 	if err != nil {
 		return err
 	}
-	defer os.Remove(temp.Name())
+	// Best effort: on the happy path the rename has already taken the file.
+	defer func() { _ = os.Remove(temp.Name()) }()
 
 	if _, err := temp.Write(append(body, '\n')); err != nil {
-		temp.Close()
+		_ = temp.Close()
 		return err
 	}
 	if err := temp.Sync(); err != nil {
-		temp.Close()
+		_ = temp.Close()
 		return err
 	}
 	if err := temp.Close(); err != nil {
@@ -96,6 +97,6 @@ func syncDir(dir string) error {
 	if err != nil {
 		return err
 	}
-	defer handle.Close()
+	defer func() { _ = handle.Close() }()
 	return handle.Sync()
 }

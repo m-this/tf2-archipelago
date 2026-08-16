@@ -46,12 +46,18 @@ const (
 // bridge with no multiworld to talk to is still doing its job, queueing checks
 // until one comes back.
 func checkHealth(listen string) error {
-	client := &http.Client{Timeout: healthTimeout}
-	response, err := client.Get("http://" + listen + "/healthz")
+	ctx, cancel := context.WithTimeout(context.Background(), healthTimeout)
+	defer cancel()
+
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://"+listen+"/healthz", nil)
 	if err != nil {
 		return err
 	}
-	defer response.Body.Close()
+	response, err := (&http.Client{}).Do(request)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = response.Body.Close() }()
 	if response.StatusCode != http.StatusOK {
 		return fmt.Errorf("healthz answered %d", response.StatusCode)
 	}

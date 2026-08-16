@@ -130,13 +130,13 @@ func buildMetaFile() metaFile {
 		meta.Difficulties = append(meta.Difficulties, difficultyJSON{d, d.Key(), d.String()})
 	}
 	for _, m := range Maps {
-		meta.Maps = append(meta.Maps, mapJSON{m.ID, m.Name})
+		meta.Maps = append(meta.Maps, mapJSON(m))
 	}
 	for _, c := range Classes {
-		meta.Classes = append(meta.Classes, classJSON{c.ID, c.Key, c.Name})
+		meta.Classes = append(meta.Classes, classJSON(c))
 	}
 	for _, s := range WeaponSlots {
-		meta.WeaponSlots = append(meta.WeaponSlots, weaponSlotJSON{s.ID, s.Key, s.Name})
+		meta.WeaponSlots = append(meta.WeaponSlots, weaponSlotJSON(s))
 	}
 	return meta
 }

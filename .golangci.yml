@@ -1,0 +1,174 @@
+version: "2"
+
+# The compiler catches typos and type errors. It does not catch the bugs that
+# actually reach a running server: an error checked and then dropped, a
+# response body never closed, a switch that stopped being exhaustive when
+# someone added an enum value, a nil pointer that is nil on every path.
+#
+# Every linter below earns its place by catching a failure the compiler cannot
+# see, or by enforcing a rule this project already states in prose. Formatting
+# is gofumpt's job and is not repeated here.
+#
+# Escape hatch: `//nolint:<linter> // <why>`. nolintlint rejects the directive
+# unless it names the linter and explains itself, so every exception is a
+# recorded decision rather than a silent one.
+
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  default: none
+  enable:
+    # --- Baseline: the five golangci-lint enables by default ---
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+
+    # --- Nil and zero values: Go's largest blind spot ---
+    - nilerr
+    - nilnesserr
+    - nilnil
+    - forcetypeassert
+    - recvcheck
+    - makezero
+
+    # --- Errors: the vocabulary must survive the trip up the stack ---
+    - errorlint
+    - errname
+    - errchkjson
+
+    # --- Lifecycle: contexts, bodies ---
+    - bodyclose
+    - noctx
+    - contextcheck
+    - fatcontext
+    - containedctx
+    - durationcheck
+
+    # --- Exhaustiveness ---
+    - exhaustive
+    - iotamixing
+
+    # --- Ambient state ---
+    - forbidigo
+    - gochecknoinits
+    - reassign
+    - predeclared
+
+    # --- Modern Go, not folklore Go ---
+    - modernize
+    - copyloopvar
+    - intrange
+    - exptostd
+    - usestdlibvars
+    - mirror
+    - unconvert
+    - wastedassign
+    - gocritic
+    - misspell
+    - unparam
+    - revive
+
+    # --- Observability: log once, log the same way ---
+    - sloglint
+    - loggercheck
+
+    # --- Tests ---
+    - thelper
+    - tparallel
+    - usetesting
+    - testableexamples
+
+    # --- Size (CLAUDE.md: ~70 lines is a smell) ---
+    - funlen
+    - nakedret
+
+    # --- The escape hatch is itself linted ---
+    - nolintlint
+
+  settings:
+    govet:
+      # nilness is why this block exists: it walks the SSA form and reports
+      # pointers that are nil on every path reaching a dereference. It is off
+      # by default and it is the closest thing Go has to a nil check.
+      enable-all: true
+      disable:
+        - fieldalignment
+        - shadow
+
+    errcheck:
+      check-type-assertions: true
+      check-blank: false
+
+    exhaustive:
+      default-signifies-exhaustive: true
+
+    forbidigo:
+      analyze-types: true
+      forbid:
+        - pattern: '^fmt\.Print.*$'
+          msg: use the injected *slog.Logger, not stdout
+        - pattern: '^print(ln)?$'
+          msg: use the injected *slog.Logger
+        - pattern: '^log\.(Print|Fatal|Panic).*$'
+          msg: log/slog only — the std log package has no structure and no level
+        - pattern: '^http\.DefaultClient$'
+          msg: DefaultClient has no timeout; build an *http.Client where you need one
+        - pattern: '^http\.(Get|Head|Post|PostForm)$'
+          msg: these use DefaultClient; call your own client with a context
+        - pattern: '^os\.Getenv$'
+          msg: config is parsed once in bridge/internal/config and passed as typed values
+
+    sloglint:
+      no-global: all
+      context: scope
+      key-naming-case: snake
+      static-msg: true
+
+    funlen:
+      lines: 70
+      statements: 50
+      ignore-comments: true
+
+    nakedret:
+      max-func-lines: 0
+
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+      allow-unused: false
+
+    revive:
+      rules:
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: error-return
+        - name: error-strings
+        - name: errorf
+        - name: indent-error-flow
+        - name: range-val-address
+        - name: unconditional-recursion
+        - name: unexported-return
+        - name: waitgroup-by-value
+
+  exclusions:
+    generated: lax
+    rules:
+      # The commands are the composition roots: the one place allowed to read
+      # the environment and to print before a logger exists.
+      - path: 'cmd/'
+        linters:
+          - forbidigo
+      - path: 'internal/config/'
+        linters:
+          - forbidigo
+      # Tests build fixtures and print diagnostics. None of that ships.
+      - path: '_test\.go$'
+        linters:
+          - containedctx
+          - forbidigo
+          - funlen
+          - noctx

@@ -16,6 +16,8 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile.archipelago
+      args:
+        ARCHIPELAGO_VERSION: ${ARCHIPELAGO_VERSION:?set it in deploy/env/versions.env}
     restart: unless-stopped
     environment:
       AP_PORT: ${AP_PORT:-38281}
@@ -37,6 +39,8 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile.srcds
+      args:
+        RIPEXT_VERSION: ${RIPEXT_VERSION:?set it in deploy/env/versions.env}
     restart: unless-stopped
     environment:
       SRCDS_HOSTNAME: ${SRCDS_HOSTNAME:-Mann vs Archipelago}
