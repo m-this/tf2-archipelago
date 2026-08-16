@@ -62,14 +62,31 @@ var Missions = []Mission{
 	{29, "mvm_ghost_town_666", "Caliginous Caper", MapGhostTown, DifficultyHaunted, 1},
 }
 
-var missionsByPopFile = indexMissions()
+var (
+	missionsByPopFile = indexMissionsByPopFile()
+	missionsByID      = indexMissionsByID()
+)
 
-func indexMissions() map[string]Mission {
+func indexMissionsByPopFile() map[string]Mission {
 	byPopFile := make(map[string]Mission, len(Missions))
 	for _, m := range Missions {
 		byPopFile[m.PopFile] = m
 	}
 	return byPopFile
+}
+
+func indexMissionsByID() map[MissionID]Mission {
+	byID := make(map[MissionID]Mission, len(Missions))
+	for _, m := range Missions {
+		byID[m.ID] = m
+	}
+	return byID
+}
+
+// MissionByID returns the mission an item or a location belongs to.
+func MissionByID(id MissionID) (Mission, bool) {
+	m, ok := missionsByID[id]
+	return m, ok
 }
 
 // MissionByPopFile returns the mission the plugin means when it reports an

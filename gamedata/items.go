@@ -63,6 +63,23 @@ var cashBundleID = BaseID + itemSpaceOffset + itemBlockCredits + 1
 // project.
 var Items = buildItems()
 
+var itemsByID = indexItems()
+
+func indexItems() map[int64]Item {
+	byID := make(map[int64]Item, len(Items))
+	for _, it := range Items {
+		byID[it.ID] = it
+	}
+	return byID
+}
+
+// ItemByID is how the bridge reads a received item: Archipelago sends an id
+// and nothing else, and the kind behind it is what the plugin is told about.
+func ItemByID(id int64) (Item, bool) {
+	it, ok := itemsByID[id]
+	return it, ok
+}
+
 func buildItems() []Item {
 	all := make([]Item, 0, len(Missions)+len(Classes)+2)
 	for _, m := range Missions {

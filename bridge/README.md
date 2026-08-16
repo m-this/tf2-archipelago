@@ -4,8 +4,6 @@ Go. The Archipelago client. The only component that knows the AP protocol, and
 via `gamedata/` the only component that knows the id mapping. Read [ADR
 0002](../docs/adr/0002-server-side-plugin-with-a-go-bridge.md) first.
 
-Nothing exists yet.
-
 ## What it does
 
 Northbound, to the Archipelago server, over websocket:
@@ -42,11 +40,61 @@ These are the ones that matter. Everything else is detail.
   `srcds` memory. On-disk state survives a bridge restart.
 - **Loopback only.** The bridge never binds a public interface.
 
-## Layout, when it exists
+## Layout
 
-Standard Go: `cmd/bridge/` for the entrypoint, `internal/` for the rest. Likely
-packages: `apclient` (websocket session), `queue` (durable check queue),
-`httpapi` (the plugin-facing API), `state` (unlock set persistence).
+| Package | Holds |
+| --- | --- |
+| `cmd/bridge` | Entrypoint: config, signals, the two goroutines |
+| `internal/config` | The environment, read once at startup |
+| `internal/state` | The check list, the item list, and everything derived from them |
+| `internal/apclient` | The Archipelago session and the goal condition |
+| `internal/httpapi` | The four routes the plugin calls |
 
-Nothing shared with `plugin/` except the wire format, which is documented in
+There is no separate queue package. The durable queue *is* the check list in
+`state`: written before the plugin is answered, and resent in full on every
+reconnect. Archipelago ignores repeats, and 210 ids is not a set worth tracking
+acknowledgements for.
+
+Nothing is shared with `plugin/` except the wire format, which is documented in
 the HTTP API and nowhere else.
+
+## The API
+
+| Method | Path | Body | Returns |
+| --- | --- | --- | --- |
+| `POST` | `/objective` | `{"kind":"wave_cleared","popfile":"mvm_coaltown","wave":3}` | `204` once the check is on disk |
+| `POST` | `/objective` | `{"kind":"mission_cleared","popfile":"mvm_coaltown"}` | `204` |
+| `GET` | `/unlocks` | | `{"seq":6,"classes":[…],"slots":[…],"missions":[…]}` |
+| `GET` | `/grants?since=6` | | the grants past that sequence, or `204` when the poll times out |
+| `GET` | `/healthz` | | the session state and the missions in the seed |
+
+An objective naming a mission or a wave that does not exist is a `400`, not a
+silent drop: it means the plugin and the tables disagree.
+
+Credits appear in `/grants` and never in `/unlocks`. A cash bundle is applied
+once when it arrives; re-applying it on every map change would print money.
+
+## Configuration
+
+| Variable | Default | What it does |
+| --- | --- | --- |
+| `AP_HOST` | `archipelago` | Archipelago server host |
+| `AP_PORT` | `38281` | Archipelago server port |
+| `AP_TLS` | `false` | `wss://` instead of `ws://` |
+| `AP_SLOT_NAME` | `tf2` | The slot to claim. One slot for the whole game server. |
+| `AP_PASSWORD` | empty | Multiworld password |
+| `BRIDGE_LISTEN` | `127.0.0.1:24680` | Plugin-facing address. Loopback. |
+| `BRIDGE_STATE` | `/data/bridge.json` | The state file |
+| `BRIDGE_POLL_TIMEOUT` | `25s` | How long `/grants` is held open |
+
+## Running it against a real server
+
+```sh
+go build ./bridge/cmd/bridge
+AP_HOST=127.0.0.1 AP_SLOT_NAME=TF2 BRIDGE_STATE=./state/bridge.json ./bridge
+curl -X POST localhost:24680/objective \
+  -d '{"kind":"wave_cleared","popfile":"mvm_coaltown","wave":1}'
+```
+
+The check shows up in the Archipelago server log as
+`TF2 sent <item> to TF2 (Crash Course Wave 1)`.
