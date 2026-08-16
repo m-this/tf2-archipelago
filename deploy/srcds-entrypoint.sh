@@ -21,7 +21,12 @@ install_plugin() {
 	installed=0
 	while true; do
 		if [ -d "$GAME/addons/sourcemod/plugins" ]; then
-			cp -r "$STAGE/." "$GAME/"
+			# -u so an unchanged file is not rewritten every half minute.
+			cp -ru "$STAGE/addons/." "$GAME/addons/"
+			# -n for the config: it belongs to whoever runs the server once it
+			# exists, and an operator who turns on tf2ap_debug should not find
+			# it turned off again thirty seconds later.
+			cp -rn "$STAGE/cfg/." "$GAME/cfg/" 2>/dev/null || true
 			if [ "$installed" -eq 0 ]; then
 				echo "[AP] installed the plugin and ripext into $GAME"
 				installed=1

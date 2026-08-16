@@ -10,8 +10,13 @@ export
 GO_VERSION := $(shell sed -n 's/^go //p' go.mod)
 export GO_VERSION
 
-COMPOSE := docker compose --env-file deploy/env/versions.env -f deploy/compose.yml
-COMPOSE_TEST := docker compose --env-file deploy/env/versions.env -f deploy/compose.test.yml
+# --project-directory pins relative paths in the compose files to the repository
+# root. --env-file replaces the default .env rather than adding to it, so both
+# files have to be named: the pins first, then the operator's settings, which
+# win.
+COMPOSE_BASE := docker compose --project-directory . --env-file deploy/env/versions.env --env-file .env
+COMPOSE := $(COMPOSE_BASE) -f deploy/compose.yml
+COMPOSE_TEST := $(COMPOSE_BASE) -f deploy/compose.test.yml
 
 # Tools of record: pinned and run through `go run` or `uv run`, so no host
 # install is needed and a local run is byte-identical to CI.
@@ -39,22 +44,27 @@ help:
 
 # --- The stack ---
 
-up:
-	@if [ ! -f .env ]; then cp deploy/.env.example .env; echo "wrote .env from the example, set SRCDS_RCONPW"; fi
+# Every compose target needs a .env, so it is a real prerequisite rather than a
+# check repeated in each recipe.
+.env:
+	cp deploy/.env.example .env
+	@echo "wrote .env from the example. Set SRCDS_RCONPW before starting."
+
+up: .env
 	$(COMPOSE) up -d
 
-down:
+down: .env
 	$(COMPOSE) down
 
 restart: down up
 
-logs:
+logs: .env
 	$(COMPOSE) logs -f --tail=200
 
-ps:
+ps: .env
 	$(COMPOSE) ps
 
-build:
+build: .env
 	$(COMPOSE) build
 
 # --- Go ---
@@ -150,7 +160,7 @@ integration:
 # Everything CI runs, cheapest failure first. Green here means green there.
 check: fmt-check lint fix-check compile test vuln apworld-lint plugin apworld-test integration
 
-clean:
+clean: .env
 	$(COMPOSE) down -v
 	$(COMPOSE_TEST) down -v
 	rm -rf plugin/build/

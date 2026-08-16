@@ -130,9 +130,33 @@ func TestGrantsReturnWhatIsAlreadyThere(t *testing.T) {
 
 func TestGrantsTimeOutWithNothingNew(t *testing.T) {
 	_, handler := newTestServer(t, 20*time.Millisecond)
-	got := get(t, handler, "/grants?since=0")
-	if got.Code != http.StatusNoContent {
-		t.Fatalf("code = %d, want 204", got.Code)
+
+	var response grantsResponse
+	decode(t, get(t, handler, "/grants?since=0"), &response)
+	if len(response.Grants) != 0 || response.Seq != 0 {
+		t.Fatalf("timed out with %+v", response)
+	}
+}
+
+func TestGrantsTellAPluginThatIsAhead(t *testing.T) {
+	store, handler := newTestServer(t, 5*time.Second)
+	if err := store.ApplyItems(0, []int64{gamedata.Classes[0].ItemID()}); err != nil {
+		t.Fatal(err)
+	}
+
+	// Only a run that restarted underneath the plugin can put it ahead, and
+	// then it has to be told at once rather than held until the poll expires.
+	done := make(chan *httptest.ResponseRecorder, 1)
+	go func() { done <- get(t, handler, "/grants?since=9") }()
+	select {
+	case got := <-done:
+		var response grantsResponse
+		decode(t, got, &response)
+		if response.Seq != 1 || len(response.Grants) != 0 {
+			t.Fatalf("response = %+v", response)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("a plugin ahead of the bridge was left waiting")
 	}
 }
 

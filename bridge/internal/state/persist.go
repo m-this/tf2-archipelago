@@ -47,7 +47,10 @@ func readSnapshot(path string) (snapshot, error) {
 	}
 	var loaded snapshot
 	if err := json.Unmarshal(body, &loaded); err != nil {
-		return snapshot{}, fmt.Errorf("%s is not readable state: %w", path, err)
+		return snapshot{}, fmt.Errorf(
+			"%s cannot be read and it is the only record of this run's checks: %w. "+
+				"Move it aside to start the run over", path, err,
+		)
 	}
 	if loaded.FormatVersion != FormatVersion {
 		return snapshot{}, fmt.Errorf(

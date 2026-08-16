@@ -139,19 +139,43 @@ void Unlocks_WarnIfMissionLocked()
 }
 
 /**
- * Apply the whole set to everyone currently on the server. Called after the
- * bridge answers, because a grant that only takes effect next spawn is a grant
- * the player thinks did not arrive.
+ * Whether there is anything to enforce.
+ *
+ * An unlock set with no classes or no weapon slots in it cannot be right: the
+ * generator guarantees a starting class and a starting slot. Enforcing an
+ * empty one would strip everyone of everything and make the server look
+ * broken, so it is treated as "the bridge has not told us yet".
+ */
+bool Unlocks_Enforceable()
+{
+    if (!g_HaveUnlocks)
+    {
+        return false;
+    }
+    for (int slot = 0; slot < Slot_Count; slot++)
+    {
+        if (g_SlotUnlocked[slot])
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Apply the whole set to everyone playing. Called after the bridge answers,
+ * because a grant that only takes effect next spawn is a grant the player
+ * thinks did not arrive.
  */
 void Unlocks_ApplyToAll()
 {
-    if (!g_HaveUnlocks || !MvM_IsActive())
+    if (!Unlocks_Enforceable() || !MvM_IsActive())
     {
         return;
     }
     for (int client = 1; client <= MaxClients; client++)
     {
-        if (!IsClientInGame(client))
+        if (!MvM_IsPlayer(client))
         {
             continue;
         }
@@ -164,10 +188,15 @@ void Unlocks_ApplyToAll()
  * Move a player off a class they are not allowed to be. Classes are only ever
  * unlocked, never taken away, so this fires for someone who was already
  * playing when the plugin loaded rather than as a punishment.
+ *
+ * The change is queued for the next spawn rather than forced. Respawning
+ * someone mid-wave in Mann vs Machine is a free life: the mode makes death
+ * cost you the rest of the wave, and a plugin that hands that back is worse
+ * than a player finishing a wave as a class the run has not found yet.
  */
 void Unlocks_EnforceClass(int client)
 {
-    if (!g_HaveUnlocks || !IsClientInGame(client))
+    if (!Unlocks_Enforceable() || !MvM_IsPlayer(client))
     {
         return;
     }
@@ -179,15 +208,13 @@ void Unlocks_EnforceClass(int client)
     TFClassType allowed = Unlocks_FirstAllowedClass();
     if (allowed == TFClass_Unknown)
     {
+        // Nothing is unlocked to move them to. Leave them alone rather than
+        // leaving them as nothing.
         return;
     }
-    TF2_SetPlayerClass(client, allowed);
-    AP_PrintToClient(client, "%s is locked, you are now %s.",
+    TF2_SetPlayerClass(client, allowed, false, true);
+    AP_PrintToClient(client, "%s is not unlocked; you spawn as %s next time.",
         g_ClassKeys[view_as<int>(current)], g_ClassKeys[view_as<int>(allowed)]);
-    if (IsPlayerAlive(client))
-    {
-        TF2_RespawnPlayer(client);
-    }
 }
 
 TFClassType Unlocks_FirstAllowedClass()
@@ -209,15 +236,58 @@ TFClassType Unlocks_FirstAllowedClass()
  */
 void Unlocks_EnforceSlots(int client)
 {
-    if (!g_HaveUnlocks || !IsClientInGame(client) || !IsPlayerAlive(client))
+    if (!Unlocks_Enforceable() || !MvM_IsPlayer(client) || !IsPlayerAlive(client))
     {
         return;
     }
+    bool removedActive = false;
+    int active = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+
+    for (int slot = 0; slot < Slot_Count; slot++)
+    {
+        if (g_SlotUnlocked[slot])
+        {
+            continue;
+        }
+        if (active != -1 && GetPlayerWeaponSlot(client, slot) == active)
+        {
+            removedActive = true;
+        }
+        TF2_RemoveWeaponSlot(client, slot);
+    }
+    if (removedActive)
+    {
+        SwitchToAnyWeapon(client);
+    }
+}
+
+/**
+ * Put something in the player's hands.
+ *
+ * Removing the weapon a player is holding leaves them with no active weapon,
+ * which in Team Fortress 2 means no viewmodel, no attack and no obvious way
+ * out. The player cannot fix it themselves because the slot they would switch
+ * to is the one that was taken away.
+ */
+static void SwitchToAnyWeapon(int client)
+{
     for (int slot = 0; slot < Slot_Count; slot++)
     {
         if (!g_SlotUnlocked[slot])
         {
-            TF2_RemoveWeaponSlot(client, slot);
+            continue;
+        }
+        int weapon = GetPlayerWeaponSlot(client, slot);
+        if (weapon == -1)
+        {
+            continue;
+        }
+        char classname[64];
+        if (GetEntityClassname(weapon, classname, sizeof(classname)))
+        {
+            FakeClientCommand(client, "use %s", classname);
+            return;
         }
     }
+    AP_PrintToClient(client, "Every weapon slot is locked. Nothing to hold yet.");
 }

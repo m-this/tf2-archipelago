@@ -30,7 +30,12 @@ type objectiveRequest struct {
 	Wave    uint8  `json:"wave"`
 }
 
+// grantsResponse always carries the sequence the bridge is at, even when it
+// has nothing new to say. That is how a plugin discovers it is ahead: the only
+// way to be ahead is that the run restarted under it, and then it has to
+// resync rather than wait for grants that will never come.
 type grantsResponse struct {
+	Seq    int           `json:"seq"`
 	Grants []state.Grant `json:"grants"`
 }
 
@@ -138,14 +143,16 @@ func (s *Server) getGrants(w http.ResponseWriter, r *http.Request) {
 	// sending the plugin round again.
 	for {
 		changed := s.store.Watch()
-		if grants := s.store.GrantsSince(since); len(grants) > 0 {
-			writeJSON(w, s.logger, grantsResponse{Grants: grants})
+		grants := s.store.GrantsSince(since)
+		latest := s.store.Unlocks().Seq
+		if len(grants) > 0 || since > latest {
+			writeJSON(w, s.logger, grantsResponse{Seq: latest, Grants: grants})
 			return
 		}
 		select {
 		case <-changed:
 		case <-timeout.C:
-			w.WriteHeader(http.StatusNoContent)
+			writeJSON(w, s.logger, grantsResponse{Seq: latest})
 			return
 		case <-r.Context().Done():
 			return

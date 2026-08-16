@@ -11,7 +11,11 @@
 set -eu
 
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-compose="docker compose -f $here/compose.test.yml"
+root=$(CDPATH= cd -- "$here/.." && pwd)
+
+# Same wiring as the Makefile: the pins are what the build args read, and the
+# paths in the compose file are relative to the repository root.
+compose="docker compose --project-directory $root --env-file $root/deploy/env/versions.env -f $here/compose.test.yml"
 bridge="http://127.0.0.1:24680"
 
 # ReadyTimeout covers a cold build plus generating a seed.
@@ -145,6 +149,12 @@ curl -fsS -o /dev/null -X POST "$bridge/say" -d '{"text":"hello from the test"}'
 messages=$(curl -fsS "$bridge/messages?since=$start" | json "len(json.load(sys.stdin)['messages'])")
 [ "${messages:-0}" -ge 1 ] && pass "the multiworld answered with $messages line(s)" \
 	|| fail "the multiworld said nothing back"
+
+log "a plugin whose sequence is ahead is told at once"
+ahead=$(curl -fsS "$bridge/grants?since=9999" | json "json.load(sys.stdin)['seq']")
+[ -n "$ahead" ] && [ "$ahead" -lt 9999 ] \
+	&& pass "the bridge answered with its own sequence, $ahead" \
+	|| fail "the bridge left a plugin that is ahead waiting"
 
 log "the state survives a restart"
 $compose restart bridge >/dev/null

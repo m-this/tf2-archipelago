@@ -2,6 +2,10 @@ bin/
 tmp/
 *.log
 
+# The operator's settings: server passwords, the RCON password, the run's
+# shape. deploy/.env.example is the committed template.
+/.env
+
 # Compiled SourcePawn output and the toolchain build.sh downloads for it.
 # The source in plugin/ is the artefact we keep.
 *.smx

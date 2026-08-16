@@ -66,13 +66,18 @@ the HTTP API and nowhere else.
 | `POST` | `/objective` | `{"kind":"wave_cleared","popfile":"mvm_coaltown","wave":3}` | `204` once the check is on disk |
 | `POST` | `/objective` | `{"kind":"mission_cleared","popfile":"mvm_coaltown"}` | `204` |
 | `GET` | `/unlocks` | | `{"seq":6,"classes":[…],"slots":[…],"missions":[…]}` |
-| `GET` | `/grants?since=6` | | the grants past that sequence, or `204` when the poll times out |
+| `GET` | `/grants?since=6` | | `{"seq":8,"grants":[…]}`, held open until there is something past that sequence |
 | `GET` | `/messages?since=-1` | | the multiworld's chat, long-polled. A negative sequence means "start from now" |
 | `POST` | `/say` | `{"text":"!hint Scout"}` | `204`, or `503` when there is no multiworld to say it to |
 | `GET` | `/healthz` | | the session state and the missions in the seed |
 
 An objective naming a mission or a wave that does not exist is a `400`, not a
 silent drop: it means the plugin and the tables disagree.
+
+`/grants` always answers with the sequence the bridge is at, even when it has
+nothing new. That is how the plugin learns it is *ahead*: the only way to be
+ahead is that the run restarted underneath it, and then it has to refetch the
+unlock set rather than wait for grants that will never arrive.
 
 Chat is the one thing here that is not durable. A check is a fact about a run
 and must survive anything; a line someone typed while the game server was

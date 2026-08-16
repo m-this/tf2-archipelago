@@ -14,7 +14,7 @@ name: tf2-archipelago
 services:
   archipelago:
     build:
-      context: ..
+      context: .
       dockerfile: deploy/Dockerfile.archipelago
       args:
         ARCHIPELAGO_VERSION: ${ARCHIPELAGO_VERSION:?set it in deploy/env/versions.env}
@@ -37,7 +37,7 @@ services:
 
   srcds:
     build:
-      context: ..
+      context: .
       dockerfile: deploy/Dockerfile.srcds
       args:
         RIPEXT_VERSION: ${RIPEXT_VERSION:?set it in deploy/env/versions.env}
@@ -62,13 +62,17 @@ services:
 
   bridge:
     build:
-      context: ..
+      context: .
       dockerfile: deploy/Dockerfile.bridge
     restart: unless-stopped
     # The bridge lives inside the game server's network namespace, so its API
     # really is on loopback: the plugin reaches it at 127.0.0.1 and nothing
     # else can. Archipelago is still reachable by name, because that namespace
     # is on this stack's network.
+    #
+    # The cost of sharing it: restarting srcds takes the bridge's networking
+    # with it. It restarts on its own, and the checks are on disk, so this
+    # costs seconds rather than progress.
     network_mode: "service:srcds"
     environment:
       AP_HOST: archipelago
