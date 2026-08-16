@@ -152,6 +152,30 @@ func TestLocationByObjective(t *testing.T) {
 	}
 }
 
+func TestLookupsRoundTrip(t *testing.T) {
+	for _, l := range Locations {
+		got, ok := LocationByID(l.ID)
+		if !ok || got != l {
+			t.Fatalf("LocationByID(%d) = %+v, %v", l.ID, got, ok)
+		}
+		if _, ok := MissionByID(l.Mission); !ok {
+			t.Fatalf("%q belongs to unknown mission %d", l.Name, l.Mission)
+		}
+	}
+	for _, it := range Items {
+		got, ok := ItemByID(it.ID)
+		if !ok || got != it {
+			t.Fatalf("ItemByID(%d) = %+v, %v", it.ID, got, ok)
+		}
+	}
+	if _, ok := LocationByID(BaseID); ok {
+		t.Error("the base id itself resolves to a location")
+	}
+	if _, ok := ItemByID(0); ok {
+		t.Error("id 0 resolves to an item")
+	}
+}
+
 func TestCommittedExportIsCurrent(t *testing.T) {
 	fresh := t.TempDir()
 	if err := Export(fresh); err != nil {

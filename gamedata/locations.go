@@ -53,6 +53,23 @@ func buildLocations() []Location {
 	return all
 }
 
+var locationsByID = indexLocations()
+
+func indexLocations() map[int64]Location {
+	byID := make(map[int64]Location, len(Locations))
+	for _, l := range Locations {
+		byID[l.ID] = l
+	}
+	return byID
+}
+
+// LocationByID is how the bridge reads a check back: an id on the wire says
+// nothing, the location it came from says which mission and which wave.
+func LocationByID(id int64) (Location, bool) {
+	l, ok := locationsByID[id]
+	return l, ok
+}
+
 // LocationByObjective resolves what the plugin reported. Wave is ignored for a
 // mission clear. This is the whole southbound translation: the bridge holds no
 // id table of its own.
