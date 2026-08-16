@@ -48,7 +48,8 @@ These are the ones that matter. Everything else is detail.
 | `internal/config` | The environment, read once at startup |
 | `internal/state` | The check list, the item list, and everything derived from them |
 | `internal/apclient` | The Archipelago session and the goal condition |
-| `internal/httpapi` | The four routes the plugin calls |
+| `internal/chat` | The multiworld's conversation, bounded and not durable |
+| `internal/httpapi` | The routes the plugin calls |
 
 There is no separate queue package. The durable queue *is* the check list in
 `state`: written before the plugin is answered, and resent in full on every
@@ -66,10 +67,19 @@ the HTTP API and nowhere else.
 | `POST` | `/objective` | `{"kind":"mission_cleared","popfile":"mvm_coaltown"}` | `204` |
 | `GET` | `/unlocks` | | `{"seq":6,"classes":[…],"slots":[…],"missions":[…]}` |
 | `GET` | `/grants?since=6` | | the grants past that sequence, or `204` when the poll times out |
+| `GET` | `/messages?since=-1` | | the multiworld's chat, long-polled. A negative sequence means "start from now" |
+| `POST` | `/say` | `{"text":"!hint Scout"}` | `204`, or `503` when there is no multiworld to say it to |
 | `GET` | `/healthz` | | the session state and the missions in the seed |
 
 An objective naming a mission or a wave that does not exist is a `400`, not a
 silent drop: it means the plugin and the tables disagree.
+
+Chat is the one thing here that is not durable. A check is a fact about a run
+and must survive anything; a line someone typed while the game server was
+restarting is gone, the way it would be in any other chat. `/say` refuses
+rather than queues for the same reason: a message that lands ten minutes late
+is worse than one that was refused, and the player is standing right there to
+be told.
 
 Credits appear in `/grants` and never in `/unlocks`. A cash bundle is applied
 once when it arrives; re-applying it on every map change would print money.

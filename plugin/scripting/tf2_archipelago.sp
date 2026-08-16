@@ -8,7 +8,7 @@
  * The MvM events and entity properties it reads are UNVERIFIED against a live
  * server. Every hook is optional and every failure is announced, so the first
  * real session says which of them exist rather than the plugin quietly
- * reporting nothing. `sm_ap` prints the whole picture.
+ * reporting nothing. `sm_ap_status` prints the whole picture.
  */
 
 #pragma semicolon 1
@@ -29,6 +29,10 @@
 
 // WavePollInterval is only used when the wave events turn out not to exist.
 #define WavePollInterval 1.0
+
+// WelcomeDelay keeps the welcome out of the map load, where it would scroll
+// past before the player can read it.
+#define WelcomeDelay 8.0
 
 public Plugin myinfo =
 {
@@ -67,7 +71,9 @@ public void OnPluginStart()
     HookEvent("player_spawn", Event_PlayerSpawn);
 
     AddCommandListener(Command_JoinClass, "joinclass");
-    RegAdminCmd("sm_ap", Command_Status, ADMFLAG_GENERIC,
+    AddCommandListener(Command_Say, "say");
+    AddCommandListener(Command_Say, "say_team");
+    RegAdminCmd("sm_ap_status", Command_Status, ADMFLAG_GENERIC,
         "Print the Archipelago integration's state");
     RegAdminCmd("sm_ap_report", Command_Report, ADMFLAG_ROOT,
         "Report an objective by hand: sm_ap_report <wave_cleared|mission_cleared> [wave]");
@@ -88,6 +94,94 @@ public void OnPluginStart()
 
     Bridge_FetchUnlocks();
     Bridge_PollGrants();
+    Bridge_PollMessages();
+}
+
+/**
+ * Tell an arriving player what they have walked into.
+ *
+ * There is no client mod and the web MOTD is a panel most people close without
+ * reading, so this is chat. Delayed a few seconds: a message printed while the
+ * map is still loading is a message nobody sees.
+ */
+public void OnClientPutInServer(int client)
+{
+    if (IsFakeClient(client))
+    {
+        return;
+    }
+    CreateTimer(WelcomeDelay, Timer_Welcome, GetClientUserId(client));
+}
+
+public Action Timer_Welcome(Handle timer, any userid)
+{
+    int client = GetClientOfUserId(userid);
+    if (client <= 0 || !IsClientInGame(client))
+    {
+        return Plugin_Stop;
+    }
+
+    char popFile[64];
+    MvM_PopFile(popFile, sizeof(popFile));
+
+    AP_PrintToClient(client, "This server is running an Archipelago randomizer.");
+    AP_PrintToClient(client, "Classes and weapon slots are locked until the run finds them, and everyone shares the same unlocks.");
+    AP_PrintToClient(client, "Mission: %s. Clearing a wave is a check.", popFile);
+    AP_PrintToClient(client, "Unlocked classes: %s", Status_ClassList());
+    AP_PrintToClient(client, "Unlocked slots: %s", Status_SlotList());
+    AP_PrintToClient(client, "Talk to the multiworld with \x07FFD700!ap\x01, for example \x07FFD700!ap hint Scout\x01 or \x07FFD700!ap missing\x01.");
+    return Plugin_Stop;
+}
+
+/**
+ * Chat passing through to the multiworld.
+ *
+ *   !ap                one line of help
+ *   !ap <command>      an Archipelago server command, ! added if it is missing
+ *   !apchat <text>     plain talk to the other players in the multiworld
+ *
+ * Archipelago's own commands are what a player would otherwise need a separate
+ * client for: !hint, !missing, !status, !release, !collect.
+ */
+public Action Command_Say(int client, const char[] command, int argc)
+{
+    if (client <= 0)
+    {
+        return Plugin_Continue;
+    }
+    char message[256];
+    GetCmdArgString(message, sizeof(message));
+    StripQuotes(message);
+    TrimString(message);
+
+    if (StrEqual(message, "!ap", false))
+    {
+        AP_PrintToClient(client, "!ap <command> talks to the multiworld: try hint, missing, status, release.");
+        AP_PrintToClient(client, "!apchat <text> says something to the other players in it.");
+        return Plugin_Handled;
+    }
+    if (strncmp(message, "!ap ", 4, false) == 0)
+    {
+        char text[256];
+        strcopy(text, sizeof(text), message[4]);
+        TrimString(text);
+        if (text[0] != '!')
+        {
+            Format(text, sizeof(text), "!%s", text);
+        }
+        Bridge_Say(client, text);
+        return Plugin_Handled;
+    }
+    if (strncmp(message, "!apchat ", 8, false) == 0)
+    {
+        char text[256];
+        char nickname[MAX_NAME_LENGTH];
+        GetClientName(client, nickname, sizeof(nickname));
+        FormatEx(text, sizeof(text), "%s: %s", nickname, message[8]);
+        Bridge_Say(client, text);
+        return Plugin_Handled;
+    }
+    return Plugin_Continue;
 }
 
 public void OnMapStart()
