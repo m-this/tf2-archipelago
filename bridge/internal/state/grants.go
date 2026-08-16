@@ -19,6 +19,11 @@ type Grant struct {
 	// for a grant whose payload is a number.
 	Key string `json:"key,omitempty"`
 
+	// Name is the same thing spelled for a player, because the plugin
+	// announces grants in chat and "Ctrl+Alt+Destruction" reads better than
+	// "mvm_coaltown_advanced".
+	Name string `json:"name,omitempty"`
+
 	// Amount is the credits a cash bundle is worth. Zero elsewhere.
 	Amount int `json:"amount,omitempty"`
 }
@@ -72,23 +77,24 @@ func grantFor(item gamedata.Item, slotsGranted int) (Grant, bool) {
 		if !ok {
 			return Grant{}, false
 		}
-		return Grant{Kind: item.Kind.Key(), Key: mission.PopFile}, true
+		return Grant{Kind: item.Kind.Key(), Key: mission.PopFile, Name: mission.Name}, true
 
 	case gamedata.ItemClass:
 		class, ok := gamedata.ClassByID(item.Class)
 		if !ok {
 			return Grant{}, false
 		}
-		return Grant{Kind: item.Kind.Key(), Key: class.Key}, true
+		return Grant{Kind: item.Kind.Key(), Key: class.Key, Name: class.Name}, true
 
 	case gamedata.ItemWeaponSlot:
 		if slotsGranted >= len(gamedata.WeaponSlots) {
 			return Grant{}, false
 		}
-		return Grant{Kind: item.Kind.Key(), Key: gamedata.WeaponSlots[slotsGranted].Key}, true
+		slot := gamedata.WeaponSlots[slotsGranted]
+		return Grant{Kind: item.Kind.Key(), Key: slot.Key, Name: slot.Name}, true
 
 	case gamedata.ItemCredits:
-		return Grant{Kind: item.Kind.Key(), Amount: int(item.Credits)}, true
+		return Grant{Kind: item.Kind.Key(), Amount: int(item.Credits), Name: item.Name}, true
 
 	default:
 		return Grant{}, false

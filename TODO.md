@@ -247,22 +247,41 @@ bridge logs that it will not honour it, because what a death means in MvM is
 still open (`docs/spec.md`, question 5). It does not claim the tag, so it does
 not promise other players something it will not deliver.
 
-## Milestone 4: plugin
+## Milestone 4: plugin — written, never run
 
 SourcePawn, SourceMod 1.12, `ripext` 1.3.2. Every bridge call asynchronous.
 
-- [ ] Detect wave clear. Candidate: the `mvm_wave_complete` game event, or
-      watch `m_nMannVsMachineWaveCount` on `tf_objective_resource`.
-      **UNVERIFIED, needs a live server.**
-- [ ] Detect mission clear: `mvm_mission_complete`, same caveat.
-- [ ] Read the current pop file so objectives can name it.
-- [ ] `POST /objective` on each, with retry.
-- [ ] `GET /unlocks` on plugin load and on `OnMapStart`, then apply.
-- [ ] Long-poll `/grants`, apply as they arrive.
-- [ ] Enforce weapon slots: block the locked ones.
-- [ ] Enforce classes: refuse the locked ones at the class menu.
-- [ ] Announce received items in chat.
-- [ ] Compile with `spcomp` in CI, Dockerised.
+- [x] Detect wave clear: `mvm_wave_complete`, with the wave number carried from
+      `mvm_begin_wave`. **Both UNVERIFIED.** Hooked with `HookEventEx`, so a
+      missing event degrades instead of failing the load, and a one-second
+      timer watching `m_nMannVsMachineWaveCount` takes over if the event is not
+      there.
+- [x] Detect mission clear: `mvm_mission_complete`, plus the last wave of the
+      mission reporting it too. Both are idempotent at the bridge, so between
+      them one will fire.
+- [x] Read the current pop file: `m_iszMvMPopfileName`, path and extension
+      trimmed, falling back to the map name. **UNVERIFIED.**
+- [x] `POST /objective` on each, with retry. The queue keys objectives by id,
+      not by index, because an erase shifts every index after it while requests
+      are in flight.
+- [x] `GET /unlocks` on plugin load and on `OnMapStart`, then apply.
+- [x] Long-poll `/grants`, apply as they arrive, re-poll immediately.
+- [x] Enforce weapon slots on every inventory application, which covers
+      spawning, resupply lockers and the upgrade station.
+- [x] Enforce classes at `joinclass`, and move a player off a locked class on
+      spawn. Enforcement is a no-op until the bridge has answered once: a
+      server where nobody can hold a weapon because the bridge hiccuped is
+      worse than a wave played with too much kit.
+- [x] Announce received items in chat, with errors going to chat as well.
+      `sm_ap` prints the whole state, `sm_ap_report` sends an objective by
+      hand, `tf2ap_debug 1` echoes everything.
+- [x] Compile with `spcomp`: `plugin/build.sh` fetches the pinned toolchain and
+      compiles with warnings as errors. Clean as of 2026-08-16.
+- [ ] Run it. **Nothing here has been executed.** No Team Fortress 2 server was
+      available, so every game event and entity property above is a compile-time
+      guess. The first live session should be `tf2ap_debug 1`, and `sm_ap` will
+      say which of the three events actually exist.
+- [ ] Dockerise the compile for CI (milestone 6).
 
 ## Milestone 5: compose
 

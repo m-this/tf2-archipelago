@@ -2,8 +2,10 @@ bin/
 tmp/
 *.log
 
-# Compiled SourcePawn output. The source in plugin/ is the artefact we keep.
+# Compiled SourcePawn output and the toolchain build.sh downloads for it.
+# The source in plugin/ is the artefact we keep.
 *.smx
+/plugin/build/
 
 # Built apworld bundle. Rebuilt from apworld/tf2_mvm/ on demand.
 *.apworld
