@@ -66,9 +66,14 @@ from the official TF2 wiki. 29 missions, which matches the wiki's own count.
 | `mvm_rottenburg` | Village Vanguard | mvm_rottenburg | Intermediate | 7 |
 | `mvm_rottenburg_advanced1` | Hamlet Hostility | mvm_rottenburg | Advanced | 7 |
 | `mvm_rottenburg_advanced2` | Bavarian Botbash | mvm_rottenburg | Advanced | 7 |
-| `mvm_ghost_town_666` | Caliginous Caper | mvm_ghost_town | Nightmare | 1 |
+| `mvm_ghost_town_666` | Caliginous Caper | mvm_ghost_town | Haunted | 1 |
 
-Total: 176 waves, which is the upper bound on the wave-clear location group.
+Total: 181 waves, which is the upper bound on the wave-clear location group.
+With the 29 mission clears that is 210 checks. An earlier revision of this
+table said 176; the rows sum to 181 and the export is built from the rows.
+
+The last tier is Valve's `haunted`, from the `mvm_maps` block of
+`tf/scripts/items/items_game.txt`. The wiki calls it Nightmare.
 
 - [ ] **UNVERIFIED: the pop-file-to-mission mapping within a difficulty tier.**
       The pop file names and the mission names are both certain, and the
@@ -81,30 +86,43 @@ Total: 176 waves, which is the upper bound on the wave-clear location group.
       pop file name. A wrong pairing gives the player the wrong mission name in
       chat, nothing worse, but fix it before the first seed is played.
 
-## Milestone 1: gamedata
+## Milestone 1: gamedata — done
 
 Go package, no dependencies. See ADR 0001 for the id rules.
 
-- [ ] `Mission{ID, PopFile, Name, Map, Difficulty, Waves}`, the 29 rows above.
-- [ ] `Map{ID, Name}`, the 7 maps.
-- [ ] `Class{ID, Name}`, the 9 classes.
-- [ ] `WeaponSlot{ID, Name}`: Primary, Secondary, Melee.
-- [ ] `Difficulty` enum: Normal, Intermediate, Advanced, Expert, Nightmare.
-- [ ] The game name string, exactly once: `"Team Fortress 2 Mann vs Machine"`.
-- [ ] AP base id offset, one constant. Pick a number and never move it.
-- [ ] Data format version constant.
-- [ ] Location id derivation: `base + mission.ID*100 + wave` for wave clears,
-      `base + mission.ID*100 + 99` for mission clears. The `*100` bound holds
-      because no mission has more than 8 waves; assert it in the test.
-- [ ] JSON exporter writing `apworld/tf2_mvm/data/{missions,items,meta}.json`.
-- [ ] Test: ids unique across the whole space.
-- [ ] Test: every id in the committed export still has the same value.
-- [ ] Test: `wave_count <= 99` for every mission.
+- [x] `Mission{ID, PopFile, Name, Map, Difficulty, Waves}`, the 29 rows above.
+- [x] `Map{ID, Name}`, the 7 maps.
+- [x] `Class{ID, Key, Name}`, the 9 classes. `Key` is what crosses the wire to
+      the plugin, so nothing here depends on TF2's internal class numbering.
+- [x] `WeaponSlot{ID, Key, Name}`: Primary, Secondary, Melee. The table order
+      is the order the progressive item hands them out, so it is as frozen as
+      an id.
+- [x] `Difficulty` enum: normal, intermediate, advanced, expert, haunted.
+- [x] The game name string, exactly once: `"Team Fortress 2 Mann vs Machine"`.
+- [x] AP base id offset, one constant: `7_442_000_000`.
+- [x] Data format version constant.
+- [x] Location id derivation: `base + mission.ID*100 + wave` for wave clears,
+      `base + mission.ID*100 + 99` for mission clears. Items sit at
+      `base + 1_000_000` and up so the two spaces cannot meet.
+- [x] `LocationByObjective(kind, popfile, wave)`, the whole southbound
+      translation. The bridge keeps no id table of its own.
+- [x] JSON exporter writing `apworld/tf2_mvm/data/{missions,items,meta}.json`,
+      behind `go generate ./gamedata`.
+- [x] Test: ids unique across the whole space.
+- [x] Test: no id in `testdata/ids-frozen.json` has moved. New ids are recorded
+      with `go test ./gamedata/ -freeze`, which never rewrites an existing one.
+- [x] Test: `1 <= waves <= 98` for every mission, and the last wave of a
+      mission never reaches its own clear slot.
+- [x] Test: the committed export matches what the Go source produces.
 
 Deliberately **not** in v1: weapons (210 lines in the fork's table), upgrade
 lines, canteens, robot templates, traps. Weapon *slots* are enough to make a
 progression, and the full weapon table is the single biggest chunk of data
 entry in the project. Add it in v2.
+
+The item pool the export declares: 29 mission tickets, 9 class items, one
+`Progressive Weapon Slot` in 3 copies, and `Cash Bundle` filler worth 200
+credits. 40 named items against 210 locations, so filler carries the rest.
 
 ## Milestone 2: apworld
 

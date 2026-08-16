@@ -1,0 +1,1526 @@
+{
+  "format_version": 1,
+  "missions": [
+    {
+      "id": 1,
+      "pop_file": "mvm_decoy",
+      "name": "Doe's Drill",
+      "map_id": 1,
+      "difficulty": "normal",
+      "waves": 8,
+      "locations": [
+        {
+          "id": 7442000101,
+          "name": "Doe's Drill Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442000102,
+          "name": "Doe's Drill Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442000103,
+          "name": "Doe's Drill Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442000104,
+          "name": "Doe's Drill Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442000105,
+          "name": "Doe's Drill Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442000106,
+          "name": "Doe's Drill Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442000107,
+          "name": "Doe's Drill Wave 7",
+          "kind": "wave_cleared",
+          "wave": 7
+        },
+        {
+          "id": 7442000108,
+          "name": "Doe's Drill Wave 8",
+          "kind": "wave_cleared",
+          "wave": 8
+        },
+        {
+          "id": 7442000199,
+          "name": "Doe's Drill Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "pop_file": "mvm_decoy_intermediate",
+      "name": "Doe's Doom",
+      "map_id": 1,
+      "difficulty": "intermediate",
+      "waves": 7,
+      "locations": [
+        {
+          "id": 7442000201,
+          "name": "Doe's Doom Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442000202,
+          "name": "Doe's Doom Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442000203,
+          "name": "Doe's Doom Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442000204,
+          "name": "Doe's Doom Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442000205,
+          "name": "Doe's Doom Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442000206,
+          "name": "Doe's Doom Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442000207,
+          "name": "Doe's Doom Wave 7",
+          "kind": "wave_cleared",
+          "wave": 7
+        },
+        {
+          "id": 7442000299,
+          "name": "Doe's Doom Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "pop_file": "mvm_decoy_intermediate2",
+      "name": "Day of Wreckening",
+      "map_id": 1,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "locations": [
+        {
+          "id": 7442000301,
+          "name": "Day of Wreckening Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442000302,
+          "name": "Day of Wreckening Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442000303,
+          "name": "Day of Wreckening Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442000304,
+          "name": "Day of Wreckening Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442000305,
+          "name": "Day of Wreckening Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442000306,
+          "name": "Day of Wreckening Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442000399,
+          "name": "Day of Wreckening Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "pop_file": "mvm_decoy_advanced",
+      "name": "Disk Deletion",
+      "map_id": 1,
+      "difficulty": "advanced",
+      "waves": 8,
+      "locations": [
+        {
+          "id": 7442000401,
+          "name": "Disk Deletion Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442000402,
+          "name": "Disk Deletion Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442000403,
+          "name": "Disk Deletion Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442000404,
+          "name": "Disk Deletion Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442000405,
+          "name": "Disk Deletion Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442000406,
+          "name": "Disk Deletion Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442000407,
+          "name": "Disk Deletion Wave 7",
+          "kind": "wave_cleared",
+          "wave": 7
+        },
+        {
+          "id": 7442000408,
+          "name": "Disk Deletion Wave 8",
+          "kind": "wave_cleared",
+          "wave": 8
+        },
+        {
+          "id": 7442000499,
+          "name": "Disk Deletion Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "pop_file": "mvm_decoy_advanced2",
+      "name": "Data Demolition",
+      "map_id": 1,
+      "difficulty": "advanced",
+      "waves": 6,
+      "locations": [
+        {
+          "id": 7442000501,
+          "name": "Data Demolition Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442000502,
+          "name": "Data Demolition Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442000503,
+          "name": "Data Demolition Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442000504,
+          "name": "Data Demolition Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442000505,
+          "name": "Data Demolition Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442000506,
+          "name": "Data Demolition Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442000599,
+          "name": "Data Demolition Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "pop_file": "mvm_decoy_advanced3",
+      "name": "Disintegration",
+      "map_id": 1,
+      "difficulty": "advanced",
+      "waves": 6,
+      "locations": [
+        {
+          "id": 7442000601,
+          "name": "Disintegration Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442000602,
+          "name": "Disintegration Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442000603,
+          "name": "Disintegration Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442000604,
+          "name": "Disintegration Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442000605,
+          "name": "Disintegration Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442000606,
+          "name": "Disintegration Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442000699,
+          "name": "Disintegration Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "pop_file": "mvm_decoy_expert1",
+      "name": "Desperation",
+      "map_id": 1,
+      "difficulty": "expert",
+      "waves": 7,
+      "locations": [
+        {
+          "id": 7442000701,
+          "name": "Desperation Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442000702,
+          "name": "Desperation Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442000703,
+          "name": "Desperation Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442000704,
+          "name": "Desperation Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442000705,
+          "name": "Desperation Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442000706,
+          "name": "Desperation Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442000707,
+          "name": "Desperation Wave 7",
+          "kind": "wave_cleared",
+          "wave": 7
+        },
+        {
+          "id": 7442000799,
+          "name": "Desperation Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "pop_file": "mvm_coaltown",
+      "name": "Crash Course",
+      "map_id": 2,
+      "difficulty": "normal",
+      "waves": 6,
+      "locations": [
+        {
+          "id": 7442000801,
+          "name": "Crash Course Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442000802,
+          "name": "Crash Course Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442000803,
+          "name": "Crash Course Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442000804,
+          "name": "Crash Course Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442000805,
+          "name": "Crash Course Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442000806,
+          "name": "Crash Course Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442000899,
+          "name": "Crash Course Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "pop_file": "mvm_coaltown_intermediate",
+      "name": "Cave-in",
+      "map_id": 2,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "locations": [
+        {
+          "id": 7442000901,
+          "name": "Cave-in Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442000902,
+          "name": "Cave-in Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442000903,
+          "name": "Cave-in Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442000904,
+          "name": "Cave-in Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442000905,
+          "name": "Cave-in Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442000906,
+          "name": "Cave-in Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442000999,
+          "name": "Cave-in Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "pop_file": "mvm_coaltown_intermediate2",
+      "name": "Quarry",
+      "map_id": 2,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "locations": [
+        {
+          "id": 7442001001,
+          "name": "Quarry Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442001002,
+          "name": "Quarry Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442001003,
+          "name": "Quarry Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442001004,
+          "name": "Quarry Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442001005,
+          "name": "Quarry Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442001006,
+          "name": "Quarry Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442001099,
+          "name": "Quarry Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "pop_file": "mvm_coaltown_advanced",
+      "name": "Ctrl+Alt+Destruction",
+      "map_id": 2,
+      "difficulty": "advanced",
+      "waves": 7,
+      "locations": [
+        {
+          "id": 7442001101,
+          "name": "Ctrl+Alt+Destruction Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442001102,
+          "name": "Ctrl+Alt+Destruction Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442001103,
+          "name": "Ctrl+Alt+Destruction Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442001104,
+          "name": "Ctrl+Alt+Destruction Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442001105,
+          "name": "Ctrl+Alt+Destruction Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442001106,
+          "name": "Ctrl+Alt+Destruction Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442001107,
+          "name": "Ctrl+Alt+Destruction Wave 7",
+          "kind": "wave_cleared",
+          "wave": 7
+        },
+        {
+          "id": 7442001199,
+          "name": "Ctrl+Alt+Destruction Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "pop_file": "mvm_coaltown_advanced2",
+      "name": "CPU Slaughter",
+      "map_id": 2,
+      "difficulty": "advanced",
+      "waves": 6,
+      "locations": [
+        {
+          "id": 7442001201,
+          "name": "CPU Slaughter Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442001202,
+          "name": "CPU Slaughter Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442001203,
+          "name": "CPU Slaughter Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442001204,
+          "name": "CPU Slaughter Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442001205,
+          "name": "CPU Slaughter Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442001206,
+          "name": "CPU Slaughter Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442001299,
+          "name": "CPU Slaughter Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "pop_file": "mvm_coaltown_expert1",
+      "name": "Cataclysm",
+      "map_id": 2,
+      "difficulty": "expert",
+      "waves": 7,
+      "locations": [
+        {
+          "id": 7442001301,
+          "name": "Cataclysm Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442001302,
+          "name": "Cataclysm Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442001303,
+          "name": "Cataclysm Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442001304,
+          "name": "Cataclysm Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442001305,
+          "name": "Cataclysm Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442001306,
+          "name": "Cataclysm Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442001307,
+          "name": "Cataclysm Wave 7",
+          "kind": "wave_cleared",
+          "wave": 7
+        },
+        {
+          "id": 7442001399,
+          "name": "Cataclysm Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "pop_file": "mvm_mannworks",
+      "name": "Mann-euvers",
+      "map_id": 3,
+      "difficulty": "normal",
+      "waves": 7,
+      "locations": [
+        {
+          "id": 7442001401,
+          "name": "Mann-euvers Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442001402,
+          "name": "Mann-euvers Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442001403,
+          "name": "Mann-euvers Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442001404,
+          "name": "Mann-euvers Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442001405,
+          "name": "Mann-euvers Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442001406,
+          "name": "Mann-euvers Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442001407,
+          "name": "Mann-euvers Wave 7",
+          "kind": "wave_cleared",
+          "wave": 7
+        },
+        {
+          "id": 7442001499,
+          "name": "Mann-euvers Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "pop_file": "mvm_mannworks_intermediate",
+      "name": "Mean Machines",
+      "map_id": 3,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "locations": [
+        {
+          "id": 7442001501,
+          "name": "Mean Machines Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442001502,
+          "name": "Mean Machines Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442001503,
+          "name": "Mean Machines Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442001504,
+          "name": "Mean Machines Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442001505,
+          "name": "Mean Machines Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442001506,
+          "name": "Mean Machines Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442001599,
+          "name": "Mean Machines Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "pop_file": "mvm_mannworks_intermediate2",
+      "name": "Mannhunt",
+      "map_id": 3,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "locations": [
+        {
+          "id": 7442001601,
+          "name": "Mannhunt Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442001602,
+          "name": "Mannhunt Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442001603,
+          "name": "Mannhunt Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442001604,
+          "name": "Mannhunt Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442001605,
+          "name": "Mannhunt Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442001606,
+          "name": "Mannhunt Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442001699,
+          "name": "Mannhunt Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "pop_file": "mvm_mannworks_advanced",
+      "name": "Machine Massacre",
+      "map_id": 3,
+      "difficulty": "advanced",
+      "waves": 7,
+      "locations": [
+        {
+          "id": 7442001701,
+          "name": "Machine Massacre Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442001702,
+          "name": "Machine Massacre Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442001703,
+          "name": "Machine Massacre Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442001704,
+          "name": "Machine Massacre Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442001705,
+          "name": "Machine Massacre Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442001706,
+          "name": "Machine Massacre Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442001707,
+          "name": "Machine Massacre Wave 7",
+          "kind": "wave_cleared",
+          "wave": 7
+        },
+        {
+          "id": 7442001799,
+          "name": "Machine Massacre Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "pop_file": "mvm_mannworks_ironman",
+      "name": "Mech Mutilation",
+      "map_id": 3,
+      "difficulty": "advanced",
+      "waves": 3,
+      "locations": [
+        {
+          "id": 7442001801,
+          "name": "Mech Mutilation Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442001802,
+          "name": "Mech Mutilation Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442001803,
+          "name": "Mech Mutilation Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442001899,
+          "name": "Mech Mutilation Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "pop_file": "mvm_mannworks_expert1",
+      "name": "Mannslaughter",
+      "map_id": 3,
+      "difficulty": "expert",
+      "waves": 5,
+      "locations": [
+        {
+          "id": 7442001901,
+          "name": "Mannslaughter Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442001902,
+          "name": "Mannslaughter Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442001903,
+          "name": "Mannslaughter Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442001904,
+          "name": "Mannslaughter Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442001905,
+          "name": "Mannslaughter Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442001999,
+          "name": "Mannslaughter Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "pop_file": "mvm_bigrock",
+      "name": "Benign Infiltration",
+      "map_id": 4,
+      "difficulty": "normal",
+      "waves": 6,
+      "locations": [
+        {
+          "id": 7442002001,
+          "name": "Benign Infiltration Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442002002,
+          "name": "Benign Infiltration Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442002003,
+          "name": "Benign Infiltration Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442002004,
+          "name": "Benign Infiltration Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442002005,
+          "name": "Benign Infiltration Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442002006,
+          "name": "Benign Infiltration Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442002099,
+          "name": "Benign Infiltration Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "pop_file": "mvm_bigrock_advanced1",
+      "name": "Broken Parts",
+      "map_id": 4,
+      "difficulty": "advanced",
+      "waves": 7,
+      "locations": [
+        {
+          "id": 7442002101,
+          "name": "Broken Parts Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442002102,
+          "name": "Broken Parts Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442002103,
+          "name": "Broken Parts Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442002104,
+          "name": "Broken Parts Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442002105,
+          "name": "Broken Parts Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442002106,
+          "name": "Broken Parts Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442002107,
+          "name": "Broken Parts Wave 7",
+          "kind": "wave_cleared",
+          "wave": 7
+        },
+        {
+          "id": 7442002199,
+          "name": "Broken Parts Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "pop_file": "mvm_bigrock_advanced2",
+      "name": "Bone Shaker",
+      "map_id": 4,
+      "difficulty": "advanced",
+      "waves": 8,
+      "locations": [
+        {
+          "id": 7442002201,
+          "name": "Bone Shaker Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442002202,
+          "name": "Bone Shaker Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442002203,
+          "name": "Bone Shaker Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442002204,
+          "name": "Bone Shaker Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442002205,
+          "name": "Bone Shaker Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442002206,
+          "name": "Bone Shaker Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442002207,
+          "name": "Bone Shaker Wave 7",
+          "kind": "wave_cleared",
+          "wave": 7
+        },
+        {
+          "id": 7442002208,
+          "name": "Bone Shaker Wave 8",
+          "kind": "wave_cleared",
+          "wave": 8
+        },
+        {
+          "id": 7442002299,
+          "name": "Bone Shaker Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "pop_file": "mvm_mannhattan",
+      "name": "Big Apple Barricade",
+      "map_id": 5,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "locations": [
+        {
+          "id": 7442002301,
+          "name": "Big Apple Barricade Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442002302,
+          "name": "Big Apple Barricade Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442002303,
+          "name": "Big Apple Barricade Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442002304,
+          "name": "Big Apple Barricade Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442002305,
+          "name": "Big Apple Barricade Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442002306,
+          "name": "Big Apple Barricade Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442002399,
+          "name": "Big Apple Barricade Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "pop_file": "mvm_mannhattan_advanced1",
+      "name": "Empire Escalation",
+      "map_id": 5,
+      "difficulty": "advanced",
+      "waves": 6,
+      "locations": [
+        {
+          "id": 7442002401,
+          "name": "Empire Escalation Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442002402,
+          "name": "Empire Escalation Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442002403,
+          "name": "Empire Escalation Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442002404,
+          "name": "Empire Escalation Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442002405,
+          "name": "Empire Escalation Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442002406,
+          "name": "Empire Escalation Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442002499,
+          "name": "Empire Escalation Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "pop_file": "mvm_mannhattan_advanced2",
+      "name": "Metro Malice",
+      "map_id": 5,
+      "difficulty": "advanced",
+      "waves": 6,
+      "locations": [
+        {
+          "id": 7442002501,
+          "name": "Metro Malice Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442002502,
+          "name": "Metro Malice Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442002503,
+          "name": "Metro Malice Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442002504,
+          "name": "Metro Malice Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442002505,
+          "name": "Metro Malice Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442002506,
+          "name": "Metro Malice Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442002599,
+          "name": "Metro Malice Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "pop_file": "mvm_rottenburg",
+      "name": "Village Vanguard",
+      "map_id": 6,
+      "difficulty": "intermediate",
+      "waves": 7,
+      "locations": [
+        {
+          "id": 7442002601,
+          "name": "Village Vanguard Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442002602,
+          "name": "Village Vanguard Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442002603,
+          "name": "Village Vanguard Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442002604,
+          "name": "Village Vanguard Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442002605,
+          "name": "Village Vanguard Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442002606,
+          "name": "Village Vanguard Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442002607,
+          "name": "Village Vanguard Wave 7",
+          "kind": "wave_cleared",
+          "wave": 7
+        },
+        {
+          "id": 7442002699,
+          "name": "Village Vanguard Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "pop_file": "mvm_rottenburg_advanced1",
+      "name": "Hamlet Hostility",
+      "map_id": 6,
+      "difficulty": "advanced",
+      "waves": 7,
+      "locations": [
+        {
+          "id": 7442002701,
+          "name": "Hamlet Hostility Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442002702,
+          "name": "Hamlet Hostility Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442002703,
+          "name": "Hamlet Hostility Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442002704,
+          "name": "Hamlet Hostility Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442002705,
+          "name": "Hamlet Hostility Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442002706,
+          "name": "Hamlet Hostility Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442002707,
+          "name": "Hamlet Hostility Wave 7",
+          "kind": "wave_cleared",
+          "wave": 7
+        },
+        {
+          "id": 7442002799,
+          "name": "Hamlet Hostility Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "pop_file": "mvm_rottenburg_advanced2",
+      "name": "Bavarian Botbash",
+      "map_id": 6,
+      "difficulty": "advanced",
+      "waves": 7,
+      "locations": [
+        {
+          "id": 7442002801,
+          "name": "Bavarian Botbash Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442002802,
+          "name": "Bavarian Botbash Wave 2",
+          "kind": "wave_cleared",
+          "wave": 2
+        },
+        {
+          "id": 7442002803,
+          "name": "Bavarian Botbash Wave 3",
+          "kind": "wave_cleared",
+          "wave": 3
+        },
+        {
+          "id": 7442002804,
+          "name": "Bavarian Botbash Wave 4",
+          "kind": "wave_cleared",
+          "wave": 4
+        },
+        {
+          "id": 7442002805,
+          "name": "Bavarian Botbash Wave 5",
+          "kind": "wave_cleared",
+          "wave": 5
+        },
+        {
+          "id": 7442002806,
+          "name": "Bavarian Botbash Wave 6",
+          "kind": "wave_cleared",
+          "wave": 6
+        },
+        {
+          "id": 7442002807,
+          "name": "Bavarian Botbash Wave 7",
+          "kind": "wave_cleared",
+          "wave": 7
+        },
+        {
+          "id": 7442002899,
+          "name": "Bavarian Botbash Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "pop_file": "mvm_ghost_town_666",
+      "name": "Caliginous Caper",
+      "map_id": 7,
+      "difficulty": "haunted",
+      "waves": 1,
+      "locations": [
+        {
+          "id": 7442002901,
+          "name": "Caliginous Caper Wave 1",
+          "kind": "wave_cleared",
+          "wave": 1
+        },
+        {
+          "id": 7442002999,
+          "name": "Caliginous Caper Complete",
+          "kind": "mission_cleared"
+        }
+      ]
+    }
+  ]
+}

@@ -4,30 +4,28 @@ Go package. The single source of truth for every Mann vs Machine fact this
 project knows, and for every Archipelago id. Read [ADR
 0001](../docs/adr/0001-go-owns-the-game-data.md) before touching anything here.
 
-Nothing exists yet.
+## What is here
 
-## What goes here
+| File | Holds |
+| --- | --- |
+| `gamedata.go` | Game name, format version, difficulty tiers, item classifications |
+| `maps.go` | The 7 maps |
+| `missions.go` | The 29 Valve missions: pop file, name, map, tier, wave count |
+| `classes.go` | The 9 classes |
+| `slots.go` | Primary, Secondary, Melee |
+| `ids.go` | The base id and every derivation from it |
+| `locations.go` | The 210 checks, and the objective the plugin reports for each |
+| `items.go` | The item pool template |
+| `validate.go` | Every invariant the id scheme rests on |
+| `export.go` | Writes `apworld/tf2_mvm/data/*.json` |
 
-Go structs and table literals for:
-
-- Maps
-- Missions: map, `.pop` file, difficulty tier, wave count
-- Waves, derived from the mission's wave count
-- Classes
-- Weapons: class, slot, whether MvM allows it
-- Upgrade lines, and which weapons carry each one
-- Canteen types
-- Allied robot templates
-- Trap definitions
-- The game name string, the AP base id offset, the data format version
-
-Plus the exporter that writes `apworld/tf2_mvm/data/*.json`, and the tests that
-guard id stability.
-
-The starting point for these tables is `worlds/tf2/Items.py` in ALPHAMARIOX's
-fork, 556 lines of Python dicts. Port them to Go, do not vendor the Python.
-See [`../docs/prior-art.md`](../docs/prior-art.md) for what is in there and
-what is broken in it.
+Not here yet, and deliberately not in v1: weapons, upgrade lines, canteens,
+allied robot templates, traps. Weapon *slots* are enough to make a progression,
+and the weapon table is the largest data-entry job in the project. The starting
+point when they land is `worlds/tf2/Items.py` in ALPHAMARIOX's fork, 556 lines
+of Python dicts: port them to Go, do not vendor the Python. See
+[`../docs/prior-art.md`](../docs/prior-art.md) for what is in there and what is
+broken in it.
 
 ## What does not go here
 
@@ -46,13 +44,30 @@ player the wrong item.
 2. Ids are append-only. New entities take the next free id.
 3. Ids are never reused. A deleted entity leaves a tombstone holding its id.
 4. A test asserts uniqueness across the whole space, and asserts that no id
-   present in the committed export has changed value.
+   present in `testdata/ids-frozen.json` has changed value.
 
 Adding a mission is a struct literal plus a regenerate. Renaming one is fine.
 Deleting one means a tombstone.
+
+Location and item ids are derived, not written down one by one:
+
+```
+wave clear      base + mission_id*100 + wave
+mission clear   base + mission_id*100 + 99
+mission ticket  base + 1_000_000 + 1_000 + mission_id
+class           base + 1_000_000 + 2_000 + class_id
+```
+
+The derivation is stable because the ids it derives from are. A mission may
+therefore hold at most 98 waves, which the tests check.
 
 ## Export
 
 The exported JSON under `apworld/tf2_mvm/data/` is **committed**, so that the
 apworld can be zipped and handed to someone without a Go toolchain. CI
 regenerates it and fails if the committed copy differs.
+
+```sh
+go generate ./gamedata            # rewrite the export
+go test ./gamedata/ -freeze       # record ids that are new, never move an old one
+```
