@@ -1,0 +1,37 @@
+# The integration stack: Archipelago and the bridge, no game server.
+#
+# srcds is left out on purpose. It downloads 14 GB and needs a human with a
+# Team Fortress 2 client to prove anything, so it cannot be part of a test that
+# runs unattended. Everything up to the plugin's HTTP calls is covered here,
+# and deploy/integration-test.sh makes those calls itself.
+name: tf2-archipelago-test
+
+services:
+  archipelago:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.archipelago
+    environment:
+      AP_SLOT_NAME: tf2
+      MVM_MISSION_COUNT: 8
+      MVM_DIFFICULTY: intermediate
+      MVM_GOAL: final_boss
+
+  bridge:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.bridge
+    environment:
+      AP_HOST: archipelago
+      AP_SLOT_NAME: tf2
+      # The real stack puts the bridge inside the game server's network
+      # namespace so this stays on loopback. There is no game server here, so
+      # the test binds the container's own interface and publishes it to the
+      # host's loopback only.
+      BRIDGE_LISTEN: 0.0.0.0:24680
+      BRIDGE_STATE: /data/bridge.json
+    ports:
+      - "127.0.0.1:24680:24680"
+    depends_on:
+      archipelago:
+        condition: service_healthy

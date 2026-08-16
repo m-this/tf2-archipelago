@@ -1,0 +1,72 @@
+# Archipelago, pinned, headless, with our apworld built in.
+#
+# Two things this image knows that the Archipelago documentation does not say
+# out loud, both learned the hard way:
+#
+#   - custom_worlds/ takes .apworld zips only. A folder dropped there is found
+#     and then fails to import, because only zips get a meta-path finder. So
+#     the world is packaged during the build rather than copied.
+#   - the pinned dependency versions are load-bearing. websockets 14 removed
+#     ServerConnection.open, which MultiServer.py calls on every client
+#     connection, and setuptools 81 dropped pkg_resources, which ModuleUpdate
+#     imports at startup.
+
+FROM python:3.13-slim AS build
+
+ARG ARCHIPELAGO_VERSION=0.6.7
+
+RUN apt-get update \
+	&& apt-get install --yes --no-install-recommends curl ca-certificates \
+	&& rm -rf /var/lib/apt/lists/*
+
+WORKDIR /ap
+RUN curl -fsSL "https://github.com/ArchipelagoMW/Archipelago/archive/refs/tags/${ARCHIPELAGO_VERSION}.tar.gz" \
+	| tar xz --strip-components=1
+
+# Kivy and KivyMD are the launcher's GUI and Pymem is a Windows debugger
+# binding. Nothing headless needs any of them, and KivyMD is a git dependency
+# that would drag a toolchain into the image.
+RUN grep -vE '^(kivy|kivymd|Pymem)' requirements.txt > /tmp/requirements.txt \
+	&& pip install --no-cache-dir -r /tmp/requirements.txt "setuptools<81"
+
+COPY apworld/tf2_mvm /ap/worlds/tf2_mvm
+RUN SKIP_REQUIREMENTS_UPDATE=1 python Launcher.py "Build APWorlds" -- "Team Fortress 2 Mann vs Machine" \
+	&& rm -rf /ap/worlds/tf2_mvm \
+	&& mkdir -p /ap/custom_worlds \
+	&& cp /ap/build/apworlds/tf2_mvm.apworld /ap/custom_worlds/
+
+
+FROM python:3.13-slim
+
+# ModuleUpdate.py blocks on input() asking to install every world's optional
+# dependencies. There is no terminal here, so it must not run at all.
+ENV SKIP_REQUIREMENTS_UPDATE=1 \
+	PYTHONUNBUFFERED=1
+
+RUN useradd --create-home --uid 1000 archipelago
+COPY --from=build /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
+COPY --from=build /usr/local/bin /usr/local/bin
+COPY --from=build --chown=archipelago:archipelago /ap /ap
+COPY --chown=archipelago:archipelago deploy/archipelago-entrypoint.sh /usr/local/bin/entrypoint.sh
+
+# A named volume takes its ownership from the directory it covers, so this has
+# to exist and belong to the right user before VOLUME declares it. Otherwise
+# generation runs to completion and then cannot write the archive.
+RUN mkdir -p /ap/output /ap/Players \
+	&& chown archipelago:archipelago /ap/output /ap/Players
+
+USER archipelago
+WORKDIR /ap
+VOLUME ["/ap/output"]
+EXPOSE 38281
+
+# A real WebSocket handshake, not a bare TCP connect: the multiworld server
+# answers a plain connection with 400 and a log line, so the naive check both
+# lies and fills the log.
+# close_timeout is the load-bearing argument: the multiworld server does not
+# hurry to answer a close frame, and the default ten-second wait outlives the
+# check itself.
+HEALTHCHECK --interval=15s --timeout=10s --start-period=180s --retries=5 \
+	CMD python -c "import os; from websockets.sync.client import connect; connect('ws://127.0.0.1:' + os.environ.get('AP_PORT', '38281'), open_timeout=3, close_timeout=1).close()" || exit 1
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
