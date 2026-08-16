@@ -11,6 +11,8 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile.archipelago
+      args:
+        ARCHIPELAGO_VERSION: ${ARCHIPELAGO_VERSION:?set it in deploy/env/versions.env}
     environment:
       AP_SLOT_NAME: tf2
       MVM_MISSION_COUNT: 8

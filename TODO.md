@@ -320,24 +320,42 @@ The bridge adds `AP_HOST`, `AP_TLS`, `BRIDGE_LISTEN`, `BRIDGE_STATE` and
 - [ ] `27015/udp` public, everything else `127.0.0.1`. RCON never exposed.
 - [ ] `.env.example` committed, `.env` gitignored.
 
-## Milestone 6: verify and document
+## Milestone 6: verify and document — done bar the game
 
-- [ ] Seed generates.
-- [ ] AP server hosts it and accepts a connection.
-- [ ] Bridge completes the handshake and appears in the AP server log.
-- [ ] `curl POST /objective` lands a check visible to AP.
-- [ ] srcds boots into an MvM map with the plugin loaded.
+- [x] Seed generates.
+- [x] AP server hosts it and accepts a connection.
+- [x] Bridge completes the handshake and appears in the AP server log.
+- [x] `curl POST /objective` lands a check visible to AP.
+- [x] All four, and more, are now `make integration`: a real Archipelago server
+      on a freshly generated seed plus a real bridge, driven the way the plugin
+      drives them. It checks the starting inventory arrives, that a repeated
+      objective counts once, that an unknown mission is refused, that the goal
+      registers, that chat goes both ways, and that the state survives a
+      restart.
+- [ ] srcds boots into an MvM map with the plugin loaded. **Not run**: 14 GB of
+      game files and no Team Fortress 2 on the build machine.
 - [ ] **Cannot be verified without a human and a TF2 client**: that a wave
       clear in-game actually fires the objective, and that a granted weapon
-      slot is actually enforced. Say so in the docs rather than implying it
-      was tested.
-- [ ] `docs/archipelago-101.md`: what a multiworld, a slot, a check, an item
-      and a seed are, for someone who has never played one.
-- [ ] `docs/running.md`: `.env`, `docker compose up`, joining, what to expect.
-- [ ] `.forgejo/workflows/ci.yml`: gofumpt, vet, golangci-lint, go fix, build,
-      race tests, govulncheck, export freshness, `spcomp`, and a generation
-      smoke test.
-- [ ] Makefile.
+      slot is actually enforced. `docs/running.md` says so plainly rather than
+      implying it was tested.
+- [x] `docs/archipelago-101.md`.
+- [x] `docs/running.md`.
+- [x] `.forgejo/workflows/ci.yml`: four jobs, one per language, every step a
+      make target. Go (gofumpt, vet, golangci-lint, go fix, build, race tests,
+      govulncheck), the apworld (ruff), the plugin (spcomp, warnings as
+      errors), and the stack (apworld tests inside Archipelago, then the
+      integration test).
+- [x] Makefile, from the starter-kit's hardened Go stack: tools pinned in
+      `deploy/env/versions.env` and run through `go run` and `uv run`, so a
+      local run is byte-identical to CI. `make check` is the gate.
+
+Export freshness has no separate step: `TestCommittedExportIsCurrent`
+regenerates the export and fails if the committed copy differs, so `make test`
+already guards it.
+
+The versions file is the single source of truth for the Go tools, ruff,
+Archipelago, SourceMod and ripext. `plugin/build.sh` sources it, compose passes
+it as build args, the Makefile includes it. Nothing else holds a version.
 
 ## Carried over from spec.md
 

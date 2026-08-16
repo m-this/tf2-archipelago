@@ -1,0 +1,43 @@
+# Configuration for the apworld's linter. There is no Python package here to
+# build or install: the world runs inside Archipelago's own interpreter, so the
+# only thing uv ever does in this repo is run ruff in a throwaway environment.
+#
+# The version ruff runs at lives in deploy/env/versions.env with every other
+# pin, not here.
+
+[tool.ruff]
+line-length = 100
+# Archipelago 0.6.7 supports 3.11 to 3.13, so the world may not use anything
+# newer than the oldest of those.
+target-version = "py311"
+src = ["apworld"]
+
+[tool.ruff.lint]
+select = [
+    "F",   # pyflakes: the errors that are errors
+    "E",   # pycodestyle
+    "W",
+    "I",   # import order
+    "UP",  # constructs that a newer Python does better
+    "B",   # bugbear: mutable defaults, loop variable capture, silent excepts
+    "C4",  # comprehensions built the long way
+    "SIM", # branches that collapse
+    "RET", # returns that say more than they need to
+    "PTH", # os.path where pathlib reads better
+    "ARG", # arguments nobody uses
+    "TID", # relative imports beyond the package, which a zipped apworld breaks on
+    "RUF",
+]
+
+[tool.ruff.lint.flake8-tidy-imports]
+# The opposite of the usual advice, and it is Archipelago's rule, not a
+# preference: a world reaches its own modules relatively, parents included, and
+# Archipelago's absolutely. An absolute import of its own package breaks the
+# moment the world is packaged as a zip.
+ban-relative-imports = "all"
+
+[tool.ruff.lint.per-file-ignores]
+"apworld/**" = ["TID252"]
+
+[tool.ruff.format]
+docstring-code-format = true

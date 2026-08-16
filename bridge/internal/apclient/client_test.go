@@ -50,7 +50,7 @@ func (f *fakeRoom) start(t *testing.T) string {
 		if err != nil {
 			return
 		}
-		defer conn.CloseNow()
+		defer func() { _ = conn.CloseNow() }()
 		f.serve(r.Context(), conn)
 	}))
 	t.Cleanup(server.Close)
@@ -337,6 +337,32 @@ func TestTheSessionReconnects(t *testing.T) {
 	waitFor(t, "a second session after the server hung up", func() bool {
 		return room.sessionCount() >= 2 && client.Health().Connected
 	})
+}
+
+func TestMissionsanityCountsClearedMissions(t *testing.T) {
+	first, _ := gamedata.MissionByPopFile("mvm_decoy")
+	second, _ := gamedata.MissionByPopFile("mvm_coaltown")
+	slot := slotDataFor("missionsanity", "", "mvm_decoy", "mvm_coaltown")
+	slot["missionsanity_target"] = 2
+	room := &fakeRoom{seed: "seed-1", slotData: slot}
+
+	client, store := runClient(t, room)
+	waitFor(t, "the handshake", func() bool { return client.Health().Connected })
+
+	// One mission short of the target is not a win.
+	if _, err := store.AddCheck(first.ClearLocationID()); err != nil {
+		t.Fatal(err)
+	}
+	awaitCommand(t, room, "LocationChecks")
+	if store.GoalSent() {
+		t.Fatal("the run was won one mission early")
+	}
+
+	if _, err := store.AddCheck(second.ClearLocationID()); err != nil {
+		t.Fatal(err)
+	}
+	awaitCommand(t, room, "StatusUpdate")
+	waitFor(t, "the win to be recorded", store.GoalSent)
 }
 
 func TestARefusedConnectionStopsTheClient(t *testing.T) {

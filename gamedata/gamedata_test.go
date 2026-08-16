@@ -206,6 +206,8 @@ func TestItemPoolCoversEveryGate(t *testing.T) {
 			classes++
 		case ItemWeaponSlot:
 			slots += int(it.Count)
+		case ItemCredits:
+			// Filler. Counted by the pool builder, not by this test.
 		}
 		if it.Classification == Progression && it.Count == 0 {
 			t.Errorf("%q is progression with no copies in the pool", it.Name)

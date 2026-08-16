@@ -9,6 +9,7 @@ each other, what the goal is, and what the server needs to know afterwards.
 import logging
 import math
 from collections.abc import Callable
+from typing import ClassVar
 
 from BaseClasses import CollectionState, Item, ItemClassification, Location, Region, Tutorial
 from Options import OptionError
@@ -37,7 +38,7 @@ class TF2MvMLocation(Location):
 class TF2MvMWeb(WebWorld):
     theme = "dirt"
     option_groups = option_groups
-    tutorials = [
+    tutorials: ClassVar[list[Tutorial]] = [
         Tutorial(
             "Multiworld Setup Guide",
             "A guide to running a Team Fortress 2 Mann vs Machine server for Archipelago.",
@@ -133,9 +134,7 @@ class TF2MvMWorld(World):
             if mission is not self.start_mission
         ]
         pool += [
-            self.create_item(name)
-            for name in data.CLASS_NAMES
-            if name not in self.start_items
+            self.create_item(name) for name in data.CLASS_NAMES if name not in self.start_items
         ]
         slots_held = self.start_items.count(data.PROGRESSIVE_WEAPON_SLOT)
         pool += [
@@ -225,6 +224,6 @@ class TF2MvMWorld(World):
         clears = [f"{mission.name} Complete" for mission in self.missions]
         target = self.missionsanity_target
         player = self.player
-        return (
-            lambda state: sum(state.can_reach_location(clear, player) for clear in clears) >= target
+        return lambda state: (
+            sum(state.can_reach_location(clear, player) for clear in clears) >= target
         )

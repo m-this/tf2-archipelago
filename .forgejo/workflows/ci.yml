@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Four languages, four jobs, each on the smallest image that can run it. Every
+# step is a make target: what runs here is what runs on a laptop, and `make
+# check` runs all of it in one go.
+jobs:
+  go:
+    runs-on: docker
+    container:
+      image: golang:1.26
+    steps:
+      - uses: https://code.forgejo.org/actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: https://code.forgejo.org/actions/cache@v4
+        with:
+          path: /root/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: gofumpt
+        run: make fmt-check
+
+      - name: go vet
+        run: make vet
+
+      - name: golangci-lint
+        run: make lint
+
+      - name: go fix
+        run: make fix-check
+
+      - name: go build
+        run: make compile
+
+      # The race detector is the only thing in this pipeline that can see a
+      # data race, and the bridge is three goroutines around one state store.
+      # This step also guards the committed export: the gamedata tests
+      # regenerate it and fail if the tree is stale.
+      - name: go test -race -shuffle=on
+        run: make test
+
+      # Reports only the vulnerabilities whose vulnerable symbol this code can
+      # actually reach, so red here is a real exposure, not a CVE headline.
+      - name: govulncheck
+        run: make vuln
+
+  apworld:
+    runs-on: docker
+    container:
+      image: ghcr.io/astral-sh/uv:python3.13-bookworm-slim
+    steps:
+      - uses: https://code.forgejo.org/actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: ruff
+        run: make apworld-lint
+
+  plugin:
+    runs-on: docker
+    container:
+      image: debian:stable-slim
+    steps:
+      - uses: https://code.forgejo.org/actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: install the fetch tools
+        run: |
+          apt-get update
+          apt-get install --yes --no-install-recommends ca-certificates curl unzip make
+
+      # Warnings are errors here. A SourcePawn warning is usually a symbol that
+      # silently does nothing at runtime.
+      - name: spcomp
+        run: make plugin
+
+  # Needs a runner with a Docker daemon it can reach: it builds images and
+  # brings a stack up. Without one, these two targets are the ones to run by
+  # hand before a release.
+  stack:
+    runs-on: docker
+    steps:
+      - uses: https://code.forgejo.org/actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      # The world's tests need Archipelago to run inside, so they run in the
+      # image that has it.
+      - name: apworld tests
+        run: make apworld-test
+
+      # Archipelago and the bridge, for real, driven the way the plugin drives
+      # them. The game server is not in it: 14 GB, and it proves nothing
+      # without a human at a Team Fortress 2 client.
+      - name: integration
+        run: make integration

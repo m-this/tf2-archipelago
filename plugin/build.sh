@@ -6,10 +6,16 @@
 # works here works there.
 set -eu
 
-SOURCEMOD_VERSION="1.12.0-git7246"
-RIPEXT_VERSION="1.3.2"
-
 root=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+
+# Versions live in one file for the whole project, so the compiler this builds
+# against and the extension the image installs cannot drift apart.
+versions="$root/../deploy/env/versions.env"
+if [ ! -f "$versions" ]; then
+	echo "missing $versions" >&2
+	exit 1
+fi
+. "$versions"
 build="$root/build"
 toolchain="$build/sourcemod-$SOURCEMOD_VERSION"
 ripext="$build/ripext-$RIPEXT_VERSION"
@@ -19,7 +25,7 @@ mkdir -p "$build"
 if [ ! -d "$toolchain" ]; then
 	echo "fetching SourceMod $SOURCEMOD_VERSION"
 	mkdir -p "$toolchain"
-	curl -fsSL "https://sm.alliedmods.net/smdrop/1.12/sourcemod-$SOURCEMOD_VERSION-linux.tar.gz" |
+	curl -fsSL "https://sm.alliedmods.net/smdrop/$SOURCEMOD_BRANCH/sourcemod-$SOURCEMOD_VERSION-linux.tar.gz" |
 		tar xz -C "$toolchain"
 fi
 

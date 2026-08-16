@@ -38,13 +38,13 @@ const (
 // version is the Archipelago release this client is written against.
 var version = Version{Class: "Version", Major: 0, Minor: 6, Build: 7}
 
-// errPermanent wraps a failure that reconnecting cannot fix: a wrong slot
+// permanentError wraps a failure that reconnecting cannot fix: a wrong slot
 // name, a password the operator has to change, a seed this binary cannot read.
 // The bridge stops rather than hammering the server forever.
-type errPermanent struct{ err error }
+type permanentError struct{ err error }
 
-func (e errPermanent) Error() string { return e.err.Error() }
-func (e errPermanent) Unwrap() error { return e.err }
+func (e permanentError) Error() string { return e.err.Error() }
+func (e permanentError) Unwrap() error { return e.err }
 
 // ErrNotConnected is what a chat line gets when there is no multiworld to say
 // it to. Unlike a check, it is not worth queueing: a message that arrives ten
@@ -84,6 +84,11 @@ type Health struct {
 }
 
 func New(opts Options) *Client {
+	if opts.Chat == nil {
+		// A session with nowhere to put chat still has to run. One line of
+		// history is enough to keep the append path honest.
+		opts.Chat = chat.New(1)
+	}
 	return &Client{opts: opts, uuid: randomUUID()}
 }
 
@@ -109,9 +114,11 @@ func (c *Client) Run(ctx context.Context) error {
 		start := time.Now()
 		err := c.session(ctx)
 		if ctx.Err() != nil {
-			return nil
+			// The bridge is shutting down, and whatever the session was doing
+			// when it was cancelled is not a failure.
+			return nil //nolint:nilerr // a cancelled context is a clean stop
 		}
-		if _, unfixable := errors.AsType[errPermanent](err); unfixable {
+		if _, unfixable := errors.AsType[permanentError](err); unfixable {
 			return err
 		}
 		c.setDisconnected(err)
@@ -121,7 +128,7 @@ func (c *Client) Run(ctx context.Context) error {
 		if time.Since(start) > backoffMax {
 			backoff = backoffFirst
 		}
-		c.opts.Logger.Warn("archipelago session ended, retrying",
+		c.opts.Logger.WarnContext(ctx, "archipelago session ended, retrying",
 			"error", err, "in", backoff)
 		select {
 		case <-ctx.Done():
@@ -138,13 +145,16 @@ func (c *Client) session(ctx context.Context) error {
 
 	dialCtx, cancelDial := context.WithTimeout(ctx, dialTimeout)
 	defer cancelDial()
-	conn, _, err := websocket.Dial(dialCtx, c.opts.URL, &websocket.DialOptions{
+	conn, handshake, err := websocket.Dial(dialCtx, c.opts.URL, &websocket.DialOptions{
 		CompressionMode: websocket.CompressionContextTakeover,
 	})
 	if err != nil {
 		return fmt.Errorf("dial %s: %w", c.opts.URL, err)
 	}
-	defer conn.CloseNow()
+	if handshake != nil && handshake.Body != nil {
+		_ = handshake.Body.Close()
+	}
+	defer func() { _ = conn.CloseNow() }()
 	conn.SetReadLimit(readLimitBytes)
 
 	c.mu.Lock()
@@ -210,7 +220,7 @@ func (c *Client) handle(
 		var printed printJSON
 		if err := json.Unmarshal(message, &printed); err == nil {
 			text := printed.text()
-			c.opts.Logger.Info("archipelago", "message", text)
+			c.opts.Logger.InfoContext(ctx, "archipelago", "message", text)
 			c.opts.Chat.Append(text)
 		}
 		return nil
@@ -234,7 +244,7 @@ func (c *Client) onRoomInfo(ctx context.Context, conn *websocket.Conn, message j
 		return err
 	}
 	if wiped {
-		c.opts.Logger.Warn("new seed, dropped the state of the previous run",
+		c.opts.Logger.WarnContext(ctx, "new seed, dropped the state of the previous run",
 			"seed", room.SeedName)
 	}
 	return c.send(ctx, conn, connectMessage{
@@ -259,10 +269,10 @@ func (c *Client) onConnected(message json.RawMessage, ready chan struct{}) error
 	}
 	var slot SlotData
 	if err := json.Unmarshal(payload.SlotData, &slot); err != nil {
-		return errPermanent{fmt.Errorf("unreadable slot data: %w", err)}
+		return permanentError{fmt.Errorf("unreadable slot data: %w", err)}
 	}
 	if err := slot.validate(); err != nil {
-		return errPermanent{err}
+		return permanentError{err}
 	}
 	if slot.DeathLink {
 		c.opts.Logger.Warn("the seed asks for DeathLink, which this bridge does not implement")
@@ -293,7 +303,7 @@ func (c *Client) onConnectionRefused(message json.RawMessage) error {
 	if err := json.Unmarshal(message, &refused); err != nil {
 		return err
 	}
-	return errPermanent{fmt.Errorf("archipelago refused the connection: %v", refused.Errors)}
+	return permanentError{fmt.Errorf("archipelago refused the connection: %v", refused.Errors)}
 }
 
 func (c *Client) onReceivedItems(ctx context.Context, conn *websocket.Conn, message json.RawMessage) error {
@@ -307,7 +317,8 @@ func (c *Client) onReceivedItems(ctx context.Context, conn *websocket.Conn, mess
 	}
 	err := c.opts.Store.ApplyItems(payload.Index, ids)
 	if errors.Is(err, state.ErrDesync) {
-		c.opts.Logger.Warn("item list diverged, asking for a resend", "index", payload.Index)
+		c.opts.Logger.WarnContext(ctx, "item list diverged, asking for a resend",
+			"index", payload.Index)
 		return c.send(ctx, conn, syncMessage{Cmd: "Sync"})
 	}
 	return err
@@ -336,7 +347,7 @@ func (c *Client) report(ctx context.Context, conn *websocket.Conn) error {
 	if err := c.send(ctx, conn, statusUpdateMessage{Cmd: "StatusUpdate", Status: statusGoal}); err != nil {
 		return err
 	}
-	c.opts.Logger.Info("goal reached, told archipelago", "goal", slot.Goal)
+	c.opts.Logger.InfoContext(ctx, "goal reached, told archipelago", "goal", slot.Goal)
 	return c.opts.Store.MarkGoalSent()
 }
 

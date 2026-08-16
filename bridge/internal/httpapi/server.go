@@ -103,12 +103,13 @@ func (s *Server) postObjective(w http.ResponseWriter, r *http.Request) {
 
 	fresh, err := s.store.AddCheck(location.ID)
 	if err != nil {
-		s.logger.Error("could not record a check", "location", location.Name, "error", err)
+		s.logger.ErrorContext(r.Context(), "could not record a check",
+			"location", location.Name, "error", err)
 		http.Error(w, "could not record the check", http.StatusInternalServerError)
 		return
 	}
 	if fresh {
-		s.logger.Info("check recorded", "location", location.Name)
+		s.logger.InfoContext(r.Context(), "check recorded", "location", location.Name)
 	}
 	w.WriteHeader(http.StatusNoContent)
 }

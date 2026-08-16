@@ -13,7 +13,7 @@
 
 FROM python:3.13-slim AS build
 
-ARG ARCHIPELAGO_VERSION=0.6.7
+ARG ARCHIPELAGO_VERSION
 
 RUN apt-get update \
 	&& apt-get install --yes --no-install-recommends curl ca-certificates \
@@ -34,6 +34,17 @@ RUN SKIP_REQUIREMENTS_UPDATE=1 python Launcher.py "Build APWorlds" -- "Team Fort
 	&& rm -rf /ap/worlds/tf2_mvm \
 	&& mkdir -p /ap/custom_worlds \
 	&& cp /ap/build/apworlds/tf2_mvm.apworld /ap/custom_worlds/
+
+
+# The world's own tests need Archipelago to run inside, so they run here. The
+# folder goes back into worlds/ and the packaged copy is dropped: loading both
+# would be the same game declared twice.
+FROM build AS apworld-test
+
+ENV SKIP_REQUIREMENTS_UPDATE=1
+COPY apworld/tf2_mvm /ap/worlds/tf2_mvm
+RUN rm -f /ap/custom_worlds/tf2_mvm.apworld
+CMD ["python", "-m", "unittest", "discover", "-s", "worlds/tf2_mvm/test", "-t", "."]
 
 
 FROM python:3.13-slim

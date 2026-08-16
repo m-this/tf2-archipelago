@@ -9,22 +9,23 @@ the starting requirement is highest.
 """
 
 import math
+from typing import Any, ClassVar
 
-from . import TF2MvMTestBase
 from .. import data
 from ..rules import REQUIREMENTS
+from . import TF2MvMTestBase
 
 
 class TestDefaults(TF2MvMTestBase):
-    options = {}
+    options: ClassVar[dict[str, Any]] = {}
 
 
 class TestWholeRoster(TF2MvMTestBase):
-    options = {"mission_count": 29, "difficulty_pool": "normal"}
+    options: ClassVar[dict[str, Any]] = {"mission_count": 29, "difficulty_pool": "normal"}
 
 
 class TestShortestRun(TF2MvMTestBase):
-    options = {"mission_count": 1, "difficulty_pool": "normal"}
+    options: ClassVar[dict[str, Any]] = {"mission_count": 1, "difficulty_pool": "normal"}
 
     def test_unlocks_fit_the_checks(self) -> None:
         # Asking for one mission can leave fewer checks than the run owes
@@ -35,7 +36,7 @@ class TestShortestRun(TF2MvMTestBase):
 
 
 class TestHardestPool(TF2MvMTestBase):
-    options = {"mission_count": 4, "difficulty_pool": "expert"}
+    options: ClassVar[dict[str, Any]] = {"mission_count": 4, "difficulty_pool": "expert"}
 
     def test_start_mission_is_open_from_nothing(self) -> None:
         self.assertTrue(self.can_reach_region(self.world.start_mission.name))
@@ -44,23 +45,27 @@ class TestHardestPool(TF2MvMTestBase):
         requirement = REQUIREMENTS[self.world.start_mission.difficulty]
         held = self.world.start_items
         self.assertIn(data.TICKET_NAMES[self.world.start_mission.id], held)
-        self.assertEqual(
-            requirement.slots, held.count(data.PROGRESSIVE_WEAPON_SLOT)
-        )
-        self.assertEqual(
-            requirement.classes, sum(name in data.CLASS_NAMES for name in held)
-        )
+        self.assertEqual(requirement.slots, held.count(data.PROGRESSIVE_WEAPON_SLOT))
+        self.assertEqual(requirement.classes, sum(name in data.CLASS_NAMES for name in held))
 
 
 class TestMissionsanity(TF2MvMTestBase):
-    options = {"goal": "missionsanity", "missionsanity_percentage": 100, "mission_count": 6}
+    options: ClassVar[dict[str, Any]] = {
+        "goal": "missionsanity",
+        "missionsanity_percentage": 100,
+        "mission_count": 6,
+    }
 
     def test_every_mission_is_required(self) -> None:
         self.assertEqual(len(self.world.missions), self.world.missionsanity_target)
 
 
 class TestMissionsanityPartial(TF2MvMTestBase):
-    options = {"goal": "missionsanity", "missionsanity_percentage": 50, "mission_count": 9}
+    options: ClassVar[dict[str, Any]] = {
+        "goal": "missionsanity",
+        "missionsanity_percentage": 50,
+        "mission_count": 9,
+    }
 
     def test_target_rounds_up(self) -> None:
         expected = math.ceil(len(self.world.missions) * 0.5)
@@ -68,7 +73,11 @@ class TestMissionsanityPartial(TF2MvMTestBase):
 
 
 class TestFinalBoss(TF2MvMTestBase):
-    options = {"goal": "final_boss", "mission_count": 8, "difficulty_pool": "normal"}
+    options: ClassVar[dict[str, Any]] = {
+        "goal": "final_boss",
+        "mission_count": 8,
+        "difficulty_pool": "normal",
+    }
 
     def test_goal_is_the_hardest_mission_drawn(self) -> None:
         hardest = max(
