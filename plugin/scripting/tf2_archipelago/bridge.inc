@@ -52,7 +52,9 @@ void Bridge_Init()
     g_CvarChat = CreateConVar("tf2ap_chat", "1",
         "Show what the rest of the multiworld says in chat.", _, true, 0.0, true, 1.0);
     g_Pending = new ArrayList(sizeof(Objective));
-    CreateTimer(RetryInterval, Timer_DrainPending, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+    // No TIMER_FLAG_NO_MAPCHANGE: that flag kills the timer at the first map
+    // change, and a queued check has to survive one.
+    CreateTimer(RetryInterval, Timer_DrainPending, _, TIMER_REPEAT);
 }
 
 static HTTPRequest BridgeRequest(const char[] path)
@@ -277,12 +279,6 @@ static void OnGrants(HTTPResponse response, any value, const char[] error)
         CreateTimer(RetryInterval, Timer_PollAgain);
         return;
     }
-    if (response.Status == HTTPStatus_NoContent)
-    {
-        Bridge_ClearError();
-        Bridge_PollGrants();
-        return;
-    }
     if (response.Status != HTTPStatus_OK)
     {
         Bridge_NoteError("the grant poll answered %d", response.Status);
@@ -291,6 +287,19 @@ static void OnGrants(HTTPResponse response, any value, const char[] error)
     }
 
     JSONObject payload = view_as<JSONObject>(response.Data);
+
+    // The bridge being behind this plugin means the run restarted underneath
+    // it: a new seed, or the state moved aside. Applying grants from here
+    // would replay a different run, so the whole set is fetched again instead.
+    if (payload.GetInt("seq") < g_GrantSeq)
+    {
+        AP_Error("the run restarted; refetching the unlock set");
+        g_GrantSeq = 0;
+        Bridge_FetchUnlocks();
+        CreateTimer(RetryInterval, Timer_PollAgain);
+        return;
+    }
+
     JSONArray grants = view_as<JSONArray>(payload.Get("grants"));
     if (grants != null)
     {

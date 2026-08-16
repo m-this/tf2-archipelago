@@ -3,13 +3,47 @@
  *
  * Everything in this file is the plugin's only contact with Mann vs Machine
  * itself, and most of it is UNVERIFIED: the entity properties and the event
- * fields below are what the community documents, checked against nothing but
- * a compiler. Every one of them fails soft and says so in the log, so the
- * first live server tells us which of them are real rather than the plugin
- * silently reporting nothing.
+ * fields below are what the community documents, checked against nothing but a
+ * compiler.
+ *
+ * So none of it is read without asking first. A property that does not exist
+ * is a warning and a fallback, never a native error: SourceMod turns a bad
+ * property name into a runtime error on every call, which would bury the
+ * server's console in the middle of a wave.
  */
 
-// tf_objective_resource carries the MvM run's state. One exists per map.
+// TFTeam_Red is the only team players are on in Mann vs Machine. BLU is the
+// robots, and they are bots.
+#define TeamRed 2
+
+// g_WarnedProps keeps each missing-property complaint to one line rather than
+// one per frame.
+StringMap g_WarnedProps;
+
+void MvM_Init()
+{
+    g_WarnedProps = new StringMap();
+}
+
+/**
+ * Whether a networked property exists, complaining once if it does not.
+ */
+static bool HasProp(int entity, const char[] property)
+{
+    if (entity > 0 && HasEntProp(entity, Prop_Send, property))
+    {
+        return true;
+    }
+    bool warned;
+    if (!g_WarnedProps.GetValue(property, warned))
+    {
+        g_WarnedProps.SetValue(property, true);
+        AP_Error("this server has no %s; the plugin is working without it", property);
+    }
+    return false;
+}
+
+// tf_objective_resource carries the run's state. One exists per map.
 static int FindObjectiveResource()
 {
     return FindEntityByClassname(-1, "tf_objective_resource");
@@ -18,10 +52,32 @@ static int FindObjectiveResource()
 /**
  * Whether this map is running Mann vs Machine at all. Everything the plugin
  * does hangs off this: on a payload map it must be inert.
+ *
+ * The game rules property is the real answer; the map name is the fallback,
+ * and it is a good one because every Mann vs Machine map is named mvm_.
  */
 stock bool MvM_IsActive()
 {
-    return GameRules_GetProp("m_bPlayingMannVsMachine") != 0;
+    if (FindSendPropInfo("CTFGameRulesProxy", "m_bPlayingMannVsMachine") != -1)
+    {
+        return GameRules_GetProp("m_bPlayingMannVsMachine") != 0;
+    }
+    char map[PLATFORM_MAX_PATH];
+    GetCurrentMap(map, sizeof(map));
+    return strncmp(map, "mvm_", 4, false) == 0;
+}
+
+/**
+ * Whether this client is someone the plugin may touch: a human, in game, on
+ * RED. The robots are bots on BLU, and stripping a robot's weapons would take
+ * the wave apart.
+ */
+stock bool MvM_IsPlayer(int client)
+{
+    return client > 0 && client <= MaxClients
+        && IsClientInGame(client)
+        && !IsFakeClient(client)
+        && GetClientTeam(client) == TeamRed;
 }
 
 /**
@@ -38,7 +94,7 @@ stock bool MvM_PopFile(char[] buffer, int maxlength)
     buffer[0] = '\0';
 
     int resource = FindObjectiveResource();
-    if (resource != -1)
+    if (resource != -1 && HasProp(resource, "m_iszMvMPopfileName"))
     {
         char raw[PLATFORM_MAX_PATH];
         if (GetEntPropString(resource, Prop_Send, "m_iszMvMPopfileName", raw, sizeof(raw)) > 0)
@@ -74,16 +130,15 @@ static void TrimPopFileName(char[] name, int maxlength)
 }
 
 /**
- * The wave being played, counting from 1.
+ * The wave being played, counting from 1, or zero when the game will not say.
  *
  * UNVERIFIED: m_nMannVsMachineWaveCount. The mvm_begin_wave event is the
- * primary source and this is the cross-check, which is why a disagreement is
- * worth a log line rather than a silent pick.
+ * primary source and this is the cross-check.
  */
 stock int MvM_WaveFromGame()
 {
     int resource = FindObjectiveResource();
-    if (resource == -1)
+    if (resource == -1 || !HasProp(resource, "m_nMannVsMachineWaveCount"))
     {
         return 0;
     }
@@ -91,12 +146,12 @@ stock int MvM_WaveFromGame()
 }
 
 /**
- * How many waves the mission has. UNVERIFIED, same caveat.
+ * How many waves the mission has, or zero. UNVERIFIED, same caveat.
  */
 stock int MvM_MaxWavesFromGame()
 {
     int resource = FindObjectiveResource();
-    if (resource == -1)
+    if (resource == -1 || !HasProp(resource, "m_nMannVsMachineMaxWaveCount"))
     {
         return 0;
     }
@@ -119,7 +174,7 @@ stock void MvM_GrantCredits(int amount)
     int paid = 0;
     for (int client = 1; client <= MaxClients; client++)
     {
-        if (!IsClientInGame(client) || IsFakeClient(client))
+        if (!MvM_IsPlayer(client) || !HasProp(client, "m_nCurrency"))
         {
             continue;
         }
@@ -127,5 +182,12 @@ stock void MvM_GrantCredits(int amount)
         SetEntProp(client, Prop_Send, "m_nCurrency", held + amount);
         paid++;
     }
-    AP_Announce("Received %d credits for %d player(s).", amount, paid);
+    if (paid > 0)
+    {
+        AP_Announce("Received %d credits for %d player(s).", amount, paid);
+    }
+    else
+    {
+        AP_Debug("received %d credits with nobody to pay", amount);
+    }
 }

@@ -9,7 +9,7 @@ name: tf2-archipelago-test
 services:
   archipelago:
     build:
-      context: ..
+      context: .
       dockerfile: deploy/Dockerfile.archipelago
       args:
         ARCHIPELAGO_VERSION: ${ARCHIPELAGO_VERSION:?set it in deploy/env/versions.env}
@@ -21,7 +21,7 @@ services:
 
   bridge:
     build:
-      context: ..
+      context: .
       dockerfile: deploy/Dockerfile.bridge
     environment:
       AP_HOST: archipelago

@@ -58,9 +58,15 @@ bool g_HaveMissionComplete;
 // wave events are missing.
 int g_PolledWave;
 
+// Whether this mission's clear has already been announced. Both detectors fire
+// on purpose and the bridge deduplicates the check, but chat should say it
+// once.
+bool g_MissionReported;
+
 public void OnPluginStart()
 {
     Log_Init();
+    MvM_Init();
     Unlocks_Init();
     Bridge_Init();
 
@@ -85,7 +91,9 @@ public void OnPluginStart()
     if (!g_HaveWaveComplete)
     {
         AP_Error("mvm_wave_complete does not exist on this server, watching the wave counter instead");
-        CreateTimer(WavePollInterval, Timer_PollWave, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+        // No TIMER_FLAG_NO_MAPCHANGE: that flag kills the timer at the first
+        // map change, and this one has to outlive every map.
+        CreateTimer(WavePollInterval, Timer_PollWave, _, TIMER_REPEAT);
     }
     if (!g_HaveBeginWave)
     {
@@ -116,7 +124,7 @@ public void OnClientPutInServer(int client)
 public Action Timer_Welcome(Handle timer, any userid)
 {
     int client = GetClientOfUserId(userid);
-    if (client <= 0 || !IsClientInGame(client))
+    if (client <= 0 || !IsClientInGame(client) || !MvM_IsActive())
     {
         return Plugin_Stop;
     }
@@ -189,6 +197,7 @@ public void OnMapStart()
     g_CurrentWave = 0;
     g_MaxWaves = 0;
     g_PolledWave = 0;
+    g_MissionReported = false;
 
     // The unlock set is the bridge's, and this plugin has just forgotten its
     // copy. Ask before anyone spawns.
@@ -212,6 +221,12 @@ public void Event_BeginWave(Event event, const char[] name, bool dontBroadcast)
     g_CurrentWave = event.GetInt("wave_index") + 1;
     g_MaxWaves = event.GetInt("max_waves");
     g_PolledWave = g_CurrentWave;
+    if (g_CurrentWave == 1)
+    {
+        // A mission restarting from wave one is a mission that can be cleared
+        // again.
+        g_MissionReported = false;
+    }
 
     int fromGame = MvM_WaveFromGame();
     if (fromGame > 0 && fromGame != g_CurrentWave)
@@ -277,6 +292,12 @@ static void ReportMissionCleared()
         AP_Error("the mission was cleared but could not be identified, check not reported");
         return;
     }
+    if (g_MissionReported)
+    {
+        AP_Debug("mission clear for %s already reported", popFile);
+        return;
+    }
+    g_MissionReported = true;
     AP_Announce("Mission cleared: %s", popFile);
     Bridge_ReportObjective("mission_cleared", popFile, 0);
 }
@@ -301,10 +322,12 @@ public Action Timer_PollWave(Handle timer)
     return Plugin_Continue;
 }
 
+// Both of these fire for robots too. Enforcement checks the team itself, but
+// the check is repeated here so the intent is visible where the event arrives.
 public void Event_InventoryApplied(Event event, const char[] name, bool dontBroadcast)
 {
     int client = GetClientOfUserId(event.GetInt("userid"));
-    if (client > 0)
+    if (MvM_IsPlayer(client))
     {
         Unlocks_EnforceSlots(client);
     }
@@ -313,7 +336,7 @@ public void Event_InventoryApplied(Event event, const char[] name, bool dontBroa
 public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 {
     int client = GetClientOfUserId(event.GetInt("userid"));
-    if (client > 0)
+    if (MvM_IsPlayer(client))
     {
         Unlocks_EnforceClass(client);
     }
@@ -325,7 +348,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
  */
 public Action Command_JoinClass(int client, const char[] command, int argc)
 {
-    if (!g_HaveUnlocks || client <= 0 || argc < 1 || !MvM_IsActive())
+    if (!Unlocks_Enforceable() || argc < 1 || !MvM_IsActive() || !MvM_IsPlayer(client))
     {
         return Plugin_Continue;
     }
