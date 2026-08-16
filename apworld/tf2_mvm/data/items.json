@@ -1,0 +1,324 @@
+{
+  "format_version": 1,
+  "items": [
+    {
+      "id": 7443001001,
+      "name": "Mission Ticket: Doe's Drill",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 1
+    },
+    {
+      "id": 7443001002,
+      "name": "Mission Ticket: Doe's Doom",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 2
+    },
+    {
+      "id": 7443001003,
+      "name": "Mission Ticket: Day of Wreckening",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 3
+    },
+    {
+      "id": 7443001004,
+      "name": "Mission Ticket: Disk Deletion",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 4
+    },
+    {
+      "id": 7443001005,
+      "name": "Mission Ticket: Data Demolition",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 5
+    },
+    {
+      "id": 7443001006,
+      "name": "Mission Ticket: Disintegration",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 6
+    },
+    {
+      "id": 7443001007,
+      "name": "Mission Ticket: Desperation",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 7
+    },
+    {
+      "id": 7443001008,
+      "name": "Mission Ticket: Crash Course",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 8
+    },
+    {
+      "id": 7443001009,
+      "name": "Mission Ticket: Cave-in",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 9
+    },
+    {
+      "id": 7443001010,
+      "name": "Mission Ticket: Quarry",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 10
+    },
+    {
+      "id": 7443001011,
+      "name": "Mission Ticket: Ctrl+Alt+Destruction",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 11
+    },
+    {
+      "id": 7443001012,
+      "name": "Mission Ticket: CPU Slaughter",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 12
+    },
+    {
+      "id": 7443001013,
+      "name": "Mission Ticket: Cataclysm",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 13
+    },
+    {
+      "id": 7443001014,
+      "name": "Mission Ticket: Mann-euvers",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 14
+    },
+    {
+      "id": 7443001015,
+      "name": "Mission Ticket: Mean Machines",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 15
+    },
+    {
+      "id": 7443001016,
+      "name": "Mission Ticket: Mannhunt",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 16
+    },
+    {
+      "id": 7443001017,
+      "name": "Mission Ticket: Machine Massacre",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 17
+    },
+    {
+      "id": 7443001018,
+      "name": "Mission Ticket: Mech Mutilation",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 18
+    },
+    {
+      "id": 7443001019,
+      "name": "Mission Ticket: Mannslaughter",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 19
+    },
+    {
+      "id": 7443001020,
+      "name": "Mission Ticket: Benign Infiltration",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 20
+    },
+    {
+      "id": 7443001021,
+      "name": "Mission Ticket: Broken Parts",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 21
+    },
+    {
+      "id": 7443001022,
+      "name": "Mission Ticket: Bone Shaker",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 22
+    },
+    {
+      "id": 7443001023,
+      "name": "Mission Ticket: Big Apple Barricade",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 23
+    },
+    {
+      "id": 7443001024,
+      "name": "Mission Ticket: Empire Escalation",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 24
+    },
+    {
+      "id": 7443001025,
+      "name": "Mission Ticket: Metro Malice",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 25
+    },
+    {
+      "id": 7443001026,
+      "name": "Mission Ticket: Village Vanguard",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 26
+    },
+    {
+      "id": 7443001027,
+      "name": "Mission Ticket: Hamlet Hostility",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 27
+    },
+    {
+      "id": 7443001028,
+      "name": "Mission Ticket: Bavarian Botbash",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 28
+    },
+    {
+      "id": 7443001029,
+      "name": "Mission Ticket: Caliginous Caper",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 29
+    },
+    {
+      "id": 7443002001,
+      "name": "Class: Scout",
+      "kind": "class",
+      "classification": "progression",
+      "count": 1,
+      "class_id": 1
+    },
+    {
+      "id": 7443002002,
+      "name": "Class: Soldier",
+      "kind": "class",
+      "classification": "progression",
+      "count": 1,
+      "class_id": 2
+    },
+    {
+      "id": 7443002003,
+      "name": "Class: Pyro",
+      "kind": "class",
+      "classification": "progression",
+      "count": 1,
+      "class_id": 3
+    },
+    {
+      "id": 7443002004,
+      "name": "Class: Demoman",
+      "kind": "class",
+      "classification": "progression",
+      "count": 1,
+      "class_id": 4
+    },
+    {
+      "id": 7443002005,
+      "name": "Class: Heavy",
+      "kind": "class",
+      "classification": "progression",
+      "count": 1,
+      "class_id": 5
+    },
+    {
+      "id": 7443002006,
+      "name": "Class: Engineer",
+      "kind": "class",
+      "classification": "progression",
+      "count": 1,
+      "class_id": 6
+    },
+    {
+      "id": 7443002007,
+      "name": "Class: Medic",
+      "kind": "class",
+      "classification": "progression",
+      "count": 1,
+      "class_id": 7
+    },
+    {
+      "id": 7443002008,
+      "name": "Class: Sniper",
+      "kind": "class",
+      "classification": "progression",
+      "count": 1,
+      "class_id": 8
+    },
+    {
+      "id": 7443002009,
+      "name": "Class: Spy",
+      "kind": "class",
+      "classification": "progression",
+      "count": 1,
+      "class_id": 9
+    },
+    {
+      "id": 7443003000,
+      "name": "Progressive Weapon Slot",
+      "kind": "weapon_slot",
+      "classification": "progression",
+      "count": 3
+    },
+    {
+      "id": 7443004001,
+      "name": "Cash Bundle",
+      "kind": "credits",
+      "classification": "filler",
+      "count": 0,
+      "credits": 200
+    }
+  ]
+}

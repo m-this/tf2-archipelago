@@ -9,7 +9,9 @@ tmp/
 *.apworld
 
 # Bridge runtime state (check queue, unlock set) when running outside compose.
-data/
+# Anchored: apworld/tf2_mvm/data/ is the committed export and must stay tracked.
+/data/
+/bridge/data/
 *.bolt
 *.db
 

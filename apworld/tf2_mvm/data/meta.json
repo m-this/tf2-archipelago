@@ -1,0 +1,126 @@
+{
+  "format_version": 1,
+  "game": "Team Fortress 2 Mann vs Machine",
+  "base_id": 7442000000,
+  "difficulties": [
+    {
+      "id": 1,
+      "key": "normal",
+      "name": "Normal"
+    },
+    {
+      "id": 2,
+      "key": "intermediate",
+      "name": "Intermediate"
+    },
+    {
+      "id": 3,
+      "key": "advanced",
+      "name": "Advanced"
+    },
+    {
+      "id": 4,
+      "key": "expert",
+      "name": "Expert"
+    },
+    {
+      "id": 5,
+      "key": "haunted",
+      "name": "Haunted"
+    }
+  ],
+  "maps": [
+    {
+      "id": 1,
+      "name": "mvm_decoy"
+    },
+    {
+      "id": 2,
+      "name": "mvm_coaltown"
+    },
+    {
+      "id": 3,
+      "name": "mvm_mannworks"
+    },
+    {
+      "id": 4,
+      "name": "mvm_bigrock"
+    },
+    {
+      "id": 5,
+      "name": "mvm_mannhattan"
+    },
+    {
+      "id": 6,
+      "name": "mvm_rottenburg"
+    },
+    {
+      "id": 7,
+      "name": "mvm_ghost_town"
+    }
+  ],
+  "classes": [
+    {
+      "id": 1,
+      "key": "scout",
+      "name": "Scout"
+    },
+    {
+      "id": 2,
+      "key": "soldier",
+      "name": "Soldier"
+    },
+    {
+      "id": 3,
+      "key": "pyro",
+      "name": "Pyro"
+    },
+    {
+      "id": 4,
+      "key": "demoman",
+      "name": "Demoman"
+    },
+    {
+      "id": 5,
+      "key": "heavy",
+      "name": "Heavy"
+    },
+    {
+      "id": 6,
+      "key": "engineer",
+      "name": "Engineer"
+    },
+    {
+      "id": 7,
+      "key": "medic",
+      "name": "Medic"
+    },
+    {
+      "id": 8,
+      "key": "sniper",
+      "name": "Sniper"
+    },
+    {
+      "id": 9,
+      "key": "spy",
+      "name": "Spy"
+    }
+  ],
+  "weapon_slots": [
+    {
+      "id": 1,
+      "key": "primary",
+      "name": "Primary"
+    },
+    {
+      "id": 2,
+      "key": "secondary",
+      "name": "Secondary"
+    },
+    {
+      "id": 3,
+      "key": "melee",
+      "name": "Melee"
+    }
+  ]
+}
