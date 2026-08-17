@@ -17,6 +17,7 @@ export GO_VERSION
 COMPOSE_BASE := docker compose --project-directory . --env-file deploy/env/versions.env --env-file .env
 COMPOSE := $(COMPOSE_BASE) -f deploy/compose.yml
 COMPOSE_TEST := $(COMPOSE_BASE) -f deploy/compose.test.yml
+COMPOSE_DOCS := $(COMPOSE_BASE) -f deploy/compose.docs.yml
 
 # Tools of record: pinned and run through `go run` or `uv run`, so no host
 # install is needed and a local run is byte-identical to CI.
@@ -28,7 +29,7 @@ GO_SRC := $$(find . -type f -name '*.go')
 
 .PHONY: help up down restart logs ps check fmt fmt-check vet lint lint-fix \
         fix-check vuln compile test test-fast export apworld-lint apworld-fmt \
-        apworld-test plugin integration build clean
+        apworld-test plugin integration build docs docs-build docs-down clean
 
 help:
 	@echo "tf2-archipelago"
@@ -40,6 +41,7 @@ help:
 	@echo "  make plugin        Compile the SourceMod plugin"
 	@echo "  make apworld-test  Run the apworld's tests inside Archipelago"
 	@echo "  make integration   Bring up Archipelago and the bridge, drive them"
+	@echo "  make docs          Build the book and serve it on 127.0.0.1"
 	@echo "  make clean         Stop, remove volumes, remove build output"
 
 # --- The stack ---
@@ -155,12 +157,30 @@ plugin:
 integration:
 	./deploy/integration-test.sh
 
+# --- The book ---
+
+# In `check` because the book is a published site now: one that no longer builds
+# should fail here rather than at the domain.
+docs-build:
+	docker build --build-arg HONKIT_VERSION=$(HONKIT_VERSION) \
+		-f deploy/Dockerfile.docs -t tf2-archipelago-docs .
+
+# Rebuilt on every run: honkit reads the whole of docs/ and the build takes
+# seconds, so there is nothing to be gained from asking what changed.
+docs: .env
+	$(COMPOSE_DOCS) up -d --build
+	@echo "the book is on http://127.0.0.1:$${DOCS_PORT:-8081}"
+
+docs-down: .env
+	$(COMPOSE_DOCS) down
+
 # --- The gate ---
 
 # Everything CI runs, cheapest failure first. Green here means green there.
-check: fmt-check lint fix-check compile test vuln apworld-lint plugin apworld-test integration
+check: fmt-check lint fix-check compile test vuln apworld-lint plugin apworld-test docs-build integration
 
 clean: .env
 	$(COMPOSE) down -v
 	$(COMPOSE_TEST) down -v
+	$(COMPOSE_DOCS) down -v
 	rm -rf plugin/build/

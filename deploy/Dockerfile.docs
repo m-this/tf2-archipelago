@@ -1,0 +1,33 @@
+# The book, built out of docs/ and served as static files.
+#
+# honkit is the maintained fork of GitBook 3, so it reads docs/SUMMARY.md and
+# the page layout as they already stand. The table of contents keeps one home
+# rather than growing a second one for the sake of a build.
+
+FROM node:24-alpine AS build
+ARG HONKIT_VERSION
+
+WORKDIR /src
+COPY docs docs
+COPY CONTEXT.md CONTEXT.md
+
+# Three things honkit needs that the repository does not owe it, done here so
+# no file has to move and no second table of contents appears:
+#
+#   - the glossary lives at the repository root, where the README and the
+#     agents read it, and honkit refuses a page above the book's own root. It
+#     is copied in and the one link that reaches out is rewritten.
+#   - honkit looks for README.md as the landing page. index.md stays where it
+#     is, so every page that links to it still resolves.
+#   - without a book.json the theme titles every page "... · HonKit". The name
+#     is read out of the landing page's heading rather than written again, and
+#     node writes the JSON so a title with a quote in it cannot break the file.
+RUN cp CONTEXT.md docs/glossary.md \
+	&& sed -i 's|\.\./CONTEXT\.md|glossary.md|' docs/SUMMARY.md \
+	&& cp docs/index.md docs/README.md \
+	&& node -e 'console.log(JSON.stringify({title: process.argv[1]}))' \
+		"$(sed -n 's/^# //p' docs/index.md | head -1)" > docs/book.json \
+	&& npx --yes honkit@${HONKIT_VERSION} build docs /book
+
+FROM nginx:1.30.4-alpine
+COPY --from=build /book /usr/share/nginx/html
