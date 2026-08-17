@@ -3,13 +3,6 @@
 An [Archipelago](https://archipelago.gg) integration for a self-hosted Team
 Fortress 2 server, in Mann vs Machine mode.
 
-Seed generation, the Archipelago server, and the bridge pass an end-to-end
-check on every `make integration` run. The plugin runs on a real server.
-The three MvM events exist, the plugin reads the mission and its length
-correctly, and a check reaches the multiworld. See
-[`docs/en/operate/testing.md`](./docs/en/operate/testing.md) for the
-step-by-step to confirm the rest at a TF2 client.
-
 ## Start
 
 ```sh
@@ -75,6 +68,17 @@ that knows what a mission or a weapon is. It exports that data as JSON for
 the Python apworld.
 
 Players connect with a stock TF2 client. They install nothing.
+
+## What the tests prove
+
+`make integration` drives seed generation, the Archipelago server and the bridge
+end to end on every run. The plugin runs on a real server. The three MvM events
+exist, the plugin reads the mission and its length correctly, and a check
+reaches the multiworld.
+
+The rest needs a human at a TF2 client.
+[`docs/en/operate/testing.md`](./docs/en/operate/testing.md) is the
+step-by-step.
 
 ## Directory tree
 
