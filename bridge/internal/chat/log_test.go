@@ -1,6 +1,10 @@
 package chat
 
-import "testing"
+import (
+	"strings"
+	"testing"
+	"unicode/utf8"
+)
 
 func TestSinceReturnsWhatIsNew(t *testing.T) {
 	log := New(8)
@@ -73,7 +77,67 @@ func TestWatchWakesOnAMessage(t *testing.T) {
 func TestEmptyLinesAreDropped(t *testing.T) {
 	log := New(4)
 	log.Append("")
+	log.Append("   \n \n  ")
 	if messages, latest := log.Since(0); len(messages) != 0 || latest != 0 {
 		t.Fatalf("an empty line was kept: %+v, latest %d", messages, latest)
+	}
+}
+
+// The engine drops a user message over 255 bytes silently, so a line the plugin
+// cannot print is a line nobody knows was said.
+func TestEveryLineFitsInTheChat(t *testing.T) {
+	log := New(64)
+	log.Append(strings.Repeat("bot ", 400))
+	log.Append("hint: " + strings.Repeat("x", LineMax*2))
+
+	messages, _ := log.Since(0)
+	if len(messages) == 0 {
+		t.Fatal("nothing was kept")
+	}
+	for _, message := range messages {
+		if len(message.Text) > LineMax {
+			t.Fatalf("line %d is %d bytes: %q", message.Seq, len(message.Text), message.Text)
+		}
+	}
+}
+
+func TestMessagesSplitOnTheirOwnLineBreaks(t *testing.T) {
+	log := New(8)
+	log.Append("!help \n    Returns the help listing\n!players \n    Who is connected")
+
+	messages, latest := log.Since(0)
+	if latest != 4 {
+		t.Fatalf("latest = %d, want 4", latest)
+	}
+	if messages[0].Text != "!help" || messages[1].Text != "Returns the help listing" {
+		t.Fatalf("split into %+v", messages)
+	}
+}
+
+func TestALongMessageIsCutOffRatherThanFlooding(t *testing.T) {
+	log := New(64)
+	log.Append(strings.Repeat("a line of the multiworld's help\n", LinesMax*3))
+
+	messages, _ := log.Since(0)
+	if len(messages) != LinesMax+1 {
+		t.Fatalf("kept %d line(s), want %d", len(messages), LinesMax+1)
+	}
+	if last := messages[len(messages)-1].Text; last != truncatedNote {
+		t.Fatalf("last line is %q, want the note", last)
+	}
+}
+
+func TestWrappingKeepsWordsAndRunesWhole(t *testing.T) {
+	long := strings.TrimSpace(strings.Repeat("bomb carrier ", 40))
+	if rejoined := strings.Join(wrap(long), " "); rejoined != long {
+		t.Fatalf("wrapping changed the text:\n%q", rejoined)
+	}
+
+	// No spaces to break on, so the cut lands mid-word and must still land
+	// between runes.
+	for _, line := range wrap(strings.Repeat("é", LineMax*2)) {
+		if !utf8.ValidString(line) {
+			t.Fatalf("cut a rune in half: %q", line)
+		}
 	}
 }

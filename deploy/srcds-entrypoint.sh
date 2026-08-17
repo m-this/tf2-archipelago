@@ -94,6 +94,13 @@ install_server_cfg() {
 	// RED, which is the number worth advertising.
 	sv_visiblemaxplayers 6
 
+	// A wave starts when enough players have readied up, and one is enough
+	// here. A private server is a handful of friends, so one of them arriving
+	// late is not a reason for the evening to stall. It is also the only way to
+	// test a wave alone: a bot cannot ready up, so without this the host cannot
+	// reach the one part of the plugin nothing has proven.
+	tf_mvm_min_players_to_start 1
+
 	// LAN mode skips Steam authentication. The server has no Game Server Login
 	// Token by default, so it never logs in to Steam, and a client trying to
 	// authenticate against a server with no Steam session is refused. Going
