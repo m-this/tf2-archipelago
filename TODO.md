@@ -373,7 +373,7 @@ The bridge adds `AP_HOST`, `AP_TLS`, `BRIDGE_LISTEN`, `BRIDGE_STATE` and
 - [x] The host's book under `docs/`, with `docs/SUMMARY.md` as its table of
       contents. It replaces `archipelago-101` and `running`, which are folded
       into it and deleted.
-- [x] `.forgejo/workflows/ci.yml`: four jobs, one per language, every step a
+- [x] `.github/workflows/ci.yml`: four jobs, one per language, every step a
       make target. Go (gofumpt, vet, golangci-lint, go fix, build, race tests,
       govulncheck), the apworld (ruff), the plugin (spcomp, warnings as
       errors), and the stack (apworld tests inside Archipelago, then the
