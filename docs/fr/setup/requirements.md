@@ -23,9 +23,12 @@ avec `SRCDS_PORT` dans `.env`.
 - Le TCP porte la console distante du serveur de jeu. Il vous le faut pour
   lancer les commandes admin dans [Dépannage](../operate/troubleshooting.md).
 
-Rien d'autre n'est publié. Le serveur randomizer et le bridge entre les
-deux restent à l'intérieur de la stack. Voir [Installation](install.md)
-pour les trois services.
+La stack ne publie rien d'autre. Le bridge ouvre lui-même sa connexion vers la
+room sur `archipelago.gg`, et il n'écoute que sur le loopback. Voir
+[Installation](install.md) pour les services.
+
+La machine doit atteindre `archipelago.gg` sur le port de la room. Un pare-feu
+qui filtre le trafic sortant doit laisser passer ce port.
 
 Si la machine est derrière un routeur, redirigez ce port vers elle. Si la
 machine a un pare-feu, ouvrez ce port.
@@ -37,8 +40,8 @@ machine a un pare-feu, ouvrez ce port.
   serveurs. Voir [Inviter vos amis](invite-your-friends.md).
 - Aucune installation de Team Fortress 2 sur l'hôte. Le conteneur télécharge
   la sienne.
-- Aucun compte sur un site Archipelago. Le serveur randomizer tourne sur
-  votre machine.
+- Aucun compte sur `archipelago.gg`. Le site héberge la session de quiconque
+  lui en envoie une. Voir [Créer la session](create-the-session.md).
 
 ## Remarque sur la sécurité
 

@@ -10,8 +10,9 @@
 ## Set up the server
 
 * [Requirements](setup/requirements.md)
-* [Install](setup/install.md)
 * [The shape of the run](setup/shape-of-the-run.md)
+* [Create the session](setup/create-the-session.md)
+* [Install](setup/install.md)
 * [Invite your friends](setup/invite-your-friends.md)
 
 ## Play

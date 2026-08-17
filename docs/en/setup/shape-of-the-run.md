@@ -3,8 +3,8 @@
 These values live in `.env`. They decide how long an evening is, how hard it
 is, and what ends it.
 
-**Set them before the first start.** The stack generates the session once and
-then keeps it. A change made later does nothing until you
+**Set them before you make the session.** `make seed` reads them once, and the
+session keeps them. A change made later does nothing until you
 [start a new run](../operate/start-a-new-run.md).
 
 ## The run
@@ -68,20 +68,26 @@ bridge log and nothing else happens. Leave it at `false`.
 
 | Variable | Default | What it decides |
 | --- | --- | --- |
-| `AP_SLOT_NAME` | `tf2` | The name of your server inside the randomized session |
-| `AP_PASSWORD` | empty | The password of the session |
-| `AP_PORT` | `38281` | The port of the randomizer server |
+| `AP_HOST` | `archipelago.gg` | Where the session runs |
+| `AP_PORT` | none | The port of the room |
+| `AP_TLS` | `true` | `wss://` rather than `ws://`. A room on `archipelago.gg` answers `wss://`. |
+| `AP_SLOT_NAME` | `tf2` | The name of your server inside the session |
+| `AP_PASSWORD` | empty | The password of the room |
 
-The randomizer server is not published outside the stack, so an empty
-`AP_PASSWORD` is safe. Nothing on the network can reach it.
+`AP_HOST`, `AP_PORT` and `AP_TLS` come from the room page. See
+[Create the session](create-the-session.md), which also covers the three values
+that host the session on your own machine instead.
 
-`AP_SLOT_NAME` is what the randomizer server calls your server in its own log
-and in the chat that reaches your players. Change it if you want the lines to
-read better.
+Anybody who has the address of a room reaches that room. Set a password on the
+room and repeat it in `AP_PASSWORD`, unless the address stays between friends.
 
-Playing with someone in another game, on another machine, needs the randomizer
-port published and a session that holds more than one participant. That is an
-edit to `deploy/compose.yml`, not a value in `.env`. The file says where.
+`AP_SLOT_NAME` is what the session calls your server in its log and in the chat
+that reaches your players. Change it if you want the lines to read better.
+
+Playing with someone in another game needs a session that holds more than one
+slot. Generation reads one file of options, written by
+`deploy/archipelago-entrypoint.sh`, and a second player needs a second file
+beside it. The room takes that player with no port to open.
 
 ## The game server
 
@@ -101,6 +107,5 @@ the stack.
 
 ## Where these values go
 
-The randomizer container writes them into one configuration file at the first
-start and generates the session from it. After that the file is history: the
-session is what the run follows.
+`make seed` writes them into one configuration file and generates the session
+from it. After that the file is history: the session is what the run follows.

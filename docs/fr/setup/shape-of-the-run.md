@@ -3,8 +3,8 @@
 Ces valeurs vivent dans `.env`. Elles décident de la longueur d'une
 soirée, de sa difficulté, et de ce qui la termine.
 
-**Réglez-les avant le premier démarrage.** La stack génère la session une
-fois puis la garde. Un changement fait plus tard ne fait rien tant que
+**Réglez-les avant de fabriquer la session.** `make seed` les lit une fois, et
+la session les garde. Un changement fait plus tard ne fait rien tant que
 vous ne [démarrez pas une nouvelle partie](../operate/start-a-new-run.md).
 
 ## La partie
@@ -75,21 +75,28 @@ avertissement dans le log du bridge et rien d'autre ne se passe. Laissez
 
 | Variable | Défaut | Ce qu'elle décide |
 | --- | --- | --- |
-| `AP_SLOT_NAME` | `tf2` | Le nom de votre serveur dans la session randomisée |
-| `AP_PASSWORD` | vide | Le mot de passe de la session |
-| `AP_PORT` | `38281` | Le port du serveur randomizer |
+| `AP_HOST` | `archipelago.gg` | Où tourne la session |
+| `AP_PORT` | aucun | Le port de la room |
+| `AP_TLS` | `true` | `wss://` plutôt que `ws://`. Une room sur `archipelago.gg` répond en `wss://`. |
+| `AP_SLOT_NAME` | `tf2` | Le nom de votre serveur dans la session |
+| `AP_PASSWORD` | vide | Le mot de passe de la room |
 
-Le serveur randomizer n'est pas publié hors de la stack, donc un
-`AP_PASSWORD` vide est sans risque. Rien sur le réseau ne peut l'atteindre.
+`AP_HOST`, `AP_PORT` et `AP_TLS` viennent de la page de la room. Voir
+[Créer la session](create-the-session.md), qui couvre aussi les trois valeurs
+qui hébergent la session sur votre propre machine.
 
-`AP_SLOT_NAME` est le nom que le serveur randomizer donne à votre serveur
-dans son propre log et dans le chat qui arrive à vos joueurs. Changez-le si
-vous voulez que les lignes se lisent mieux.
+N'importe qui atteint une room dont il connaît l'adresse. Mettez un mot de
+passe sur la room et répétez-le dans `AP_PASSWORD`, sauf si l'adresse reste
+entre amis.
 
-Jouer avec quelqu'un dans un autre jeu, sur une autre machine, demande de
-publier le port du randomizer et une session qui contient plus d'un
-participant. C'est une modification de `deploy/compose.yml`, pas une
-valeur dans `.env`. Le fichier indique où.
+`AP_SLOT_NAME` est le nom que la session donne à votre serveur dans son log et
+dans le chat qui arrive à vos joueurs. Changez-le si vous voulez que les lignes
+se lisent mieux.
+
+Jouer avec quelqu'un dans un autre jeu demande une session qui contient plus
+d'un slot. La génération lit un fichier d'options, écrit par
+`deploy/archipelago-entrypoint.sh`, et un deuxième joueur demande un deuxième
+fichier à côté. La room accueille ce joueur sans ouvrir de port.
 
 ## Le serveur de jeu
 
@@ -109,6 +116,6 @@ dans [Inviter vos amis](invite-your-friends.md).
 
 ## Où vont ces valeurs
 
-Le conteneur randomizer les écrit dans un fichier de configuration au
-premier démarrage et génère la session à partir de celui-ci. Ensuite, le
-fichier appartient au passé : c'est la session que la partie suit.
+`make seed` les écrit dans un fichier de configuration et génère la session à
+partir de celui-ci. Ensuite, le fichier appartient au passé : c'est la session
+que la partie suit.

@@ -1,0 +1,30 @@
+# Generation, on its own. `make seed` runs this and nothing else.
+#
+# archipelago.gg hosts the seed it is given, but generates only the games that
+# ship with Archipelago, and this one does not. So the seed is made here, and
+# lands in ./seed on the host to be uploaded.
+#
+# A file of its own rather than a profile in compose.yml: generation comes
+# before the room exists, and the stack refuses to load without the address of
+# a room.
+name: tf2-archipelago-seed
+
+services:
+  seed:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.archipelago
+      args:
+        ARCHIPELAGO_VERSION: ${ARCHIPELAGO_VERSION:?set it in deploy/env/versions.env}
+    command: ["generate"]
+    # The entrypoint owns the defaults of the run. An empty value here falls
+    # through to them.
+    environment:
+      MVM_MISSION_COUNT: ${MVM_MISSION_COUNT:-}
+      MVM_DIFFICULTY: ${MVM_DIFFICULTY:-}
+      MVM_GOAL: ${MVM_GOAL:-}
+      MVM_MISSIONSANITY_PERCENTAGE: ${MVM_MISSIONSANITY_PERCENTAGE:-}
+      MVM_DEATH_LINK: ${MVM_DEATH_LINK:-}
+      AP_SLOT_NAME: ${AP_SLOT_NAME:-tf2}
+    volumes:
+      - ./seed:/ap/output

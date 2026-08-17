@@ -16,6 +16,7 @@ export GO_VERSION
 # win.
 COMPOSE_BASE := docker compose --project-directory . --env-file deploy/env/versions.env --env-file .env
 COMPOSE := $(COMPOSE_BASE) -f deploy/compose.yml
+COMPOSE_SEED := $(COMPOSE_BASE) -f deploy/compose.seed.yml
 COMPOSE_TEST := $(COMPOSE_BASE) -f deploy/compose.test.yml
 COMPOSE_DOCS := $(COMPOSE_BASE) -f deploy/compose.docs.yml
 
@@ -27,12 +28,13 @@ GOVULNCHECK := go run golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION)
 RUFF := uv run --quiet --with ruff==$(RUFF_VERSION) ruff
 GO_SRC := $$(find . -type f -name '*.go')
 
-.PHONY: help up down restart logs ps check fmt fmt-check vet lint lint-fix \
+.PHONY: help seed up down restart logs ps check fmt fmt-check vet lint lint-fix \
         fix-check vuln compile test test-fast export apworld-lint apworld-fmt \
         apworld-test plugin integration build docs docs-build docs-down clean
 
 help:
 	@echo "tf2-archipelago"
+	@echo "  make seed          Generate a seed in ./seed to upload to archipelago.gg"
 	@echo "  make up            Start the stack (docker compose)"
 	@echo "  make down          Stop the stack"
 	@echo "  make logs          Follow logs"
@@ -51,6 +53,13 @@ help:
 .env:
 	cp deploy/.env.example .env
 	@echo "wrote .env from the example. Set SRCDS_RCONPW before starting."
+
+# The seed goes to archipelago.gg, so it has to land on the host rather than in
+# a volume. The directory is created here because Docker would create it as
+# root, and the image generates as an unprivileged user.
+seed: .env
+	mkdir -p seed
+	$(COMPOSE_SEED) run --rm --build seed
 
 up: .env
 	$(COMPOSE) up -d
@@ -181,6 +190,7 @@ check: fmt-check lint fix-check compile test vuln apworld-lint plugin apworld-te
 
 clean: .env
 	$(COMPOSE) down -v
+	$(COMPOSE_SEED) down -v
 	$(COMPOSE_TEST) down -v
 	$(COMPOSE_DOCS) down -v
 	rm -rf plugin/build/

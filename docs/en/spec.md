@@ -45,7 +45,7 @@ Three processes, one shared source of truth.
         │                                    │
         │ compiled in                        │ read at generation time
         v                                    v
-    bridge (Go)  <──websocket──>  Archipelago server (container)
+    bridge (Go)  <──websocket──>  Archipelago server (archipelago.gg)
         ^
         │ HTTP + JSON on 127.0.0.1
         v

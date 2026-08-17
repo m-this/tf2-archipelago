@@ -49,7 +49,7 @@ Trois processus, une seule source de vérité partagée.
         │                                 │
         │ compilé dans                    │ lu à la génération
         v                                 v
-    bridge (Go)  <──websocket──>  serveur Archipelago (conteneur)
+    bridge (Go)  <──websocket──>  serveur Archipelago (archipelago.gg)
         ^
         │ HTTP + JSON sur 127.0.0.1
         v

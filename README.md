@@ -13,10 +13,17 @@ step-by-step to confirm the rest at a TF2 client.
 ## Start
 
 ```sh
-cp deploy/.env.example .env   # SRCDS_RCONPW has no default
+cp deploy/.env.example .env   # SRCDS_RCONPW, AP_HOST and AP_PORT have no default
+make seed                     # upload the file to archipelago.gg, open a room
 make up
 make logs
 ```
+
+`make seed` generates the multiworld here, because archipelago.gg generates
+only the games that ship with Archipelago. It hosts the file all the same, so
+the stack runs no Archipelago server of its own;
+[`COMPOSE_PROFILES=selfhost`](./docs/en/setup/create-the-session.md) brings one
+back.
 
 The first start downloads about 14 GB of game files. [`docs/`](./docs/) is
 a full book for the host. [`docs/en/setup/install.md`](./docs/en/setup/install.md)
@@ -50,7 +57,7 @@ Three processes. One source of truth.
         │                                   │
         │ built into                        │ read at generation
         v                                   v
-    bridge (Go)  <──websocket──>  Archipelago server (container)
+    bridge (Go)  <──websocket──>  Archipelago server (archipelago.gg)
         ^
         │ HTTP + JSON on 127.0.0.1
         v
@@ -72,7 +79,7 @@ Players connect with a stock TF2 client. They install nothing.
 | [`bridge/`](./bridge/) | Go | Archipelago client. WebSocket, reconnection, a durable queue, and a loopback HTTP API for the plugin. |
 | [`apworld/`](./apworld/) | Python | A thin apworld. It reads the exported JSON and sets the regions, the rules, and the YAML options. |
 | [`plugin/`](./plugin/) | SourcePawn | Detects the objectives. Applies the unlocks and the traps. |
-| [`deploy/`](./deploy/) | Compose | Archipelago server, srcds, and the bridge. |
+| [`deploy/`](./deploy/) | Compose | srcds, the bridge, seed generation, and an optional Archipelago server. |
 | [`docs/`](./docs/) | Markdown | Spec, ADRs, the hosting guide, prior art, and the original Discord thread. |
 
 ## Documentation
