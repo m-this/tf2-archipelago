@@ -128,6 +128,60 @@ func TestUnlocksReportsWhatHasBeenGranted(t *testing.T) {
 	}
 }
 
+func TestMissionsNameTheMapAndWhatIsUnlocked(t *testing.T) {
+	// The run is what the seed drew, in that order: gamedata knows all 29
+	// missions, a run holds a handful of them.
+	drawn := []string{"mvm_ghost_town_666", "mvm_coaltown_intermediate"}
+	missions, unknown := missionsFor(drawn, []string{"mvm_ghost_town_666"})
+
+	if len(unknown) != 0 {
+		t.Fatalf("the tables did not know %v", unknown)
+	}
+	if len(missions) != 2 {
+		t.Fatalf("missions = %+v", missions)
+	}
+
+	// The case that defeats guessing a map by trimming the popfile name, which
+	// is the reason the bridge serves the map at all.
+	haunted := missions[0]
+	if haunted.PopFile != "mvm_ghost_town_666" || haunted.Map != "mvm_ghost_town" {
+		t.Errorf("the haunted mission came back as %+v", haunted)
+	}
+	if haunted.Name != "Caliginous Caper" || haunted.Waves != 1 {
+		t.Errorf("the haunted mission came back as %+v", haunted)
+	}
+	if !haunted.Unlocked {
+		t.Error("the mission whose ticket the run holds is not marked unlocked")
+	}
+	if missions[1].Unlocked {
+		t.Error("a mission with no ticket is marked unlocked")
+	}
+	if missions[1].PopFile != "mvm_coaltown_intermediate" {
+		t.Errorf("the run came back in a different order: %+v", missions)
+	}
+}
+
+func TestMissionsSkipWhatTheTablesDoNotKnow(t *testing.T) {
+	missions, unknown := missionsFor([]string{"mvm_potato", "mvm_coaltown"}, nil)
+	if len(missions) != 1 || missions[0].PopFile != "mvm_coaltown" {
+		t.Fatalf("missions = %+v", missions)
+	}
+	if len(unknown) != 1 || unknown[0] != "mvm_potato" {
+		t.Fatalf("unknown = %v", unknown)
+	}
+}
+
+// A run whose session has not handshaked yet has no missions, and the shape has
+// to hold: the plugin parses the same object either way.
+func TestMissionsAreAnEmptyListWithoutASession(t *testing.T) {
+	_, handler := newTestServer(t, time.Second)
+	var response missionsResponse
+	decode(t, get(t, handler, "/missions"), &response)
+	if len(response.Missions) != 0 {
+		t.Fatalf("missions = %+v", response.Missions)
+	}
+}
+
 func TestGrantsReturnWhatIsAlreadyThere(t *testing.T) {
 	store, handler := newTestServer(t, time.Second)
 	if err := store.ApplyItems(0, []int64{gamedata.Classes[0].ItemID()}); err != nil {

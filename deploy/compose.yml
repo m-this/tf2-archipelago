@@ -47,9 +47,10 @@ services:
       SRCDS_RCONPW: ${SRCDS_RCONPW:?set SRCDS_RCONPW in .env}
       SRCDS_PW: ${SRCDS_PW:-}
       SRCDS_PORT: ${SRCDS_PORT:-27015}
-      SRCDS_MAXPLAYERS: ${SRCDS_MAXPLAYERS:-6}
+      SRCDS_MAXPLAYERS: ${SRCDS_MAXPLAYERS:-32}
       SRCDS_STARTMAP: ${SRCDS_STARTMAP:-mvm_decoy}
       SRCDS_TOKEN: ${SRCDS_TOKEN:-0}
+      SRCDS_ADMIN_STEAMIDS: ${SRCDS_ADMIN_STEAMIDS:-}
     ports:
       # The only public port in the stack, and it is the game's.
       - "${SRCDS_PORT:-27015}:${SRCDS_PORT:-27015}/udp"

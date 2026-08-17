@@ -155,6 +155,35 @@ Run it on the map that the check belongs to. The plugin sends the mission that
 the game is on, so replaying a Decoy check while the server runs Coal Town
 records the wrong place.
 
+## Never restart the game server on its own
+
+The bridge lives inside the game server's network namespace, which is what puts
+its API on a loopback nothing else can reach. The cost is that the game server
+owns that namespace.
+
+So `docker compose up -d srcds` on its own leaves the bridge attached to a
+namespace that no longer exists. It keeps running, it still reports itself
+healthy, and it can reach nothing: the plugin gets a refused connection and the
+randomizer server sees the slot disconnect. `docker restart` does not fix it and
+fails with `joining network namespace: No such container`.
+
+Recreate it:
+
+```sh
+make up            # recreates the whole stack, which is always safe
+```
+
+Or, if only the bridge needs it:
+
+```sh
+docker compose --project-directory . \
+  --env-file deploy/env/versions.env --env-file .env \
+  -f deploy/compose.yml up -d --force-recreate bridge
+```
+
+`make up` and the Ansible role both recreate the whole project, so this only
+happens when a single service is restarted by hand.
+
 ## When the wave counts are wrong
 
 Every wave count in this project comes from the wiki. Nobody has checked one

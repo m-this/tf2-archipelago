@@ -55,9 +55,18 @@ stock void AP_Debug(const char[] format, any ...)
     LogMessage("%s", message);
 }
 
+// Answers the console as readily as a player. Client 0 is the server console,
+// which is where an rcon command runs, and a player can leave while a request
+// is in flight; PrintToChat throws on either and takes the whole callback with
+// it.
 stock void AP_PrintToClient(int client, const char[] format, any ...)
 {
     char message[254];
     VFormat(message, sizeof(message), format, 3);
-    PrintToChat(client, "%s%s", AP_TAG, message);
+    if (client > 0 && client <= MaxClients && IsClientInGame(client))
+    {
+        PrintToChat(client, "%s%s", AP_TAG, message);
+        return;
+    }
+    PrintToServer("[AP] %s", message);
 }

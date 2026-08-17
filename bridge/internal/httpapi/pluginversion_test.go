@@ -39,7 +39,7 @@ func TestThePluginCallsEveryRouteThisBridgeServes(t *testing.T) {
 		t.Fatal(err)
 	}
 	called := string(body)
-	for _, route := range []string{"/objective", "/unlocks", "/grants", "/grants/ack", "/messages", "/say", "/healthz"} {
+	for _, route := range []string{"/objective", "/unlocks", "/missions", "/grants", "/grants/ack", "/messages", "/say", "/healthz"} {
 		if !regexp.MustCompile(regexp.QuoteMeta(`"` + route)).MatchString(called) {
 			t.Errorf("the plugin never calls %s", route)
 		}
