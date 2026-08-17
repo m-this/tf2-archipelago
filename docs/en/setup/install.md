@@ -1,6 +1,8 @@
 # Install
 
-Run everything from the root of the repository.
+Run everything from the root of the repository. [Without the
+repository](#without-the-repository), at the end of this page, does the same
+with two downloaded files.
 
 ## 1. Write the configuration file
 
@@ -92,6 +94,7 @@ progress: the bridge writes every check to disk.
 | `make clean` | Stop the stack and delete every volume, including the 14 GB of game files |
 | `make check` | Run everything that the continuous integration runs |
 | `make integration` | Start a real randomizer server and a real bridge, and drive them the way the plugin does |
+| `make dist` | Build everything a release attaches into `dist/`: the `.apworld`, the plugin, the exported data, and the compose file below |
 
 `make clean` deletes the game files. Use `make down` unless you mean it.
 
@@ -105,3 +108,48 @@ progress: the bridge writes every check to disk.
 
 The sessions themselves are files in `seed/`, in the repository. Git ignores
 that directory, and nothing deletes it for you.
+
+## Without the repository
+
+Every release attaches a `compose.yaml` that names published images instead of
+building them, and the `.env.example` that goes with it. A machine with Docker
+needs nothing else: no clone, no Go, and no compiler.
+
+```sh
+mkdir mann-vs-archipelago && cd mann-vs-archipelago
+base=https://github.com/m-this/tf2-archipelago/releases/latest/download
+curl -fsSLO "$base/compose.yaml"
+curl -fsSL -o .env "$base/.env.example"
+```
+
+Set `SRCDS_RCONPW` in `.env`, then make a session and start:
+
+```sh
+docker compose --profile seed run --rm seed   # writes ./seed
+docker compose up -d
+docker compose logs -f
+```
+
+Steps 3 and 4 of [Create the session](create-the-session.md) apply as they
+stand. Upload the file from `seed/`, create a room, and write the port of the
+room into `AP_PORT`.
+
+The images come from `ghcr.io/m-this/tf2-archipelago`. The `compose.yaml` that
+you download pins them to the release it came from, so the stack keeps the
+version you installed. `TF2AP_VERSION` in `.env` picks another one:
+
+```sh
+TF2AP_VERSION=v1.0.0
+```
+
+```sh
+docker compose pull && docker compose up -d
+```
+
+The commands in the table above are `make` targets, and they need the
+repository. `docker compose` does each of them on its own: `up -d`, `logs -f`,
+`ps`, `down`, and `down -v`.
+
+The [releases page](https://github.com/m-this/tf2-archipelago/releases) also
+attaches `tf2_mvm.apworld` and `tf2_archipelago.smx`, for an Archipelago install
+or a game server that this compose file does not run.

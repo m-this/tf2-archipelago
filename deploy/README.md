@@ -8,6 +8,7 @@ Compose stack. Two services by default, and two more that run on demand.
 | `compose.yml` | `bridge` | Go, from `bridge/`. |
 | `compose.yml` | `archipelago` | The Archipelago server, unmodified, with our apworld baked in. Profile `selfhost` only. |
 | `compose.seed.yml` | `seed` | The same image, run once to generate a seed into `./seed`. |
+| `compose.release.yml` | — | An overlay, not a stack. Names a `ghcr.io` image for each service above. |
 
 The multiworld runs on archipelago.gg by default: `make seed` writes the file,
 the operator uploads it there and opens a room, and the bridge dials that room.
@@ -16,6 +17,19 @@ the operator uploads it there and opens a room, and the bridge dials that room.
 Generation lives in a compose file of its own because it comes first. The stack
 refuses to load without the address of a room, and there is no room before a
 seed exists.
+
+## The released compose file
+
+A release attaches one flat `compose.yaml` for an operator with no clone.
+`make compose-release` renders it. `docker compose config` merges the three
+files above, and `--no-interpolate` keeps every `${VAR}` for the operator's
+`.env`. An awk drops the `build:` blocks, which point at a repository that is
+not there. Generation comes back as the `seed` profile, since a release ships
+one file rather than two.
+
+Each service and each environment variable lives in one file. Add one to
+`compose.yml` and it reaches the released file at the next tag;
+`compose.release.yml` only has to name its image.
 
 ## The port exception
 

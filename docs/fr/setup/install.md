@@ -1,6 +1,7 @@
 # Installation
 
-Lancez tout depuis la racine du dépôt.
+Lancez tout depuis la racine du dépôt. [Sans le dépôt](#sans-le-dépôt), à la
+fin de cette page, fait la même chose avec deux fichiers téléchargés.
 
 ## 1. Écrire le fichier de configuration
 
@@ -97,6 +98,7 @@ le disque.
 | `make clean` | Arrêter la stack et supprimer chaque volume, y compris les 14 Go de fichiers de jeu |
 | `make check` | Lancer tout ce que l'intégration continue lance |
 | `make integration` | Démarrer un vrai serveur randomizer et un vrai bridge, et les piloter comme le plugin le fait |
+| `make dist` | Construire dans `dist/` tout ce qu'une release attache : le `.apworld`, le plugin, les données exportées, et le fichier compose ci-dessous |
 
 `make clean` supprime les fichiers du jeu. Utilisez `make down` sauf si
 c'est vraiment ce que vous voulez.
@@ -111,3 +113,49 @@ c'est vraiment ce que vous voulez.
 
 Les sessions elles-mêmes sont des fichiers dans `seed/`, dans le dépôt. Git
 ignore ce dossier, et rien ne le supprime pour vous.
+
+## Sans le dépôt
+
+Chaque release attache un `compose.yaml` qui nomme des images publiées au lieu
+de les construire, et le `.env.example` qui va avec. Une machine avec Docker n'a
+besoin de rien d'autre : ni clone, ni Go, ni compilateur.
+
+```sh
+mkdir mann-vs-archipelago && cd mann-vs-archipelago
+base=https://github.com/m-this/tf2-archipelago/releases/latest/download
+curl -fsSLO "$base/compose.yaml"
+curl -fsSL -o .env "$base/.env.example"
+```
+
+Réglez `SRCDS_RCONPW` dans `.env`, puis fabriquez une session et démarrez :
+
+```sh
+docker compose --profile seed run --rm seed   # écrit ./seed
+docker compose up -d
+docker compose logs -f
+```
+
+Les étapes 3 et 4 de [Créer la session](create-the-session.md) s'appliquent
+telles quelles. Envoyez le fichier de `seed/`, créez une room, et écrivez le
+port de la room dans `AP_PORT`.
+
+Les images viennent de `ghcr.io/m-this/tf2-archipelago`. Le `compose.yaml` que
+vous téléchargez les fixe à la release dont il vient, donc la stack garde la
+version que vous avez installée. `TF2AP_VERSION` dans `.env` en choisit une
+autre :
+
+```sh
+TF2AP_VERSION=v1.0.0
+```
+
+```sh
+docker compose pull && docker compose up -d
+```
+
+Les commandes du tableau ci-dessus sont des cibles `make`, et elles ont besoin
+du dépôt. `docker compose` fait chacune d'elles seul : `up -d`, `logs -f`, `ps`,
+`down`, et `down -v`.
+
+La [page des releases](https://github.com/m-this/tf2-archipelago/releases)
+attache aussi `tf2_mvm.apworld` et `tf2_archipelago.smx`, pour une installation
+Archipelago ou un serveur de jeu que ce fichier compose ne fait pas tourner.

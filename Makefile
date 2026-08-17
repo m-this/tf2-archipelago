@@ -20,6 +20,14 @@ COMPOSE_SEED := $(COMPOSE_BASE) -f deploy/compose.seed.yml
 COMPOSE_TEST := $(COMPOSE_BASE) -f deploy/compose.test.yml
 COMPOSE_DOCS := $(COMPOSE_BASE) -f deploy/compose.docs.yml
 
+# The release file must render without an operator's .env, so this reads the
+# pins and nothing else.
+COMPOSE_RELEASE := docker compose --project-directory . \
+	--env-file deploy/env/versions.env \
+	-f deploy/compose.yml -f deploy/compose.seed.yml -f deploy/compose.release.yml
+
+DIST := dist
+
 # Tools of record: pinned and run through `go run` or `uv run`, so no host
 # install is needed and a local run is byte-identical to CI.
 GOFUMPT := go run mvdan.cc/gofumpt@$(GOFUMPT_VERSION)
@@ -30,7 +38,8 @@ GO_SRC := $$(find . -type f -name '*.go')
 
 .PHONY: help seed up down restart logs ps check fmt fmt-check vet lint lint-fix \
         fix-check vuln compile test test-fast export apworld-lint apworld-fmt \
-        apworld-test plugin integration build docs docs-build docs-down clean
+        apworld-test apworld-build plugin integration build docs docs-build \
+        docs-down dist compose-release version-check clean
 
 help:
 	@echo "tf2-archipelago"
@@ -43,6 +52,7 @@ help:
 	@echo "  make plugin        Compile the SourceMod plugin"
 	@echo "  make apworld-test  Run the apworld's tests inside Archipelago"
 	@echo "  make integration   Bring up Archipelago and the bridge, drive them"
+	@echo "  make dist          Build everything a release attaches into ./dist"
 	@echo "  make docs          Build the book and serve it on 127.0.0.1"
 	@echo "  make clean         Stop, remove volumes, remove build output"
 
@@ -153,6 +163,17 @@ apworld-test:
 		-f deploy/Dockerfile.archipelago -t tf2-archipelago-apworld-test .
 	docker run --rm tf2-archipelago-apworld-test
 
+# The image's build stage already zips the world for custom_worlds/, which takes
+# zips only. The release copies that zip rather than build a second one.
+apworld-build:
+	mkdir -p $(DIST)
+	docker build --target build \
+		--build-arg ARCHIPELAGO_VERSION=$(ARCHIPELAGO_VERSION) \
+		-f deploy/Dockerfile.archipelago -t tf2-archipelago-apworld-build .
+	id=$$(docker create tf2-archipelago-apworld-build); \
+	docker cp "$$id:/ap/custom_worlds/tf2_mvm.apworld" $(DIST)/tf2_mvm.apworld; \
+	docker rm "$$id"
+
 # --- The plugin ---
 
 plugin:
@@ -183,14 +204,54 @@ docs: .env
 docs-down: .env
 	$(COMPOSE_DOCS) down
 
+# --- The release ---
+
+# .github/workflows/release.yml calls this and builds nothing of its own.
+dist: apworld-build plugin compose-release
+	cp plugin/build/tf2_archipelago.smx $(DIST)/
+	cp apworld/tf2_mvm/data/*.json $(DIST)/
+	cp deploy/.env.example $(DIST)/.env.example
+
+# --no-interpolate leaves every ${VAR} alone, so the operator's .env still fills
+# them in. The awk drops the build: blocks, which point at a repository a
+# release has no copy of. The sed undoes the absolute path compose gave the seed
+# bind mount.
+compose-release:
+	mkdir -p $(DIST)
+	@{ \
+		echo '# tf2-archipelago. Generated: rendered from deploy/compose.yml,'; \
+		echo '# deploy/compose.seed.yml and deploy/compose.release.yml.'; \
+		echo '#'; \
+		echo '# Put it next to a .env, then:'; \
+		echo '#'; \
+		echo '#   docker compose --profile seed run --rm seed  # writes ./seed, upload it'; \
+		echo '#   docker compose up -d'; \
+		echo '#'; \
+		echo '# TF2AP_VERSION picks the release the images come from.'; \
+		echo '# https://github.com/m-this/tf2-archipelago'; \
+		$(COMPOSE_RELEASE) --profile selfhost --profile seed config --no-interpolate \
+			| awk '$$0 == "    build:" { skip = 1; next } skip { if (match($$0, /^      /)) next; skip = 0 } { print }' \
+			| sed 's|$(CURDIR)/|./|g'; \
+	} > $(DIST)/compose.yaml
+
+# A Go test keeps the plugin and the apworld manifest on one version. The tag is
+# the third place that names it, and no file in the tree can read a tag.
+version-check:
+	@want=$${VERSION:?pass VERSION=1.0.0}; \
+	got=$$(sed -n 's/.*"world_version": "\([^"]*\)".*/\1/p' apworld/tf2_mvm/archipelago.json); \
+	if [ "$$want" != "$$got" ]; then \
+		echo "the tag says $$want, apworld/tf2_mvm/archipelago.json says $$got" >&2; \
+		exit 1; \
+	fi
+
 # --- The gate ---
 
 # Everything CI runs, cheapest failure first. Green here means green there.
-check: fmt-check lint fix-check compile test vuln apworld-lint plugin apworld-test docs-build integration
+check: fmt-check lint fix-check compile test vuln apworld-lint plugin apworld-test docs-build compose-release integration
 
 clean: .env
 	$(COMPOSE) down -v
 	$(COMPOSE_SEED) down -v
 	$(COMPOSE_TEST) down -v
 	$(COMPOSE_DOCS) down -v
-	rm -rf plugin/build/
+	rm -rf plugin/build/ $(DIST)/

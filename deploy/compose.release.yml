@@ -1,0 +1,24 @@
+# `make compose-release` merges this with compose.yml and compose.seed.yml into
+# the one compose.yaml a release attaches. A stack that runs from a clone never
+# loads it.
+#
+# .github/workflows/release.yml pushes these images at the tag. It also rewrites
+# the `latest` default to that tag, so a downloaded file keeps the release it
+# came from.
+name: tf2-archipelago
+
+services:
+  archipelago:
+    image: ghcr.io/m-this/tf2-archipelago/archipelago:${TF2AP_VERSION:-latest}
+
+  srcds:
+    image: ghcr.io/m-this/tf2-archipelago/srcds:${TF2AP_VERSION:-latest}
+
+  bridge:
+    image: ghcr.io/m-this/tf2-archipelago/bridge:${TF2AP_VERSION:-latest}
+
+  # A release ships one file, so generation comes back here as a profile rather
+  # than the separate compose file the repository has.
+  seed:
+    image: ghcr.io/m-this/tf2-archipelago/archipelago:${TF2AP_VERSION:-latest}
+    profiles: ["seed"]
