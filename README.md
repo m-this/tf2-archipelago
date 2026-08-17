@@ -3,14 +3,12 @@
 An [Archipelago](https://archipelago.gg) integration for a self-hosted Team
 Fortress 2 server, in Mann vs Machine mode.
 
-**Status: four components run. One wave remains to clear.** Seed generation,
-the Archipelago server, and the bridge pass an end-to-end check on every
-`make integration` run. The plugin ran on a real server on 2026-08-17. The
-three MvM events exist, the plugin reads the mission and its length
-correctly, and a check reaches the multiworld.
-
-One part still needs a player at a TF2 client. MvM does not start a wave
-until a human player is ready. A bot cannot do that.
+Seed generation, the Archipelago server, and the bridge pass an end-to-end
+check on every `make integration` run. The plugin runs on a real server.
+The three MvM events exist, the plugin reads the mission and its length
+correctly, and a check reaches the multiworld. See
+[`docs/en/operate/testing.md`](./docs/en/operate/testing.md) for the
+step-by-step to confirm the rest at a TF2 client.
 
 ## Start
 
@@ -87,10 +85,11 @@ and `make docs` builds and serves the English version on `127.0.0.1:8081`.
   contents. Hosting, game setup, play, and troubleshooting.
 - [`docs/en/archipelago-for-mvm-players.md`](./docs/en/archipelago-for-mvm-players.md):
   for a player new to a multiworld. The vocabulary and the chat commands.
-- [`docs/en/operate/testing.md`](./docs/en/operate/testing.md): what still
-  needs a test, and what each test needs. Read it before the first session.
+- [`docs/en/operate/testing.md`](./docs/en/operate/testing.md): the
+  step-by-step to confirm each behavior on a live server. Read it before
+  the first session.
 - [`docs/en/spec.md`](./docs/en/spec.md): the design. Scope, locations,
-  items, goals, and open questions.
+  items, and goals.
 - [`docs/en/adr/`](./docs/en/adr/): the decisions, and why the alternatives
   lost.
 - [`docs/en/discord-mvm-thread.md`](./docs/en/discord-mvm-thread.md): the

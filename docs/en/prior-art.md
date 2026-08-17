@@ -35,8 +35,9 @@ Port it to a Go bitmask over the same names so the two stay comparable.
 Port the tables to Go, do not vendor the Python. Once translated, `gamedata/`
 owns them and the Python side reads the exported JSON.
 
-**The options.** `Options.py` is close to Roseburst's outline from the Discord
-thread and can be adapted nearly as-is. Note the naming does not match the
+**The options.** `Options.py` is close to Roseburst's outline from the
+Discord thread, and we can adapt it nearly as-is. Note the naming does not
+match the
 thread: `ShuffleMaps` / `ShuffleMissions` / `LockClasses` / `LockWeapons` /
 `LockWeaponSlots` / `ShuffleUpgrades` / `ShuffleRobots` / `ShuffleCanteens` /
 `AddTraps` / `AddTrapTypes`, plus `RandomizeMissionCount` and
@@ -51,19 +52,18 @@ whole `Check Options` block have no equivalent there yet.
   `"Team Fortress 2"`. The game string is the multiworld's primary key for a
   slot, so it has to be one value in one place. We pick it once, in
   `gamedata/`, and export it.
-- Nothing enforces id stability. Archipelago ids must never be renumbered
-  once a seed exists, and the two stub converter functions are where that
-  problem was going to be solved. See ADR 0001 for how we handle it instead.
+- Nothing enforces id stability. We must never renumber an Archipelago id
+  once a seed exists. The fork's author meant the two stub converter
+  functions to solve that problem. See ADR 0001 for how we handle it
+  instead.
 
 ## Snolid Ice's MvM Manual
 
-Referenced twice in the thread ("i made a mvm manual", "my mvm manual is kinda
-rough") but no link was posted. Manual apworlds are JSON-driven and cannot
-express real accessibility rules, which is why we are not going that route,
-but it is worth finding for the item and location naming if the author still
-has it.
-
-**TODO:** ask in the thread for a link.
+Referenced twice in the thread ("i made a mvm manual", "my mvm manual is
+kinda rough"), but nobody posted a link. Manual apworlds are JSON-driven
+and cannot express real accessibility rules, which is why we are not going
+that route. Still, it is worth finding for the item and location naming,
+if the author still has it.
 
 ## Archipelago itself
 
@@ -71,19 +71,20 @@ has it.
   message set we need is small: `Connect`, `Connected`, `LocationChecks`,
   `ReceivedItems`, `StatusUpdate`, `Bounced` (for DeathLink), `Say`.
 - Adding a game: `docs/adding games.md` and `docs/world api.md`.
-- The client must handle both `ws://` and `wss://` and must reconnect on its
-  own. That reconnect logic is the single most annoying part of a hand-rolled
-  client and the main reason the bridge is a long-lived Go process rather
-  than something bolted into the SourceMod plugin (ADR 0002).
+- The client must handle both `ws://` and `wss://`, and must reconnect on
+  its own. That reconnect logic is the single most annoying part of a
+  hand-rolled client. It is the main reason the bridge is a long-lived Go
+  process, rather than something bolted into the SourceMod plugin (ADR
+  0002).
 
 ## Source-side prior art
 
 No Archipelago client exists for any Source engine game, so there is no
 plugin to copy. The relevant references are the SourceMod API itself
-(game events, `SDKHooks`, `TF2_` natives) and the MvM-specific entity and
-event names, which are documented in the community wikis rather than by
-Valve.
+(game events, `SDKHooks`, `TF2_` natives), plus the MvM-specific entity
+and event names. The community wikis document those names, not Valve.
 
 Valve published the TF2 client and server source in the February 2025 SDK
-drop. We are not using it: a server-side-only integration keeps vanilla
-clients able to join, which matters more than anything the SDK would buy us.
+drop. We are not using it. A server-side-only integration keeps vanilla
+clients able to join, and that matters more than anything the SDK gives
+us.
