@@ -21,23 +21,36 @@ import (
 // here, all read off state that is already in memory; a registry, a collector
 // interface and a dependency would be more machinery than the thing measured.
 
-// gameQueryTimeout bounds the A2S round trip a scrape makes. It goes to loopback
-// in the same network namespace, so slower than this is a stalled game server,
-// and a scrape must not wait on one.
-const gameQueryTimeout = 1500 * time.Millisecond
+const (
+	// gameQueryTimeout bounds one A2S round trip. It stays inside the game
+	// server's own network namespace, so slower than this is a stalled srcds, and
+	// a scrape must not wait on one.
+	gameQueryTimeout = 1500 * time.Millisecond
+
+	// gameQueryTTL is how long an answer is reused, and therefore the rate at
+	// which the game server is asked at all. srcds stops answering a source that
+	// queries it more than a few times a second, so this is what keeps a burst of
+	// scrapes from reading as a server that is down.
+	gameQueryTTL = 10 * time.Second
+)
 
 // MetricsHandler serves the run as Prometheus exposition text. gameQueryAddr is
-// the game server's UDP port, asked how many people are connected on every
-// scrape; empty leaves those metrics out.
+// the game server's UDP port, asked how many people are connected; empty leaves
+// those metrics out. One cache per handler, so the rate at which the game server
+// is asked does not depend on how often this is scraped.
 func (s *Server) MetricsHandler(gameQueryAddr string) http.Handler {
+	var game *gamequery.Cache
+	if gameQueryAddr != "" {
+		game = gamequery.NewCache(gameQueryAddr, gameQueryTTL, gameQueryTimeout)
+	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /metrics", func(w http.ResponseWriter, r *http.Request) {
-		s.getMetrics(w, r, gameQueryAddr)
+		s.getMetrics(w, r, game)
 	})
 	return mux
 }
 
-func (s *Server) getMetrics(w http.ResponseWriter, r *http.Request, gameQueryAddr string) {
+func (s *Server) getMetrics(w http.ResponseWriter, r *http.Request, game *gamequery.Cache) {
 	session, run := s.client.Health(), s.store.Stats()
 
 	var out strings.Builder
@@ -76,8 +89,8 @@ func (s *Server) getMetrics(w http.ResponseWriter, r *http.Request, gameQueryAdd
 			labels("mission", drift.PopFile), float64(drift.Observed-drift.Tables))
 	}
 
-	if gameQueryAddr != "" {
-		writeGame(&out, gameQueryAddr, s.logger, r)
+	if game != nil {
+		writeGame(&out, game, s.logger, r)
 	}
 
 	// The seed and the slot identify the run the numbers above belong to, and
@@ -96,11 +109,11 @@ func (s *Server) getMetrics(w http.ResponseWriter, r *http.Request, gameQueryAdd
 // that does not answer is a zero on tf2ap_game_up and no counts at all: zero
 // players and "the question could not be asked" are different facts, and a graph
 // that conflates them shows an empty server every time srcds is restarting.
-func writeGame(out *strings.Builder, addr string, logger *slog.Logger, r *http.Request) {
-	info, err := gamequery.Query(r.Context(), addr, gameQueryTimeout)
+func writeGame(out *strings.Builder, game *gamequery.Cache, logger *slog.Logger, r *http.Request) {
+	info, err := game.Info(r.Context())
 	if err != nil {
 		logger.WarnContext(r.Context(), "cannot ask the game server who is connected",
-			"address", addr, "error", err)
+			"error", err)
 		metric(out, "tf2ap_game_up", "gauge",
 			"1 when the game server answered an A2S query on this scrape.", 0)
 		return
