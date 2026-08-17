@@ -37,6 +37,30 @@ Checked 2026-08-16 against an AP 0.6.7 checkout, while building milestone 2.
 | `pkg_resources` | `ModuleUpdate` imports it, so setuptools must be `<81`. 84 has dropped it. | pinned 80.9.0 |
 | `websockets` | must be the pinned `13.1`. `MultiServer.py` uses `socket.open`, gone in 14+, and every client connection dies with `AttributeError`. | hosting a seed with 17.0.1 |
 
+Checked 2026-08-17 on worklab, the first time the plugin ran on a live server.
+Driven over rcon, no game client, so nothing below needed a player.
+
+| Thing | Value | How it was checked |
+| --- | --- | --- |
+| `SRCDS_MAXPLAYERS` | must be **32**. TF2 refuses to host MvM with fewer and restarts in a loop; it caps RED at six itself | the server printed `You must set maxplayers to 32` and looped |
+| The game's `server.cfg` | sets `rcon_password changeme`, and runs **after** the command line, so it replaces the operator's password on the first map | rcon refused the real password, `cat server.cfg` showed why |
+| `mvm_begin_wave` | exists | `sm_ap_status` events line |
+| `mvm_wave_complete` | exists | same |
+| `mvm_mission_complete` | exists | same |
+| `m_iszMvMPopfileName` | real and correct | reported `mvm_decoy_intermediate` while the map was `mvm_decoy`, which the map-name fallback cannot produce |
+| `m_nMannVsMachineMaxWaveCount` | real | reported `wave 0 of 6` on Cave-in |
+| Wave count for Cave-in | 6 in the game, 6 in the table | the same line |
+| `tf_mvm_popfile` | a **command**, not a variable, and it reloads the mission on the map already loaded | `sm_cvar tf_mvm_popfile` said no such cvar; the command switched mission with no map change |
+| A2S `map` field in MvM | reports the **mission**, not the map | queried while the map was `mvm_coaltown` and the popfile `mvm_coaltown_intermediate` |
+| The check chain | works end to end | `sm_ap_report` → `check recorded "Cave-in Wave 1"` → `tf2 sent Cash Bundle to tf2 (Cave-in Wave 1)` |
+| Effect delivery | works | items 4 to 5 and `acked_seq` 0 to 5 on one cash bundle |
+| Recreating `srcds` alone | orphans the bridge: it stays healthy, reaches nothing, and `docker restart` fails with `joining network namespace: No such container` | recreated srcds, watched the plugin lose the bridge |
+
+A wave was never started: Mann vs Machine waits for a **human** to ready up and
+a bot cannot. So the three events exist but have not been seen to fire, and
+`m_nCurrency`, the slot enforcement and the class move are still unobserved.
+`tf_bot_add 5 red` populates RED and 31 robots spawn, which is as far as bots go.
+
 The `.pop` files being inside the VPK matters: nothing can read them from the
 host without a VPK extractor. Wave counts therefore come from the table below,
 not from parsing, and open question 4 in `spec.md` is answered: **hardcode the
@@ -277,10 +301,18 @@ SourcePawn, SourceMod 1.12, `ripext` 1.3.2. Every bridge call asynchronous.
       hand, `tf2ap_debug 1` echoes everything.
 - [x] Compile with `spcomp`: `plugin/build.sh` fetches the pinned toolchain and
       compiles with warnings as errors. Clean as of 2026-08-16.
-- [ ] Run it. **Nothing here has been executed.** No Team Fortress 2 server was
-      available, so every game event and entity property above is a compile-time
-      guess. The first live session should be `tf2ap_debug 1`, and `sm_ap` will
-      say which of the three events actually exist.
+- [x] Run it. Done 2026-08-17 on worklab. All three events exist, the popfile
+      and the mission length read correctly, and the check chain works end to
+      end. See the verified-facts table above. Four faults came out of it:
+      maxplayers, the `server.cfg` rcon password, `AP_PrintToClient` aborting on
+      the console, and the mission switcher's ordering.
+- [ ] Clear a wave. Still not done, and not doable without a person at a game
+      client: MvM will not start a wave until a human readies up. That leaves
+      `mvm_begin_wave` and `mvm_wave_complete` firing, `m_nCurrency`, the weapon
+      slot enforcement and the class move unobserved.
+- [x] Mission switcher. `!mission` for an admin, `sm_ap_mission` over rcon,
+      driven by `GET /missions` so the plugin never has to guess which map a
+      pop file runs on. Both paths tested live, same map and across maps.
 - [ ] Dockerise the compile for CI (milestone 6).
 
 ## Milestone 5: compose
@@ -312,7 +344,7 @@ SourcePawn, SourceMod 1.12, `ripext` 1.3.2. Every bridge call asynchronous.
 | `SRCDS_RCONPW` | | Required, no default. Never exposed. |
 | `SRCDS_PW` | | Server join password. |
 | `SRCDS_PORT` | `27015` | **The only public port.** |
-| `SRCDS_MAXPLAYERS` | `6` | MvM RED team size. |
+| `SRCDS_MAXPLAYERS` | `32` | Server slots. TF2 refuses to host MvM with fewer; it caps RED at six itself. |
 
 The bridge adds `AP_HOST`, `AP_TLS`, `BRIDGE_LISTEN`, `BRIDGE_STATE` and
 `BRIDGE_POLL_TIMEOUT`; see `bridge/README.md` for their defaults.
@@ -332,8 +364,8 @@ The bridge adds `AP_HOST`, `AP_TLS`, `BRIDGE_LISTEN`, `BRIDGE_STATE` and
       objective counts once, that an unknown mission is refused, that the goal
       registers, that chat goes both ways, and that the state survives a
       restart.
-- [ ] srcds boots into an MvM map with the plugin loaded. **Not run**: 14 GB of
-      game files and no Team Fortress 2 on the build machine.
+- [x] srcds boots into an MvM map with the plugin loaded. Done 2026-08-17 on
+      worklab, once maxplayers was 32.
 - [ ] **Cannot be verified without a human and a TF2 client**: that a wave
       clear in-game actually fires the objective, and that a granted weapon
       slot is actually enforced. `docs/operate/what-nobody-tested.md` says so

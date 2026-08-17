@@ -3,13 +3,13 @@
 Intégration [Archipelago](https://archipelago.gg) pour un serveur Team Fortress 2
 auto-hébergé, en mode Mann vs Machine.
 
-**État : les quatre composants sont écrits ; seul le plugin n'a jamais tourné.**
+**État : les quatre composants tournent ; il reste une vague à réussir.**
 La génération de seed, le serveur Archipelago et le bridge sont vérifiés bout en
-bout à chaque `make integration`. Le plugin SourceMod compile, mais aucun
-serveur TF2 n'était disponible pour l'exécuter : les événements de jeu et les
-propriétés réseau qu'il lit restent des suppositions, avec des replis et des
-messages d'erreur en jeu pour que la première session dise lesquelles sont
-bonnes.
+bout à chaque `make integration`. Le plugin a tourné sur un vrai serveur le
+2026-08-17 : les trois événements MvM existent, il lit bien la mission et sa
+longueur, et une check remonte jusqu'au multiworld. Ce qui manque encore
+demande un joueur devant un client TF2, parce que MvM ne lance pas de vague
+avant qu'un humain se déclare prêt et qu'un bot ne peut pas le faire.
 
 ## Démarrer
 

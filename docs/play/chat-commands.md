@@ -57,10 +57,27 @@ rather than one per component.
 A line is never queued. A message that lands ten minutes late is worse than one
 that was refused while the player was still reading the chat.
 
+## For the admin
+
+An admin is a Steam id in `SRCDS_ADMIN_STEAMIDS`. Set it before the first start
+and it works in the normal chat, like any other command:
+
+| Type this | What the server does |
+| --- | --- |
+| `!mission` | List the missions of the run, and mark which one is playing and which are still locked |
+| `!mission 3` | Switch to the third mission in that list |
+| `!mission mvm_decoy_intermediate` | Switch by mission file name |
+
+A player who is not an admin is told no rather than ignored.
+
+Switching changes the mission, and the map with it when the two differ. The map
+rotation belongs to the host: the plugin says so when the loaded mission is not
+part of the run, and it counts the checks either way.
+
 ## For the host
 
-The admin commands run from the remote console. Connect to the server, open the
-developer console, and type:
+The same commands, and a few more, run from the remote console. Connect to the
+server, open the developer console, and type:
 
 ```
 rcon_password your-SRCDS_RCONPW
@@ -70,9 +87,14 @@ rcon sm_ap_status
 | Command | What it does |
 | --- | --- |
 | `sm_ap_status` | Print the mission, the wave, which game events exist, the unlocks, the queue depth and the last error |
+| `sm_ap_mission` | List the missions of the run. With an argument, switch to one |
 | `sm_ap_resync` | Ask the bridge for the unlock set again |
 | `sm_ap_report wave_cleared 3` | Report a cleared wave by hand |
 | `sm_ap_report mission_cleared` | Report a cleared mission by hand |
+
+The console is not a player, so it is not an admin either: rcon runs as the
+server itself and reaches every command above whatever `SRCDS_ADMIN_STEAMIDS`
+says.
 
 `sm_ap_report` with no wave number uses the wave that the game is on. Reporting
 the same check twice is not a problem: the bridge identifies a check by the

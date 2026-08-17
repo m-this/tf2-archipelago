@@ -31,6 +31,18 @@ enum
     Unlock_Mission,
 };
 
+// One mission of the run, as the bridge describes it. The map is the field the
+// plugin cannot work out for itself: a popfile name does not reliably contain
+// the map it runs on.
+enum struct Mission
+{
+    char popFile[64];
+    char name[64];
+    char map[64];
+    int waves;
+    bool unlocked;
+}
+
 enum struct Objective
 {
     // The queue index cannot identify a retry: an erase shifts every index after it mid-flight.
@@ -49,6 +61,12 @@ ConVar g_CvarBridgeURL;
 ConVar g_CvarChat;
 
 ArrayList g_Pending;
+
+// The run's missions, in the order the seed drew them. Empty until the bridge
+// answers, which is why the switcher says so rather than showing an empty list.
+ArrayList g_Missions;
+bool g_FetchingMissions;
+
 bool g_PollingChat;
 
 // A negative sequence means "start from now": joining late must not replay hours of chat.
@@ -73,6 +91,7 @@ void Bridge_Init()
     g_CvarChat = CreateConVar("tf2ap_chat", "1",
         "Write what the other players in the multiworld say to the chat.", _, true, 0.0, true, 1.0);
     g_Pending = new ArrayList(sizeof(Objective));
+    g_Missions = new ArrayList(sizeof(Mission));
     // No TIMER_FLAG_NO_MAPCHANGE: it dies at the first map change, a queued check must survive one.
     CreateTimer(RetryInterval, Timer_DrainPending, _, TIMER_REPEAT);
 }
@@ -316,6 +335,71 @@ static void OnAcked(HTTPResponse response, any value, const char[] error)
 // all ask for the unlock set, and without this each one starts its own retry
 // chain that never ends: a bridge down over three map changes comes back to
 // four fetches every five seconds, each one clearing and reapplying the set.
+int Bridge_MissionCount()
+{
+    return g_Missions.Length;
+}
+
+bool Bridge_MissionAt(int index, Mission mission)
+{
+    if (index < 0 || index >= g_Missions.Length)
+    {
+        return false;
+    }
+    g_Missions.GetArray(index, mission);
+    return true;
+}
+
+// The run's missions, with the map each popfile runs on. Asked for once per
+// map change: a seed does not change under a running server, but the unlocked
+// flag does.
+void Bridge_FetchMissions()
+{
+    if (g_FetchingMissions)
+    {
+        return;
+    }
+    HTTPRequest request = BridgeRequest("/missions");
+    request.Timeout = 10;
+    g_FetchingMissions = true;
+    request.Get(OnMissions);
+}
+
+static void OnMissions(HTTPResponse response, any value, const char[] error)
+{
+    g_FetchingMissions = false;
+
+    if (!StrEqual(error, "") || response.Status != HTTPStatus_OK)
+    {
+        AP_Debug("The plugin cannot get the mission list. It tries again at the next map.");
+        return;
+    }
+    JSONObject payload = view_as<JSONObject>(response.Data);
+    if (!payload.HasKey("missions"))
+    {
+        AP_Error("The bridge sent a mission list this plugin cannot read.");
+        return;
+    }
+    JSONArray missions = view_as<JSONArray>(payload.Get("missions"));
+
+    g_Missions.Clear();
+    for (int index = 0; index < missions.Length; index++)
+    {
+        JSONObject entry = view_as<JSONObject>(missions.Get(index));
+        Mission mission;
+        entry.GetString("popfile", mission.popFile, sizeof(mission.popFile));
+        entry.GetString("name", mission.name, sizeof(mission.name));
+        entry.GetString("map", mission.map, sizeof(mission.map));
+        mission.waves = entry.GetInt("waves");
+        mission.unlocked = entry.GetBool("unlocked");
+        g_Missions.PushArray(mission);
+        delete entry;
+    }
+    delete missions;
+
+    AP_Debug("The plugin holds %d mission(s) of the run.", g_Missions.Length);
+}
+
 void Bridge_FetchUnlocks()
 {
     if (g_FetchingUnlocks)
@@ -693,10 +777,7 @@ static void OnSaid(HTTPResponse response, any value, const char[] error)
     {
         return;
     }
-    if (client > 0 && IsClientInGame(client))
-    {
-        AP_PrintToClient(client, "%s", SayRefusal(response.Status));
-    }
+    AP_PrintToClient(client, "%s", SayRefusal(response.Status));
     AP_Debug("The line failed with status %d. %s", response.Status, error);
 }
 

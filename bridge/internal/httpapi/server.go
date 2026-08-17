@@ -81,6 +81,23 @@ type messagesResponse struct {
 	Messages []chat.Message `json:"messages"`
 }
 
+// mission is one mission of the run, in the terms a mission switcher needs: a
+// popfile to load, the map that popfile runs on, and something to show a
+// player. The plugin cannot work the map out for itself, because a popfile
+// name does not contain one that can be relied on (mvm_ghost_town_666 runs on
+// mvm_ghost_town), and gamedata is where that fact already lives.
+type mission struct {
+	PopFile  string `json:"popfile"`
+	Name     string `json:"name"`
+	Map      string `json:"map"`
+	Waves    int    `json:"waves"`
+	Unlocked bool   `json:"unlocked"`
+}
+
+type missionsResponse struct {
+	Missions []mission `json:"missions"`
+}
+
 // waveDrift is a mission whose wave count in the tables is not the one the game
 // reported. It is served rather than only logged, because a wrong count on the
 // goal mission makes a seed unwinnable and nothing else would ever say so.
@@ -147,6 +164,7 @@ func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /objective", s.postObjective)
 	mux.HandleFunc("GET /unlocks", s.getUnlocks)
+	mux.HandleFunc("GET /missions", s.getMissions)
 	mux.HandleFunc("GET /grants", s.getGrants)
 	mux.HandleFunc("POST /grants/ack", s.postGrantsAck)
 	mux.HandleFunc("GET /messages", s.getMessages)
@@ -242,6 +260,44 @@ func (s *Server) waveDrift() []waveDrift {
 // on load and on every map change rather than remembering it.
 func (s *Server) getUnlocks(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, s.logger, s.store.Unlocks())
+}
+
+// getMissions serves the run's missions, in the order the seed drew them, each
+// with the map its popfile runs on. It is what a mission switcher needs and
+// what the unlock set deliberately does not carry: the unlock set answers "may
+// we play this", this answers "what is there and how do I load it".
+func (s *Server) getMissions(w http.ResponseWriter, r *http.Request) {
+	missions, unknown := missionsFor(s.client.Health().Missions, s.store.Unlocks().Of(gamedata.ItemMissionTicket))
+	for _, popFile := range unknown {
+		s.logger.WarnContext(r.Context(), "the seed holds a mission the tables do not",
+			"mission", popFile)
+	}
+	writeJSON(w, s.logger, missionsResponse{Missions: missions})
+}
+
+// missionsFor turns the popfiles the seed drew into what a switcher can act on,
+// and reports the ones the tables do not know. A seed from a newer gamedata is
+// the only way that happens, and skipping such a mission beats serving a name
+// and a map this binary would be guessing at.
+func missionsFor(drawn, unlocked []string) ([]mission, []string) {
+	missions := make([]mission, 0, len(drawn))
+	var unknown []string
+	for _, popFile := range drawn {
+		known, ok := gamedata.MissionByPopFile(popFile)
+		if !ok {
+			unknown = append(unknown, popFile)
+			continue
+		}
+		played, _ := gamedata.MapByID(known.Map)
+		missions = append(missions, mission{
+			PopFile:  known.PopFile,
+			Name:     known.Name,
+			Map:      played.Name,
+			Waves:    int(known.Waves),
+			Unlocked: slices.Contains(unlocked, known.PopFile),
+		})
+	}
+	return missions, unknown
 }
 
 // getGrants long-polls: the plugin passes the sequence it last applied and the

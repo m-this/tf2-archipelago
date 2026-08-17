@@ -88,7 +88,8 @@ edit to `deploy/compose.yml`, not a value in `.env`. The file says where.
 | Variable | Default | What it decides |
 | --- | --- | --- |
 | `SRCDS_HOSTNAME` | `Mann vs Archipelago` | The name of the server in the browser |
-| `SRCDS_MAXPLAYERS` | `6` | The team size. MvM is balanced for six. |
+| `SRCDS_ADMIN_STEAMIDS` | empty | Who may use `!mission` and the `sm_ap_` commands in the chat. Steam ids, separated by commas. Either the 17 digit form from a profile URL or SourceMod's `STEAM_0:1:...`. |
+| `SRCDS_MAXPLAYERS` | `32` | Server slots. Team Fortress 2 refuses to host MvM with fewer, and caps RED at six itself. Do not lower it. |
 | `SRCDS_STARTMAP` | `mvm_decoy` | The map that the server starts on |
 
 `SRCDS_STARTMAP` takes any `mvm_` map. The run does not pick the map for you.

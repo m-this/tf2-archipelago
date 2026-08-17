@@ -12,6 +12,112 @@ STAGE=/opt/tf2-archipelago
 GAME="${STEAMAPPDIR}/${STEAMAPP}"
 INTERVAL=30
 
+# SourceMod wants STEAM_0:X:Y. What a player actually has to hand is the 17
+# digit id from their profile URL or steamid.io, so both are accepted and the
+# long one is converted here rather than in the operator's head.
+steam_id_for_sourcemod() {
+	value="$1"
+	case "$value" in
+	*[!0-9]*) ;;
+	"") ;;
+	*)
+		if [ "${#value}" -ge 17 ]; then
+			account=$((value - 76561197960265728))
+			printf 'STEAM_0:%d:%d' "$((account % 2))" "$((account / 2))"
+			return 0
+		fi
+		;;
+	esac
+	printf '%s' "$value"
+}
+
+# SourceMod identifies an admin by Steam id, so the operator's list is the whole
+# configuration. Written rather than shipped: an admin list committed to the
+# image would be one more place a Steam id lives.
+#
+# Separated by commas, spaces or newlines, so a growing list stays readable in
+# an .env file. Rewritten only when it differs, because this runs inside the
+# supervisor loop and the file belongs to whoever is playing once it is right.
+install_admin() {
+	target="$GAME/addons/sourcemod/configs/admins_simple.ini"
+	[ -n "${SRCDS_ADMIN_STEAMIDS:-}" ] || return 0
+	[ -d "$(dirname "$target")" ] || return 0
+
+	staged=$(mktemp)
+	{
+		echo "// Managed by the tf2-archipelago image, from SRCDS_ADMIN_STEAMIDS."
+		echo "// Edits here are replaced the next time the container starts."
+		count=0
+		for raw in $(printf '%s' "${SRCDS_ADMIN_STEAMIDS}" | tr ',\n\t' '   '); do
+			admin=$(steam_id_for_sourcemod "$raw")
+			[ -n "$admin" ] || continue
+			echo "\"${admin}\" \"99:z\""
+			count=$((count + 1))
+		done
+		echo "// ${count} admin(s)"
+	} >"$staged"
+
+	if cmp -s "$staged" "$target"; then
+		rm -f "$staged"
+		return 0
+	fi
+	mv "$staged" "$target"
+	chmod 0644 "$target"
+	echo "[AP] installed $(grep -c '^"' "$target") admin(s)"
+}
+
+# The game ships a sample server.cfg that sets "rcon_password changeme", and
+# server.cfg runs on map load, after the command line. So the password the
+# operator set is replaced by a published default on the first map, on a port
+# that is open to the network. That is the whole reason this file is generated
+# rather than left alone.
+#
+# It also owns the handful of settings the stack really cares about, so nothing
+# else has to be true about a file the game wrote.
+install_server_cfg() {
+	target="$GAME/cfg/server.cfg"
+	[ -d "$(dirname "$target")" ] || return 0
+
+	staged=$(mktemp)
+	cat >"$staged" <<-CFG
+	// Managed by the tf2-archipelago image. Edits here are replaced the next
+	// time the container starts.
+	//
+	// Generated because the game's own sample sets rcon_password to a
+	// published default, and this file runs after the command line that set
+	// the real one.
+	hostname "${SRCDS_HOSTNAME:-Mann vs Archipelago}"
+	rcon_password "${SRCDS_RCONPW}"
+	sv_password "${SRCDS_PW:-}"
+
+	// Mann vs Machine needs 32 slots to host at all and puts six players on
+	// RED, which is the number worth advertising.
+	sv_visiblemaxplayers 6
+
+	sv_lan 0
+	sv_pure 0
+	sv_pausable 0
+	setpause 0
+
+	// Long enough to stop a scan, short enough that fat-fingering the password
+	// does not lock the operator out for a day.
+	sv_rcon_banpenalty 15
+	sv_rcon_maxfailures 10
+	sv_rcon_log 1
+
+	exec banned_user.cfg
+	exec banned_ip.cfg
+	CFG
+
+	if cmp -s "$staged" "$target"; then
+		rm -f "$staged"
+		return 0
+	fi
+	mv "$staged" "$target"
+	chmod 0644 "$target"
+	echo "[AP] wrote server.cfg, rcon password from the environment"
+}
+
 install_plugin() {
 	installed=0
 	while true; do
@@ -22,6 +128,8 @@ install_plugin() {
 			# exists, and an operator who turns on tf2ap_debug should not find
 			# it turned off again thirty seconds later.
 			cp -rn "$STAGE/cfg/." "$GAME/cfg/" 2>/dev/null || true
+			install_server_cfg
+			install_admin
 			if [ "$installed" -eq 0 ]; then
 				echo "[AP] installed the plugin and ripext into $GAME"
 				installed=1

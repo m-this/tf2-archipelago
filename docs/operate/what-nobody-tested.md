@@ -1,51 +1,48 @@
 # What nobody tested
 
-**The SourceMod plugin has never run on a live Team Fortress 2 server.**
+The plugin ran on a live Team Fortress 2 server for the first time on
+2026-08-17. It answered. Most of what this page used to warn about is now
+settled, and what is left is smaller and more precise.
 
-No Team Fortress 2 server was available on the machine that this was built on.
-The plugin compiles with warnings treated as errors, and that is the whole of
-what is known about it. Every game event it hooks and every entity property it
-reads is a guess taken from community documentation and checked against nothing
-but a compiler.
+Your first session with players is still partly a diagnostic session, because
+one thing cannot be tested without a person at a game client: a wave.
 
-Your first session is partly a diagnostic session.
+## What the first live run settled
 
-## What is proven
+A real server, a real seed, the plugin driven over rcon. Every line below was a
+guess before that session:
 
-`make integration` starts a real randomizer server on a freshly generated
-session and a real bridge, and drives the bridge exactly the way the plugin
-drives it. It runs on every change. It verifies:
+| Thing | Result |
+| --- | --- |
+| The plugin loads and reaches the bridge | Yes, over the loopback it shares with the game server |
+| `mvm_begin_wave` exists | Yes |
+| `mvm_wave_complete` exists | Yes |
+| `mvm_mission_complete` exists | Yes |
+| The plugin knows it is in MvM | Yes |
+| It reads the mission from `m_iszMvMPopfileName` | Yes. It reported `mvm_decoy_intermediate` while the map was `mvm_decoy`, which the fallback could not have produced |
+| It reads the mission length from `m_nMannVsMachineMaxWaveCount` | Yes. It reported 6 waves for Cave-in |
+| The wave counts in the tables are right | Cave-in is 6 in the game and 6 in the tables |
+| A reported check reaches the randomizer server | Yes: `tf2 sent Cash Bundle to tf2 (Cave-in Wave 1)` |
+| An item comes back and is applied once | Yes, and the acknowledgement moved with it |
+| The mission switcher changes mission and map | Yes, on the same map and across maps |
 
-- The session generates, for several combinations of options.
-- The randomizer server hosts it and the bridge connects to it.
-- The starting classes, weapon slots and mission ticket arrive.
-- A reported check reaches the randomizer server, and a repeated report counts
-  once.
-- An objective that does not exist is refused.
-- The goal registers when the run is finished.
-- Chat crosses in both directions.
-- The state survives a restart.
+The three events existing is the important one. The whole design rests on them.
 
-So everything from the bridge upwards works. The seed, the item logic, the
-checks, the durability and the session are not in question.
+## What is still not proven
 
-## What is not proven
-
-Everything between the game and the bridge. Specifically:
+A wave. Mann vs Machine does not start one until a human player readies up, and
+a bot cannot ready up. So the events exist but have never been seen to fire,
+and everything downstream of a wave is still untested:
 
 | What the plugin does | Why it might not work |
 | --- | --- |
-| Detects a cleared wave with `mvm_wave_complete` | The event may not exist or may not fire |
-| Reads the wave number from `mvm_begin_wave` | Same |
-| Detects a cleared mission with `mvm_mission_complete` | Same |
-| Reads the current mission from `m_iszMvMPopfileName` | The property name may be wrong |
-| Reads the wave counter from `m_nMannVsMachineWaveCount` | Same |
-| Reads the mission length from `m_nMannVsMachineMaxWaveCount` | Same |
-| Pays credits by writing `m_nCurrency` | Same |
+| Reports a cleared wave when `mvm_wave_complete` fires | The event exists. Nobody has seen it fire |
+| Reads the wave number out of `mvm_begin_wave` | The field name may be wrong |
+| Reports a cleared mission | Same, and the last-wave fallback has never run |
+| Reads the wave counter from `m_nMannVsMachineWaveCount` | Only the maximum has been read so far |
+| Pays credits by writing `m_nCurrency` | There was nobody on the server to pay |
 | Removes a weapon from a locked slot | Never seen on a real player |
 | Moves a player off a locked class at the next spawn | Never seen on a real player |
-
-None of this has been observed once.
 
 ## What was done about it
 
@@ -65,6 +62,8 @@ The plugin is built to survive being wrong.
   too much kit.
 - Every failure is written to the chat in red. There is no client mod, so the
   chat is the whole diagnostic surface.
+- Every objective is written to the SourceMod log as it is queued, so a check
+  the plugin loses can be replayed by hand.
 
 ## How to find out
 
@@ -81,25 +80,41 @@ Then, on the first MvM map, before the first wave:
 rcon sm_ap_status
 ```
 
-The `events:` line is the answer:
+A healthy answer looks like this:
 
 ```
-[AP] events: begin_wave yes, wave_complete yes, mission_complete no
+[AP] version 0.1.0, mvm yes, mission mvm_decoy_intermediate, wave 0 of 7
+[AP] events: begin_wave yes, wave_complete yes, mission_complete yes
+[AP] unlocks held at sequence 5, 0 objective(s) waiting to be sent
+[AP] classes: soldier, heavy
+[AP] slots: primary
 ```
 
-That line says which of the three events this game version actually sends. It
-is the single most useful piece of information that a first session can
-produce. Whatever it says, it is worth recording.
+`mission` has to be the mission, not the map. `wave 0 of 7` has to match the
+mission's real length. `unlocks held` has to say held, not NOT FETCHED.
 
-Also worth watching, in this order:
+Then, with players on the server, watch in this order:
 
 1. Does `[AP] Wave 1 cleared.` appear when the team clears wave 1.
-2. Does the mission name in the welcome message match the mission you started,
-   or is it the map name.
-3. Does a locked weapon slot stay empty after a visit to the resupply locker.
-4. Does the mission clear fire on the last wave and not one wave early. Check
+2. Does a locked weapon slot stay empty after a visit to the resupply locker.
+3. Does a locked class move the player at the next spawn, and not mid-wave.
+4. Do credits from a Cash Bundle actually arrive.
+5. Does the mission clear fire on the last wave and not one wave early. Check
    `wave_drift` in the bridge health page. See
    [Troubleshooting](troubleshooting.md).
+
+## What testing it found
+
+Running it turned up four faults that no amount of reading had:
+
+- The server refused to host at all, because Mann vs Machine needs 32 slots and
+  the example configuration asked for 6.
+- The game's own `server.cfg` replaced the operator's rcon password with a
+  published default, on a port open to the network.
+- Every plugin command run from rcon aborted halfway, because the console is not
+  a player and the plugin printed to it as though it were.
+- The mission switcher set the mission before changing the map, and the map
+  change undid it.
 
 ## The other unverified thing
 
