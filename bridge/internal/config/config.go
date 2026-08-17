@@ -29,8 +29,9 @@ type Config struct {
 	MetricsListen string
 
 	// GameQueryAddr is the game server's own UDP port, asked A2S_INFO on a scrape
-	// to report how many people are connected. Loopback: the bridge shares the
-	// game server's network namespace. Empty leaves the player metrics out.
+	// to report how many people are connected. Its name on the docker network,
+	// not loopback: srcds does not answer a query sent to 127.0.0.1. Empty leaves
+	// the player metrics out.
 	GameQueryAddr string
 
 	StatePath string
@@ -64,7 +65,7 @@ func Load() (Config, error) {
 		Password:       os.Getenv("AP_PASSWORD"),
 		Listen:         env("BRIDGE_LISTEN", "127.0.0.1:24680"),
 		MetricsListen:  os.Getenv("BRIDGE_METRICS_LISTEN"),
-		GameQueryAddr:  env("BRIDGE_GAME_QUERY", "127.0.0.1:27015"),
+		GameQueryAddr:  env("BRIDGE_GAME_QUERY", "srcds:27015"),
 		StatePath:      env("BRIDGE_STATE", "/data/bridge.json"),
 		PollTimeout:    timeout,
 	}

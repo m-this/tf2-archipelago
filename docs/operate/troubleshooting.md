@@ -124,10 +124,15 @@ curl -s 127.0.0.1:24681/metrics
 | `tf2ap_game_players_max` | What the server advertises — six, the RED slots. Not the 32 it must be started with to host MvM at all |
 | `tf2ap_game_map` | The mission it is on, as a label |
 
-The player counts come from an A2S query the bridge sends to the game server on
-loopback, the same thing a server browser asks. A server that does not answer
-reports `tf2ap_game_up 0` and **no** counts, so a restarting srcds reads as
-missing rather than as an empty server.
+The player counts come from an A2S query the bridge sends the game server, the
+same thing a server browser asks. A server that does not answer reports
+`tf2ap_game_up 0` and **no** counts, so a restarting srcds reads as missing
+rather than as an empty server.
+
+One catch worth knowing if you ever change `BRIDGE_GAME_QUERY`: srcds binds
+`0.0.0.0:27015` and answers a query sent to any of its interface addresses, but
+**drops** one sent to `127.0.0.1`. Address it by name (`srcds:27015`), even from
+inside its own network namespace.
 
 `tf2ap_mission_wave_drift` is the one worth an alert: a wrong wave count on the
 goal mission is what makes a seed unwinnable, and it cannot be repaired mid-run.
