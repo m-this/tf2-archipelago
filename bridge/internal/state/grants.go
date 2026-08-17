@@ -3,7 +3,7 @@ package state
 import (
 	"slices"
 
-	"git-ssh.croque.top/mathis/tf2-archipelago/gamedata"
+	"github.com/m-this/tf2-archipelago/gamedata"
 )
 
 // Grant is one received item in the plugin's vocabulary. The plugin is never

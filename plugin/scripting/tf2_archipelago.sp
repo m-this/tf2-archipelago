@@ -41,7 +41,7 @@ public Plugin myinfo =
     author = "mathis",
     description = "Reports Mann vs Machine objectives to an Archipelago bridge and applies its grants.",
     version = PLUGIN_VERSION,
-    url = "https://git-ssh.croque.top/mathis/tf2-archipelago",
+    url = "https://github.com/m-this/tf2-archipelago",
 };
 
 // Zero when no wave is running, or when the plugin loaded mid-mission.

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"git-ssh.croque.top/mathis/tf2-archipelago/gamedata"
+	"github.com/m-this/tf2-archipelago/gamedata"
 )
 
 func openTemp(t *testing.T) *Store {

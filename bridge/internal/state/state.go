@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"git-ssh.croque.top/mathis/tf2-archipelago/gamedata"
+	"github.com/m-this/tf2-archipelago/gamedata"
 )
 
 // ErrDesync means Archipelago sent an item list that does not continue the one

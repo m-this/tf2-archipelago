@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"slices"
 
-	"git-ssh.croque.top/mathis/tf2-archipelago/gamedata"
+	"github.com/m-this/tf2-archipelago/gamedata"
 )
 
 // validate rejects a seed from an apworld this binary may disagree with about what an id means.

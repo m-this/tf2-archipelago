@@ -17,9 +17,9 @@ import (
 
 	"github.com/coder/websocket"
 
-	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/chat"
-	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/state"
-	"git-ssh.croque.top/mathis/tf2-archipelago/gamedata"
+	"github.com/m-this/tf2-archipelago/bridge/internal/chat"
+	"github.com/m-this/tf2-archipelago/bridge/internal/state"
+	"github.com/m-this/tf2-archipelago/gamedata"
 )
 
 const (
