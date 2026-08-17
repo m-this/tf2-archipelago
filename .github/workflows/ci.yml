@@ -132,3 +132,42 @@ jobs:
       # without a human at a Team Fortress 2 client.
       - name: integration
         run: make integration
+
+  # GitHub-only: Pages and its deploy actions do not exist on the Forgejo
+  # runner. Everything else in this file runs on both; this job opts out with
+  # its own `if` instead of moving out to a second workflow file.
+  #
+  # Runs after the other four are green, and only for a push to main: a PR
+  # gets the same build check via `stack`'s `book` step, not a deploy.
+  pages:
+    needs: [go, apworld, plugin, stack]
+    if: github.server_url == 'https://github.com' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      # Same image the `book` step already validated, so the build has one
+      # definition. The custom domain lives in a CNAME file at the artifact's
+      # root, which is how GitHub Pages learns to answer to it.
+      - name: build the book
+        run: |
+          make docs-build
+          id=$(docker create tf2-archipelago-docs)
+          docker cp "$id:/usr/share/nginx/html" book
+          docker rm "$id"
+          echo "tf2-archipelago-docs.croque.top" > book/CNAME
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: book
+
+      - uses: actions/deploy-pages@v4
+        id: deployment
