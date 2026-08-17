@@ -67,6 +67,18 @@ jobs:
       - name: go build
         run: make compile
 
+      # The launcher is a Windows exe cross-compiled from Go. The embed
+      # placeholders (a zero-byte .smx and a minimal zip) are enough to prove
+      # it compiles; the real assets are fetched by `make launcher-assets` in
+      # the release workflow.
+      - name: launcher cross-compile
+        run: |
+          mkdir -p launcher/internal/assets/embedded
+          touch launcher/internal/assets/embedded/tf2_archipelago.smx
+          printf 'PK\x05\x06\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' \
+            > launcher/internal/assets/embedded/sm-ripext-windows.zip
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o /dev/null ./launcher/cmd/tf2ap
+
       # The race detector is the only thing in this pipeline that can see a
       # data race, and the bridge is three goroutines around one state store.
       # This step also guards the committed export: the gamedata tests

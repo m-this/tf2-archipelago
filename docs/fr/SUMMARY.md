@@ -10,9 +10,10 @@
 ## Installer le serveur
 
 * [Prérequis](setup/requirements.md)
+* [Installer sur Windows](setup/install-windows.md)
+* [Installer avec Docker](setup/install.md)
 * [La forme de la partie](setup/shape-of-the-run.md)
 * [Créer la session](setup/create-the-session.md)
-* [Installation](setup/install.md)
 * [Inviter vos amis](setup/invite-your-friends.md)
 
 ## Jouer

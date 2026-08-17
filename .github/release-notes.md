@@ -1,7 +1,23 @@
 Every release attaches the same files. `gh release create --generate-notes`
 appends the commit list below this.
 
-## Run the stack without a clone
+## Run on Windows without Docker
+
+Download **`tf2ap.exe`** from this release and run it. It is a single file:
+no clone, no Docker, no compiler. It installs SteamCMD, the TF2 dedicated
+server, SourceMod and the plugin, then starts the server and the bridge in one
+process.
+
+See
+[the Windows install guide](https://m-this.github.io/tf2-archipelago/en/setup/install-windows.html)
+for the step-by-step.
+
+You also need the official
+[Archipelago](https://github.com/ArchipelagoMW/Archipelago/releases) app to
+generate the seed. Drop `tf2_mvm.apworld` from this release into its
+`custom_worlds/` folder.
+
+## Run the stack without a clone (Docker)
 
 Download `compose.yaml` and `.env.example` into an empty directory:
 
@@ -34,7 +50,7 @@ To host the session on this machine instead of on archipelago.gg, set
 | File | What it is |
 | --- | --- |
 | `tf2_mvm.apworld` | The Archipelago world. Drop it in `custom_worlds/` of an Archipelago 0.6.7 install to generate a seed without Docker. |
-| `tf2_archipelago.smx` | The compiled SourceMod plugin, for an existing srcds that the compose file does not run. |
+| `tf2_archipelago.smx` | The compiled SourceMod plugin, for an existing srcds that neither the launcher nor the compose file runs. |
 | `meta.json`, `items.json`, `missions.json` | The item and location tables `gamedata/` exports. They are already inside the apworld; they are here to read. |
 
 [The book](https://m-this.github.io/tf2-archipelago/) covers the rest.

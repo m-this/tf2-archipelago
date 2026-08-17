@@ -1,4 +1,8 @@
-# Install
+# Install with Docker
+
+This is the Docker path. It works on any operating system with Docker. If you
+are on Windows, [Install on Windows](install-windows.md) is easier: one exe,
+no Docker.
 
 Run everything from the root of the repository. [Without the
 repository](#without-the-repository), at the end of this page, does the same

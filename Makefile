@@ -40,7 +40,8 @@ GO_SRC := $$(find . -type f -name '*.go')
         check fmt fmt-check vet lint lint-fix fix-check vuln compile test \
         test-fast export apworld-lint \
         apworld-fmt apworld-test apworld-build plugin integration build docs \
-        docs-build docs-down dist compose-release version-check clean
+        docs-build docs-down dist compose-release version-check clean \
+        launcher launcher-assets
 
 help:
 	@echo "tf2-archipelago"
@@ -55,6 +56,7 @@ help:
 	@echo "  make apworld-test  Run the apworld's tests inside Archipelago"
 	@echo "  make integration   Bring up Archipelago and the bridge, drive them"
 	@echo "  make dist          Build everything a release attaches into ./dist"
+	@echo "  make launcher      Cross-compile tf2ap.exe (Windows) into ./dist"
 	@echo "  make docs          Build the book and serve it on 127.0.0.1"
 	@echo "  make clean         Stop, remove volumes, remove build output"
 
@@ -193,6 +195,43 @@ apworld-build:
 plugin:
 	./plugin/build.sh
 
+# --- The launcher ---
+
+# The all-in-one Windows exe. The .smx and the ripext Windows zip are embedded
+# in the binary, so launcher-assets fetches them into the embed dir first.
+#
+# Version strings are injected from deploy/env/versions.env via -ldflags, so the
+# versions.env stays the single source of truth and a hand `go build` (which
+# leaves them empty) is caught by assets.RequireVersions at runtime.
+#
+# The .smx is built by `make plugin`, which only runs on Linux (spcomp is a
+# Linux binary). CI runs `make plugin` before `make launcher` on its Linux
+# runner, so the real .smx is in place. On a non-Linux host the launcher still
+# builds with whatever .smx the embed dir holds (a placeholder for dev), because
+# the plugin compile is a separate concern.
+EMBED := launcher/internal/assets/embedded
+LAUNCHER_LDFLAGS := -X github.com/m-this/tf2-archipelago/launcher/internal/assets.SourcemodBranch=$(SOURCEMOD_BRANCH) \
+	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.SourcemodVersion=$(SOURCEMOD_VERSION) \
+	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.RipextVersion=$(RIPEXT_VERSION) \
+	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.ArchipelagoVersion=$(ARCHIPELAGO_VERSION)
+
+launcher-assets:
+	mkdir -p $(EMBED)
+	curl -fsSL -o $(EMBED)/sm-ripext-windows.zip \
+		"https://github.com/ErikMinekus/sm-ripext/releases/download/$(RIPEXT_VERSION)/sm-ripext-$(RIPEXT_VERSION)-windows.zip"
+	@if [ -f plugin/build/tf2_archipelago.smx ]; then \
+		cp plugin/build/tf2_archipelago.smx $(EMBED)/tf2_archipelago.smx; \
+		echo "copied plugin/build/tf2_archipelago.smx into the embed dir"; \
+	else \
+		echo "no plugin/build/tf2_archipelago.smx (run 'make plugin' on Linux, or CI will) — building with the placeholder"; \
+	fi
+
+launcher: launcher-assets
+	mkdir -p $(DIST)
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath \
+		-ldflags="-s -w $(LAUNCHER_LDFLAGS)" \
+		-o $(DIST)/tf2ap.exe ./launcher/cmd/tf2ap
+
 # --- Integration ---
 
 # Archipelago and the bridge, for real, driven the way the plugin drives them.
@@ -221,7 +260,7 @@ docs-down: .env
 # --- The release ---
 
 # .github/workflows/release.yml calls this and builds nothing of its own.
-dist: apworld-build plugin compose-release
+dist: apworld-build plugin launcher compose-release
 	cp plugin/build/tf2_archipelago.smx $(DIST)/
 	cp apworld/tf2_mvm/data/*.json $(DIST)/
 	cp deploy/.env.example $(DIST)/.env.example

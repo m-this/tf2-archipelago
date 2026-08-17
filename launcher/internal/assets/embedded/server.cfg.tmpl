@@ -1,0 +1,36 @@
+// Managed by tf2ap. Edits here are replaced the next time the launcher starts.
+//
+// Generated because the game's own sample sets rcon_password to a published
+// default, and this file runs after the command line that set the real one.
+hostname "{{.Hostname}}"
+rcon_password "{{.RconPassword}}"
+sv_password "{{.PlayerPassword}}"
+
+// Mann vs Machine needs 32 slots to host at all and puts six players on
+// RED, which is the number worth advertising.
+sv_visiblemaxplayers 6
+
+// A wave starts when enough players have readied up, and one is enough
+// here. A private server is a handful of friends, so one of them arriving
+// late is not a reason for the evening to stall. It is also the only way to
+// test a wave alone: a bot cannot ready up, so without this the host cannot
+// reach the one part of the plugin nothing has proven.
+tf_mvm_min_players_to_start 1
+
+// LAN mode skips Steam authentication. The server has no Game Server Login
+// Token by default, so it never logs in to Steam, and a client trying to
+// authenticate against a server with no Steam session is refused. Going
+// online means a real SRCDS_TOKEN and SRCDS_LAN=0.
+sv_lan {{.Lan}}
+sv_pure 0
+sv_pausable 0
+setpause 0
+
+// Long enough to stop a scan, short enough that fat-fingering the password
+// does not lock the operator out for a day.
+sv_rcon_banpenalty 15
+sv_rcon_maxfailures 10
+sv_rcon_log 1
+
+exec banned_user.cfg
+exec banned_ip.cfg

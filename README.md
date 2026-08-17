@@ -5,6 +5,15 @@ Fortress 2 server, in Mann vs Machine mode.
 
 ## Start
 
+There are two ways to run the server.
+
+**Windows (recommended):** download `tf2ap.exe` from the
+[latest release](https://github.com/m-this/tf2-archipelago/releases/latest) and
+run it. One file, no Docker, no clone. See
+[`docs/en/setup/install-windows.md`](./docs/en/setup/install-windows.md).
+
+**Docker:** for any operating system with Docker.
+
 ```sh
 cp deploy/.env.example .env   # SRCDS_RCONPW, AP_HOST and AP_PORT have no default
 make seed                     # upload the file to archipelago.gg, open a room
@@ -88,6 +97,7 @@ step-by-step.
 | [`bridge/`](./bridge/) | Go | Archipelago client. WebSocket, reconnection, a durable queue, and a loopback HTTP API for the plugin. |
 | [`apworld/`](./apworld/) | Python | A thin apworld. It reads the exported JSON and sets the regions, the rules, and the YAML options. |
 | [`plugin/`](./plugin/) | SourcePawn | Detects the objectives. Applies the unlocks and the traps. |
+| [`launcher/`](./launcher/) | Go | The all-in-one Windows exe. Embeds the plugin and ripext, installs SteamCMD and the game server, runs the bridge in-process. |
 | [`deploy/`](./deploy/) | Compose | srcds, the bridge, seed generation, and an optional Archipelago server. |
 | [`docs/`](./docs/) | Markdown | Spec, ADRs, the hosting guide, prior art, and the original Discord thread. |
 

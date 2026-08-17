@@ -79,6 +79,7 @@ jobs:
             --title "$GITHUB_REF_NAME" \
             --notes-file .github/release-notes.md \
             --generate-notes \
+            dist/tf2ap.exe \
             dist/compose.yaml \
             dist/.env.example \
             dist/tf2_mvm.apworld \

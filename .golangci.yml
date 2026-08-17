@@ -120,7 +120,7 @@ linters:
         - pattern: '^http\.(Get|Head|Post|PostForm)$'
           msg: these use DefaultClient; call your own client with a context
         - pattern: '^os\.Getenv$'
-          msg: config is parsed once in bridge/internal/config and passed as typed values
+          msg: config is parsed once in bridge/config and passed as typed values
 
     sloglint:
       no-global: all
@@ -162,7 +162,11 @@ linters:
       - path: 'cmd/'
         linters:
           - forbidigo
-      - path: 'internal/config/'
+      - path: 'bridge/config/'
+        linters:
+          - forbidigo
+      # The interactive UI prints prompts to stdout. That is its job, not logging.
+      - path: 'internal/ui/'
         linters:
           - forbidigo
       # Tests build fixtures and print diagnostics. None of that ships.
