@@ -129,10 +129,17 @@ same thing a server browser asks. A server that does not answer reports
 `tf2ap_game_up 0` and **no** counts, so a restarting srcds reads as missing
 rather than as an empty server.
 
-One catch worth knowing if you ever change `BRIDGE_GAME_QUERY`: srcds binds
-`0.0.0.0:27015` and answers a query sent to any of its interface addresses, but
-**drops** one sent to `127.0.0.1`. Address it by name (`srcds:27015`), even from
-inside its own network namespace.
+Two catches, both measured on a running server rather than guessed:
+
+- srcds binds `0.0.0.0:27015` and answers a query sent to any of its interface
+  addresses, but **drops** one sent to `127.0.0.1`. Address it by name
+  (`srcds:27015`), even from inside its own network namespace — that is what
+  `BRIDGE_GAME_QUERY` defaults to.
+- srcds stops answering a source that queries it more than a few times a second
+  (`sv_max_queries_sec`, over a 30 second window), and keeps refusing until that
+  window drains. So the answer is cached for ten seconds: scrape `/metrics` in a
+  loop and you still get one query every ten seconds. Without that, curling this
+  endpoint a few times in a row makes the dashboard say the server is down.
 
 `tf2ap_mission_wave_drift` is the one worth an alert: a wrong wave count on the
 goal mission is what makes a seed unwinnable, and it cannot be repaired mid-run.
