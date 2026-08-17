@@ -32,11 +32,11 @@ jobs:
           apt-get update
           apt-get install --yes --no-install-recommends nodejs
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: /root/.cache/go-build
           key: ${{ runner.os }}-go-${{ hashFiles('go.sum') }}
@@ -89,7 +89,7 @@ jobs:
           apt-get update
           apt-get install --yes --no-install-recommends nodejs git make
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
@@ -106,7 +106,7 @@ jobs:
           apt-get update
           apt-get install --yes --no-install-recommends nodejs git ca-certificates curl unzip make
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
@@ -122,7 +122,7 @@ jobs:
   stack:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
@@ -159,7 +159,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
@@ -177,12 +177,12 @@ jobs:
       # a second one under the same name and deploy-pages refuses to guess:
       # "Multiple artifacts named github-pages". The attempt number in the name
       # gives each attempt its own.
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           name: github-pages-${{ github.run_attempt }}
           path: book
 
-      - uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@v5
         id: deployment
         with:
           artifact_name: github-pages-${{ github.run_attempt }}
