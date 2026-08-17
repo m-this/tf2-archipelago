@@ -119,6 +119,15 @@ curl -s 127.0.0.1:24681/metrics
 | `tf2ap_run_last_check_timestamp_seconds` | When the last check landed. Absent until one does |
 | `tf2ap_mission_wave_drift` | One series per mission the game and the tables disagree about, valued at the difference. No series is the healthy case |
 | `tf2ap_run_info` | The seed and slot the numbers belong to |
+| `tf2ap_game_up` | 1 when the game server answered an A2S query on that scrape |
+| `tf2ap_game_players` / `_bots` / `_players_human` | Who is on the server. MvM counts its robot waves as bots, so the people playing are players minus bots |
+| `tf2ap_game_players_max` | What the server advertises — six, the RED slots. Not the 32 it must be started with to host MvM at all |
+| `tf2ap_game_map` | The mission it is on, as a label |
+
+The player counts come from an A2S query the bridge sends to the game server on
+loopback, the same thing a server browser asks. A server that does not answer
+reports `tf2ap_game_up 0` and **no** counts, so a restarting srcds reads as
+missing rather than as an empty server.
 
 `tf2ap_mission_wave_drift` is the one worth an alert: a wrong wave count on the
 goal mission is what makes a seed unwinnable, and it cannot be repaired mid-run.

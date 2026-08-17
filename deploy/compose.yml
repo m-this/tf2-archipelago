@@ -90,6 +90,9 @@ services:
       # Metrics answer on every interface of the shared namespace; what decides
       # who can reach them is the published port above, not this.
       BRIDGE_METRICS_LISTEN: 0.0.0.0:${BRIDGE_METRICS_PORT:-24681}
+      # The game server's own port, asked on a scrape how many people are on it.
+      # Loopback works because this container shares its network namespace.
+      BRIDGE_GAME_QUERY: 127.0.0.1:${SRCDS_PORT:-27015}
     volumes:
       - bridgestate:/data
     depends_on:

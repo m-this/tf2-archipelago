@@ -3,8 +3,12 @@ package httpapi
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"strings"
+	"time"
+
+	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/gamequery"
 )
 
 // The metrics endpoint is a second view of what /healthz already reports, in
@@ -17,14 +21,23 @@ import (
 // here, all read off state that is already in memory; a registry, a collector
 // interface and a dependency would be more machinery than the thing measured.
 
-// MetricsHandler serves the run as Prometheus exposition text.
-func (s *Server) MetricsHandler() http.Handler {
+// gameQueryTimeout bounds the A2S round trip a scrape makes. It goes to loopback
+// in the same network namespace, so slower than this is a stalled game server,
+// and a scrape must not wait on one.
+const gameQueryTimeout = 1500 * time.Millisecond
+
+// MetricsHandler serves the run as Prometheus exposition text. gameQueryAddr is
+// the game server's UDP port, asked how many people are connected on every
+// scrape; empty leaves those metrics out.
+func (s *Server) MetricsHandler(gameQueryAddr string) http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /metrics", s.getMetrics)
+	mux.HandleFunc("GET /metrics", func(w http.ResponseWriter, r *http.Request) {
+		s.getMetrics(w, r, gameQueryAddr)
+	})
 	return mux
 }
 
-func (s *Server) getMetrics(w http.ResponseWriter, r *http.Request) {
+func (s *Server) getMetrics(w http.ResponseWriter, r *http.Request, gameQueryAddr string) {
 	session, run := s.client.Health(), s.store.Stats()
 
 	var out strings.Builder
@@ -63,6 +76,10 @@ func (s *Server) getMetrics(w http.ResponseWriter, r *http.Request) {
 			labels("mission", drift.PopFile), float64(drift.Observed-drift.Tables))
 	}
 
+	if gameQueryAddr != "" {
+		writeGame(&out, gameQueryAddr, s.logger, r)
+	}
+
 	// The seed and the slot identify the run the numbers above belong to, and
 	// they are strings: labels on a constant is the only shape Prometheus has
 	// for that.
@@ -73,6 +90,41 @@ func (s *Server) getMetrics(w http.ResponseWriter, r *http.Request) {
 	if _, err := io.WriteString(w, out.String()); err != nil {
 		s.logger.ErrorContext(r.Context(), "cannot write the metrics response", "error", err)
 	}
+}
+
+// writeGame asks the game server who is on it and writes what it said. A server
+// that does not answer is a zero on tf2ap_game_up and no counts at all: zero
+// players and "the question could not be asked" are different facts, and a graph
+// that conflates them shows an empty server every time srcds is restarting.
+func writeGame(out *strings.Builder, addr string, logger *slog.Logger, r *http.Request) {
+	info, err := gamequery.Query(r.Context(), addr, gameQueryTimeout)
+	if err != nil {
+		logger.WarnContext(r.Context(), "cannot ask the game server who is connected",
+			"address", addr, "error", err)
+		metric(out, "tf2ap_game_up", "gauge",
+			"1 when the game server answered an A2S query on this scrape.", 0)
+		return
+	}
+	metric(out, "tf2ap_game_up", "gauge",
+		"1 when the game server answered an A2S query on this scrape.", 1)
+
+	// Mann vs Machine counts its robot waves as players, so the number of people
+	// is what is left after the bots. Both are here: the raw count is what a
+	// server browser shows, and the difference is who is actually playing.
+	metric(out, "tf2ap_game_players", "gauge",
+		"Players the server reports, robot waves included.", float64(info.Players))
+	metric(out, "tf2ap_game_players_human", "gauge",
+		"Players minus bots: the people connected.", float64(info.Humans()))
+	metric(out, "tf2ap_game_bots", "gauge",
+		"Bots on the server, which in MvM is the current wave.", float64(info.Bots))
+	// The advertised maximum, which MvM pins to the six RED slots. It is not the
+	// 32 the server process needs to host the mode at all.
+	metric(out, "tf2ap_game_players_max", "gauge",
+		"Slots the server advertises (six in MvM, not the 32 it was started with).",
+		float64(info.MaxPlayers))
+
+	header(out, "tf2ap_game_map", "gauge", "The mission the server is on.")
+	sample(out, "tf2ap_game_map", labels("map", info.Map), 1)
 }
 
 // metric writes a whole single-sample metric: both comment lines and the value.
