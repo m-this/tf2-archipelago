@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+# GitHub-only, like the `pages` job in ci.yml: ghcr.io, the release API and the
+# `gh` CLI are all GitHub's. The Forgejo mirror reads this file and skips it.
+#
+# No `make check`: the tag points at a commit CI already passed on main. The
+# version check below is the one thing a tag can get wrong on its own.
+jobs:
+  release:
+    if: github.server_url == 'https://github.com'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - name: name the images
+        run: |
+          echo "IMAGE=ghcr.io/${{ github.repository }}" >> "$GITHUB_ENV"
+          echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+
+      # Before any push: a tag that disagrees with the tree ships a version
+      # nobody released.
+      - name: check the version
+        run: make version-check
+
+      - name: log in to ghcr.io
+        run: |
+          echo "${{ github.token }}" \
+            | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      # The same Dockerfiles and pins a clone builds from, so what runs from
+      # ghcr.io is what runs from `make up`. Every tag moves `latest` too,
+      # because this project cuts no prereleases.
+      - name: build and push the bridge image
+        run: |
+          docker build -f deploy/Dockerfile.bridge \
+            -t "$IMAGE/bridge:$GITHUB_REF_NAME" -t "$IMAGE/bridge:latest" .
+          docker push --all-tags "$IMAGE/bridge"
+
+      - name: build and push the srcds image
+        run: |
+          . deploy/env/versions.env
+          docker build -f deploy/Dockerfile.srcds \
+            --build-arg "RIPEXT_VERSION=$RIPEXT_VERSION" \
+            -t "$IMAGE/srcds:$GITHUB_REF_NAME" -t "$IMAGE/srcds:latest" .
+          docker push --all-tags "$IMAGE/srcds"
+
+      - name: build and push the archipelago image
+        run: |
+          . deploy/env/versions.env
+          docker build -f deploy/Dockerfile.archipelago \
+            --build-arg "ARCHIPELAGO_VERSION=$ARCHIPELAGO_VERSION" \
+            -t "$IMAGE/archipelago:$GITHUB_REF_NAME" \
+            -t "$IMAGE/archipelago:latest" .
+          docker push --all-tags "$IMAGE/archipelago"
+
+      - name: build the files
+        run: make dist
+
+      # A downloaded stack then keeps the release it came with until
+      # TF2AP_VERSION says otherwise.
+      - name: pin the compose file to this tag
+        run: sed -i "s/:-latest}/:-$GITHUB_REF_NAME}/g" dist/compose.yaml
+
+      - name: publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --verify-tag \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file .github/release-notes.md \
+            --generate-notes \
+            dist/compose.yaml \
+            dist/.env.example \
+            dist/tf2_mvm.apworld \
+            dist/tf2_archipelago.smx \
+            dist/meta.json \
+            dist/items.json \
+            dist/missions.json

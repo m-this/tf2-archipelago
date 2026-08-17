@@ -136,6 +136,11 @@ jobs:
       - name: book
         run: make docs-build
 
+      # A merge that stops the compose file rendering fails here, not on the
+      # tag, where the workflow already pushed half the release.
+      - name: release compose file
+        run: make compose-release
+
       # Archipelago and the bridge, for real, driven the way the plugin drives
       # them. The game server is not in it: 14 GB, and it proves nothing
       # without a human at a Team Fortress 2 client.

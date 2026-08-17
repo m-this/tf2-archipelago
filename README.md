@@ -25,6 +25,11 @@ the stack runs no Archipelago server of its own;
 [`COMPOSE_PROFILES=selfhost`](./docs/en/setup/create-the-session.md) brings one
 back.
 
+A clone is one way in. Every release attaches a `compose.yaml` that pulls
+published images instead of building them, plus the built `.apworld` and the
+compiled plugin. See
+[`docs/en/setup/install.md`](./docs/en/setup/install.md#without-the-repository).
+
 The first start downloads about 14 GB of game files. [`docs/`](./docs/) is
 a full book for the host. [`docs/en/setup/install.md`](./docs/en/setup/install.md)
 gives the detail. Send
