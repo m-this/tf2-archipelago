@@ -2,7 +2,7 @@
 
 Go package. The single source of truth for every Mann vs Machine fact this
 project knows, and for every Archipelago id. Read [ADR
-0001](../docs/adr/0001-go-owns-the-game-data.md) before touching anything here.
+0001](../docs/en/adr/0001-go-owns-the-game-data.md) before touching anything here.
 
 ## What is here
 
@@ -24,7 +24,7 @@ allied robot templates, traps. Weapon *slots* are enough to make a progression,
 and the weapon table is the largest data-entry job in the project. The starting
 point when they land is `worlds/tf2/Items.py` in ALPHAMARIOX's fork, 556 lines
 of Python dicts: port them to Go, do not vendor the Python. See
-[`../docs/prior-art.md`](../docs/prior-art.md) for what is in there and what is
+[`../docs/en/prior-art.md`](../docs/en/prior-art.md) for what is in there and what is
 broken in it.
 
 ## What does not go here

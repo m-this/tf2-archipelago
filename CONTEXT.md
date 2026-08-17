@@ -15,7 +15,7 @@ belonging to one player can be placed in another player's world.
 **Slot**
 One participant in a multiworld, identified by name. A slot plays exactly one
 game with one YAML. In this project a slot is **the TF2 server**, not a Steam
-account. See `docs/spec.md`, "Slot model".
+account. See `docs/en/spec.md`, "Slot model".
 
 **Seed**
 The generated multiworld. Immutable once generated. Every id referenced by a
@@ -50,12 +50,12 @@ hold M's ticket and a primary weapon slot" is an access rule.
 **Sphere 0**
 Everything reachable with no items at all. If sphere 0 contains no location,
 the seed is dead on arrival. See the starting-state requirement in
-`docs/spec.md`.
+`docs/en/spec.md`.
 
 **DeathLink**
 An opt-in convention where a death in one world kills every other DeathLink
 participant. Needs a game-specific definition of "death"; ours is unresolved
-(`docs/spec.md`, open question 5).
+(`docs/en/spec.md`, open question 5).
 
 **Trap**
 An item with a negative effect. A first-class classification in Archipelago,
@@ -110,13 +110,13 @@ unlockable item.
 **Allied merc / RED bot**
 A `tf_bot` on the player's team, spawned by the plugin to fill out a team
 smaller than six. Their loadout comes from an unlocked robot template. Whether
-they can use the player's purchased upgrades is unresolved (`docs/spec.md`,
+they can use the player's purchased upgrades is unresolved (`docs/en/spec.md`,
 open question 3).
 
 **`.pop` file**
 The plaintext population file defining a mission's waves and robots. The only
 authority on how many waves a mission has, which is why `gamedata/` may have
-to parse them (`docs/spec.md`, open question 4).
+to parse them (`docs/en/spec.md`, open question 4).
 
 ## Project vocabulary
 

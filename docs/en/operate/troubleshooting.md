@@ -51,9 +51,9 @@ Read them in this order:
 - **`mvm no`** means that the plugin does not think this is Mann vs Machine.
   Nothing is reported on a map that is not an MvM map.
 - **`events: ... no`** is the important one. It names which of the three Mann vs
-  Machine game events this server actually sends. None of them has ever been
-  checked against a live server. A `no` there is a finding, not a fault: report
-  it. `wave_complete no` makes the plugin watch the wave counter instead.
+  Machine game events this server actually sends. A `no` here means your game
+  version does not send that event; report it. `wave_complete no` makes the
+  plugin watch the wave counter instead.
 - **`unlocks NOT FETCHED`** means that the plugin has never had an answer from
   the bridge. Until it does, it enforces nothing: a server where nobody can hold
   a weapon is worse than a wave played with too much kit.

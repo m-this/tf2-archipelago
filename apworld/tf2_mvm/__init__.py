@@ -38,6 +38,7 @@ class TF2MvMLocation(Location):
 class TF2MvMWeb(WebWorld):
     theme = "dirt"
     option_groups = option_groups
+    game_info_languages: ClassVar[list[str]] = ["en", "fr"]
     tutorials: ClassVar[list[Tutorial]] = [
         Tutorial(
             "Multiworld Setup Guide",
@@ -46,7 +47,15 @@ class TF2MvMWeb(WebWorld):
             "setup_en.md",
             "setup/en",
             ["mathis"],
-        )
+        ),
+        Tutorial(
+            "Multiworld Setup Guide",
+            "Un guide pour héberger un serveur Team Fortress 2 Mann vs Machine pour Archipelago.",
+            "Français",
+            "setup_fr.md",
+            "setup/fr",
+            ["mathis"],
+        ),
     ]
 
 

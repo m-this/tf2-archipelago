@@ -2,11 +2,8 @@
 
 ## Before anybody joins
 
-Read [What nobody tested](../operate/what-nobody-tested.md). The half of this
-project that runs inside the game has never run on a live Team Fortress 2
-server. Your first session is partly a diagnostic session. Plan for that and it
-is fine. Ignore it and you will not know whether a missing check is a bug or
-the game.
+Read [Testing](../operate/testing.md) for what still needs a first real run.
+It tells a bug apart from an untested path.
 
 Turn on the loud mode before the first wave:
 

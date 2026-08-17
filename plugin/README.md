@@ -2,7 +2,7 @@
 
 SourcePawn. Runs inside the `srcds` container. The only component that sees the
 game. Read [ADR
-0002](../docs/adr/0002-server-side-plugin-with-a-go-bridge.md) first.
+0002](../docs/en/adr/0002-server-side-plugin-with-a-go-bridge.md) first.
 
 ## Building
 
@@ -127,7 +127,7 @@ or a fired trap has to fit through one of those three.
 
 ## Open questions that land here
 
-From [`../docs/spec.md`](../docs/spec.md), the ones this component has to
+From [`../docs/en/spec.md`](../docs/en/spec.md), the ones this component has to
 answer before its part of the spec can be finished:
 
 1. **Shop check injection.** Can a plugin add an arbitrary purchasable entry to
