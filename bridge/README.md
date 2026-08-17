@@ -79,7 +79,7 @@ the HTTP API and nowhere else.
 | `GET` | `/grants?since=6` | | `{"seq":8,"grants":[…]}`, held open until there is something past that sequence |
 | `POST` | `/grants/ack` | `{"seq":8}` | `204`. Everything through that sequence is applied, so no effect below it is sent again |
 | `GET` | `/messages?since=-1` | | the multiworld's chat, long-polled. A negative sequence means "start from now" |
-| `POST` | `/say` | `{"text":"!hint Scout"}` | `204`, `403` for a command that cannot be undone, `429` for a flood, `413` for a line too long, `503` when there is no multiworld to say it to |
+| `POST` | `/say` | `{"text":"!hint Class: Scout"}` | `204`, `403` for a command that cannot be undone, `429` for a flood, `413` for a line too long, `503` when there is no multiworld to say it to |
 | `GET` | `/healthz` | | the API version, the session, the run, and any mission the game says is a different length than the tables do |
 
 An objective naming a mission or a wave that does not exist is a `400`, not a

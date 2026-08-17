@@ -93,6 +93,38 @@ A healthy answer looks like this:
 `mission` has to be the mission, not the map. `wave 0 of 7` has to match the
 mission's real length. `unlocks held` has to say held, not NOT FETCHED.
 
+## Testing a wave on your own
+
+You do not need anybody else, and you do not need to run or join anything: the
+randomizer server is already in the stack and the bridge is its only client.
+
+`sv_visiblemaxplayers` says six, but a wave starts as soon as the players who
+are here have readied up, and the stack sets `tf_mvm_min_players_to_start 1`.
+So connect, press the ready key, and the wave begins.
+
+Clearing it alone is the part that needs help. From the console:
+
+```
+rcon sv_cheats 1
+rcon mp_disable_respawn_times 1
+god
+rcon tf_bot_kill all
+rcon tf_mvm_tank_kill
+```
+
+`god` is typed in your own console rather than through rcon, because rcon runs
+as the server and the server is not a player. `tf_bot_kill all` kills what is
+alive right now and the mission keeps sending the rest of the wave, so run it
+again every few seconds until the wave ends. It ends the wave the way the game
+does, which is the point: `mvm_wave_complete` fires for real.
+
+`tf_mvm_force_victory` and `tf_mvm_jump_to_wave` also exist. Neither is worth
+using here. They skip the event this is trying to observe.
+
+Load a mission the run actually holds first, with `rcon sm_ap_mission`. On a
+mission outside the run the plugin says so and counts the checks anyway, which
+is correct behaviour and a confusing thing to debug against.
+
 Then, with players on the server, watch in this order:
 
 1. Does `[AP] Wave 1 cleared.` appear when the team clears wave 1.

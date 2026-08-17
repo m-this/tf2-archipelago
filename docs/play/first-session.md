@@ -32,7 +32,7 @@ Eight seconds after joining, each player gets this in the chat:
 [AP] Mission: mvm_decoy. Each wave you clear is a check.
 [AP] Unlocked classes: scout, medic
 [AP] Unlocked slots: primary
-[AP] Type !ap to speak to the multiworld. Examples: !ap hint Scout and !ap missing.
+[AP] Type !ap to speak to the multiworld. Examples: !ap hint Class: Scout and !ap missing.
 ```
 
 The two unlock lines are the state of the run at that moment. A player who

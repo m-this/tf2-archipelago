@@ -719,7 +719,7 @@ static void OnMessages(HTTPResponse response, any value, const char[] error)
         for (int index = 0; index < messages.Length; index++)
         {
             JSONObject message = view_as<JSONObject>(messages.Get(index));
-            char text[254];
+            char text[ChatLineMax];
             message.GetString("text", text, sizeof(text));
             if (show && text[0] != '\0')
             {

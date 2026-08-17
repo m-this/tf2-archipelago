@@ -38,7 +38,7 @@ Players have no Archipelago client, so the plugin is theirs:
 | Typed in chat | What it does |
 | --- | --- |
 | `!ap` | One line of help |
-| `!ap hint Scout` | Runs an Archipelago server command. The `!` is added if it is missing, so `!ap hint`, `!ap missing`, `!ap status` and `!ap release` all work |
+| `!ap hint Class: Scout` | Runs an Archipelago server command. The `!` is added if it is missing, so `!ap hint`, `!ap missing`, `!ap status` and `!ap release` all work |
 | `!apchat <text>` | Says something to the other players in the multiworld, prefixed with the sender's name |
 
 What the multiworld says comes back into chat, so a hint answered or an item

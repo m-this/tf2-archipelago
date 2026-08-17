@@ -137,7 +137,7 @@ public Action Timer_Welcome(Handle timer, any userid)
     AP_PrintToClient(client, "Mission: %s. Each wave you clear is a check.", popFile);
     AP_PrintToClient(client, "Unlocked classes: %s", Status_ClassList());
     AP_PrintToClient(client, "Unlocked slots: %s", Status_SlotList());
-    AP_PrintToClient(client, "Type \x07FFD700!ap\x01 to speak to the multiworld. Examples: \x07FFD700!ap hint Scout\x01 and \x07FFD700!ap missing\x01.");
+    AP_PrintToClient(client, "Type \x07FFD700!ap\x01 to speak to the multiworld. Examples: \x07FFD700!ap hint Class: Scout\x01 and \x07FFD700!ap missing\x01.");
     return Plugin_Stop;
 }
 

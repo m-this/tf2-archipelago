@@ -13,7 +13,7 @@ to install and no second window to keep open.
 | `!ap checked` | List the checks that are already found |
 | `!ap remaining` | List what is left. The randomizer server decides whether it answers before the run is over. |
 | `!ap players` | List the participants in the session |
-| `!ap hint Scout` | Ask where an item is |
+| `!ap hint Class: Scout` | Ask where an item is |
 | `!ap hint_location Doe's Doom Wave 3` | Ask what a place holds |
 | `!ap options` | Print the settings of the session |
 | `!ap help` | Print the help of the randomizer server |
@@ -27,6 +27,11 @@ same chat.
 Asking where an item is costs hint points, which the session earns from checks.
 Use the item names from
 [Archipelago for MvM players](../archipelago-for-mvm-players.md).
+
+The whole name, including the prefix. `!ap hint Scout` does not find
+`Class: Scout`: the randomizer server matches on the whole name and refuses
+anything under 75% alike, and the prefix is more than half of that name. It
+answers with the name it thinks you meant, so the second try works.
 
 ## Commands that are refused
 
