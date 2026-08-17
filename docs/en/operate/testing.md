@@ -42,6 +42,18 @@ rcon sm_ap_status
 
 If `sm_ap_status` answers, rcon works.
 
+The same commands run from the host, with no game client. Run every `rcon`
+line on this page either way:
+
+```sh
+make rcon CMD="sm_ap_status"
+```
+
+The server reads `SRCDS_RCONPW` once, at boot. An edit to `.env` after that
+changes nothing until `make restart`. Until then the file and the server
+hold two different passwords. `make rcon` reports the refusal instead of an
+empty answer.
+
 **Chat commands** (`!mission`, `sm_ap_mission` in chat), for the
 `SRCDS_ADMIN_STEAMIDS` allowlist:
 
@@ -94,6 +106,25 @@ is in this run's pool. A popfile outside the pool still loads: the plugin
 says so, and counts the checks anyway. That makes it a confusing thing to
 test against by accident.
 
+Do this before every test below, even on a server that just started.
+`SRCDS_STARTMAP` names a map, not a mission. A map loads that map's own
+default mission, and the run does not hold it.
+
+`mvm_decoy` starts Doe's Drill, eight waves. The run's Decoy mission is
+`mvm_decoy_intermediate`, Doe's Doom, seven waves. `gamedata` holds both,
+so nothing fails loudly. The waves you clear count as Doe's Drill's
+checks, the run never asked for them, and the run does not move.
+
+`sm_ap_status` tells the two apart. Its `mission` field has to read
+`mvm_decoy_intermediate`, not `mvm_decoy`. The plugin also writes this to
+the error log at every map load:
+
+```
+The run did not unlock mvm_decoy. Its checks still count.
+```
+
+That line means the server is on the wrong mission. Do not ignore it.
+
 ## 5. Clear a wave alone
 
 MvM will not start a wave until a human readies up. Ready up, then run
@@ -116,6 +147,92 @@ a shortcut.
 
 `tf_mvm_force_victory` and `tf_mvm_jump_to_wave` also exist. Do not use
 them here: they skip the event under test.
+
+### Play a wave rather than end it
+
+To play a wave alone, weaken the robots. `tf_mvm_skill` is a cheat cvar,
+so turn `sv_cheats` on first:
+
+```sh
+make rcon CMD="sv_cheats 1"
+make rcon CMD="tf_mvm_skill 1"
+```
+
+`tf_mvm_skill` runs 1 to 5 and defaults to 3. At 1, one player can win a
+wave. A map reload drops it, so set it again after `sm_ap_mission`.
+
+Credits are the other half, because an MvM defender is its upgrades. Run
+this in the game client's own console, not through rcon: it acts on a
+player, and rcon is the server.
+
+```
+currency_give 30000
+```
+
+The credits spend at the upgrade station like any other. The command also
+writes `m_nCurrency`, which test 7 below reads, so a run that used it
+cannot confirm a Cash Bundle payout.
+
+`god`, also in the client's console, is the shortest way to reach a late
+wave with the events intact.
+
+### Bots on the RED team
+
+Five bots fill the team, which MvM caps at six. None of this is part of
+the stack: these are console commands for a tester who plays alone.
+
+```sh
+make rcon CMD="tf_bot_add 5 red heavyweapons"
+make rcon CMD="tf_bot_quota 0"
+```
+
+**Team before class.** The order is `tf_bot_add <count> <team> <class>`,
+so `5 red heavyweapons`, never `5 heavyweapons red`.
+
+**Zero the quota after every add.** `tf_bot_add` raises `tf_bot_quota` by
+what it added, and in MvM a quota above 0 spawns bots and never stops. The
+count climbs on its own and waves never end. The extra bots look like the
+wave from inside the game, so the cause stays invisible. With the quota at
+0 the count is exact: five asked for, five present, five a minute later.
+
+**Ready them, or no wave starts.** MvM waits for every RED player, and a
+bot never readies itself, so F4 does nothing while one is on the team. The
+ready state is a client command, and bots take client commands. That is
+all the third-party "make players ready" plugins do from the inside:
+
+```sh
+make rcon CMD="bot_command all tournament_player_readystate 1"
+```
+
+Run that between waves, before F4.
+
+Count the bots with the bridge's metrics, not with `status`. `status`
+lists every fake client, robots included, so it reads about 25 for a team
+of five mid-wave. A2S counts only the defenders:
+
+```sh
+curl -s 127.0.0.1:24681/metrics | grep tf2ap_game_
+```
+
+`tf2ap_game_bots 5` with `tf2ap_game_players_human 1` is a full RED team.
+
+To remove the bots, set the quota to 0 before you kick, or the server
+replaces each one killed, for good. `tf_bot_kill` against a quota above 0
+never ends:
+
+```sh
+make rcon CMD="tf_bot_quota 0"
+make rcon CMD="tf_bot_kick all"
+```
+
+Two limits remain. A bot never buys an upgrade. MvM has no navigation for
+the defending team, so bots mostly stand in spawn and take damage. To make
+them fight you need a third-party plugin, which is a personal choice and
+not part of this repository.
+
+Leave `tf_bot_difficulty` alone. It is one setting for every bot on the
+server, robots included. Raise it for the team and the robots get the same
+raise. Robots already alive keep the value they spawned under.
 
 **Confirms:** `mvm_wave_complete` fires and the plugin reports the check.
 `mvm_begin_wave` gave the plugin the right wave number beforehand.

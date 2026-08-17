@@ -36,10 +36,11 @@ GOVULNCHECK := go run golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION)
 RUFF := uv run --quiet --with ruff==$(RUFF_VERSION) ruff
 GO_SRC := $$(find . -type f -name '*.go')
 
-.PHONY: help seed up down restart logs ps check fmt fmt-check vet lint lint-fix \
-        fix-check vuln compile test test-fast export apworld-lint apworld-fmt \
-        apworld-test apworld-build plugin integration build docs docs-build \
-        docs-down dist compose-release version-check clean
+.PHONY: help seed up down restart logs ps rcon \
+        check fmt fmt-check vet lint lint-fix fix-check vuln compile test \
+        test-fast export apworld-lint \
+        apworld-fmt apworld-test apworld-build plugin integration build docs \
+        docs-build docs-down dist compose-release version-check clean
 
 help:
 	@echo "tf2-archipelago"
@@ -47,6 +48,7 @@ help:
 	@echo "  make up            Start the stack (docker compose)"
 	@echo "  make down          Stop the stack"
 	@echo "  make logs          Follow logs"
+	@echo "  make rcon          Send a server command: make rcon CMD='sm_ap_status'"
 	@echo "  make check         The gate: everything CI runs"
 	@echo "  make export        Regenerate apworld/tf2_mvm/data from gamedata/"
 	@echo "  make plugin        Compile the SourceMod plugin"
@@ -84,6 +86,16 @@ logs: .env
 
 ps: .env
 	$(COMPOSE) ps
+
+# Read by hand, not sourced: .env holds unquoted values with spaces, which a shell cannot source.
+# The server reads SRCDS_RCONPW at boot, so a value changed since then needs 'make restart'.
+RCON := SRCDS_RCONPW="$$(sed -n 's/^SRCDS_RCONPW=//p' .env)" \
+	SRCDS_PORT="$$(sed -n 's/^SRCDS_PORT=//p' .env)" \
+	python3 deploy/rcon.py
+
+# Silenced so the password does not reach the terminal in the echoed recipe.
+rcon: .env
+	@$(RCON) $(CMD)
 
 build: .env
 	$(COMPOSE) build
@@ -147,12 +159,14 @@ export:
 
 # --- The apworld ---
 
+PYTHON_SRC := apworld/ deploy/rcon.py
+
 apworld-fmt:
-	$(RUFF) format apworld/
+	$(RUFF) format $(PYTHON_SRC)
 
 apworld-lint:
-	$(RUFF) format --check apworld/
-	$(RUFF) check apworld/
+	$(RUFF) format --check $(PYTHON_SRC)
+	$(RUFF) check $(PYTHON_SRC)
 
 # The apworld's tests need Archipelago to run inside, so they run in the image
 # that has it. The stage puts the world back in worlds/ as a folder and drops
