@@ -1,8 +1,9 @@
 # Mann vs Archipelago
 
 This project turns a Team Fortress 2 Mann vs Machine server into a randomizer.
-The classes, the weapon slots and the missions start locked. The team unlocks
-them by clearing waves. Everybody on the server shares the same unlocks.
+The classes, the weapon slots and the missions start locked. The team
+clears waves to unlock them. Everybody on the server shares the same
+unlocks.
 
 You host it with Docker. The stack runs three containers: a Team Fortress 2
 dedicated server, a randomizer server, and a small program that connects the
@@ -24,8 +25,8 @@ it.
 4. [The shape of the run](setup/shape-of-the-run.md) sets the length and the
    difficulty of an evening.
 5. [Invite your friends](setup/invite-your-friends.md) opens the server.
-6. [Testing](operate/testing.md) lists what still needs a real test, and
-   what each test needs. Read it before the first session.
+6. [Testing](operate/testing.md) gives the step-by-step to confirm each
+   behavior on a live server. Read it before the first session.
 
 ## The short version
 

@@ -1,26 +1,25 @@
 # TF2 MvM Archipelago : le cahier des charges
 
-Statut : brouillon, dépassé par le code par endroits — ce document est la
-lecture consolidée du fil de discussion d'origine, en anglais dans
-[`discord-mvm-thread.md`](./discord-mvm-thread.md), plus les décisions
-d'architecture dans [`adr/`](./adr/). Là où le fil et ce fichier sont en
-désaccord, ce fichier gagne et le désaccord est signalé. Une bonne partie
-de ce qui suit décrit des fonctionnalités visées, pas toutes livrées :
-voir [Tests](operate/testing.md) pour ce qui tourne réellement et reste à
-vérifier.
+Ce document est la lecture consolidée du fil de discussion d'origine, en
+anglais dans [`discord-mvm-thread.md`](./discord-mvm-thread.md), plus les
+décisions d'architecture dans [`adr/`](./adr/). Là où le fil et ce fichier
+sont en désaccord, ce fichier gagne, et nous signalons le désaccord. Voir
+[Tests](operate/testing.md) pour ce qu'il reste à confirmer humainement sur
+un serveur réel.
 
 ## Périmètre
 
 Mann vs Machine uniquement. Pas le TF2 compétitif, pas le casual, pas le
 payload.
 
-MvM est le seul mode TF2 qui a déjà une vraie forme de progression : une
-mission est une liste ordonnée de vagues, les vagues se réussissent ou se
-ratent, il y a une boutique avec des améliorations persistantes, et un
-tour est une liste ordonnée de missions. Cela se projette sur les régions
-et les locations d'Archipelago sans rien inventer. Le TF2 classique n'a
-rien de tout cela, ce qui explique pourquoi le fil est allé directement à
-MvM et pourquoi nous le suivons.
+MvM est le seul mode TF2 qui a déjà une vraie forme de progression. Une
+mission est une liste ordonnée de vagues. Les vagues se réussissent ou se
+ratent. Une boutique vend des améliorations persistantes. Un tour est une
+liste ordonnée de missions.
+
+Cela se projette sur les régions et les locations d'Archipelago sans rien
+inventer. Le TF2 classique n'a rien de tout cela. C'est pourquoi le fil est
+allé directement à MvM, et pourquoi nous le suivons.
 
 Déploiement visé : un `srcds` auto-hébergé dans un conteneur, un serveur
 Archipelago dans un conteneur, un processus bridge. Les amis se
@@ -32,10 +31,14 @@ connectent avec un client TF2 standard et n'installent rien.
   (ADR 0002).
 - Aucun support pour les serveurs officiels Valve Mann Up ou Boot Camp. Ils
   ne peuvent pas faire tourner de plugins, donc il n'y a nulle part où
-  l'intégration pourrait vivre.
+  l'intégration peut vivre.
 - Aucune tentative de soumettre ceci en amont à
   `ArchipelagoMW/Archipelago` dans la v1. À reconsidérer une fois que ça
-  génère réellement et a été joué de bout en bout.
+  génère réellement et que quelqu'un termine une partie de bout en bout.
+- Aucune mission communautaire (Potato.tf, Moonlight.tf) en v1. Les
+  fichiers `.pop` n'ont pas d'id global stable et ne peuvent pas être lus
+  sur l'hôte sans extracteur de VPK. `gamedata/` code en dur les 29
+  missions Valve, avec des nombres de vagues tirés du wiki.
 
 ## Architecture
 
@@ -54,20 +57,22 @@ Trois processus, une seule source de vérité partagée.
 ```
 
 **`gamedata/` (Go)** possède chaque fait MvM : les cartes, les missions,
-les vagues par mission, les paliers de difficulté, la liste d'armes, les
-noms d'amélioration, les types de canteen, les templates de robot, et
-l'id assigné à chacun. Il se compile dans le bridge et exporte du JSON
-pour l'apworld. Une table, deux consommateurs, aucune dérive. ADR 0001.
+les vagues par mission, les paliers de difficulté, la liste d'armes. Il
+possède aussi les noms d'amélioration, les types de canteen, les
+templates de robot, et assigne un id à chacun. Il se compile dans le
+bridge et exporte du JSON pour l'apworld. Une table, deux consommateurs,
+aucune dérive. ADR 0001.
 
-**`apworld/tf2_mvm/` (Python)** est volontairement mince : lire le JSON
-exporté, construire les items et les locations à partir de lui, déclarer
-les régions et les règles d'accès, exposer les options YAML. Aucune
-connaissance de MvM codée en dur en Python au-delà des règles elles-mêmes.
+**`apworld/tf2_mvm/` (Python)** reste volontairement mince. Il lit le JSON
+exporté. Il construit les items et les locations à partir de lui. Il
+déclare les régions et les règles d'accès, et expose les options YAML.
+Aucune connaissance de MvM codée en dur en Python au-delà des règles
+elles-mêmes.
 
 **`bridge/` (Go)** est le client Archipelago. Il tient la session
-websocket, gère la reconnexion et le rejeu, déduplique les items reçus,
-persiste ce qui a déjà été appliqué, et expose une petite API HTTP locale
-au plugin. ADR 0002.
+websocket. Il gère la reconnexion et le rejeu, déduplique les items reçus,
+et garde en mémoire ce qu'il a déjà appliqué. Il expose aussi une petite
+API HTTP locale au plugin. ADR 0002.
 
 **`plugin/` (SourcePawn)** est la seule chose qui voit le jeu. Il détecte
 les objectifs et les rapporte, et applique les déblocages et les pièges.
@@ -76,36 +81,36 @@ Il n'a aucune connaissance d'Archipelago : il parle en termes MvM
 
 ## Modèle de slot
 
-Le fil ne résout jamais cette question, et c'est la question porteuse,
-parce que les tables d'items et de locations dépendent de la réponse.
+C'est la question porteuse, parce que les tables d'items et de locations
+dépendent de la réponse.
 
 **Décision : un seul slot pour tout le serveur.** La progression est
 collective. Chaque joueur de RED partage les mêmes armes débloquées, les
 mêmes améliorations et les mêmes missions.
 
-Justification : MvM est coopératif et équilibré autour d'une équipe
-coordonnée de six. Un slot par joueur laisserait un ami sans arme
-principale pendant qu'un autre n'a pas d'arme de mêlée, dans un mode où la
-vague 6 d'une mission Advanced ne se soucie pas de votre randomizer. Cela
-multiplie aussi le nombre de checks par le nombre de joueurs et rend la
-seed injouable si quelqu'un part en cours de route.
+Justification : MvM est coopératif, et équilibré autour d'une équipe
+coordonnée de six. Un slot par joueur laisse un ami sans arme principale,
+pendant qu'un autre n'a pas d'arme de mêlée. La vague 6 d'une mission
+Advanced ne se soucie pas de votre randomizer. Cela multiplie aussi le
+nombre de checks par le nombre de joueurs, et rend la seed injouable si
+quelqu'un part en cours de route.
 
 Conséquence : le slot AP appartient au serveur, pas à un compte Steam. Le
 bridge tient une seule connexion. Qui que ce soit sur le serveur joue ce
 slot.
 
 Des slots par joueur restent possibles plus tard comme option, mais pas en
-v1, et le schéma d'id de gamedata ne doit pas supposer un slot unique pour
+v1. Le schéma d'id de gamedata ne doit pas supposer un slot unique pour
 toujours.
 
 ## Locations (checks)
 
 Chaque check doit être quelque chose que le plugin SourceMod peut
 observer avec certitude, et une seule fois. Les succès MvM sont
-délibérément exclus : ils sont liés au compte Steam, donc un vétéran qui
-les possède déjà ne déclenchera jamais `achievement_earned` et la seed
-serait imperdable pour lui et gagnable pour un compte neuf. C'est un
-échec silencieux, pire qu'une fonctionnalité manquante.
+délibérément exclus. Ils tiennent au compte Steam, donc un vétéran qui
+les possède déjà ne déclenche jamais `achievement_earned`. Pour lui, la
+seed devient imperdable ; pour un compte neuf, elle reste gagnable. C'est
+un échec silencieux, pire qu'une fonctionnalité manquante.
 
 | Groupe de locations | Déclencheur | Nombre | Option |
 | --- | --- | --- | --- |
@@ -116,10 +121,9 @@ serait imperdable pour lui et gagnable pour un compte neuf. C'est un
 | Achat en boutique | Une check achetée à l'upgrade station pour 100 à 400 $, puis remise | configurable | `shop_checks` |
 | Kill de tank / boss | Tank détruit, Giant ou robot boss tué | par mission, plafonné | `boss_checks` |
 
-Fin de vague est l'ossature et le seul groupe activé par défaut. Tout le
-reste est optionnel, parce que la longueur d'une partie doit être
-réglable et que le nombre de vagues à lui seul donne déjà environ 6 à 8
-checks par mission.
+Fin de vague est l'ossature, et le seul groupe activé par défaut. Tout le
+reste est optionnel. La longueur d'une partie doit rester réglable, et le
+nombre de vagues à lui seul donne déjà environ 6 à 8 checks par mission.
 
 Les checks de boutique sont les plus intéressantes et les plus risquées.
 Les deux variantes de Roseburst :
@@ -130,12 +134,13 @@ Les deux variantes de Roseburst :
   recevez-la.
 
 Les deux demandent au plugin d'injecter une entrée achetable dans
-l'interface de l'upgrade station, ce qui est la plus grande inconnue de ce
-cahier des charges. Signalé dans les questions ouvertes.
+l'interface de l'upgrade station. Nous livrons `shop_checks` désactivé par
+défaut, et il le reste tant que ce n'est pas confirmé sur un serveur réel.
 
-L'idée de Damonj17, « les améliorations comptent comme des checks, comme
-les boutiques dans d'autres jeux », où ouvrir la station déverse un mur
-d'indices, est amusante et a sa place comme option, pas comme défaut.
+L'idée de Damonj17 est amusante : « les améliorations comptent comme des
+checks, comme les boutiques dans d'autres jeux ». Ouvrir la station
+déverse alors un mur d'indices. Elle a sa place comme option, pas comme
+défaut.
 
 ## Items
 
@@ -161,30 +166,30 @@ proposées par Roseburst :
   Minigun, le Sydney Sleeper et le Flamethrower à la fois.
 
 Les Packages produisent un pool d'items plus petit et plus intéressant.
-Weapon Unlocks en produit un bien plus gros. Les deux sont livrés,
+Weapon Unlocks en produit un bien plus gros. Nous livrons les deux ;
 `upgrades_shuffle` choisit.
 
-L'état de départ doit être jouable : l'instinct d'adeleine64DS, « on
-pourrait aussi exiger d'avoir la classe/l'arme avant de pouvoir acheter
-l'amélioration », est le bon réflexe, mais le générateur doit garantir au
-moins une classe utilisable avec au moins une arme utilisable en sphère 0,
-sinon la vague 1 est imperdable et la seed est morte-née.
+L'état de départ doit être jouable. L'instinct d'adeleine64DS est le bon
+réflexe : « on pourrait aussi exiger d'avoir la classe/l'arme avant de
+pouvoir acheter l'amélioration. » Le générateur doit garantir au moins une
+classe utilisable, avec au moins une arme utilisable, en sphère 0. Sinon
+la vague 1 est imperdable, et la seed est morte-née.
 
 ## Bots alliés
 
-Les vagues MvM sont calibrées pour six joueurs. Une partie en solo sans
+Valve calibre les vagues MvM pour six joueurs. Une partie en solo sans
 aide n'est pas un randomizer, c'est un mur.
 
 L'option `Allied Mercs` de Roseburst (Off / Fill 6 / Fill 10 / Scavenge)
-est la réponse, et elle vaut mieux que le multiplicateur de dégâts de
-Damonj17 : un multiplicateur compense les dégâts manquants mais pas un
-Medic manquant, un Engineer manquant ou un Scout manquant pour ramasser
+est la réponse. Elle vaut mieux que le multiplicateur de dégâts de
+Damonj17. Un multiplicateur compense les dégâts manquants, mais pas un
+Medic manquant, un Engineer manquant, ou un Scout manquant pour ramasser
 l'argent. Les bots occupent au moins les rôles.
 
-Problème ouvert que le fil a identifié sans le résoudre : les bots RED
-n'achètent pas d'améliorations. La suggestion d'adeleine64DS, que les bots
-partagent simplement les améliorations débloquées du joueur, est la
-solution la moins chère et la première à essayer.
+Les bots RED n'achètent pas d'améliorations par eux-mêmes. Le choix
+retenu : les bots partagent directement les améliorations débloquées du
+joueur. C'est la suggestion d'adeleine64DS venue du fil, et la solution la
+moins chère.
 
 Les équipements de bot sont eux-mêmes des items sous `Robot Templates` ou
 `Single Templates`, ce qui transforme « qui est dans mon équipe » en une
@@ -196,21 +201,19 @@ fil.
 - **Final Boss** : une mission du palier le plus difficile disponible est
   marquée, et la réussir gagne la partie.
 - **Missionsanity** : réussir X % des missions du pool.
-- **Australium Hunt** : N items Australium de rebut sont mélangés dans le
-  multiworld et il en faut un pourcentage. C'est le seul objectif qui fait
-  dépendre la partie des mondes des autres joueurs, ce qui est le point
-  d'un multiworld, donc il ne devrait pas être traité comme un
-  après-coup.
+- **Australium Hunt** : le multiworld mélange N items Australium de
+  rebut, et il en faut un pourcentage. C'est le seul objectif qui fait
+  dépendre la partie des mondes des autres joueurs. C'est le principe
+  même d'un multiworld, donc ce n'est pas un après-coup.
 
 ## Pièges et DeathLink
 
-DeathLink dans MvM a besoin d'une définition que le fil ne donne pas. Une
-mort dans MvM est bon marché : vous respawnez à la prochaine vague ou
-après un court délai, et seul un anéantissement complet de l'équipe fait
-échouer la vague. DeathLink sur une mort individuelle serait donc du
-bruit. Options, à décider : se déclencher sur un échec de vague à la
-place, ou sur une mort individuelle mais seulement hors de la fenêtre de
-grâce du respawn.
+Une mort dans MvM est bon marché. Vous respawnez à la prochaine vague, ou
+après un court délai. Seul un anéantissement complet de l'équipe fait
+échouer la vague. DeathLink sur une mort individuelle n'est donc que du
+bruit. Ce projet n'implémente pas DeathLink. Une partie qui le demande
+reçoit un avertissement dans le journal du bridge, et rien d'autre ne se
+produit.
 
 Pièges venant du fil, tous côté plugin :
 
@@ -226,32 +229,3 @@ Les pièges qui peuvent rendre une vague mathématiquement
 imperdable-devenue-gagnable sont acceptables. Les pièges qui peuvent
 corrompre l'état de la partie ne le sont pas : rien ne doit jamais retirer
 définitivement un item reçu.
-
-## Questions ouvertes
-
-1. **Injection de check en boutique.** Un plugin SourceMod peut-il ajouter
-   une entrée arbitraire à l'interface de l'upgrade station MvM, ou
-   seulement intercepter les achats d'entrées existantes ? Si c'est
-   seulement la seconde option, `shop_checks` doit être repensé autour du
-   détournement d'un emplacement d'amélioration existant. Ceci bloque tout
-   le groupe `shop_checks`.
-2. **Identité de vague et de mission.** Les missions communautaires de
-   Potato.tf et Moonlight.tf sont des fichiers `.pop` sans id global
-   stable. `gamedata/` a besoin d'un schéma de nommage qui survit à un
-   renommage de mission ou à une mise à jour de pack, sinon les anciennes
-   seeds cassent. Probablement `map_name/pop_file_basename`.
-3. **Partage d'améliorations des bots alliés.** Le chemin d'amélioration
-   des bots RED existe-t-il vraiment dans le TF2 actuel, ou a-t-il été
-   retiré ? Demande un test sur un serveur réel avant que `Allied Mercs`
-   ne puisse être spécifié correctement.
-4. **Nombre de vagues par mission.** Non dérivable sans analyser les
-   fichiers `.pop`. Soit nous les analysons dans `gamedata/` au moment du
-   build, soit nous codons en dur les nombres pour les missions Valve et
-   refusons les missions communautaires en v1.
-5. **Sémantique de DeathLink.** Voir ci-dessus.
-6. **Reconnexion en cours de vague.** Si le bridge perd le serveur AP en
-   plein milieu d'une vague, le plugin continue de produire des checks.
-   Le bridge doit les mettre en file de façon durable et les rejouer à la
-   reconnexion. Ce qui se passe si le bridge lui-même meurt en plein
-   milieu est un problème séparé et demande la file sur disque, pas en
-   mémoire.

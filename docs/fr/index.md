@@ -2,7 +2,7 @@
 
 Ce projet transforme un serveur Team Fortress 2 Mann vs Machine en
 randomizer. Les classes, les emplacements d'arme et les missions
-commencent verrouillés. L'équipe les débloque en réussissant des vagues.
+commencent verrouillés. L'équipe les débloque quand elle réussit des vagues.
 Tout le monde sur le serveur partage les mêmes déblocages.
 
 Vous l'hébergez avec Docker. La stack fait tourner trois conteneurs : un
@@ -25,8 +25,9 @@ définit chaque mot avant de l'utiliser.
 4. [La forme de la partie](setup/shape-of-the-run.md) fixe la longueur et
    la difficulté d'une soirée.
 5. [Inviter vos amis](setup/invite-your-friends.md) ouvre le serveur.
-6. [Tests](operate/testing.md) liste ce qui a encore besoin d'un vrai test,
-   et ce qu'il faut pour chaque test. À lire avant la première session.
+6. [Tests](operate/testing.md) donne la marche à suivre pour confirmer
+   chaque comportement sur un serveur réel. À lire avant la première
+   session.
 
 ## La version courte
 

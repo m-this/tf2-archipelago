@@ -11,8 +11,8 @@ game. Read [ADR
 ```
 
 It produces `build/tf2_archipelago.smx` and treats warnings as errors. The
-compiler and the ripext includes are pinned in the script; nothing else is
-needed to build.
+script pins the compiler and the ripext includes. The build needs nothing
+else.
 
 ## What you will see in game
 
@@ -24,12 +24,12 @@ There is no client mod, so chat is the whole diagnostic surface. Three levels:
 | Errors | Chat and the SourceMod log, always | Anything that went wrong, including the bridge being unreachable |
 | Debug | Chat, console and the log, when `tf2ap_debug 1` | Every bridge call, every queued objective, every wave event |
 
-Errors reach chat even with announcements muted. If the bridge is down, the
-players are the ones who will notice their checks are not landing, and they
-should be told why rather than deciding the randomizer is broken.
+Errors reach chat even with announcements muted. If the bridge is down,
+players notice their checks stop landing before anyone else does. The
+plugin tells them why, so they do not conclude the randomizer is broken.
 
-Repeated bridge failures are said once. The retry loop would otherwise fill
-chat with the same line every five seconds.
+Repeated bridge failures get one line, not many. Otherwise the retry loop
+fills chat with the same line every five seconds.
 
 ## Talking to the multiworld
 
@@ -38,16 +38,16 @@ Players have no Archipelago client, so the plugin is theirs:
 | Typed in chat | What it does |
 | --- | --- |
 | `!ap` | One line of help |
-| `!ap hint Class: Scout` | Runs an Archipelago server command. The `!` is added if it is missing, so `!ap hint`, `!ap missing`, `!ap status` and `!ap release` all work |
+| `!ap hint Class: Scout` | Runs an Archipelago server command. It adds the `!` if missing, so `!ap hint`, `!ap missing`, `!ap status` and `!ap release` all work |
 | `!apchat <text>` | Says something to the other players in the multiworld, prefixed with the sender's name |
 
 What the multiworld says comes back into chat, so a hint answered or an item
 someone else found shows up in game. `tf2ap_chat 0` turns that off.
 
-Anyone joining gets a chat welcome eight seconds after they spawn in: what the
-server is, which mission is loaded, what is unlocked so far, and how to use
-`!ap`. Eight seconds because a message printed during the map load scrolls past
-before anyone can read it.
+Anyone joining gets a chat welcome eight seconds after they spawn in. It
+covers what the server is, which mission runs, and what they unlocked so
+far, plus how to use `!ap`. Eight seconds, because a message printed
+during the map load scrolls past before anyone can read it.
 
 ## Commands
 
@@ -57,8 +57,8 @@ before anyone can read it.
 | `sm_ap_resync` | generic | Fetch the unlock set again |
 | `sm_ap_report <kind> [wave]` | root | Report an objective by hand |
 
-`sm_ap_report` is how the wiring gets tested without playing a wave, and how a
-check gets sent when the game did not fire the event it should have.
+`sm_ap_report` tests the wiring without playing a wave. It also sends a
+check by hand when the game fails to fire the expected event.
 
 ## ConVars
 
@@ -71,12 +71,14 @@ check gets sent when the game did not fire the event it should have.
 
 ## What is UNVERIFIED
 
-Everything this plugin reads out of the game. It has been compiled, never run:
-no Team Fortress 2 server was available while it was written.
+Everything this plugin reads out of the game. It compiles, but the author
+never ran it, because no Team Fortress 2 server was available at the
+time.
 
-- `mvm_begin_wave`, `mvm_wave_complete`, `mvm_mission_complete` are hooked with
-  `HookEventEx`, so a missing one is a log line and a degraded mode rather than
-  a failed load. `sm_ap_status` prints which of the three exist.
+- The plugin hooks `mvm_begin_wave`, `mvm_wave_complete` and
+  `mvm_mission_complete` with `HookEventEx`, so a missing one produces a
+  log line and a degraded mode, not a failed load. `sm_ap_status` prints
+  which of the three exist.
 - If `mvm_wave_complete` turns out not to exist, a one-second timer watches
   `m_nMannVsMachineWaveCount` instead and reports a wave when the counter goes
   up.
@@ -84,8 +86,8 @@ no Team Fortress 2 server was available while it was written.
   map name, which is the right pop file for every map's default mission.
 - `m_nCurrency` is how cash bundles are paid out.
 
-None of the fallbacks change the wire contract, so the bridge cannot tell the
-difference. The first live session should be run with `tf2ap_debug 1`.
+None of the fallbacks change the wire contract, so the bridge cannot tell
+the difference. Run the first live session with `tf2ap_debug 1`.
 
 ## What it does
 
@@ -95,15 +97,16 @@ Two directions, and nothing else.
 `wave_cleared`, `mission_cleared`, `tank_destroyed`, `giant_killed`,
 `money_bonus`. Game events and `SDKHooks` do the work.
 
-**Apply.** Receive grants from the bridge and enforce them: lock and unlock
-weapon slots, restrict classes, gate upgrades at the station, hand out
-canteens, spawn allied bots with an unlocked template, fire traps.
+**Apply.** Receive grants from the bridge, and enforce them. Lock and
+unlock weapon slots, restrict classes, and gate upgrades at the station.
+Hand out canteens, spawn allied bots with an unlocked template, and fire
+traps.
 
 ## What it must not do
 
 - **Know anything about Archipelago.** No item ids, no location ids, no slot,
-  no seed. It speaks MvM vocabulary; the bridge translates. This is what lets
-  the plugin be reloaded, rewritten or debugged without touching the
+  no seed. It speaks MvM vocabulary; the bridge translates. This lets
+  someone reload, rewrite or debug the plugin without touching the
   multiworld.
 - **Hold authoritative state.** After a reload, a map change or an `srcds`
   crash, ask the bridge for the full unlock set and apply it. Never try to
@@ -125,16 +128,15 @@ Chat, HUD text and annotations. That is the whole list, because there is no
 client mod (ADR 0002). Anything the player needs to know about a received item
 or a fired trap has to fit through one of those three.
 
-## Open questions that land here
+## Decisions from the spec that land here
 
-From [`../docs/en/spec.md`](../docs/en/spec.md), the ones this component has to
-answer before its part of the spec can be finished:
+From [`../docs/en/spec.md`](../docs/en/spec.md):
 
-1. **Shop check injection.** Can a plugin add an arbitrary purchasable entry to
-   the MvM upgrade station UI, or only intercept purchases of existing ones?
-   The entire `shop_checks` location group depends on the answer.
-2. **Allied bot upgrade sharing.** Does the RED bot upgrade path still exist in
-   current TF2? Needs testing on a live server.
-3. **Wave counts.** Either parse the `.pop` files or hardcode the Valve
-   missions. Parsing probably belongs in `gamedata/` at build time rather than
-   here at runtime, but the plugin is where the ground truth can be checked.
+- **Shop checks ship off by default.** No live-server test confirms that a
+  purchasable entry can go into the MvM upgrade station UI, so
+  `shop_checks` stays off until one does.
+- **Allied bots share the player's unlocked upgrades directly**, since RED
+  bots do not buy upgrades on their own.
+- **`gamedata/` hardcodes wave counts from the wiki**, rather than parsing
+  them from `.pop` files. It owns the table; v1 does not support
+  community missions.

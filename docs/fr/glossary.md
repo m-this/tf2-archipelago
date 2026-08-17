@@ -1,9 +1,9 @@
 # tf2-archipelago — Contexte du domaine
 
 Glossaire des termes utilisés dans `gamedata/`, `bridge/`, `apworld/` et
-`plugin/`. Deux vocabulaires se rencontrent dans ce projet et partagent
-parfois les mêmes mots pour des choses différentes ; les deux sont donc
-fixés ici. Les termes restent en anglais : c'est ce que le jeu écrit dans le
+`plugin/`. Deux vocabulaires se rencontrent dans ce projet. Ils partagent
+parfois les mêmes mots pour des choses différentes. Ce glossaire fixe les
+deux. Les termes restent en anglais. C'est ce que le jeu écrit dans le
 chat, ce que le code utilise, et ce que vous verrez dans les logs.
 
 Dernière mise à jour : 2026-08-16. Traduction, pas une deuxième source de
@@ -23,14 +23,14 @@ TF2**, pas un compte Steam. Voir `docs/en/spec.md`, « Slot model ».
 
 **Seed**
 Le multiworld généré. Immuable une fois généré. Chaque id référencé par une
-seed doit garder le même sens tant que la seed se joue ; c'est cette
-contrainte qui dicte les règles d'id de l'ADR 0001.
+seed doit garder le même sens tant que la seed se joue. Cette contrainte
+dicte les règles d'id de l'ADR 0001.
 
 **Location** (aussi **check**)
 Un endroit d'un monde où un item peut être placé. Faire la check d'une
-location dit au serveur « ce qui s'y trouvait a été trouvé ». Dans ce
-projet, une location est un objectif MvM : une vague réussie, une mission
-réussie, un tank détruit.
+location signale au serveur qu'un joueur a trouvé ce qui s'y trouvait. Dans
+ce projet, une location est un objectif MvM : une vague réussie, une
+mission réussie, un tank détruit.
 
 **Item**
 Ce que contient une location. Peut appartenir à n'importe quel slot du
@@ -50,9 +50,9 @@ comme un fichier `.apworld` compressé. Le nôtre est `apworld/tf2_mvm/`.
 
 **Region / access rule**
 Le graphe sur lequel le générateur raisonne. Une région contient des
-locations ; une access rule est la condition pour en atteindre une. « La
-vague 4 de la mission M est atteignable une fois que vous tenez le ticket de
-M et un emplacement d'arme principale » est une access rule.
+locations ; une access rule est la condition pour en atteindre une.
+Exemple : « la vague 4 de la mission M est atteignable une fois que vous
+tenez le ticket de M et un emplacement d'arme principale ».
 
 **Sphere 0**
 Tout ce qui est atteignable sans aucun item. Si la sphère 0 ne contient
@@ -61,8 +61,10 @@ dans `docs/en/spec.md`.
 
 **DeathLink**
 Une convention optionnelle où une mort dans un monde tue tous les autres
-participants DeathLink. Elle a besoin d'une définition de « mort » propre
-au jeu ; la nôtre reste ouverte (`docs/en/spec.md`, question ouverte 5).
+participants DeathLink. Ce projet ne l'implémente pas. Une mort
+individuelle en MvM est normale plutôt que notable, donc il n'y a pas de
+définition propre de « mort » à laquelle l'accrocher. Voir
+`docs/en/spec.md`, « Traps and DeathLink ».
 
 **Trap**
 Un item à effet négatif. Une classification de premier ordre dans
@@ -82,8 +84,8 @@ atomique de progression, donc le groupe de locations de base.
 
 **Tour**
 Un ensemble ordonné de missions joué comme une campagne. Les tours de Valve
-(Operation Two Cities et les autres) sont fixes ; les nôtres sont générés
-quand l'ordre de mission `Campaign` est choisi.
+(Operation Two Cities et les autres) sont fixes. Le générateur crée les
+nôtres quand une partie choisit l'ordre de mission `Campaign`.
 
 **Upgrade station**
 La boutique de la mission. Les joueurs dépensent les crédits collectés en
@@ -91,10 +93,10 @@ améliorations persistantes par arme, entre les vagues. Les améliorations
 tiennent pour toute la mission et se réinitialisent à sa fin.
 
 **Credits / money**
-L'argent lâché par les robots détruits, collecté en marchant dessus.
-L'argent non collecté est perdu à la fin de la vague. Tout collecter dans
-une vague donne une **A+ rating**, qui déclenche le groupe de locations du
-bonus d'argent.
+L'argent que les robots détruits laissent tomber. Un joueur le ramasse
+quand il passe dessus. L'argent non ramassé disparaît à la fin de la vague.
+Ramasser tout l'argent d'une vague donne une **A+ rating**, qui déclenche
+le groupe de locations du bonus d'argent.
 
 **Canteen**
 La Power Up Canteen, une consommable rechargée à l'upgrade station :
@@ -119,14 +121,15 @@ bots**, où un template devient un item à débloquer.
 **Allied merc / RED bot**
 Un `tf_bot` dans l'équipe du joueur, généré par le plugin pour compléter
 une équipe plus petite que six. Son équipement vient d'un robot template
-débloqué. Peut-il utiliser les améliorations achetées par le joueur : reste
-ouvert (`docs/en/spec.md`, question ouverte 3).
+débloqué. Il partage directement les améliorations débloquées du joueur,
+puisque les bots RED n'en achètent pas par eux-mêmes.
 
 **Fichier `.pop`**
 Le fichier texte de population qui définit les vagues et les robots d'une
-mission. La seule autorité sur le nombre de vagues d'une mission, ce qui
-explique pourquoi `gamedata/` doit parfois les analyser (`docs/en/spec.md`,
-question ouverte 4).
+mission. La seule autorité sur le nombre de vagues d'une mission.
+`gamedata/` code en dur les nombres de vagues des missions Valve, tirés du
+wiki, plutôt que de les analyser. La v1 ne prend pas en charge les missions
+communautaires.
 
 ## Vocabulaire du projet
 
@@ -156,28 +159,33 @@ rester agnostique d'Archipelago.
 
 **Grant**
 Le vocabulaire du plugin pour ce que le bridge appelle un item reçu. Le
-bridge envoie `grant_weapon_slot{slot}` ; le plugin ignore qu'un id d'item
-était impliqué.
+bridge envoie `grant_weapon_slot{slot}` ; le plugin ignore quel id d'item
+se trouve derrière.
 
 **State grant / effect grant**
-Les deux types de grant, distingués par `ItemKind.OneShot` dans `gamedata`.
-Un state grant est un fait qui reste vrai : une classe est jouable, un
-emplacement d'équipement est ouvert, une mission est débloquée.
-L'appliquer deux fois revient à l'appliquer une fois, donc il peut être
-renvoyé chaque fois que le plugin le demande. Un effect arrive et se
-termine : des crédits sont payés, un piège se déclenche. En appliquer un
-deux fois, c'est de l'argent que personne n'a gagné ou un piège que personne
-n'a mérité ; le bridge l'envoie donc une fois et arrête de l'envoyer dès que
-le plugin l'acquitte. Seuls les state grants apparaissent dans l'unlock set.
+Les deux types de grant. `ItemKind.OneShot` dans `gamedata` distingue l'un
+de l'autre. Un state grant est un fait qui reste vrai : une classe est
+jouable, un emplacement d'équipement est ouvert, une mission est
+disponible. Appliquer un state grant deux fois revient à l'appliquer une
+fois. Le bridge peut donc le renvoyer chaque fois que le plugin le demande.
+
+Un effect arrive et se termine : le bridge paie des crédits, ou déclenche
+un piège. Appliquer un effect deux fois paie de l'argent que personne n'a
+gagné, ou déclenche un piège que personne n'a mérité. Le bridge l'envoie
+donc une fois, puis arrête de l'envoyer dès que le plugin l'acquitte. Seuls
+les state grants apparaissent dans l'unlock set.
 
 **Acknowledgement**
-Le plugin qui dit au bridge quelle séquence il a appliquée, pour que les
-effects à cette séquence ou en dessous ne soient jamais renvoyés. Il vit sur
-le bridge, sur disque, car le plugin ne se souvient de rien après un reload
-et c'est justement à ce moment-là qu'un effect se répéterait sinon. C'est
-aussi le curseur d'où le plugin reprend, ce qui explique pourquoi l'unlock
-set rapporte cet acknowledgement plutôt que la longueur de la liste d'items
-: un curseur au-dessus d'un effect non appliqué perd cet effect pour de bon.
+Le numéro de séquence que le plugin renvoie au bridge pour dire ce qu'il a
+appliqué. Le bridge ne renvoie jamais les effects à ce numéro ou en
+dessous. L'acknowledgement vit sur le bridge, sur disque. Le plugin ne se
+souvient de rien après un reload, et un reload est justement le moment où
+un effect se répète sans lui.
+
+C'est aussi le curseur d'où le plugin reprend. Voilà pourquoi l'unlock set
+rapporte cet acknowledgement plutôt que la longueur de la liste d'items. Un
+curseur placé au-dessus d'un effect non appliqué perd cet effect pour de
+bon.
 
 **Wave drift**
 Le jeu qui rapporte une longueur de mission en désaccord avec `gamedata`.
@@ -187,11 +195,11 @@ le jeu à chaque check et le bridge sert les désaccords sur `/healthz`. Il ne
 refuse jamais la check pour autant.
 
 **Sequence**
-Le curseur du plugin sur ce que le bridge a accordé, en comptant les items
-reçus plutôt que les grants. Un item que le bridge ne sait pas lire est
-sauté et laisse un trou, pour qu'une sequence garde le même sens après une
-mise à jour du bridge. `GET /grants?since=N` et le `seq` d'un unlock set
-sont ce même nombre.
+Le curseur du plugin sur ce que le bridge a accordé. Il compte les items
+reçus plutôt que les grants. Un item que le bridge ne sait pas lire ne
+compte pas dans la séquence : il laisse un trou. Une sequence garde ainsi
+le même sens après une mise à jour du bridge. `GET /grants?since=N` et le
+`seq` d'un unlock set sont ce même nombre.
 
 **Unlock set**
 L'ensemble complet des grants actuellement en vigueur pour le slot. Fait

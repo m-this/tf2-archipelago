@@ -18,8 +18,8 @@ touché pour la dernière fois en mars 2026. Trois fichiers, tous sous
 | `Locations.py` | 4 | Une classe `TFLocation(Location)` vide. Rien d'autre. |
 
 Il n'y a ni `__init__.py`, ni sous-classe `World`, ni régions, ni règles,
-ni client. Ça ne génère pas. À traiter comme un dépôt de données, pas une
-implémentation.
+ni client. Ça ne génère pas. À traiter comme un dépôt de données, pas du
+code qui fonctionne.
 
 ### Ce qui vaut la peine d'être pris
 
@@ -56,24 +56,22 @@ encore d'équivalent là-bas.
 - Le nom du jeu se contredit lui-même : `Items.py` déclare
   `"Team Fortress 2 Mann Vs. Machine"`, `Locations.py` déclare
   `"Team Fortress 2"`. La chaîne de nom du jeu est la clé primaire du
-  multiworld pour un slot, donc elle doit être une seule valeur à un seul
-  endroit. Nous la choisissons une fois, dans `gamedata/`, et l'exportons.
-- Rien n'impose la stabilité des ids. Les ids Archipelago ne doivent
-  jamais être renumérotés une fois qu'une seed existe, et les deux
-  fonctions de conversion en stub étaient l'endroit où ce problème allait
-  être résolu. Voir l'ADR 0001 pour la façon dont nous le gérons à la
-  place.
+  multiworld pour un slot. Elle doit donc porter une seule valeur, à un
+  seul endroit. Nous la choisissons une fois, dans `gamedata/`, et
+  l'exportons.
+- Rien n'impose la stabilité des ids. Une seed figée interdit tout
+  renumérotage des ids Archipelago. Le fork visait à résoudre ce problème
+  avec les deux fonctions de conversion en stub. Voir l'ADR 0001 pour la
+  façon dont nous le gérons à la place.
 
 ## Le manuel MvM de Snolid Ice
 
-Référencé deux fois dans le fil (« i made a mvm manual », « my mvm manual
-is kinda rough ») mais aucun lien n'a été posté. Les apworlds Manual sont
-pilotés par du JSON et ne peuvent pas exprimer de vraies règles
-d'accessibilité, ce qui explique pourquoi nous ne suivons pas cette voie,
-mais ça vaut le coup de le trouver pour le nommage des items et des
-locations si l'auteur l'a encore.
-
-**À faire :** demander un lien dans le fil.
+Le fil le cite deux fois (« i made a mvm manual », « my mvm manual is
+kinda rough »), mais personne n'a posté de lien. Les apworlds Manual
+suivent du JSON. Ils ne peuvent pas exprimer de vraies règles
+d'accessibilité, donc nous ne suivons pas cette voie. Ça vaut quand même
+le coup de le trouver, pour le nommage des items et des locations, si
+l'auteur l'a encore.
 
 ## Archipelago lui-même
 
@@ -82,21 +80,21 @@ locations si l'auteur l'a encore.
   `Connected`, `LocationChecks`, `ReceivedItems`, `StatusUpdate`,
   `Bounced` (pour DeathLink), `Say`.
 - Ajouter un jeu : `docs/adding games.md` et `docs/world api.md`.
-- Le client doit gérer à la fois `ws://` et `wss://` et doit se
+- Le client doit gérer à la fois `ws://` et `wss://`, et doit se
   reconnecter tout seul. Cette logique de reconnexion est la partie la
-  plus pénible d'un client écrit à la main, et la raison principale pour
-  laquelle le bridge est un processus Go de longue durée plutôt que
-  quelque chose de boulonné au plugin SourceMod (ADR 0002).
+  plus pénible d'un client écrit à la main. C'est la raison principale
+  pour laquelle le bridge est un processus Go de longue durée, plutôt
+  qu'un module boulonné au plugin SourceMod (ADR 0002).
 
 ## Travaux antérieurs côté Source
 
-Aucun client Archipelago n'existe pour un jeu du moteur Source, donc il
-n'y a aucun plugin à copier. Les références pertinentes sont l'API
-SourceMod elle-même (événements de jeu, `SDKHooks`, natives `TF2_`) et
-les noms d'entités et d'événements spécifiques à MvM, documentés dans les
-wikis communautaires plutôt que par Valve.
+Aucun client Archipelago n'existe pour un jeu du moteur Source. Il n'y a
+donc aucun plugin à copier. Les références pertinentes sont l'API
+SourceMod elle-même (événements de jeu, `SDKHooks`, natives `TF2_`), et
+les noms d'entités et d'événements spécifiques à MvM. Les wikis
+communautaires documentent ces noms, pas Valve.
 
 Valve a publié le source du client et du serveur TF2 dans la publication
-du SDK de février 2025. Nous ne l'utilisons pas : une intégration
+du SDK de février 2025. Nous ne l'utilisons pas. Une intégration
 uniquement côté serveur garde les clients vanilla capables de rejoindre,
-ce qui compte plus que tout ce que le SDK nous apporterait.
+et ça compte plus que tout ce que le SDK offre.

@@ -1,97 +1,80 @@
 # Tests
 
-Ce qui a encore besoin d'un vrai test, et ce qu'il faut pour chacun : un
-serveur Archipelago, un second jeu dans le multiworld, un joueur, ou plus
-d'un.
+`make integration` couvre la génération de seed, le serveur Archipelago et
+le bridge, à chaque exécution.
 
-- **Une vague se termine.** Il faut : la stack lancée, un joueur, une vague
-  en cours. Confirme que `mvm_wave_complete` se déclenche et que le plugin
-  rapporte la check.
-- **Le numéro de vague se lit correctement.** Il faut : la stack lancée,
-  un joueur, une vague en cours. Confirme que `mvm_begin_wave` donne le
-  bon numéro au plugin.
-- **Une mission se termine.** Il faut : la stack lancée, un joueur, toutes
-  les vagues d'une mission réussies. Confirme que `mvm_mission_complete`
-  se déclenche, et que le repli de dernière vague n'est pas nécessaire.
-- **Le compteur de vagues se lit correctement.** Il faut : la stack
-  lancée, un joueur, une vague en cours. Confirme que
-  `m_nMannVsMachineWaveCount` correspond à la vague sur laquelle le jeu se
-  trouve réellement.
-- **Les crédits sont payés.** Il faut : la stack lancée, un joueur, un item
-  Cash Bundle reçu en cours de vague. Confirme que `m_nCurrency` se met à
-  jour pour le joueur sur le serveur.
-- **Les crédits atteignent chaque joueur, pas un seul.** Il faut : la
-  stack lancée, deux joueurs ou plus, un item Cash Bundle reçu. Confirme
-  que la boucle de paiement paie toute l'équipe.
-- **Un emplacement d'arme verrouillé reste vide.** Il faut : la stack
-  lancée, un joueur, une visite au casier de ravitaillement ou à
-  l'upgrade station avec un emplacement verrouillé. Confirme que le
-  plugin retire l'arme au lieu d'avertir et de la laisser.
-- **Une classe verrouillée déplace le joueur.** Il faut : la stack
-  lancée, un joueur sur une classe verrouillée, un respawn. Confirme que
-  le changement se produit au prochain spawn, pas en milieu de vague.
-- **La correspondance des noms de mission.** Il faut : la stack lancée,
-  aucun serveur Archipelago requis — du MvM vanilla suffit. Chargez chaque
-  popfile ambigu à la main (`sm_ap_mission <popfile>`) et lisez le nom de
-  la mission en jeu via `sm_ap_status`. Confirme que le nom d'affichage de
-  `gamedata/missions.go` correspond au fichier, pour les deux Decoy
-  intermediate, les deux Coal Town intermediate, les deux Mannworks
-  intermediate, et les trois groupes advanced.
-- **Un second jeu dans le même multiworld.** Il faut : un serveur
-  Archipelago avec une seed contenant TF2 et au moins un autre jeu, les
-  deux connectés. Confirme qu'un item de l'autre jeu atteint TF2, et
-  qu'une check TF2 atteint l'autre jeu.
-- **Un redémarrage en cours de mission.** Il faut : la stack lancée, un
-  joueur, une vague en cours, `make down && make up` lancé en plein
-  milieu. Confirme que la file du bridge et l'ensemble des déblocages du
-  plugin survivent à un redémarrage sans perdre ni répéter une check.
+Le plugin a tourné sur un serveur réel le 2026-08-17, via rcon, sans
+client de jeu. Les trois événements MvM existent. La mission et sa
+longueur se lisent correctement, et une check a atteint le multiworld.
 
-## Comment déclencher une vague seul
+Quatre choses restent à confirmer :
 
-Plusieurs tests ci-dessus ont besoin d'une vague réussie, et MvM ne
-démarre pas une vague tant qu'un joueur humain ne s'est pas déclaré prêt —
-un bot ne peut pas le faire. Un seul joueur suffit :
+- une vague réussie
+- des crédits qui arrivent
+- un emplacement d'arme appliqué
+- une classe déplacée
 
-```
-rcon sv_cheats 1
-rcon mp_disable_respawn_times 1
-god
-rcon tf_bot_kill all
-rcon tf_mvm_tank_kill
+Cette page donne la marche à suivre pour confirmer chacune. Elle dit
+aussi quoi surveiller pendant le test.
+
+## 1. Connectez-vous à votre serveur
+
+Lancez la stack, puis rejoignez avec un client TF2 standard, comme un
+joueur. Voir [Invitez vos amis](../setup/invite-your-friends.md) pour la
+commande de connexion et le mot de passe.
+
+```sh
+make up
 ```
 
-`god` se tape dans votre propre console, pas via rcon : rcon tourne comme
-le serveur, et le serveur n'est pas un joueur. `tf_bot_kill all` tue ce
-qui est vivant maintenant ; la mission continue d'envoyer le reste de la
-vague, donc relancez-la toutes les quelques secondes jusqu'à ce que la
-vague se termine. Cela réussit la vague comme le jeu le fait, ce qui est le
-but : `mvm_wave_complete` se déclenche pour de vrai.
+```
+connect votre.adresse.serveur:27015
+```
 
-`tf_mvm_force_victory` et `tf_mvm_jump_to_wave` existent aussi, et ne
-valent pas la peine ici — ils sautent l'événement en cours de test.
+## 2. Obtenez les droits admin
 
-Chargez d'abord une mission que la partie tient réellement, avec
-`rcon sm_ap_mission`. Sur une mission hors de la partie, le plugin le dit
-et compte quand même les checks, ce qui est le comportement correct et une
-chose déroutante à tester par erreur.
+Deux choses distinctes comptent comme admin ici. Vous voudrez
+probablement les deux.
 
-## Ce qu'il faut surveiller, dans l'ordre
+**Rcon**, pour les commandes serveur (`sv_cheats`, `tf_bot_kill`, et les
+tests ci-dessous) :
 
-1. `[AP] Wave 1 cleared.` dans le chat, quand l'équipe réussit la vague 1.
-2. Un emplacement d'arme verrouillé reste vide après une visite au casier
-   de ravitaillement.
-3. Une classe verrouillée déplace le joueur au prochain spawn, pas en
-   milieu de vague.
-4. Les crédits d'un Cash Bundle arrivent vraiment.
-5. La fin de mission se déclenche sur la dernière vague, pas une vague
-   trop tôt. Vérifiez `wave_drift` sur la page de santé du bridge. Voir
-   [Dépannage](troubleshooting.md).
-
-Activez d'abord le mode bavard, pour que chaque appel au bridge et chaque
-événement de jeu arrive dans le chat :
+```sh
+# dans .env
+SRCDS_RCONPW=votre-mot-de-passe
+```
 
 ```
 rcon_password votre-SRCDS_RCONPW
+rcon sm_ap_status
+```
+
+Si `sm_ap_status` répond, rcon fonctionne.
+
+**Commandes de chat** (`!mission`, `sm_ap_mission` dans le chat), pour la
+liste `SRCDS_ADMIN_STEAMIDS` :
+
+```sh
+# dans .env
+SRCDS_ADMIN_STEAMIDS=STEAM_0:1:XXXXXXX
+```
+
+Séparez plusieurs valeurs par des virgules. Redémarrez la stack après le
+changement (`make down && make up`). Vérifiez depuis le chat du jeu :
+
+```
+!ap
+```
+
+Un joueur non admin n'obtient rien de `!ap`. Un admin, si.
+
+## 3. Activez le mode bavard
+
+Faites ceci avant chaque test ci-dessous. Cela envoie chaque appel au
+bridge et chaque événement de jeu dans le chat. Surveillez le chat
+pendant chaque test.
+
+```
 rcon tf2ap_debug 1
 rcon sm_ap_status
 ```
@@ -109,3 +92,122 @@ Une réponse saine de `sm_ap_status` ressemble à ceci :
 `mission` doit être la mission, pas la carte. `wave 0 of 7` doit
 correspondre à la vraie longueur de la mission. `unlocks held` doit dire
 held, pas NOT FETCHED.
+
+## 4. Chargez une mission que la partie tient réellement
+
+```
+rcon sm_ap_mission <popfile>
+```
+
+Prenez un popfile dans `/missions`, ou dans le champ `mission` de
+`sm_ap_status`. Il doit appartenir au pool de cette partie. Un popfile
+hors du pool charge quand même. Le plugin le signale, et compte les
+checks tout de même. Ne testez pas contre lui par erreur.
+
+## 5. Réussissez une vague seul
+
+MvM ne démarre pas une vague tant qu'un joueur humain ne s'est pas
+déclaré prêt. Déclarez-vous prêt, puis lancez ce bloc de commandes. Il
+termine la vague sans la jouer :
+
+```
+rcon sv_cheats 1
+rcon mp_disable_respawn_times 1
+god
+rcon tf_bot_kill all
+rcon tf_mvm_tank_kill
+```
+
+`god` se tape dans votre propre console, pas via rcon. Rcon tourne comme
+le serveur, et le serveur n'est pas un joueur. `tf_bot_kill all` tue ce
+qui est vivant maintenant. La mission continue d'envoyer le reste de la
+vague.
+
+Relancez la commande toutes les quelques secondes, jusqu'à la fin de la
+vague. Cela réussit la vague comme le jeu le fait. `mvm_wave_complete` se
+déclenche donc pour de vrai, pas par un raccourci.
+
+`tf_mvm_force_victory` et `tf_mvm_jump_to_wave` existent aussi. Ne les
+utilisez pas ici : ils sautent l'événement à tester.
+
+**Confirme :** `mvm_wave_complete` se déclenche, et le plugin rapporte la
+check. `mvm_begin_wave` a donné le bon numéro de vague au plugin, en
+amont. Comparez le `wave N of M` de `sm_ap_status` avant et après.
+Surveillez dans le chat :
+
+```
+[AP] Wave 1 cleared.
+```
+
+## 6. Réussissez une mission entière
+
+Répétez l'étape 5 pour chaque vague de la mission chargée.
+
+**Confirme :** `mvm_mission_complete` se déclenche sur la dernière vague,
+ni une vague trop tôt ni trop tard. Ça confirme aussi que le repli de
+dernière vague reste inutilisé. Vérifiez `wave_drift` sur la page de
+santé du bridge. Voir [Dépannage](troubleshooting.md) pour confirmer que
+le nombre de vagues du jeu correspond à `gamedata`.
+
+## 7. Confirmez le paiement des crédits
+
+Il faut un item Cash Bundle reçu en cours de vague. N'importe quel item
+convient. Si la file est vide, regardez la ligne « objective(s) waiting »
+de `sm_ap_status`. Vous pouvez aussi en envoyer un depuis un autre jeu
+connecté.
+
+**Confirme :** `m_nCurrency` se met à jour pour le joueur sur le serveur.
+Avec deux joueurs ou plus, confirmez que la boucle de paiement paie toute
+l'équipe, pas un seul joueur.
+
+## 8. Confirmez qu'un emplacement d'arme verrouillé reste vide
+
+Il faut un emplacement verrouillé. Visitez le casier de ravitaillement,
+ou l'upgrade station.
+
+**Confirme :** le plugin retire l'arme, au lieu d'avertir et de la
+laisser en place. Si le joueur tenait cette arme, il doit se retrouver
+avec autre chose en main. Vérifiez ce point.
+
+## 9. Confirmez qu'une classe verrouillée déplace le joueur
+
+Rejoignez une classe verrouillée, puis respawnez.
+
+**Confirme :** le changement se produit au prochain spawn, pas en milieu
+de vague. Forcer un respawn en milieu de vague coûte le reste de la vague
+pour rien.
+
+## 10. Confirmez la correspondance des noms de mission
+
+Aucun serveur Archipelago n'est nécessaire. Du MvM vanilla suffit.
+Chargez chaque popfile ambigu à la main. Lisez le nom de la mission en
+jeu via `sm_ap_status` :
+
+```
+rcon sm_ap_mission <popfile>
+rcon sm_ap_status
+```
+
+**Confirme :** le nom d'affichage de `gamedata/missions.go` correspond au
+fichier. Vérifiez les deux Decoy intermediate, les deux Coal Town
+intermediate, les deux Mannworks intermediate, et les trois groupes
+advanced.
+
+## 11. Confirmez un second jeu dans le même multiworld
+
+Il faut un serveur Archipelago avec une seed qui contient TF2 et au
+moins un autre jeu. Les deux doivent être connectés.
+
+**Confirme :** un item de l'autre jeu atteint TF2, et une check TF2
+atteint l'autre jeu.
+
+## 12. Confirmez un redémarrage en cours de mission
+
+Avec une vague en cours :
+
+```sh
+make down && make up
+```
+
+**Confirme :** la file du bridge et l'ensemble des déblocages du plugin
+survivent au redémarrage. Aucune check ne se perd, aucune ne se répète.

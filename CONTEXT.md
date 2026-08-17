@@ -1,41 +1,42 @@
-# tf2-archipelago — Domain Context
+# tf2-archipelago: Domain Context
 
 Glossary of the terms used across `gamedata/`, `bridge/`, `apworld/` and
 `plugin/`. Two vocabularies meet in this project and they use some of the same
-words for different things, so both are pinned down here.
+words for different things, so this file defines both.
 
 Last updated: 2026-08-16.
 
 ## Archipelago vocabulary
 
 **Multiworld**
-One generated game session spanning several players and several games. Items
-belonging to one player can be placed in another player's world.
+One generated game session spanning several players and several games. The
+multiworld can place an item belonging to one player in another player's
+world.
 
 **Slot**
-One participant in a multiworld, identified by name. A slot plays exactly one
-game with one YAML. In this project a slot is **the TF2 server**, not a Steam
-account. See `docs/en/spec.md`, "Slot model".
+One participant in a multiworld. A name identifies each slot, and a slot
+plays exactly one game with one YAML. In this project a slot is **the TF2
+server**, not a Steam account. See `docs/en/spec.md`, "Slot model".
 
 **Seed**
-The generated multiworld. Immutable once generated. Every id referenced by a
-seed must still mean the same thing when the seed is played, which is the
-constraint that drives the id rules in ADR 0001.
+The generated multiworld, immutable once generated. Every id it references
+must still mean the same thing when someone plays it. That constraint
+drives the id rules in ADR 0001.
 
 **Location** (also **check**)
-A place in a world where an item can be placed. Checking a location tells the
-server "whatever was here has been found". In this project a location is an MvM
-objective: a wave cleared, a mission cleared, a tank destroyed.
+A place in a world that can hold an item. Checking a location tells the
+server "whatever was here has been found". In this project a location is an
+MvM objective: a wave cleared, a mission cleared, a tank destroyed.
 
 **Item**
-What a location contains. May belong to any slot in the multiworld, so clearing
-a wave in TF2 may hand a sword to someone playing Zelda. Classified as
-`progression`, `useful`, `filler` or `trap`.
+What a location contains. An item can belong to any slot in the multiworld,
+so clearing a wave in TF2 can hand a sword to someone playing Zelda.
+Classified as `progression`, `useful`, `filler` or `trap`.
 
 **Progression item**
-An item the generator's logic can require in order to reach another location.
-Weapon slots, mission tickets and upgrade packages are progression here.
-Getting the classification wrong produces seeds that are unwinnable or trivial.
+An item that an access rule can need to reach another location. Weapon
+slots, mission tickets and upgrade packages are progression here. Getting
+the classification wrong produces seeds that are unwinnable or trivial.
 
 **apworld**
 The Python package that teaches the Archipelago generator about one game: its
@@ -49,13 +50,14 @@ hold M's ticket and a primary weapon slot" is an access rule.
 
 **Sphere 0**
 Everything reachable with no items at all. If sphere 0 contains no location,
-the seed is dead on arrival. See the starting-state requirement in
+the seed is unplayable from the start. See the starting-state requirement in
 `docs/en/spec.md`.
 
 **DeathLink**
 An opt-in convention where a death in one world kills every other DeathLink
-participant. Needs a game-specific definition of "death"; ours is unresolved
-(`docs/en/spec.md`, open question 5).
+participant. This project does not support it. An individual death in MvM
+is normal rather than notable, so there is no clean definition of "death"
+to hook it to. See `docs/en/spec.md`, "Traps and DeathLink".
 
 **Trap**
 An item with a negative effect. A first-class classification in Archipelago,
@@ -69,14 +71,14 @@ difficulty tier: Normal, Intermediate, Advanced, Expert or Nightmare. "Mean
 Machines" is a mission.
 
 **Wave**
-One assault within a mission. Pass or fail as a unit: a wiped team replays the
-wave, it does not lose the mission. The atomic unit of progress, and therefore
-the backbone location group.
+One assault within a mission. Pass or fail as a unit: a wiped team replays
+the wave instead of losing the mission. It is the atomic unit of progress,
+and therefore the main location group.
 
 **Tour**
 An ordered set of missions played as a campaign. Valve's tours (Operation
-Two Cities and so on) are fixed; ours are generated when the `Campaign`
-mission order is selected.
+Two Cities and so on) stay fixed. We generate ours when a run picks the
+`Campaign` mission order.
 
 **Upgrade station**
 The in-mission shop. Players spend collected credits on persistent per-weapon
@@ -84,9 +86,10 @@ upgrades between waves. Upgrades persist for the whole mission and reset when
 it ends.
 
 **Credits / money**
-Cash dropped by destroyed robots, collected by walking over it. Uncollected
-cash is lost at wave end. Collecting all of it in a wave earns an **A+ rating**,
-which is the trigger for the money-bonus location group.
+Cash that destroyed robots drop. A player must walk over it to collect
+it, and uncollected cash is lost at wave end. Collecting all of it in a
+wave earns an **A+ rating**, the trigger for the money-bonus location
+group.
 
 **Canteen**
 The Power Up Canteen, a consumable charged at the upgrade station: Übercharge,
@@ -109,14 +112,15 @@ unlockable item.
 
 **Allied merc / RED bot**
 A `tf_bot` on the player's team, spawned by the plugin to fill out a team
-smaller than six. Their loadout comes from an unlocked robot template. Whether
-they can use the player's purchased upgrades is unresolved (`docs/en/spec.md`,
-open question 3).
+smaller than six. Their loadout comes from an unlocked robot template. They
+share the player's unlocked upgrades directly, since RED bots do not buy
+upgrades on their own.
 
 **`.pop` file**
 The plaintext population file defining a mission's waves and robots. The only
-authority on how many waves a mission has, which is why `gamedata/` may have
-to parse them (`docs/en/spec.md`, open question 4).
+authority on how many waves a mission has. `gamedata/` hardcodes wave counts
+for Valve's missions from the wiki instead of parsing them; v1 does not
+support community missions.
 
 ## Project vocabulary
 
@@ -146,36 +150,40 @@ Archipelago-agnostic.
 
 **Grant**
 The plugin's vocabulary for what the bridge calls a received item. The bridge
-sends `grant_weapon_slot{slot}`; the plugin does not know an item id was
-involved.
+sends `grant_weapon_slot{slot}`; the plugin never sees the item id behind it.
 
 **State grant / effect grant**
-The two kinds of grant, told apart by `ItemKind.OneShot` in `gamedata`. A state
-grant is a fact that stays true: a class is playable, a loadout slot is open, a
-mission is unlocked. Applying it twice is applying it once, so it can be resent
-whenever the plugin asks. An effect happens and is over: credits are paid, and a
-trap fires. Applying one twice is money nobody earned or a trap nobody deserved,
-so the bridge sends it once and stops sending it once the plugin acknowledges
-it. Only state grants appear in the unlock set.
+The two kinds of grant, told apart by `ItemKind.OneShot` in `gamedata`. A
+state grant is a fact that stays true, such as a playable class, an open
+loadout slot, or an available mission. Applying one twice equals applying
+it once, so the bridge can resend it whenever the plugin asks.
+
+An effect happens once and ends: credits get paid, or a trap fires.
+Applying one twice pays money nobody earned, or fires a trap nobody
+deserved. So the bridge sends each effect once, and stops once the plugin
+acknowledges it. Only state grants appear in the unlock set.
 
 **Acknowledgement**
-The plugin telling the bridge which sequence it has applied, so effects at or
-below it are never sent again. It lives on the bridge, on disk, because the
-plugin remembers nothing across a reload and that reload is exactly when an
-effect would otherwise happen twice. It is also the cursor the plugin resumes
-from, which is why the unlock set reports it rather than the length of the item
-list: a cursor above an unapplied effect loses that effect for good.
+The sequence number the plugin reports back to the bridge for what it
+applied. The bridge never resends an effect at or below that number. It
+lives on the bridge, on disk, because the plugin remembers nothing across
+a reload. A reload is exactly when a repeat send otherwise happens.
+
+The acknowledgement also works as the cursor the plugin resumes from.
+That is why the unlock set reports it, not the length of the item list.
+A cursor set above an unapplied effect loses that effect for good.
 
 **Wave drift**
-The game reporting a mission length that `gamedata` disagrees with. Every wave
-count in the tables comes from the wiki, and a wrong one makes a mission clear
-fire early or never. The plugin sends what the game says with each check and the
-bridge serves the disagreements at `/healthz`. It never refuses the check.
+The game reports a mission length that `gamedata` disagrees with. Every
+wave count in the tables comes from the wiki, and a wrong one makes a
+mission clear fire early or never. The plugin sends what the game says
+with each check, and the bridge serves the disagreements at `/healthz`
+without ever refusing the check.
 
 **Sequence**
-The plugin's cursor over what the bridge has granted, counting received items
-rather than grants. An item the bridge cannot read is skipped and leaves a gap,
-so a sequence means the same thing after the bridge is upgraded. `GET
+The plugin's cursor over what the bridge granted, counting received items
+rather than grants. The bridge skips an item it cannot read, leaving a gap,
+so upgrading the bridge does not change what a sequence means. `GET
 /grants?since=N` and the `seq` in an unlock set are both this number.
 
 **Unlock set**
