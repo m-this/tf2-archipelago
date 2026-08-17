@@ -94,7 +94,11 @@ install_server_cfg() {
 	// RED, which is the number worth advertising.
 	sv_visiblemaxplayers 6
 
-	sv_lan 0
+	// LAN mode skips Steam authentication. The server has no Game Server Login
+	// Token by default, so it never logs in to Steam, and a client trying to
+	// authenticate against a server with no Steam session is refused. Going
+	// online means a real SRCDS_TOKEN and SRCDS_LAN=0.
+	sv_lan ${SRCDS_LAN:-1}
 	sv_pure 0
 	sv_pausable 0
 	setpause 0

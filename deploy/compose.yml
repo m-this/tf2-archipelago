@@ -51,6 +51,7 @@ services:
       SRCDS_STARTMAP: ${SRCDS_STARTMAP:-mvm_decoy}
       SRCDS_TOKEN: ${SRCDS_TOKEN:-0}
       SRCDS_ADMIN_STEAMIDS: ${SRCDS_ADMIN_STEAMIDS:-}
+      SRCDS_LAN: ${SRCDS_LAN:-1}
     ports:
       # The only public port in the stack, and it is the game's.
       - "${SRCDS_PORT:-27015}:${SRCDS_PORT:-27015}/udp"
