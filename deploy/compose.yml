@@ -91,8 +91,9 @@ services:
       # who can reach them is the published port above, not this.
       BRIDGE_METRICS_LISTEN: 0.0.0.0:${BRIDGE_METRICS_PORT:-24681}
       # The game server's own port, asked on a scrape how many people are on it.
-      # Loopback works because this container shares its network namespace.
-      BRIDGE_GAME_QUERY: 127.0.0.1:${SRCDS_PORT:-27015}
+      # By service name, not 127.0.0.1: srcds binds 0.0.0.0 and answers on its
+      # interface addresses, but drops a query sent to loopback.
+      BRIDGE_GAME_QUERY: srcds:${SRCDS_PORT:-27015}
     volumes:
       - bridgestate:/data
     depends_on:

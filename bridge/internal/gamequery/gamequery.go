@@ -1,9 +1,14 @@
 // Package gamequery asks the game server how many people are on it.
 //
-// A2S_INFO over UDP, the same thing a server browser sends. The bridge shares
-// the game server's network namespace, so the query goes to loopback and needs
-// no credentials — unlike rcon, which would mean holding the rcon password to
-// count players.
+// A2S_INFO over UDP, the same thing a server browser sends, and no credentials —
+// unlike rcon, which would mean holding the rcon password to count players.
+//
+// Address it by the game server's name on the docker network, not 127.0.0.1.
+// srcds binds 0.0.0.0:27015 and answers a query sent to any of its interface
+// addresses, but drops one sent to loopback: measured on a running server, where
+// 127.0.0.1 timed out while `srcds:27015` and the container's own eth0 address
+// both answered. The bridge shares that network namespace, so either of those
+// works from here.
 //
 // Only what a dashboard needs is read: the player counts and the map. The rest
 // of the payload (steam id, keywords, ports) is skipped rather than modelled.
