@@ -173,9 +173,16 @@ jobs:
           docker cp "$id:/usr/share/nginx/html" book
           docker rm "$id"
 
+      # Artifacts are immutable and stay attached to the run, so a re-run adds
+      # a second one under the same name and deploy-pages refuses to guess:
+      # "Multiple artifacts named github-pages". The attempt number in the name
+      # gives each attempt its own.
       - uses: actions/upload-pages-artifact@v3
         with:
+          name: github-pages-${{ github.run_attempt }}
           path: book
 
       - uses: actions/deploy-pages@v4
         id: deployment
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
