@@ -1,10 +1,15 @@
-# The whole stack: one Archipelago server, one Team Fortress 2 server, one
-# bridge between them.
+# The whole stack: one Team Fortress 2 server, one bridge, and the multiworld
+# the bridge plays on.
 #
 # Run it from the repository root:
 #
 #   cp deploy/.env.example .env && $EDITOR .env
-#   docker compose -f deploy/compose.yml up
+#   make seed                                   # then upload it and open a room
+#   make up
+#
+# The multiworld is somebody else's process by default: archipelago.gg hosts
+# the seed and the bridge dials out to it. COMPOSE_PROFILES=selfhost brings the
+# `archipelago` service back and hosts it here instead.
 #
 # The project name is pinned so the game volume keeps its name across
 # rebuilds. Re-downloading 14 GB because a directory was renamed is not a
@@ -12,28 +17,36 @@
 name: tf2-archipelago
 
 services:
+  # The multiworld, hosted here rather than on archipelago.gg. Off unless
+  # COMPOSE_PROFILES=selfhost, and it wants AP_HOST=archipelago with
+  # AP_PORT=38281 and AP_TLS=false in .env.
   archipelago:
+    profiles: ["selfhost"]
     build:
       context: .
       dockerfile: deploy/Dockerfile.archipelago
       args:
         ARCHIPELAGO_VERSION: ${ARCHIPELAGO_VERSION:?set it in deploy/env/versions.env}
     restart: unless-stopped
+    # The shape of the run passes through with no default: the entrypoint owns
+    # the defaults, and an empty value falls through to them. Two files can
+    # generate a seed, and they must not each carry their own idea of what an
+    # unset option means.
     environment:
-      AP_PORT: ${AP_PORT:-38281}
+      MVM_MISSION_COUNT: ${MVM_MISSION_COUNT:-}
+      MVM_DIFFICULTY: ${MVM_DIFFICULTY:-}
+      MVM_GOAL: ${MVM_GOAL:-}
+      MVM_MISSIONSANITY_PERCENTAGE: ${MVM_MISSIONSANITY_PERCENTAGE:-}
+      MVM_DEATH_LINK: ${MVM_DEATH_LINK:-}
+      AP_PORT: ${AP_PORT:?set AP_PORT in .env}
       AP_SLOT_NAME: ${AP_SLOT_NAME:-tf2}
       AP_PASSWORD: ${AP_PASSWORD:-}
-      MVM_MISSION_COUNT: ${MVM_MISSION_COUNT:-8}
-      MVM_DIFFICULTY: ${MVM_DIFFICULTY:-intermediate}
-      MVM_GOAL: ${MVM_GOAL:-final_boss}
-      MVM_MISSIONSANITY_PERCENTAGE: ${MVM_MISSIONSANITY_PERCENTAGE:-80}
-      MVM_DEATH_LINK: ${MVM_DEATH_LINK:-false}
     volumes:
       - apoutput:/ap/output
     # Deliberately not published. One slot covers the whole game server, so
     # nothing outside this stack needs to reach Archipelago. Publish
     # 127.0.0.1:38281:38281 here if a friend wants to play another game in the
-    # same multiworld.
+    # same multiworld, or host the seed on archipelago.gg and skip the port.
 
   srcds:
     build:
@@ -62,9 +75,6 @@ services:
       - "${BRIDGE_METRICS_BIND:-127.0.0.1}:${BRIDGE_METRICS_PORT:-24681}:${BRIDGE_METRICS_PORT:-24681}/tcp"
     volumes:
       - tf2game:/home/steam/tf-dedicated
-    depends_on:
-      archipelago:
-        condition: service_healthy
 
   bridge:
     build:
@@ -73,16 +83,18 @@ services:
     restart: unless-stopped
     # The bridge lives inside the game server's network namespace, so its API
     # really is on loopback: the plugin reaches it at 127.0.0.1 and nothing
-    # else can. Archipelago is still reachable by name, because that namespace
-    # is on this stack's network.
+    # else can. That namespace is on this stack's network and has the host's
+    # resolver, so both a room on archipelago.gg and the `archipelago` service
+    # are reachable from it.
     #
     # The cost of sharing it: restarting srcds takes the bridge's networking
     # with it. It restarts on its own, and the checks are on disk, so this
     # costs seconds rather than progress.
     network_mode: "service:srcds"
     environment:
-      AP_HOST: archipelago
-      AP_PORT: ${AP_PORT:-38281}
+      AP_HOST: ${AP_HOST:?set AP_HOST in .env}
+      AP_PORT: ${AP_PORT:?set AP_PORT in .env}
+      AP_TLS: ${AP_TLS:-false}
       AP_SLOT_NAME: ${AP_SLOT_NAME:-tf2}
       AP_PASSWORD: ${AP_PASSWORD:-}
       BRIDGE_LISTEN: 127.0.0.1:24680
@@ -96,18 +108,16 @@ services:
       BRIDGE_GAME_QUERY: srcds:${SRCDS_PORT:-27015}
     volumes:
       - bridgestate:/data
-    depends_on:
-      archipelago:
-        condition: service_healthy
-      srcds:
-        condition: service_started
+    # No depends_on. The multiworld is usually not a service in this file at
+    # all, and the bridge queues and reconnects on its own either way, so boot
+    # order was never what made this correct.
 
 volumes:
   # 14 GB of game files. Keep it.
   tf2game:
-  # The generated seed. Deleting this and restarting rolls a new multiworld,
-  # which also means every check recorded so far belongs to a run that no
-  # longer exists; the bridge notices the new seed and starts over.
+  # The seed the `selfhost` profile hosts. Deleting this and restarting rolls a
+  # new multiworld, which also means every check recorded so far belongs to a
+  # run that no longer exists; the bridge notices the new seed and starts over.
   apoutput:
   # The bridge's check queue and unlock set.
   bridgestate:

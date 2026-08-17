@@ -5,9 +5,10 @@ randomizer. Les classes, les emplacements d'arme et les missions
 commencent verrouillés. L'équipe les débloque quand elle réussit des vagues.
 Tout le monde sur le serveur partage les mêmes déblocages.
 
-Vous l'hébergez avec Docker. La stack fait tourner trois conteneurs : un
-serveur dédié Team Fortress 2, un serveur randomizer, et un petit
-programme qui relie les deux. Vos amis rejoignent avec un client Team
+Vous l'hébergez avec Docker. La stack fait tourner deux conteneurs : un
+serveur dédié Team Fortress 2, et un petit programme qui le relie à la session
+randomisée. La session elle-même tourne sur `archipelago.gg`, et la stack
+l'héberge pour vous si vous préférez. Vos amis rejoignent avec un client Team
 Fortress 2 standard et n'installent rien.
 
 Ce livre s'adresse à l'hébergeur. Il suppose que vous connaissez Mann vs
@@ -20,12 +21,14 @@ définit chaque mot avant de l'utiliser.
    donne le vocabulaire. Lisez-le en premier.
 2. [Ce que le randomizer change](what-the-randomizer-changes.md) dit ce qui
    diffère d'un serveur MvM normal.
-3. [Prérequis](setup/requirements.md) et [Installation](setup/install.md)
-   font tourner la stack.
+3. [Prérequis](setup/requirements.md) dit ce qu'il faut à la machine.
 4. [La forme de la partie](setup/shape-of-the-run.md) fixe la longueur et
    la difficulté d'une soirée.
-5. [Inviter vos amis](setup/invite-your-friends.md) ouvre le serveur.
-6. [Tests](operate/testing.md) donne la marche à suivre pour confirmer
+5. [Créer la session](setup/create-the-session.md) fabrique la partie et la
+   met sur `archipelago.gg`.
+6. [Installation](setup/install.md) fait tourner la stack.
+7. [Inviter vos amis](setup/invite-your-friends.md) ouvre le serveur.
+8. [Tests](operate/testing.md) donne la marche à suivre pour confirmer
    chaque comportement sur un serveur réel. À lire avant la première
    session.
 
@@ -33,6 +36,8 @@ définit chaque mot avant de l'utiliser.
 
 ```sh
 cp deploy/.env.example .env   # puis réglez SRCDS_RCONPW
+make seed                     # envoyez le fichier sur archipelago.gg, ouvrez
+                              # une room, puis réglez AP_HOST et AP_PORT
 make up
 make logs
 ```

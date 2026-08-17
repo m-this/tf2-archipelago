@@ -1,18 +1,21 @@
 # deploy
 
-Compose stack. Three services.
+Compose stack. Two services by default, and two more that run on demand.
 
-Nothing exists yet.
-
-| Service | Image | Notes |
+| File | Service | Notes |
 | --- | --- | --- |
-| `archipelago` | upstream, pinned | The Archipelago server, unmodified. Our apworld is mounted in, not baked in. |
-| `srcds` | TF2 dedicated server | SourceMod plus `ripext` plus our plugin. Candidate base: `cm2network/tf2`, to verify. |
-| `bridge` | built here | Go, from `bridge/`. |
+| `compose.yml` | `srcds` | TF2 dedicated server, SourceMod plus `ripext` plus our plugin. |
+| `compose.yml` | `bridge` | Go, from `bridge/`. |
+| `compose.yml` | `archipelago` | The Archipelago server, unmodified, with our apworld baked in. Profile `selfhost` only. |
+| `compose.seed.yml` | `seed` | The same image, run once to generate a seed into `./seed`. |
 
-Neither the Archipelago image nor the TF2 image is chosen yet. Both need
-verifying against the same criteria: pinned tag, no `latest`, non-root, and
-sane behaviour on restart.
+The multiworld runs on archipelago.gg by default: `make seed` writes the file,
+the operator uploads it there and opens a room, and the bridge dials that room.
+`COMPOSE_PROFILES=selfhost` in `.env` hosts it here instead.
+
+Generation lives in a compose file of its own because it comes first. The stack
+refuses to load without the address of a room, and there is no room before a
+seed exists.
 
 ## The port exception
 
@@ -42,14 +45,17 @@ bridge. But none of them may hard-fail on the others being absent:
 - The plugin starts, and tolerates the bridge being down (ADR 0002 requires
   this anyway, since the bridge can be restarted mid-session).
 
-So `depends_on` is a convenience for boot ordering, not a correctness
-mechanism. Anything that only works because the containers happened to start in
-the right order is a bug.
+There is no `depends_on` on the Archipelago server at all, because usually it
+is not a service in this file. That costs nothing: boot order was never what
+made this correct. Anything that only works because the containers happened to
+start in the right order is a bug.
 
 ## What is mounted where
 
-- The built `.apworld` (or `apworld/tf2_mvm/` directly) into the Archipelago
-  container's custom worlds directory.
+- The built `.apworld` into the Archipelago image's custom worlds directory, at
+  build time rather than as a mount.
+- `./seed` on the host into `/ap/output` of the `seed` service. The generated
+  archives have to leave the container: they go to archipelago.gg.
 - The compiled `.smx` plugin into the `srcds` container's SourceMod plugins
   directory.
 - The bridge's durable state onto a named volume. This holds the check queue

@@ -10,8 +10,8 @@ le serveur randomizer. Cette page trouve laquelle.
 make logs
 ```
 
-Cela suit les trois services. Pour un seul service, utilisez la commande
-compose complète. La stack a besoin de deux fichiers d'environnement, donc
+Cela suit tous les services que la stack fait tourner. Pour un seul service,
+utilisez la commande compose complète. La stack a besoin de deux fichiers d'environnement, donc
 la forme courte ne fonctionne pas :
 
 ```sh
@@ -20,7 +20,8 @@ docker compose --project-directory . \
   -f deploy/compose.yml logs -f bridge
 ```
 
-Remplacez `bridge` par `srcds` ou `archipelago`.
+Remplacez `bridge` par `srcds`, ou par `archipelago` quand la stack héberge
+elle-même la session.
 
 ```sh
 make ps
@@ -165,6 +166,12 @@ plus longtemps entre les tentatives, jusqu'à trente secondes.
 
 Les items reçus arrêtent d'arriver pendant la panne. Les vagues réussies
 continuent de compter.
+
+Un bridge qui ne se connecte jamais est un autre problème. Vérifiez `AP_HOST`,
+`AP_PORT` et `AP_TLS`. Une room sur `archipelago.gg` répond en `wss://` et
+demande `AP_TLS=true` ; une session dans la stack répond en `ws://` et demande
+`AP_TLS=false`. La mauvaise valeur fait échouer chaque tentative, et le bridge
+écrit l'échec dans son log à chaque fois.
 
 ## Quand le bridge est en panne
 

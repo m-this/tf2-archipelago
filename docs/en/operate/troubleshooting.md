@@ -10,7 +10,8 @@ page finds out which.
 make logs
 ```
 
-That follows all three services. For one service, use the full compose command.
+That follows every service the stack runs. For one service, use the full
+compose command.
 The stack needs two environment files, so the short form does not work:
 
 ```sh
@@ -19,7 +20,8 @@ docker compose --project-directory . \
   -f deploy/compose.yml logs -f bridge
 ```
 
-Replace `bridge` with `srcds` or `archipelago`.
+Replace `bridge` with `srcds`, or with `archipelago` when the stack hosts the
+session itself.
 
 ```sh
 make ps
@@ -152,6 +154,12 @@ for an hour costs nothing: the checks arrive when it comes back. The bridge
 reconnects on its own, waiting longer between attempts up to thirty seconds.
 
 Received items stop arriving while it is down. Cleared waves keep counting.
+
+A bridge that never connects once is a different problem. Check `AP_HOST`,
+`AP_PORT` and `AP_TLS`. A room on `archipelago.gg` answers `wss://` and needs
+`AP_TLS=true`; a session inside the stack answers `ws://` and needs
+`AP_TLS=false`. The wrong one fails every attempt, and the bridge logs the
+failure each time.
 
 ## When the bridge is down
 
