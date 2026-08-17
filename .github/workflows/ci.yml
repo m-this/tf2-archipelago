@@ -43,6 +43,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
+      # The workspace is a host directory owned by the runner's own user, bind
+      # mounted into a container that runs as root, so git calls the repository
+      # dubiously owned and refuses to read it. Nothing above needs git, but the
+      # VCS stamp `go build` puts in a binary does, and it fails the build with
+      # `error obtaining VCS status: exit status 128`. The other way out,
+      # -buildvcs=false in the Makefile, drops the stamp on a laptop too.
+      - name: trust the workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - name: gofumpt
         run: make fmt-check
 
@@ -75,10 +84,10 @@ jobs:
     container:
       image: ghcr.io/astral-sh/uv:python3.13-bookworm-slim
     steps:
-      - name: install node
+      - name: install node, git and make
         run: |
           apt-get update
-          apt-get install --yes --no-install-recommends nodejs git
+          apt-get install --yes --no-install-recommends nodejs git make
 
       - uses: actions/checkout@v4
         with:
