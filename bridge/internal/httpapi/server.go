@@ -20,10 +20,10 @@ import (
 	"sync"
 	"time"
 
-	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/apclient"
-	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/chat"
-	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/state"
-	"git-ssh.croque.top/mathis/tf2-archipelago/gamedata"
+	"github.com/m-this/tf2-archipelago/bridge/internal/apclient"
+	"github.com/m-this/tf2-archipelago/bridge/internal/chat"
+	"github.com/m-this/tf2-archipelago/bridge/internal/state"
+	"github.com/m-this/tf2-archipelago/gamedata"
 )
 
 // APIVersion is the contract with the plugin. The plugin reads it at startup

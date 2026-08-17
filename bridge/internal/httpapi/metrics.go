@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/gamequery"
+	"github.com/m-this/tf2-archipelago/bridge/internal/gamequery"
 )
 
 // The metrics endpoint is a second view of what /healthz already reports, in

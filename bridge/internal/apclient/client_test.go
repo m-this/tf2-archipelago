@@ -14,8 +14,8 @@ import (
 
 	"github.com/coder/websocket"
 
-	"git-ssh.croque.top/mathis/tf2-archipelago/bridge/internal/state"
-	"git-ssh.croque.top/mathis/tf2-archipelago/gamedata"
+	"github.com/m-this/tf2-archipelago/bridge/internal/state"
+	"github.com/m-this/tf2-archipelago/gamedata"
 )
 
 // fakeRoom does the handshake and records what the bridge says to it.

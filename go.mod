@@ -1,4 +1,4 @@
-module git-ssh.croque.top/mathis/tf2-archipelago
+module github.com/m-this/tf2-archipelago
 
 go 1.26.6
 

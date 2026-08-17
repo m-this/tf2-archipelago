@@ -80,7 +80,7 @@ Players connect with a stock TF2 client. They install nothing.
 ## Documentation
 
 `docs/` is a book, in English and in French. GitHub Pages publishes it at
-[tf2-archipelago-docs.croque.top](https://tf2-archipelago-docs.croque.top),
+[m-this.github.io/tf2-archipelago](https://m-this.github.io/tf2-archipelago/),
 and `make docs` builds and serves the English version on `127.0.0.1:8081`.
 
 - [`docs/en/SUMMARY.md`](./docs/en/SUMMARY.md): the book's table of
