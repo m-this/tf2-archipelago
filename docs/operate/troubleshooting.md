@@ -98,6 +98,31 @@ The answer holds:
 
 `last_check` answers "did that wave count".
 
+## Watch the run over time
+
+The same numbers are served as Prometheus metrics, on their own port, so a
+dashboard can plot them instead of a person re-running the command above. That
+port **is** published on the host — `BRIDGE_METRICS_BIND` decides who can reach
+it, loopback by default:
+
+```sh
+curl -s 127.0.0.1:24681/metrics
+```
+
+| Metric | What it tells you |
+| --- | --- |
+| `tf2ap_session_connected` | 1 while the session with the randomizer server is up |
+| `tf2ap_session_missions` | How many missions the run drew |
+| `tf2ap_run_checks_total` / `tf2ap_run_items_total` | Checks sent, items received |
+| `tf2ap_run_acked_seq` | How far the plugin confirmed it applied. Stuck behind the item count means the game server is not applying grants |
+| `tf2ap_run_goal_sent` | 1 once the run is finished |
+| `tf2ap_run_last_check_timestamp_seconds` | When the last check landed. Absent until one does |
+| `tf2ap_mission_wave_drift` | One series per mission the game and the tables disagree about, valued at the difference. No series is the healthy case |
+| `tf2ap_run_info` | The seed and slot the numbers belong to |
+
+`tf2ap_mission_wave_drift` is the one worth an alert: a wrong wave count on the
+goal mission is what makes a seed unwinnable, and it cannot be repaired mid-run.
+
 ## When the randomizer server is down
 
 Nothing is lost. The bridge writes each check to disk before it answers the

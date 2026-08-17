@@ -66,6 +66,57 @@ func main() {
 	}
 }
 
+// servers builds the plugin's listener and, when one was asked for, the metrics
+// listener. They are separate servers because they are reachable from different
+// places and can hold a request open for different reasons: the plugin's long
+// poll must not have a write timeout, and the scraper's must.
+func servers(cfg config.Config, api *httpapi.Server) (plugin, metrics *http.Server) {
+	plugin = &http.Server{
+		Addr:              cfg.Listen,
+		Handler:           api.Handler(),
+		ReadHeaderTimeout: 5 * time.Second,
+
+		// No write timeout: GET /grants is a long poll and holding it open is the point.
+	}
+	if cfg.MetricsListen == "" {
+		return plugin, nil
+	}
+	return plugin, &http.Server{
+		Addr:              cfg.MetricsListen,
+		Handler:           api.MetricsHandler(),
+		ReadHeaderTimeout: 5 * time.Second,
+		WriteTimeout:      10 * time.Second,
+	}
+}
+
+// serveAll starts every listener and reports the first one to stop. Any of them
+// stopping ends the process: neither is optional once it has been asked for.
+func serveAll(listeners ...*http.Server) <-chan error {
+	stopped := make(chan error, len(listeners))
+	for _, listener := range listeners {
+		go func() {
+			err := listener.ListenAndServe()
+			if errors.Is(err, http.ErrServerClosed) {
+				err = nil
+			}
+			stopped <- err
+		}()
+	}
+	return stopped
+}
+
+// shutdownAll gives every listener the same grace period and keeps the first
+// failure. Every one of them is asked to stop even if an earlier one refused.
+func shutdownAll(ctx context.Context, listeners ...*http.Server) error {
+	var first error
+	for _, listener := range listeners {
+		if err := listener.Shutdown(ctx); err != nil && first == nil {
+			first = err
+		}
+	}
+	return first
+}
+
 func run(logger *slog.Logger) error {
 	health := flag.Bool("health", false,
 		"ask the running bridge for its health and exit; this is the container health check")
@@ -96,30 +147,23 @@ func run(logger *slog.Logger) error {
 		Chat:     messages,
 		Logger:   logger,
 	})
-	server := &http.Server{
-		Addr:              cfg.Listen,
-		Handler:           httpapi.New(store, client, messages, cfg.PollTimeout, logger).Handler(),
-		ReadHeaderTimeout: 5 * time.Second,
-
-		// No write timeout: GET /grants is a long poll and holding it open is the point.
-	}
+	api := httpapi.New(store, client, messages, cfg.PollTimeout, logger)
+	server, metrics := servers(cfg, api)
 
 	logger.Info("bridge starting",
 		"game", gamedata.GameName,
 		"archipelago", cfg.ArchipelagoURL,
 		"slot", cfg.SlotName,
 		"listen", cfg.Listen,
+		"metrics", cfg.MetricsListen,
 		"state", cfg.StatePath,
 	)
 
-	served := make(chan error, 1)
-	go func() {
-		err := server.ListenAndServe()
-		if errors.Is(err, http.ErrServerClosed) {
-			err = nil
-		}
-		served <- err
-	}()
+	listeners := []*http.Server{server}
+	if metrics != nil {
+		listeners = append(listeners, metrics)
+	}
+	served := serveAll(listeners...)
 
 	sessionEnded := make(chan error, 1)
 	go func() { sessionEnded <- client.Run(ctx) }()
@@ -133,7 +177,7 @@ func run(logger *slog.Logger) error {
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownGrace)
 	defer cancel()
-	if closeErr := server.Shutdown(shutdownCtx); closeErr != nil && err == nil {
+	if closeErr := shutdownAll(shutdownCtx, listeners...); closeErr != nil && err == nil {
 		err = closeErr
 	}
 	return err

@@ -23,6 +23,11 @@ type Config struct {
 	// bridge share a network namespace and nothing else may reach it.
 	Listen string
 
+	// MetricsListen serves Prometheus metrics, and only those. It is separate
+	// from Listen because a scraper is on another machine while the plugin's API
+	// stays on loopback. Empty turns it off.
+	MetricsListen string
+
 	StatePath string
 
 	// PollTimeout is how long GET /grants is held open; the plugin's own timeout must be longer.
@@ -53,6 +58,7 @@ func Load() (Config, error) {
 		SlotName:       env("AP_SLOT_NAME", "tf2"),
 		Password:       os.Getenv("AP_PASSWORD"),
 		Listen:         env("BRIDGE_LISTEN", "127.0.0.1:24680"),
+		MetricsListen:  os.Getenv("BRIDGE_METRICS_LISTEN"),
 		StatePath:      env("BRIDGE_STATE", "/data/bridge.json"),
 		PollTimeout:    timeout,
 	}
