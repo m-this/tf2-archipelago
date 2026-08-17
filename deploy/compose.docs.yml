@@ -1,0 +1,23 @@
+# The book, served over HTTP.
+#
+# Its own compose project on purpose. The book is rebuilt every time a document
+# changes, and that must never take the game server down with it.
+name: tf2-archipelago-docs
+
+services:
+  docs:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.docs
+      args:
+        HONKIT_VERSION: ${HONKIT_VERSION:?set it in deploy/env/versions.env}
+    restart: unless-stopped
+    ports:
+      # Loopback. The book is read from the host, or through the tunnel over the
+      # docker network; nothing needs it published to the LAN.
+      - "127.0.0.1:${DOCS_PORT:-8081}:80"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

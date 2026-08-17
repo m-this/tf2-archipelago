@@ -13,14 +13,20 @@ concurrency:
 # Four languages, four jobs, each on the smallest image that can run it. Every
 # step is a make target: what runs here is what runs on a laptop, and `make
 # check` runs all of it in one go.
+#
+# This file runs on both forges: Forgejo picks up .github/workflows too, and the
+# homelab runner registers an ubuntu-latest label, so nothing here may use a
+# label or an action that only one of the two knows about.
 jobs:
   go:
-    runs-on: docker
+    runs-on: ubuntu-latest
     container:
       image: golang:1.26
     steps:
       # checkout is a JavaScript action, so the runner execs node inside the
       # container. None of the images below ship one; every one is Debian.
+      # GitHub mounts its own node into the container and would not need this;
+      # the Forgejo runner does not, so the install stays.
       - name: install node
         run: |
           apt-get update
@@ -65,7 +71,7 @@ jobs:
         run: make vuln
 
   apworld:
-    runs-on: docker
+    runs-on: ubuntu-latest
     container:
       image: ghcr.io/astral-sh/uv:python3.13-bookworm-slim
     steps:
@@ -82,7 +88,7 @@ jobs:
         run: make apworld-lint
 
   plugin:
-    runs-on: docker
+    runs-on: ubuntu-latest
     container:
       image: debian:stable-slim
     steps:
@@ -102,9 +108,10 @@ jobs:
 
   # Needs a runner with a Docker daemon it can reach: it builds images and
   # brings a stack up. Without one, these two targets are the ones to run by
-  # hand before a release.
+  # hand before a release. No container: on GitHub the label is a VM with a
+  # daemon, and the homelab runner's ubuntu-latest image reaches its DinD.
   stack:
-    runs-on: docker
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -114,6 +121,11 @@ jobs:
       # image that has it.
       - name: apworld tests
         run: make apworld-test
+
+      # docs/ is a published site. A book that stops building should fail here
+      # rather than at the domain.
+      - name: book
+        run: make docs-build
 
       # Archipelago and the bridge, for real, driven the way the plugin drives
       # them. The game server is not in it: 14 GB, and it proves nothing

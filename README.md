@@ -74,6 +74,10 @@ Les joueurs se connectent avec un client TF2 vanilla. Rien à installer.
 
 ## Documentation
 
+`docs/` is a book. It is published at
+[tf2-archipelago-docs.croque.top](https://tf2-archipelago-docs.croque.top), and
+`make docs` builds and serves the same thing on `127.0.0.1:8081`.
+
 - [`docs/SUMMARY.md`](./docs/SUMMARY.md) : le sommaire du livre. Héberger,
   configurer la partie, jouer, dépanner.
 - [`docs/archipelago-for-mvm-players.md`](./docs/archipelago-for-mvm-players.md) :
