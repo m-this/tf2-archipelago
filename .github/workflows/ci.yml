@@ -164,15 +164,14 @@ jobs:
           fetch-depth: 1
 
       # Same image the `book` step already validated, so the build has one
-      # definition. The custom domain lives in a CNAME file at the artifact's
-      # root, which is how GitHub Pages learns to answer to it.
+      # definition. No CNAME file in the artifact: the book stays on the
+      # github.io address Pages gives it, under no domain of mine.
       - name: build the book
         run: |
           make docs-build
           id=$(docker create tf2-archipelago-docs)
           docker cp "$id:/usr/share/nginx/html" book
           docker rm "$id"
-          echo "tf2-archipelago-docs.croque.top" > book/CNAME
 
       - uses: actions/upload-pages-artifact@v3
         with:
