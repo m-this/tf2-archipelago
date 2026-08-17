@@ -2,7 +2,7 @@
 
 Go. The Archipelago client. The only component that knows the AP protocol, and
 via `gamedata/` the only component that knows the id mapping. Read [ADR
-0002](../docs/adr/0002-server-side-plugin-with-a-go-bridge.md) first.
+0002](../docs/en/adr/0002-server-side-plugin-with-a-go-bridge.md) first.
 
 ## What it does
 

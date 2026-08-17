@@ -1,9 +1,10 @@
 # TF2 MvM Archipelago: design spec
 
-Status: draft, nothing implemented. This is the consolidated reading of
-[`discord-mvm-thread.md`](./discord-mvm-thread.md) plus the architecture
+Status: draft, ahead of the code in places. This is the consolidated reading
+of [`discord-mvm-thread.md`](./discord-mvm-thread.md) plus the architecture
 decisions in [`adr/`](./adr/). Where the thread and this file disagree, this
-file wins and the divergence is called out.
+file wins and the divergence is called out. See [Testing](operate/testing.md)
+for what actually runs today.
 
 ## Scope
 

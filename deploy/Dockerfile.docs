@@ -1,8 +1,9 @@
-# The book, built out of docs/ and served as static files.
+# The book, built out of docs/ and served as static files, in English and in
+# French.
 #
-# honkit is the maintained fork of GitBook 3, so it reads docs/SUMMARY.md and
-# the page layout as they already stand. The table of contents keeps one home
-# rather than growing a second one for the sake of a build.
+# honkit is the maintained fork of GitBook 3, so it reads docs/LANGS.md and
+# each language's own SUMMARY.md as they already stand. The table of contents
+# keeps one home per language rather than growing a second one for the build.
 
 FROM node:24-alpine AS build
 ARG HONKIT_VERSION
@@ -10,24 +11,29 @@ ARG HONKIT_VERSION
 WORKDIR /src
 COPY docs docs
 COPY CONTEXT.md CONTEXT.md
+COPY deploy/docs-index.html docs-index.html
 
-# Three things honkit needs that the repository does not owe it, done here so
-# no file has to move and no second table of contents appears:
+# Three things honkit needs that the repository does not owe it, done per
+# language so no file has to move and no second table of contents appears:
 #
-#   - the glossary lives at the repository root, where the README and the
-#     agents read it, and honkit refuses a page above the book's own root. It
-#     is copied in and the one link that reaches out is rewritten.
 #   - honkit looks for README.md as the landing page. index.md stays where it
 #     is, so every page that links to it still resolves.
 #   - without a book.json the theme titles every page "... · HonKit". The name
 #     is read out of the landing page's heading rather than written again, and
 #     node writes the JSON so a title with a quote in it cannot break the file.
-RUN cp CONTEXT.md docs/glossary.md \
-	&& sed -i 's|\.\./CONTEXT\.md|glossary.md|' docs/SUMMARY.md \
-	&& cp docs/index.md docs/README.md \
-	&& node -e 'console.log(JSON.stringify({title: process.argv[1]}))' \
-		"$(sed -n 's/^# //p' docs/index.md | head -1)" > docs/book.json \
-	&& npx --yes honkit@${HONKIT_VERSION} build docs /book
+#   - the English glossary is the repository's own CONTEXT.md, copied in
+#     rather than duplicated: that file is also what the README and the agents
+#     read, so there is exactly one place it is written. The French glossary
+#     is a real translation, checked in as docs/fr/glossary.md, because a
+#     glossary machine-copied from an English source would not be one.
+RUN cp CONTEXT.md docs/en/glossary.md \
+	&& for lang in en fr; do \
+		cp "docs/$lang/index.md" "docs/$lang/README.md" \
+		&& node -e 'console.log(JSON.stringify({title: process.argv[1]}))' \
+			"$(sed -n 's/^# //p' "docs/$lang/index.md" | head -1)" > "docs/$lang/book.json"; \
+	done \
+	&& npx --yes honkit@${HONKIT_VERSION} build docs /book \
+	&& cp docs-index.html /book/index.html
 
 FROM nginx:1.30.4-alpine
 COPY --from=build /book /usr/share/nginx/html

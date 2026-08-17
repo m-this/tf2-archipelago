@@ -1,108 +1,112 @@
 # tf2-archipelago
 
-Intégration [Archipelago](https://archipelago.gg) pour un serveur Team Fortress 2
-auto-hébergé, en mode Mann vs Machine.
+An [Archipelago](https://archipelago.gg) integration for a self-hosted Team
+Fortress 2 server, in Mann vs Machine mode.
 
-**État : les quatre composants tournent ; il reste une vague à réussir.**
-La génération de seed, le serveur Archipelago et le bridge sont vérifiés bout en
-bout à chaque `make integration`. Le plugin a tourné sur un vrai serveur le
-2026-08-17 : les trois événements MvM existent, il lit bien la mission et sa
-longueur, et une check remonte jusqu'au multiworld. Ce qui manque encore
-demande un joueur devant un client TF2, parce que MvM ne lance pas de vague
-avant qu'un humain se déclare prêt et qu'un bot ne peut pas le faire.
+**Status: four components run. One wave remains to clear.** Seed generation,
+the Archipelago server, and the bridge pass an end-to-end check on every
+`make integration` run. The plugin ran on a real server on 2026-08-17. The
+three MvM events exist, the plugin reads the mission and its length
+correctly, and a check reaches the multiworld.
 
-## Démarrer
+One part still needs a player at a TF2 client. MvM does not start a wave
+until a human player is ready. A bot cannot do that.
+
+## Start
 
 ```sh
-cp deploy/.env.example .env   # SRCDS_RCONPW n'a pas de défaut
+cp deploy/.env.example .env   # SRCDS_RCONPW has no default
 make up
 make logs
 ```
 
-Le premier démarrage télécharge environ 14 Go de fichiers de jeu.
-[`docs/`](./docs/) est un livre complet pour l'hébergeur :
-[`docs/setup/install.md`](./docs/setup/install.md) donne le détail, et
-[`docs/archipelago-for-mvm-players.md`](./docs/archipelago-for-mvm-players.md)
-est ce qu'il faut envoyer aux joueurs qui n'ont jamais touché à un multiworld.
+The first start downloads about 14 GB of game files. [`docs/`](./docs/) is
+a full book for the host. [`docs/en/setup/install.md`](./docs/en/setup/install.md)
+gives the detail. Send
+[`docs/en/archipelago-for-mvm-players.md`](./docs/en/archipelago-for-mvm-players.md)
+to a player new to a multiworld.
 
 ```sh
-make check        # tout ce que la CI lance
-make integration  # Archipelago + bridge en vrai, pilotés comme le plugin le fait
+make check        # everything CI runs
+make integration  # real Archipelago and bridge, driven the way the plugin drives them
 ```
 
-## Pourquoi MvM
+## Why MvM
 
-MvM est le seul mode TF2 qui a déjà une progression : une mission est une suite
-ordonnée de vagues, une vague se réussit ou se rate, il y a une boutique
-d'améliorations persistantes, et un tour est une suite ordonnée de missions.
-Ça se projette directement sur les régions et les locations d'Archipelago. Le
-TF2 classique n'a rien de tout ça.
+MvM is the only TF2 mode with built-in progress:
 
-## Comment ça marche
+- A mission is an ordered series of waves.
+- A team clears a wave, or fails it.
+- A shop sells upgrades that persist.
+- A round is an ordered series of missions.
 
-Trois processus, une seule source de vérité.
+This structure maps directly onto Archipelago's regions and locations.
+Classic TF2 has none of it.
+
+## How it works
+
+Three processes. One source of truth.
 
 ```
-  gamedata/ (Go)  ──génère──>  apworld/tf2_mvm/data/*.json
-        │                                 │
-        │ compilé dans                    │ lu à la génération
-        v                                 v
-    bridge (Go)  <──websocket──>  serveur Archipelago (conteneur)
+  gamedata/ (Go)  ──generates──>  apworld/tf2_mvm/data/*.json
+        │                                   │
+        │ built into                        │ read at generation
+        v                                   v
+    bridge (Go)  <──websocket──>  Archipelago server (container)
         ^
-        │ HTTP + JSON sur 127.0.0.1
+        │ HTTP + JSON on 127.0.0.1
         v
-  plugin SourceMod  (dans le conteneur srcds)
+  SourceMod plugin  (inside the srcds container)
 ```
 
-Le plugin SourceMod est la seule chose qui voit le jeu. Le bridge Go est la
-seule chose qui parle Archipelago. `gamedata/` en Go est la seule chose qui
-sait ce qu'est une mission ou une arme, et il exporte ça en JSON pour l'apworld
-Python.
+The SourceMod plugin is the only part that sees the game. The Go bridge is
+the only part that speaks Archipelago. `gamedata/`, in Go, is the only part
+that knows what a mission or a weapon is. It exports that data as JSON for
+the Python apworld.
 
-Les joueurs se connectent avec un client TF2 vanilla. Rien à installer.
+Players connect with a stock TF2 client. They install nothing.
 
-## Arborescence
+## Directory tree
 
-| Répertoire | Langage | Rôle |
+| Directory | Language | Role |
 | --- | --- | --- |
-| [`gamedata/`](./gamedata/) | Go | Source de vérité : maps, missions, vagues, armes, upgrades, robots, et les ids. Exporte le JSON. |
-| [`bridge/`](./bridge/) | Go | Client Archipelago. Websocket, reconnexion, file durable, API HTTP loopback pour le plugin. |
-| [`apworld/`](./apworld/) | Python | apworld mince : lit le JSON exporté, pose les régions, les règles et les options YAML. |
-| [`plugin/`](./plugin/) | SourcePawn | Détecte les objectifs, applique les déblocages et les pièges. |
-| [`deploy/`](./deploy/) | Compose | Serveur Archipelago + srcds + bridge. |
-| [`docs/`](./docs/) | Markdown | Spec, ADR, guide d'hébergement, état de l'art, fil Discord d'origine. |
+| [`gamedata/`](./gamedata/) | Go | Source of truth: maps, missions, waves, weapons, upgrades, robots, and the IDs. Exports the JSON. |
+| [`bridge/`](./bridge/) | Go | Archipelago client. WebSocket, reconnection, a durable queue, and a loopback HTTP API for the plugin. |
+| [`apworld/`](./apworld/) | Python | A thin apworld. It reads the exported JSON and sets the regions, the rules, and the YAML options. |
+| [`plugin/`](./plugin/) | SourcePawn | Detects the objectives. Applies the unlocks and the traps. |
+| [`deploy/`](./deploy/) | Compose | Archipelago server, srcds, and the bridge. |
+| [`docs/`](./docs/) | Markdown | Spec, ADRs, the hosting guide, prior art, and the original Discord thread. |
 
 ## Documentation
 
-`docs/` is a book. It is published at
-[tf2-archipelago-docs.croque.top](https://tf2-archipelago-docs.croque.top), and
-`make docs` builds and serves the same thing on `127.0.0.1:8081`.
+`docs/` is a book, in English and in French. GitHub Pages publishes it at
+[tf2-archipelago-docs.croque.top](https://tf2-archipelago-docs.croque.top),
+and `make docs` builds and serves the English version on `127.0.0.1:8081`.
 
-- [`docs/SUMMARY.md`](./docs/SUMMARY.md) : le sommaire du livre. Héberger,
-  configurer la partie, jouer, dépanner.
-- [`docs/archipelago-for-mvm-players.md`](./docs/archipelago-for-mvm-players.md) :
-  pour un joueur qui n'a jamais fait de multiworld. Le vocabulaire et les
-  commandes de chat.
-- [`docs/operate/what-nobody-tested.md`](./docs/operate/what-nobody-tested.md) :
-  ce qui est vérifié et ce qui ne l'est pas. À lire avant la première session.
-- [`docs/spec.md`](./docs/spec.md) : la conception. Périmètre, locations,
-  items, objectifs, questions ouvertes.
-- [`docs/adr/`](./docs/adr/) : les décisions et pourquoi les alternatives ont
-  été écartées.
-- [`docs/discord-mvm-thread.md`](./docs/discord-mvm-thread.md) : le fil
-  Discord Archipelago à l'origine du projet, recopié verbatim. La conception
-  vient de **Damonj17** et **Roseburst**.
-- [`docs/prior-art.md`](./docs/prior-art.md) : ce qui existe déjà, notamment le
-  fork [ALPHAMARIOX/TF2-MvM-Archipelago](https://github.com/ArchipelagoMW/Archipelago/compare/main...ALPHAMARIOX:TF2-MvM-Archipelago:main).
-- [`CONTEXT.md`](./CONTEXT.md) : glossaire. Les vocabulaires Archipelago et MvM
-  partagent des mots sans partager les sens, les deux y sont fixés.
-- [`TODO.md`](./TODO.md) : ce qui bloque quoi.
+- [`docs/en/SUMMARY.md`](./docs/en/SUMMARY.md): the book's table of
+  contents. Hosting, game setup, play, and troubleshooting.
+- [`docs/en/archipelago-for-mvm-players.md`](./docs/en/archipelago-for-mvm-players.md):
+  for a player new to a multiworld. The vocabulary and the chat commands.
+- [`docs/en/operate/testing.md`](./docs/en/operate/testing.md): what still
+  needs a test, and what each test needs. Read it before the first session.
+- [`docs/en/spec.md`](./docs/en/spec.md): the design. Scope, locations,
+  items, goals, and open questions.
+- [`docs/en/adr/`](./docs/en/adr/): the decisions, and why the alternatives
+  lost.
+- [`docs/en/discord-mvm-thread.md`](./docs/en/discord-mvm-thread.md): the
+  original Archipelago Discord thread, copied word for word. **Damonj17**
+  and **Roseburst** wrote the design.
+- [`docs/en/prior-art.md`](./docs/en/prior-art.md): what exists already,
+  most of all the fork
+  [ALPHAMARIOX/TF2-MvM-Archipelago](https://github.com/ArchipelagoMW/Archipelago/compare/main...ALPHAMARIOX:TF2-MvM-Archipelago:main).
+- [`CONTEXT.md`](./CONTEXT.md): the glossary. Archipelago's and MvM's
+  vocabularies share words but not their meanings; this file fixes both.
+- [`TODO.md`](./TODO.md): what blocks what.
 
-## Crédits
+## Credits
 
-La conception vient du fil Discord Archipelago : **Damonj17** a posé la
-prémisse et la forme des items et des checks, **Roseburst** a écrit
-l'intégralité du plan d'options YAML. Contributions de **adeleine64DS**,
-**Amazia**, **Snolid Ice**, **mudkipslike**, **TheBreadstick**, **CrystalClear**
-et **Pixel Silzavon**. Les tables de données de départ viennent du fork
-d'**ALPHAMARIOX**.
+The design comes from the Archipelago Discord thread. **Damonj17** set the
+premise and the shape of the items and the checks. **Roseburst** wrote the
+entire YAML options schema. **adeleine64DS**, **Amazia**, **Snolid Ice**,
+**mudkipslike**, **TheBreadstick**, **CrystalClear**, and **Pixel Silzavon**
+contributed. The starting data tables come from **ALPHAMARIOX**'s fork.

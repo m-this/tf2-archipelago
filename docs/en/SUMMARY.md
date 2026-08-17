@@ -23,7 +23,7 @@
 
 * [Troubleshooting](operate/troubleshooting.md)
 * [Start a new run](operate/start-a-new-run.md)
-* [What nobody tested](operate/what-nobody-tested.md)
+* [Testing](operate/testing.md)
 
 ## Reference
 
@@ -32,4 +32,4 @@
 * [ADR 0002: Server-side plugin with a Go bridge](adr/0002-server-side-plugin-with-a-go-bridge.md)
 * [Prior art](prior-art.md)
 * [The Discord thread](discord-mvm-thread.md)
-* [Glossary](../CONTEXT.md)
+* [Glossary](glossary.md)

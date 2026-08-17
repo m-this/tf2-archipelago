@@ -1,6 +1,6 @@
 # TODO
 
-`docs/spec.md` says what we are building and why. This file says what to build,
+`docs/en/spec.md` says what we are building and why. This file says what to build,
 in what order, with the exact contracts. Where a fact here was verified against
 a real artefact, it says so; where it is still a guess, it is marked
 **UNVERIFIED**.
@@ -268,7 +268,7 @@ Two bugs the tests caught and one the live run did not have to:
 
 Not implemented, deliberately: DeathLink. The seed can ask for it and the
 bridge logs that it will not honour it, because what a death means in MvM is
-still open (`docs/spec.md`, question 5). It does not claim the tag, so it does
+still open (`docs/en/spec.md`, question 5). It does not claim the tag, so it does
 not promise other players something it will not deliver.
 
 ## Milestone 4: plugin — written, never run
@@ -368,9 +368,9 @@ The bridge adds `AP_HOST`, `AP_TLS`, `BRIDGE_LISTEN`, `BRIDGE_STATE` and
       worklab, once maxplayers was 32.
 - [ ] **Cannot be verified without a human and a TF2 client**: that a wave
       clear in-game actually fires the objective, and that a granted weapon
-      slot is actually enforced. `docs/operate/what-nobody-tested.md` says so
+      slot is actually enforced. `docs/en/operate/testing.md` says so
       plainly rather than implying it was tested.
-- [x] The host's book under `docs/`, with `docs/SUMMARY.md` as its table of
+- [x] The host's book under `docs/`, with `docs/en/SUMMARY.md` as its table of
       contents. It replaces `archipelago-101` and `running`, which are folded
       into it and deleted.
 - [x] `.github/workflows/ci.yml`: four jobs, one per language, every step a
@@ -513,7 +513,7 @@ changes, in the order they matter:
 - **A check the plugin holds is recoverable.** Its queue is in memory and bounded
   at 64, so an srcds crash during a long Archipelago outage loses whatever is in
   it. Every objective is written to the SourceMod log as it is queued and again
-  when the bridge takes it, and `docs/operate/troubleshooting.md` says how to
+  when the bridge takes it, and `docs/en/operate/troubleshooting.md` says how to
   replay one with `sm_ap_report`.
 
 The state file is format version 2. Version 1 is still read, because it holds

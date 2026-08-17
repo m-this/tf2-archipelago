@@ -2,7 +2,7 @@
 // and serves the SourceMod plugin over loopback HTTP.
 //
 // It is the only component that knows the Archipelago protocol and the only
-// one that knows the id mapping. See docs/adr/0002.
+// one that knows the id mapping. See docs/en/adr/0002.
 package main
 
 import (

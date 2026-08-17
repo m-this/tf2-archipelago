@@ -24,9 +24,8 @@ it.
 4. [The shape of the run](setup/shape-of-the-run.md) sets the length and the
    difficulty of an evening.
 5. [Invite your friends](setup/invite-your-friends.md) opens the server.
-6. [What nobody tested](operate/what-nobody-tested.md) says what is proven and
-   what is not. The plugin has run on a live server, but a wave has never been
-   cleared. Read it before the first session.
+6. [Testing](operate/testing.md) lists what still needs a real test, and
+   what each test needs. Read it before the first session.
 
 ## The short version
 
