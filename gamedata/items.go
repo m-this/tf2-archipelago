@@ -18,8 +18,23 @@ var itemKindKeys = [...]string{
 	ItemCredits:       "credits",
 }
 
+// ItemKinds is every kind that exists, in id order. The bridge walks it to
+// build the unlock set, so a kind added here needs no second list anywhere.
+var ItemKinds = []ItemKind{ItemMissionTicket, ItemClass, ItemWeaponSlot, ItemCredits}
+
 // Key is the string on the wire between the bridge and the plugin.
 func (k ItemKind) Key() string { return itemKindKeys[k] }
+
+// OneShot reports whether applying the item a second time differs from applying
+// it once. A class is state: granting it again changes nothing, so it can be
+// replayed after any reload. Credits are an effect: granting them again pays a
+// second time.
+//
+// The distinction is what decides how the bridge delivers an item. State goes
+// in the unlock set and is resent freely; an effect is sent once and is not
+// sent again until the plugin says it applied it. Traps are effects too, the
+// day they exist.
+func (k ItemKind) OneShot() bool { return k == ItemCredits }
 
 // Item is one entry in the multiworld's item pool. Mission, Class and Credits
 // are the payload of the kind that uses them and zero elsewhere; Count is zero

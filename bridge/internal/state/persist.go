@@ -6,12 +6,24 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
-// FormatVersion is the shape of the state file. A file from a version this
-// binary does not know is an error rather than a guess: it holds the only
-// record of what a run has already checked.
-const FormatVersion = 1
+const (
+	// FormatVersion is the shape of the state file this binary writes.
+	FormatVersion = 2
+
+	// FormatVersionMin is the oldest shape it can still read. A file older than
+	// that is an error rather than a guess: it holds the only record of what a
+	// run has already checked. Version 1 had no acked_seq, and zero is the
+	// right answer for it: nothing had been acknowledged.
+	FormatVersionMin = 1
+
+	// archivesMax bounds the copies kept of one seed. Past it the oldest name
+	// is reused, because failing to bind a seed would leave the bridge retrying
+	// forever.
+	archivesMax = 10
+)
 
 // snapshot is what sits on disk: only facts the server or the plugin told us.
 type snapshot struct {
@@ -27,31 +39,78 @@ type snapshot struct {
 	// into this list is the index it deduplicates on.
 	Items []int64 `json:"items"`
 
+	// AckedSeq is how far through Items the plugin has confirmed applying
+	// one-shot grants. An effect at or below it is never sent again. Without
+	// it, a plugin reload asks from sequence zero and every cash bundle in the
+	// run is paid a second time.
+	AckedSeq int `json:"acked_seq"`
+
 	GoalSent bool `json:"goal_sent"`
 }
 
-func readSnapshot(path string) (snapshot, error) {
+// readSnapshot loads the state file and reports the format version it was
+// written in, so the caller can keep a copy before promoting it.
+func readSnapshot(path string) (snapshot, int, error) {
 	body, err := os.ReadFile(path)
 	if errors.Is(err, os.ErrNotExist) {
-		return snapshot{FormatVersion: FormatVersion}, nil
+		return snapshot{FormatVersion: FormatVersion}, FormatVersion, nil
 	}
 	if err != nil {
-		return snapshot{}, err
+		return snapshot{}, 0, err
 	}
 	var loaded snapshot
 	if err := json.Unmarshal(body, &loaded); err != nil {
-		return snapshot{}, fmt.Errorf(
+		return snapshot{}, 0, fmt.Errorf(
 			"%s cannot be read, and it is the only record of this run's checks: %w. "+
 				"Move the file aside to start the run again", path, err,
 		)
 	}
-	if loaded.FormatVersion != FormatVersion {
-		return snapshot{}, fmt.Errorf(
-			"%s is format version %d, this bridge reads %d",
-			path, loaded.FormatVersion, FormatVersion,
+	if loaded.FormatVersion < FormatVersionMin || loaded.FormatVersion > FormatVersion {
+		return snapshot{}, 0, fmt.Errorf(
+			"%s is format version %d, this bridge reads %d to %d",
+			path, loaded.FormatVersion, FormatVersionMin, FormatVersion,
 		)
 	}
-	return loaded, nil
+	// Read as an old shape, written back as the current one. Every field added
+	// since is zero, which is what an older file means by leaving it out.
+	wasVersion := loaded.FormatVersion
+	loaded.FormatVersion = FormatVersion
+	return loaded, wasVersion, nil
+}
+
+// archiveFormat sets the file aside under the version it was written in, before
+// anything rewrites it in a shape the binary that made it cannot read.
+func archiveFormat(path string, version int) error {
+	if free(path) {
+		return nil
+	}
+	extension := filepath.Ext(path)
+	target := fmt.Sprintf("%s.v%d%s", strings.TrimSuffix(path, extension), version, extension)
+	if !free(target) {
+		// The copy at that version is already there, and it is older than what
+		// is about to be written. Keeping the first one is the safe direction.
+		return nil
+	}
+	if err := copyFile(path, target); err != nil {
+		return err
+	}
+	return syncDir(filepath.Dir(path))
+}
+
+func copyFile(source, target string) error {
+	body, err := os.ReadFile(source)
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(target, body, 0o644); err != nil {
+		return err
+	}
+	handle, err := os.Open(target)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = handle.Close() }()
+	return handle.Sync()
 }
 
 // writeSnapshot replaces the state file atomically: a torn write would lose
@@ -84,6 +143,71 @@ func writeSnapshot(path string, data snapshot) error {
 		return err
 	}
 	return syncDir(dir)
+}
+
+// archiveSnapshot moves the state file aside rather than letting a new seed
+// overwrite it. Binding a seed wipes the run, and the operator who pointed the
+// bridge at the wrong Archipelago server needs the old file to still exist.
+func archiveSnapshot(path, seed string) (string, error) {
+	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+		return "", nil
+	} else if err != nil {
+		return "", err
+	}
+	target := archivePath(path, seed)
+	if err := os.Rename(path, target); err != nil {
+		return "", err
+	}
+	return target, syncDir(filepath.Dir(path))
+}
+
+// archivePath is the state file's own name with the seed in it, plus a counter
+// when that seed has been archived before.
+//
+// Only "the file is not there" frees a name. Anything else, a permissions
+// problem or a failing disk, leaves the name taken: reading it as free is how
+// an archive overwrites a run it cannot see.
+func archivePath(path, seed string) string {
+	extension := filepath.Ext(path)
+	stem := strings.TrimSuffix(path, extension)
+	base := fmt.Sprintf("%s.%s%s", stem, safeSeedName(seed), extension)
+	if free(base) {
+		return base
+	}
+	for attempt := 1; attempt < archivesMax; attempt++ {
+		candidate := fmt.Sprintf("%s.%s.%d%s", stem, safeSeedName(seed), attempt, extension)
+		if free(candidate) {
+			return candidate
+		}
+	}
+	return base
+}
+
+func free(path string) bool {
+	_, err := os.Stat(path)
+	return errors.Is(err, os.ErrNotExist)
+}
+
+// safeSeedName keeps a seed name usable as a file name. Archipelago's are
+// alphanumeric today, and a bridge that crashed on a path separator in one
+// would be a poor trade.
+func safeSeedName(seed string) string {
+	const lengthMax = 64
+	safe := strings.Map(func(r rune) rune {
+		switch {
+		case r >= '0' && r <= '9', r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z', r == '-', r == '_':
+			return r
+		default:
+			return '_'
+		}
+	}, seed)
+	if safe == "" {
+		return "unnamed"
+	}
+	if len(safe) > lengthMax {
+		return safe[:lengthMax]
+	}
+	return safe
 }
 
 // syncDir makes the rename durable: without it the file survives a crash but its name may not.

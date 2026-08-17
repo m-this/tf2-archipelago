@@ -228,7 +228,8 @@ func TestSessionConnectsAndAppliesItems(t *testing.T) {
 	})
 	waitFor(t, "the received items to be applied", func() bool {
 		unlocks := store.Unlocks()
-		return len(unlocks.Missions) == 1 && len(unlocks.Classes) == 1
+		return len(unlocks.Of(gamedata.ItemMissionTicket)) == 1 &&
+			len(unlocks.Of(gamedata.ItemClass)) == 1
 	})
 }
 

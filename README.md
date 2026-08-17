@@ -20,9 +20,10 @@ make logs
 ```
 
 Le premier démarrage télécharge environ 14 Go de fichiers de jeu.
-[`docs/running.md`](./docs/running.md) donne le détail, et
-[`docs/archipelago-101.md`](./docs/archipelago-101.md) est ce qu'il faut
-envoyer aux joueurs qui n'ont jamais touché à un multiworld.
+[`docs/`](./docs/) est un livre complet pour l'hébergeur :
+[`docs/setup/install.md`](./docs/setup/install.md) donne le détail, et
+[`docs/archipelago-for-mvm-players.md`](./docs/archipelago-for-mvm-players.md)
+est ce qu'il faut envoyer aux joueurs qui n'ont jamais touché à un multiworld.
 
 ```sh
 make check        # tout ce que la CI lance
@@ -69,26 +70,29 @@ Les joueurs se connectent avec un client TF2 vanilla. Rien à installer.
 | [`apworld/`](./apworld/) | Python | apworld mince : lit le JSON exporté, pose les régions, les règles et les options YAML. |
 | [`plugin/`](./plugin/) | SourcePawn | Détecte les objectifs, applique les déblocages et les pièges. |
 | [`deploy/`](./deploy/) | Compose | Serveur Archipelago + srcds + bridge. |
-| [`docs/`](./docs/) | — | Spec, ADR, guide d'hébergement, état de l'art, fil Discord d'origine. |
+| [`docs/`](./docs/) | Markdown | Spec, ADR, guide d'hébergement, état de l'art, fil Discord d'origine. |
 
 ## Documentation
 
-- [`docs/running.md`](./docs/running.md) — héberger : `.env`, démarrage,
-  connexion, quoi faire quand ça coince.
-- [`docs/archipelago-101.md`](./docs/archipelago-101.md) — pour un joueur qui
-  n'a jamais fait de multiworld : les cinq mots, les commandes de chat.
-- [`docs/spec.md`](./docs/spec.md) — la conception : périmètre, locations,
+- [`docs/SUMMARY.md`](./docs/SUMMARY.md) : le sommaire du livre. Héberger,
+  configurer la partie, jouer, dépanner.
+- [`docs/archipelago-for-mvm-players.md`](./docs/archipelago-for-mvm-players.md) :
+  pour un joueur qui n'a jamais fait de multiworld. Le vocabulaire et les
+  commandes de chat.
+- [`docs/operate/what-nobody-tested.md`](./docs/operate/what-nobody-tested.md) :
+  ce qui est vérifié et ce qui ne l'est pas. À lire avant la première session.
+- [`docs/spec.md`](./docs/spec.md) : la conception. Périmètre, locations,
   items, objectifs, questions ouvertes.
-- [`docs/adr/`](./docs/adr/) — les décisions et pourquoi les alternatives ont
+- [`docs/adr/`](./docs/adr/) : les décisions et pourquoi les alternatives ont
   été écartées.
-- [`docs/discord-mvm-thread.md`](./docs/discord-mvm-thread.md) — le fil
+- [`docs/discord-mvm-thread.md`](./docs/discord-mvm-thread.md) : le fil
   Discord Archipelago à l'origine du projet, recopié verbatim. La conception
   vient de **Damonj17** et **Roseburst**.
-- [`docs/prior-art.md`](./docs/prior-art.md) — ce qui existe déjà, notamment le
+- [`docs/prior-art.md`](./docs/prior-art.md) : ce qui existe déjà, notamment le
   fork [ALPHAMARIOX/TF2-MvM-Archipelago](https://github.com/ArchipelagoMW/Archipelago/compare/main...ALPHAMARIOX:TF2-MvM-Archipelago:main).
-- [`CONTEXT.md`](./CONTEXT.md) — glossaire. Les vocabulaires Archipelago et MvM
+- [`CONTEXT.md`](./CONTEXT.md) : glossaire. Les vocabulaires Archipelago et MvM
   partagent des mots sans partager les sens, les deux y sont fixés.
-- [`TODO.md`](./TODO.md) — ce qui bloque quoi.
+- [`TODO.md`](./TODO.md) : ce qui bloque quoi.
 
 ## Crédits
 

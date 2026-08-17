@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -104,14 +105,26 @@ func TestUnlocksReportsWhatHasBeenGranted(t *testing.T) {
 
 	var unlocks state.Unlocks
 	decode(t, get(t, handler, "/unlocks"), &unlocks)
-	if unlocks.Seq != 2 {
-		t.Errorf("seq = %d", unlocks.Seq)
+	// The cursor the plugin resumes from is the acknowledged one, not the
+	// length of the item list. Nothing has been acknowledged here.
+	if unlocks.ResumeFrom != 0 {
+		t.Errorf("resume_from = %d", unlocks.ResumeFrom)
 	}
-	if len(unlocks.Missions) != 1 || unlocks.Missions[0] != "mvm_coaltown" {
-		t.Errorf("missions = %v", unlocks.Missions)
+	missions := unlocks.Of(gamedata.ItemMissionTicket)
+	if len(missions) != 1 || missions[0] != "mvm_coaltown" {
+		t.Errorf("missions = %v", missions)
 	}
-	if len(unlocks.Classes) != 1 || unlocks.Classes[0] != gamedata.Classes[0].Key {
-		t.Errorf("classes = %v", unlocks.Classes)
+	classes := unlocks.Of(gamedata.ItemClass)
+	if len(classes) != 1 || classes[0] != gamedata.Classes[0].Key {
+		t.Errorf("classes = %v", classes)
+	}
+	// Every state kind is present even when the run holds none of it, so the
+	// shape a plugin parses does not depend on what it happens to have.
+	if _, listed := unlocks.ByKind[gamedata.ItemWeaponSlot.Key()]; !listed {
+		t.Errorf("the unlock set has no entry for weapon slots: %+v", unlocks.ByKind)
+	}
+	if _, listed := unlocks.ByKind[gamedata.ItemCredits.Key()]; listed {
+		t.Errorf("credits are an effect and must not be in the unlock set: %+v", unlocks.ByKind)
 	}
 }
 
@@ -220,7 +233,7 @@ func TestGrantsRejectAMissingSequence(t *testing.T) {
 
 func TestHealthReportsTheSession(t *testing.T) {
 	_, handler := newTestServer(t, time.Second)
-	var health apclient.Health
+	var health healthResponse
 	decode(t, get(t, handler, "/healthz"), &health)
 	if health.Connected {
 		t.Error("reported as connected without a session")
@@ -228,6 +241,196 @@ func TestHealthReportsTheSession(t *testing.T) {
 	if health.Slot != "tf2" {
 		t.Errorf("slot = %q", health.Slot)
 	}
+	if health.APIVersion != APIVersion {
+		t.Errorf("api version = %d, want %d", health.APIVersion, APIVersion)
+	}
+}
+
+func TestHealthReportsTheRun(t *testing.T) {
+	store, handler := newTestServer(t, time.Second)
+	if got := post(t, handler, `{"kind":"wave_cleared","popfile":"mvm_coaltown","wave":2}`); got.Code != http.StatusNoContent {
+		t.Fatalf("code = %d", got.Code)
+	}
+	if err := store.ApplyItems(0, []int64{gamedata.Classes[0].ItemID()}); err != nil {
+		t.Fatal(err)
+	}
+
+	var health healthResponse
+	decode(t, get(t, handler, "/healthz"), &health)
+	if health.Checks != 1 || health.Items != 1 {
+		t.Errorf("checks = %d, items = %d", health.Checks, health.Items)
+	}
+	// "Did my wave count" is a question about the last five minutes, and the
+	// bridge's side of it is invisible without this.
+	if health.LastCheck != "Crash Course Wave 2" {
+		t.Errorf("last check = %q", health.LastCheck)
+	}
+	if health.LastCheckAt == nil {
+		t.Error("the last check has no time")
+	}
+}
+
+func TestTheGameDisagreeingAboutAMissionLengthIsReported(t *testing.T) {
+	_, handler := newTestServer(t, time.Second)
+	mission, _ := gamedata.MissionByPopFile("mvm_coaltown")
+
+	// Every wave count in the tables comes from the wiki. A wrong one on the
+	// goal mission makes a seed unwinnable, and this is the only thing that
+	// would ever say so.
+	body := fmt.Sprintf(
+		`{"kind":"wave_cleared","popfile":"mvm_coaltown","wave":1,"waves_total":%d}`,
+		mission.Waves+2,
+	)
+	if got := post(t, handler, body); got.Code != http.StatusNoContent {
+		t.Fatalf("the check was refused over a table disagreement: %d", got.Code)
+	}
+
+	var health healthResponse
+	decode(t, get(t, handler, "/healthz"), &health)
+	if len(health.WaveDrift) != 1 {
+		t.Fatalf("wave drift = %+v", health.WaveDrift)
+	}
+	got := health.WaveDrift[0]
+	if got.PopFile != "mvm_coaltown" || got.Tables != int(mission.Waves) || got.Observed != int(mission.Waves)+2 {
+		t.Fatalf("wave drift = %+v", got)
+	}
+}
+
+func TestAMissionLongerThanTheIDSchemeAllowsIsStillReported(t *testing.T) {
+	_, handler := newTestServer(t, time.Second)
+
+	// Past what gamedata can number, and therefore the most useful thing this
+	// could ever report: every location id for that mission would be wrong.
+	body := fmt.Sprintf(
+		`{"kind":"wave_cleared","popfile":"mvm_coaltown","wave":1,"waves_total":%d}`,
+		int(gamedata.WavesMax)+1)
+	if got := post(t, handler, body); got.Code != http.StatusNoContent {
+		t.Fatalf("code = %d", got.Code)
+	}
+	var health healthResponse
+	decode(t, get(t, handler, "/healthz"), &health)
+	if len(health.WaveDrift) != 1 || health.WaveDrift[0].Observed != int(gamedata.WavesMax)+1 {
+		t.Fatalf("wave drift = %+v", health.WaveDrift)
+	}
+}
+
+func TestAWaveCountThatCannotBeReadIsIgnored(t *testing.T) {
+	_, handler := newTestServer(t, time.Second)
+
+	// The property behind this has never been seen answer. Whatever it returns,
+	// it must not cost the wave the team just cleared.
+	for _, observed := range []int{-1, wavesObservedMax + 1, 1 << 30} {
+		body := fmt.Sprintf(
+			`{"kind":"wave_cleared","popfile":"mvm_coaltown","wave":1,"waves_total":%d}`, observed)
+		if got := post(t, handler, body); got.Code != http.StatusNoContent {
+			t.Fatalf("waves_total %d answered %d, and the check was lost", observed, got.Code)
+		}
+	}
+	var health healthResponse
+	decode(t, get(t, handler, "/healthz"), &health)
+	if len(health.WaveDrift) != 0 {
+		t.Fatalf("a bad read was reported as drift: %+v", health.WaveDrift)
+	}
+}
+
+func TestAMissionLengthThatAgreesIsNotReported(t *testing.T) {
+	_, handler := newTestServer(t, time.Second)
+	mission, _ := gamedata.MissionByPopFile("mvm_coaltown")
+
+	for _, observed := range []uint8{mission.Waves, 0} {
+		body := fmt.Sprintf(
+			`{"kind":"wave_cleared","popfile":"mvm_coaltown","wave":1,"waves_total":%d}`, observed)
+		if got := post(t, handler, body); got.Code != http.StatusNoContent {
+			t.Fatalf("code = %d", got.Code)
+		}
+	}
+	var health healthResponse
+	decode(t, get(t, handler, "/healthz"), &health)
+	if len(health.WaveDrift) != 0 {
+		t.Fatalf("wave drift = %+v", health.WaveDrift)
+	}
+}
+
+func TestAnAcknowledgementStopsAnEffectComingBack(t *testing.T) {
+	store, handler := newTestServer(t, 50*time.Millisecond)
+	cash := cashBundleID(t)
+	if err := store.ApplyItems(0, []int64{gamedata.Classes[0].ItemID(), cash}); err != nil {
+		t.Fatal(err)
+	}
+
+	var response grantsResponse
+	decode(t, get(t, handler, "/grants?since=0"), &response)
+	if len(response.Grants) != 2 {
+		t.Fatalf("grants = %+v", response.Grants)
+	}
+
+	if got := postTo(t, handler, "/grants/ack", `{"seq":2}`); got.Code != http.StatusNoContent {
+		t.Fatalf("the acknowledgement answered %d: %s", got.Code, got.Body)
+	}
+
+	// A plugin that reloaded asks from zero again. The class comes back, the
+	// cash does not: paying it twice is money nobody earned.
+	decode(t, get(t, handler, "/grants?since=0"), &response)
+	if len(response.Grants) != 1 || response.Grants[0].Kind != gamedata.ItemClass.Key() {
+		t.Fatalf("after the acknowledgement: %+v", response.Grants)
+	}
+}
+
+func TestAnAcknowledgementPastTheEndIsRefused(t *testing.T) {
+	_, handler := newTestServer(t, time.Second)
+	for name, body := range map[string]string{
+		"past the items that exist": `{"seq":5}`,
+		"negative":                  `{"seq":-1}`,
+		"not json":                  `{`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			if got := postTo(t, handler, "/grants/ack", body); got.Code != http.StatusBadRequest {
+				t.Fatalf("code = %d, want 400", got.Code)
+			}
+		})
+	}
+}
+
+func TestSayRefusesACommandThatCanEndTheRun(t *testing.T) {
+	_, handler := newTestServer(t, time.Second)
+	// There is no session, so a line that got through would answer 503. This
+	// has to be refused before that, and told apart from it: the plugin says
+	// something different to the player for each.
+	if got := postTo(t, handler, "/say", `{"text":"!release"}`); got.Code != http.StatusForbidden {
+		t.Fatalf("code = %d, want 403", got.Code)
+	}
+}
+
+func TestSayGuardsAgainstAFlood(t *testing.T) {
+	_, handler := newTestServer(t, time.Second)
+	refused := 0
+	for range 20 {
+		if postTo(t, handler, "/say", `{"text":"spam"}`).Code == http.StatusTooManyRequests {
+			refused++
+		}
+	}
+	if refused == 0 {
+		t.Fatal("a player pasting a wall of text reached the multiworld unchecked")
+	}
+}
+
+func postTo(t *testing.T, handler http.Handler, path, body string) *httptest.ResponseRecorder {
+	t.Helper()
+	request := httptest.NewRequest(http.MethodPost, path, strings.NewReader(body))
+	recorder := httptest.NewRecorder()
+	handler.ServeHTTP(recorder, request)
+	return recorder
+}
+
+func cashBundleID(t *testing.T) int64 {
+	t.Helper()
+	for _, item := range gamedata.Items {
+		if item.Kind == gamedata.ItemCredits {
+			return item.ID
+		}
+	}
+	t.Fatal("no credits item in the tables")
+	return 0
 }
 
 func decode(t *testing.T, recorder *httptest.ResponseRecorder, into any) {
