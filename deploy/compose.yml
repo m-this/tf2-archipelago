@@ -56,6 +56,10 @@ services:
       # The only public port in the stack, and it is the game's.
       - "${SRCDS_PORT:-27015}:${SRCDS_PORT:-27015}/udp"
       - "${SRCDS_PORT:-27015}:${SRCDS_PORT:-27015}/tcp"
+      # The bridge's metrics, published here because the bridge has no network
+      # of its own: it runs in this container's namespace. Loopback unless
+      # BRIDGE_METRICS_BIND says otherwise.
+      - "${BRIDGE_METRICS_BIND:-127.0.0.1}:${BRIDGE_METRICS_PORT:-24681}:${BRIDGE_METRICS_PORT:-24681}/tcp"
     volumes:
       - tf2game:/home/steam/tf-dedicated
     depends_on:
@@ -83,6 +87,9 @@ services:
       AP_PASSWORD: ${AP_PASSWORD:-}
       BRIDGE_LISTEN: 127.0.0.1:24680
       BRIDGE_STATE: /data/bridge.json
+      # Metrics answer on every interface of the shared namespace; what decides
+      # who can reach them is the published port above, not this.
+      BRIDGE_METRICS_LISTEN: 0.0.0.0:${BRIDGE_METRICS_PORT:-24681}
     volumes:
       - bridgestate:/data
     depends_on:
