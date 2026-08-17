@@ -19,11 +19,18 @@ jobs:
     container:
       image: golang:1.26
     steps:
-      - uses: https://code.forgejo.org/actions/checkout@v4
+      # checkout is a JavaScript action, so the runner execs node inside the
+      # container. None of the images below ship one; every one is Debian.
+      - name: install node
+        run: |
+          apt-get update
+          apt-get install --yes --no-install-recommends nodejs
+
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - uses: https://code.forgejo.org/actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: /root/.cache/go-build
           key: ${{ runner.os }}-go-${{ hashFiles('go.sum') }}
@@ -62,7 +69,12 @@ jobs:
     container:
       image: ghcr.io/astral-sh/uv:python3.13-bookworm-slim
     steps:
-      - uses: https://code.forgejo.org/actions/checkout@v4
+      - name: install node
+        run: |
+          apt-get update
+          apt-get install --yes --no-install-recommends nodejs git
+
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
@@ -74,14 +86,14 @@ jobs:
     container:
       image: debian:stable-slim
     steps:
-      - uses: https://code.forgejo.org/actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: install the fetch tools
+      - name: install node and the fetch tools
         run: |
           apt-get update
-          apt-get install --yes --no-install-recommends ca-certificates curl unzip make
+          apt-get install --yes --no-install-recommends nodejs git ca-certificates curl unzip make
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       # Warnings are errors here. A SourcePawn warning is usually a symbol that
       # silently does nothing at runtime.
@@ -94,7 +106,7 @@ jobs:
   stack:
     runs-on: docker
     steps:
-      - uses: https://code.forgejo.org/actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
