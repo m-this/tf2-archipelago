@@ -83,7 +83,7 @@ func servers(cfg config.Config, api *httpapi.Server) (plugin, metrics *http.Serv
 	}
 	return plugin, &http.Server{
 		Addr:              cfg.MetricsListen,
-		Handler:           api.MetricsHandler(),
+		Handler:           api.MetricsHandler(cfg.GameQueryAddr),
 		ReadHeaderTimeout: 5 * time.Second,
 		WriteTimeout:      10 * time.Second,
 	}
