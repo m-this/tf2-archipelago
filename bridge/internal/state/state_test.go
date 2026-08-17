@@ -2,8 +2,10 @@ package state
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"git-ssh.croque.top/mathis/tf2-archipelago/gamedata"
@@ -80,7 +82,7 @@ func TestProgressiveWeaponSlotsGrantInTableOrder(t *testing.T) {
 	if err := store.ApplyItems(0, []int64{slotItem, slotItem, slotItem, slotItem}); err != nil {
 		t.Fatal(err)
 	}
-	grants := store.GrantsSince(0)
+	grants, _ := store.GrantsSince(0)
 	if len(grants) != len(gamedata.WeaponSlots) {
 		t.Fatalf("%d grants for %d slots plus a spare copy", len(grants), len(gamedata.WeaponSlots))
 	}
@@ -106,7 +108,7 @@ func TestApplyItemsContinuesAndResets(t *testing.T) {
 	if err := store.ApplyItems(1, []int64{class}); err != nil {
 		t.Fatal(err)
 	}
-	if got := store.Unlocks(); len(got.Missions) != 1 || len(got.Classes) != 1 {
+	if got := store.Unlocks(); len(got.Of(gamedata.ItemMissionTicket)) != 1 || len(got.Of(gamedata.ItemClass)) != 1 {
 		t.Fatalf("after two items: %+v", got)
 	}
 
@@ -115,7 +117,7 @@ func TestApplyItemsContinuesAndResets(t *testing.T) {
 		t.Fatal(err)
 	}
 	got := store.Unlocks()
-	if len(got.Missions) != 0 || len(got.Classes) != 1 || got.Seq != 1 {
+	if len(got.Of(gamedata.ItemMissionTicket)) != 0 || len(got.Of(gamedata.ItemClass)) != 1 {
 		t.Fatalf("after a full resend: %+v", got)
 	}
 }
@@ -134,7 +136,7 @@ func TestUnknownItemIDsAreSkipped(t *testing.T) {
 	if err := store.ApplyItems(0, []int64{424242, class}); err != nil {
 		t.Fatal(err)
 	}
-	grants := store.GrantsSince(0)
+	grants, _ := store.GrantsSince(0)
 	if len(grants) != 1 || grants[0].Key != gamedata.Classes[0].Key {
 		t.Fatalf("grants = %+v", grants)
 	}
@@ -152,20 +154,20 @@ func TestASkippedItemLeavesAGapRatherThanShifting(t *testing.T) {
 	if err := store.ApplyItems(0, []int64{first, 424242, second}); err != nil {
 		t.Fatal(err)
 	}
-	grants := store.GrantsSince(0)
+	grants, _ := store.GrantsSince(0)
 	if len(grants) != 2 {
 		t.Fatalf("grants = %+v", grants)
 	}
 	if grants[0].Seq != 1 || grants[1].Seq != 3 {
 		t.Fatalf("sequences are %d and %d, want 1 and 3", grants[0].Seq, grants[1].Seq)
 	}
-	if got := store.Unlocks().Seq; got != 3 {
-		t.Fatalf("unlock sequence is %d, want 3", got)
+	if _, reach := store.GrantsSince(0); reach != 3 {
+		t.Fatalf("the item list reaches %d, want 3", reach)
 	}
-	if got := store.GrantsSince(1); len(got) != 1 || got[0].Seq != 3 {
+	if got, _ := store.GrantsSince(1); len(got) != 1 || got[0].Seq != 3 {
 		t.Fatalf("since 1: %+v", got)
 	}
-	if got := store.GrantsSince(3); got != nil {
+	if got, _ := store.GrantsSince(3); got != nil {
 		t.Fatalf("since 3: %+v", got)
 	}
 }
@@ -189,10 +191,10 @@ func TestAFailedWriteLeavesNothingHalfApplied(t *testing.T) {
 		t.Fatal("a write into a missing directory was reported as a success")
 	}
 	unlocks := store.Unlocks()
-	if unlocks.Seq != 1 || len(unlocks.Classes) != 1 {
+	if len(unlocks.Of(gamedata.ItemClass)) != 1 {
 		t.Fatalf("the failed write left %+v", unlocks)
 	}
-	if got := store.GrantsSince(0); len(got) != 1 {
+	if got, _ := store.GrantsSince(0); len(got) != 1 {
 		t.Fatalf("the failed write left %d grant(s)", len(got))
 	}
 }
@@ -204,8 +206,8 @@ func TestUnlocksHoldEachKeyOnce(t *testing.T) {
 	if err := store.ApplyItems(0, []int64{class, class}); err != nil {
 		t.Fatal(err)
 	}
-	if got := store.Unlocks(); len(got.Classes) != 1 {
-		t.Fatalf("classes = %v", got.Classes)
+	if got := store.Unlocks(); len(got.Of(gamedata.ItemClass)) != 1 {
+		t.Fatalf("classes = %v", got.Of(gamedata.ItemClass))
 	}
 }
 
@@ -217,13 +219,13 @@ func TestGrantsSinceReturnsOnlyWhatIsNew(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	if got := store.GrantsSince(1); len(got) != 1 || got[0].Seq != 2 {
+	if got, _ := store.GrantsSince(1); len(got) != 1 || got[0].Seq != 2 {
 		t.Fatalf("since 1: %+v", got)
 	}
-	if got := store.GrantsSince(2); got != nil {
+	if got, _ := store.GrantsSince(2); got != nil {
 		t.Fatalf("since 2: %+v", got)
 	}
-	if got := store.GrantsSince(99); got != nil {
+	if got, _ := store.GrantsSince(99); got != nil {
 		t.Fatalf("since a sequence past the end: %+v", got)
 	}
 }
@@ -235,9 +237,9 @@ func TestLearningTheSeedKeepsChecksTakenBeforeIt(t *testing.T) {
 	if _, err := store.AddCheck(mission.WaveLocationID(1)); err != nil {
 		t.Fatal(err)
 	}
-	wiped, err := store.BindSeed("first")
-	if err != nil || wiped {
-		t.Fatalf("first bind: wiped=%v err=%v", wiped, err)
+	archive, err := store.BindSeed("first")
+	if err != nil || archive != "" {
+		t.Fatalf("first bind: archive=%q err=%v", archive, err)
 	}
 	if len(store.Checks()) != 1 {
 		t.Fatal("the queued check did not survive learning the seed")
@@ -254,17 +256,17 @@ func TestANewSeedDropsTheOldRun(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	wiped, err := store.BindSeed("first")
-	if err != nil || wiped {
-		t.Fatalf("rebinding the same seed: wiped=%v err=%v", wiped, err)
+	archive, err := store.BindSeed("first")
+	if err != nil || archive != "" {
+		t.Fatalf("rebinding the same seed: archive=%q err=%v", archive, err)
 	}
 	if len(store.Checks()) != 1 {
 		t.Fatal("rebinding the same seed dropped the run")
 	}
 
-	wiped, err = store.BindSeed("second")
-	if err != nil || !wiped {
-		t.Fatalf("rebinding a new seed: wiped=%v err=%v", wiped, err)
+	archive, err = store.BindSeed("second")
+	if err != nil || archive == "" {
+		t.Fatalf("rebinding a new seed: archive=%q err=%v", archive, err)
 	}
 	if len(store.Checks()) != 0 {
 		t.Fatal("the previous run's checks survived a new seed")
@@ -311,6 +313,294 @@ func TestGoalIsRecordedOnce(t *testing.T) {
 	if !reopened.GoalSent() {
 		t.Fatal("the win did not survive a restart")
 	}
+}
+
+func TestAnAcknowledgedEffectIsNotSentAgain(t *testing.T) {
+	store := openTemp(t)
+	class := gamedata.Classes[0].ItemID()
+	cash := cashBundleID(t)
+
+	if err := store.ApplyItems(0, []int64{class, cash}); err != nil {
+		t.Fatal(err)
+	}
+	grants, _ := store.GrantsSince(0)
+	if len(grants) != 2 {
+		t.Fatalf("grants = %+v", grants)
+	}
+	if err := store.Ack(2); err != nil {
+		t.Fatal(err)
+	}
+
+	// This is a plugin that reloaded: it asks from zero because it remembers
+	// nothing. The class comes back because applying it twice changes nothing;
+	// the cash must not, or the run is paid a second time.
+	after, _ := store.GrantsSince(0)
+	if len(after) != 1 || after[0].Kind != gamedata.ItemClass.Key() {
+		t.Fatalf("after the acknowledgement: %+v", after)
+	}
+}
+
+func TestAnAcknowledgementSurvivesARestartAndOnlyMovesForward(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "bridge.json")
+	store, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := store.ApplyItems(0, []int64{cashBundleID(t), cashBundleID(t)}); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.Ack(2); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.Ack(1); err != nil {
+		t.Fatal(err)
+	}
+	if got := store.Stats().AckedSeq; got != 2 {
+		t.Fatalf("an older acknowledgement moved the cursor back to %d", got)
+	}
+	if err := store.Ack(3); err == nil {
+		t.Fatal("acknowledging past the items that exist was accepted")
+	}
+
+	reopened, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := reopened.GrantsSince(0); got != nil {
+		t.Fatalf("a restart re-sent acknowledged effects: %+v", got)
+	}
+}
+
+// The bug this pass exists to prevent, in the shape it actually takes: a cash
+// bundle arrives while no plugin is listening, then a map change makes the
+// plugin ask for the unlock set and resume from what it is told.
+//
+// The unlock set carries state only, so the bundle is not in it. If the cursor
+// it hands back were the length of the item list, it would sit above the bundle
+// and nothing would ever deliver it.
+func TestAnEffectSurvivesAPluginThatWasNotListening(t *testing.T) {
+	store := openTemp(t)
+	class, cash := gamedata.Classes[0].ItemID(), cashBundleID(t)
+
+	if err := store.ApplyItems(0, []int64{class, cash}); err != nil {
+		t.Fatal(err)
+	}
+	unlocks := store.Unlocks()
+	if len(unlocks.Of(gamedata.ItemCredits)) != 0 {
+		t.Fatal("the unlock set carries an effect")
+	}
+
+	resumed, _ := store.GrantsSince(unlocks.ResumeFrom)
+	paid := false
+	for _, grant := range resumed {
+		if grant.Kind == gamedata.ItemCredits.Key() {
+			paid = true
+		}
+	}
+	if !paid {
+		t.Fatalf("resuming from %d skipped the cash nobody has been paid: %+v",
+			unlocks.ResumeFrom, resumed)
+	}
+
+	// Once the plugin says it applied it, the same resume must not pay again.
+	if err := store.Ack(2); err != nil {
+		t.Fatal(err)
+	}
+	after, _ := store.GrantsSince(store.Unlocks().ResumeFrom)
+	for _, grant := range after {
+		if grant.Kind == gamedata.ItemCredits.Key() {
+			t.Fatalf("the cash came back after being acknowledged: %+v", after)
+		}
+	}
+}
+
+func TestAnAcknowledgementNeverOutlivesTheItemsItCounts(t *testing.T) {
+	store := openTemp(t)
+	if err := store.ApplyItems(0, []int64{cashBundleID(t), cashBundleID(t), cashBundleID(t)}); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.Ack(3); err != nil {
+		t.Fatal(err)
+	}
+
+	// Archipelago answering a Sync with a shorter list. An acknowledgement left
+	// past the end would suppress the fresh effects landing in those slots.
+	if err := store.ApplyItems(0, []int64{cashBundleID(t)}); err != nil {
+		t.Fatal(err)
+	}
+	if got := store.Stats().AckedSeq; got != 1 {
+		t.Fatalf("the acknowledgement stayed at %d against 1 item", got)
+	}
+	if err := store.ApplyItems(1, []int64{cashBundleID(t), cashBundleID(t)}); err != nil {
+		t.Fatal(err)
+	}
+	got, _ := store.GrantsSince(1)
+	if len(got) != 2 {
+		t.Fatalf("the fresh effects were suppressed by a stale acknowledgement: %+v", got)
+	}
+}
+
+func TestANewRunDoesNotInheritTheOldRunsAcknowledgement(t *testing.T) {
+	store := openTemp(t)
+	if _, err := store.BindSeed("first"); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.ApplyItems(0, []int64{cashBundleID(t), cashBundleID(t)}); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.Ack(2); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.BindSeed("second"); err != nil {
+		t.Fatal(err)
+	}
+	if got := store.Stats().AckedSeq; got != 0 {
+		t.Fatalf("the new run inherited an acknowledgement of %d", got)
+	}
+
+	// Cash arriving in the new run is cash the team has not been paid. A
+	// cursor carried over from the run before would swallow it.
+	if err := store.ApplyItems(0, []int64{cashBundleID(t)}); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := store.GrantsSince(0); len(got) != 1 {
+		t.Fatalf("the new run's cash was held back: %+v", got)
+	}
+	if err := store.Ack(5); err == nil {
+		t.Fatal("a cursor past the new run's items was accepted")
+	}
+}
+
+func TestChecksComeBackFromTheServer(t *testing.T) {
+	store := openTemp(t)
+	mission := firstMission(t)
+
+	adopted, err := store.AdoptChecks([]int64{
+		mission.WaveLocationID(1),
+		mission.WaveLocationID(2),
+		424242,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if adopted != 2 {
+		t.Fatalf("adopted %d, want the two the tables know", adopted)
+	}
+	if got := store.Checks(); len(got) != 2 {
+		t.Fatalf("holding %v", got)
+	}
+
+	// The server resends the whole list on every connect.
+	adopted, err = store.AdoptChecks([]int64{mission.WaveLocationID(1)})
+	if err != nil || adopted != 0 {
+		t.Fatalf("a repeat adopted %d, err=%v", adopted, err)
+	}
+}
+
+func TestANewSeedKeepsTheOldRunOnDisk(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "bridge.json")
+	store, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.BindSeed("first"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.AddCheck(firstMission(t).WaveLocationID(1)); err != nil {
+		t.Fatal(err)
+	}
+
+	archive, err := store.BindSeed("second")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if archive == "" {
+		t.Fatal("the dropped run was not set aside anywhere")
+	}
+	body, err := os.ReadFile(archive)
+	if err != nil {
+		t.Fatalf("the dropped run left nothing behind: %v", err)
+	}
+	if !strings.Contains(string(body), `"seed": "first"`) {
+		t.Fatalf("the archive holds %s", body)
+	}
+}
+
+func TestASeedNameIsNeverAPath(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "bridge.json")
+	store, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.BindSeed("../../etc/passwd"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.BindSeed("next"); err != nil {
+		t.Fatal(err)
+	}
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 2 {
+		t.Fatalf("the state directory holds %v", entries)
+	}
+}
+
+func TestAStateFileFromTheOlderFormatIsStillRead(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "bridge.json")
+	mission := firstMission(t)
+	older := fmt.Sprintf(
+		`{"format_version":1,"seed":"first","checks":[%d],"items":[],"goal_sent":false}`,
+		mission.WaveLocationID(1),
+	)
+	if err := os.WriteFile(path, []byte(older), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	store, err := Open(path)
+	if err != nil {
+		t.Fatalf("a file this bridge can read was refused: %v", err)
+	}
+	if got := store.Checks(); len(got) != 1 {
+		t.Fatalf("the older file came back as %v", got)
+	}
+
+	// Read as version 1, written back as the current one.
+	if _, err := store.AddCheck(mission.WaveLocationID(2)); err != nil {
+		t.Fatal(err)
+	}
+	body, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(body), fmt.Sprintf(`"format_version": %d`, FormatVersion)) {
+		t.Fatalf("the file was not written back as the current format: %s", body)
+	}
+}
+
+func TestAStateFileFromTheFutureIsRefused(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "bridge.json")
+	newer := fmt.Sprintf(`{"format_version":%d,"seed":"first"}`, FormatVersion+1)
+	if err := os.WriteFile(path, []byte(newer), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Open(path); err == nil {
+		t.Fatal("a file from a format this bridge does not know was accepted")
+	}
+}
+
+func cashBundleID(t *testing.T) int64 {
+	t.Helper()
+	for _, item := range gamedata.Items {
+		if item.Kind == gamedata.ItemCredits {
+			return item.ID
+		}
+	}
+	t.Fatal("no credits item in the tables")
+	return 0
 }
 
 func progressiveSlotID(t *testing.T) int64 {

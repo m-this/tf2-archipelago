@@ -1,0 +1,195 @@
+# Troubleshooting
+
+Three things can be wrong: the game server does not see the game, the plugin
+cannot reach the bridge, or the bridge cannot reach the randomizer server. This
+page finds out which.
+
+## Read the logs
+
+```sh
+make logs
+```
+
+That follows all three services. For one service, use the full compose command.
+The stack needs two environment files, so the short form does not work:
+
+```sh
+docker compose --project-directory . \
+  --env-file deploy/env/versions.env --env-file .env \
+  -f deploy/compose.yml logs -f bridge
+```
+
+Replace `bridge` with `srcds` or `archipelago`.
+
+```sh
+make ps
+```
+
+That lists the containers. The bridge reports `healthy` when its own interface
+answers.
+
+## Ask the game server
+
+```
+rcon_password your-SRCDS_RCONPW
+rcon sm_ap_status
+```
+
+The answer is five lines:
+
+```
+[AP] version 0.1.0, mvm yes, mission mvm_decoy, wave 3 of 8
+[AP] events: begin_wave yes, wave_complete yes, mission_complete yes
+[AP] unlocks held at sequence 6, 0 objective(s) waiting to be sent
+[AP] classes: scout, medic
+[AP] slots: primary
+[AP] Last bridge error: ...
+```
+
+Read them in this order:
+
+- **`mvm no`** means that the plugin does not think this is Mann vs Machine.
+  Nothing is reported on a map that is not an MvM map.
+- **`events: ... no`** is the important one. It names which of the three Mann vs
+  Machine game events this server actually sends. None of them has ever been
+  checked against a live server. A `no` there is a finding, not a fault: report
+  it. `wave_complete no` makes the plugin watch the wave counter instead.
+- **`unlocks NOT FETCHED`** means that the plugin has never had an answer from
+  the bridge. Until it does, it enforces nothing: a server where nobody can hold
+  a weapon is worse than a wave played with too much kit.
+- **`N objective(s) waiting to be sent`** counts the checks that the plugin
+  holds. Anything above zero means that the bridge is not answering. It retries
+  every five seconds.
+- **`Last bridge error`** is the last thing that went wrong, in the plugin's own
+  words.
+
+`rcon sm_ap_resync` asks the bridge for the unlock set again. It is the first
+thing to try when the unlocks in the chat look stale.
+
+## Ask the bridge
+
+The bridge serves one page with everything it knows. It lives on the loopback
+interface inside the game server's network namespace, so the request has to be
+made from there:
+
+```sh
+docker run --rm --network container:tf2-archipelago-srcds-1 \
+  curlimages/curl:latest -s 127.0.0.1:24680/healthz
+```
+
+The container name comes from `make ps`.
+
+The answer holds:
+
+| Field | What it tells you |
+| --- | --- |
+| `api_version` | The wire version. The plugin says in the chat when it disagrees. |
+| `connected` | Whether the session with the randomizer server is up right now |
+| `slot` | The name of your server in the session |
+| `missions` | The missions that the run drew |
+| `seed` | The identity of the current session |
+| `checks` | How many checks the run holds |
+| `items` | How many items the run has received |
+| `acked_seq` | How far the plugin has confirmed it applied |
+| `goal_sent` | Whether the run has been declared finished |
+| `last_check` and `last_check_at` | The last check and when it landed |
+| `wave_drift` | Missions whose length the game disagrees with |
+| `last_error` | The last failure on the randomizer side |
+
+`last_check` answers "did that wave count".
+
+## When the randomizer server is down
+
+Nothing is lost. The bridge writes each check to disk before it answers the
+game server, and sends it upstream afterwards. A randomizer server that is down
+for an hour costs nothing: the checks arrive when it comes back. The bridge
+reconnects on its own, waiting longer between attempts up to thirty seconds.
+
+Received items stop arriving while it is down. Cleared waves keep counting.
+
+## When the bridge is down
+
+The plugin holds its checks in memory and retries every five seconds. The chat
+says that the bridge is unreachable, once, so that nobody decides that the
+randomizer is broken.
+
+The bridge shares the network namespace of the game server, so restarting the
+game server restarts the bridge too. It comes back on its own within seconds.
+The checks are on disk and the unlock set is rebuilt from them.
+
+If the state file of the bridge is lost, the run is not lost either. The
+randomizer server holds the same list of checks and sends it at each
+connection. The bridge adopts whatever it is missing. Losing the file costs the
+item history, not the checks.
+
+## Recovering a check by hand
+
+There is one gap in all of that: the seconds between a cleared wave and the
+bridge taking the check. The plugin's queue is in memory and holds at most 64
+objectives. If the game server crashes while the bridge is unreachable,
+whatever is in that queue is gone.
+
+The plugin writes every objective to the SourceMod log twice: once when it
+queues it, and once when the bridge has it on disk.
+
+```sh
+docker compose --project-directory . \
+  --env-file deploy/env/versions.env --env-file .env \
+  -f deploy/compose.yml exec srcds \
+  bash -c 'grep objective /home/steam/tf-dedicated/tf/addons/sourcemod/logs/L*.log'
+```
+
+```
+objective wave_cleared mvm_decoy wave 3 (mission length 8) queued for the bridge
+objective wave_cleared mvm_decoy wave 3 is on the bridge's disk
+```
+
+A `queued` line with no matching `on the bridge's disk` line is a check that
+never landed. Replay it:
+
+```
+rcon sm_ap_report wave_cleared 3
+```
+
+Run it on the map that the check belongs to. The plugin sends the mission that
+the game is on, so replaying a Decoy check while the server runs Coal Town
+records the wrong place.
+
+## When the wave counts are wrong
+
+Every wave count in this project comes from the wiki. Nobody has checked one
+against the game. A wrong count makes a mission clear fire one wave early, or
+never.
+
+The plugin sends the mission length that the game reports with each check. The
+bridge compares it with its own table and serves the disagreements as
+`wave_drift`:
+
+```json
+"wave_drift": [
+  {"popfile": "mvm_decoy", "tables": 8, "observed": 7}
+]
+```
+
+An empty `wave_drift` after a full mission means that the table is right for
+that mission. A mission that appears there is a row to correct in
+`gamedata/missions.go`. The check still counts: the wave was cleared either
+way.
+
+## When a mission is not part of the run
+
+```
+[AP] The run did not unlock mvm_decoy. Its checks still count.
+```
+
+The server is running a mission whose ticket the run has not found. This is a
+warning, not a refusal. The map rotation belongs to you.
+
+## When the plugin and the bridge disagree
+
+```
+[AP] The bridge speaks API version 2 and this plugin speaks 1. Update the one that is behind.
+```
+
+One half of the stack was rebuilt and the other was not. Run `make build` and
+`make up`.

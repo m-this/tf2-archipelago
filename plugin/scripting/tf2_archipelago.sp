@@ -89,13 +89,19 @@ public void OnPluginStart()
         AP_Error("This server has no mvm_begin_wave event. The plugin reads wave numbers from the game.");
     }
 
+    // No grant poll here. It starts once the unlock set has landed: polling
+    // before that means polling from sequence zero, and every effect the run
+    // has ever received arrives a second time.
+    Bridge_CheckVersion();
     Bridge_FetchUnlocks();
-    Bridge_PollGrants();
     Bridge_PollMessages();
 }
 
 public void OnClientPutInServer(int client)
 {
+    // Client indexes are reused, so the previous occupant's cooldown is not
+    // this player's.
+    Bridge_ClearCooldown(client);
     if (IsFakeClient(client))
     {
         return;
@@ -137,7 +143,7 @@ public Action Command_Say(int client, const char[] command, int argc)
 
     if (StrEqual(message, "!ap", false))
     {
-        AP_PrintToClient(client, "!ap <command> sends a command to the multiworld: hint, missing, status, release.");
+        AP_PrintToClient(client, "!ap <command> sends a command to the multiworld: hint, missing, status, checked.");
         AP_PrintToClient(client, "!apchat <text> speaks to the other players in the multiworld.");
         return Plugin_Handled;
     }
@@ -231,10 +237,11 @@ static void ReportWaveCleared(int wave)
         return;
     }
 
-    AP_Announce("Wave %d cleared.", wave);
-    Bridge_ReportObjective("wave_cleared", popFile, wave);
-
     int maxWaves = g_MaxWaves > 0 ? g_MaxWaves : MvM_MaxWavesFromGame();
+
+    AP_Announce("Wave %d cleared.", wave);
+    Bridge_ReportObjective("wave_cleared", popFile, wave, maxWaves);
+
     if (maxWaves > 0 && wave >= maxWaves)
     {
         ReportMissionCleared();
@@ -261,7 +268,8 @@ static void ReportMissionCleared()
     }
     g_MissionReported = true;
     AP_Announce("Mission cleared: %s", popFile);
-    Bridge_ReportObjective("mission_cleared", popFile, 0);
+    Bridge_ReportObjective("mission_cleared", popFile, 0,
+        g_MaxWaves > 0 ? g_MaxWaves : MvM_MaxWavesFromGame());
 }
 
 // Fallback for a missing mvm_wave_complete: a rising wave counter means a wave was beaten.

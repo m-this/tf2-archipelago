@@ -336,10 +336,11 @@ The bridge adds `AP_HOST`, `AP_TLS`, `BRIDGE_LISTEN`, `BRIDGE_STATE` and
       game files and no Team Fortress 2 on the build machine.
 - [ ] **Cannot be verified without a human and a TF2 client**: that a wave
       clear in-game actually fires the objective, and that a granted weapon
-      slot is actually enforced. `docs/running.md` says so plainly rather than
-      implying it was tested.
-- [x] `docs/archipelago-101.md`.
-- [x] `docs/running.md`.
+      slot is actually enforced. `docs/operate/what-nobody-tested.md` says so
+      plainly rather than implying it was tested.
+- [x] The host's book under `docs/`, with `docs/SUMMARY.md` as its table of
+      contents. It replaces `archipelago-101` and `running`, which are folded
+      into it and deleted.
 - [x] `.forgejo/workflows/ci.yml`: four jobs, one per language, every step a
       make target. Go (gofumpt, vet, golangci-lint, go fix, build, race tests,
       govulncheck), the apworld (ruff), the plugin (spcomp, warnings as
@@ -428,6 +429,103 @@ Found and left alone, with reasons:
   `credits` cross into Python and nobody reads them; `MissionsByDifficulty`,
   `Useful` and `Trap` have no caller at all). Harmless, and the mission order
   and trap work in v2 will want most of it.
+
+## Resilience pass, 2026-08-16
+
+A read of the tree for what breaks a run rather than what breaks a build. Seven
+changes, in the order they matter:
+
+- **An effect is now delivered exactly once, and the bridge remembers that.**
+  Grants split into state (a class, a slot, a ticket) and effects (credits, and
+  traps later). `OnPluginStart` polled `/grants` on the line after it asked for
+  the unlock set, both asynchronous, so the poll went out at sequence zero and
+  every cash bundle in the run was paid again. Any `sm plugins reload`
+  mid-mission did it. The poll now starts from `OnUnlocks`, and `POST
+  /grants/ack` records on disk how far the plugin got, so a cursor that moves
+  backwards for any other reason cannot replay an effect either.
+
+  The first attempt at this fixed the duplicate and inverted it into a silent
+  loss, which is worse. `/unlocks` answered with the length of the item list,
+  the plugin took that as its cursor and acknowledged it, and any cash bundle
+  that had arrived while no plugin was listening sat below both filters and was
+  dropped for good, on every map change. `/unlocks` now answers with
+  `resume_from`, the acknowledged sequence. Resuming from it re-sends state the
+  plugin already holds, which is free by definition, and every effect it never
+  got. Two independent reviews of the change caught it from opposite ends before
+  it was committed, and the integration test had been written to certify it.
+- **A player can no longer end the run from the game chat.** `!ap` forwarded
+  anything to the Archipelago server and the welcome message advertised
+  `release` as an example. `!release` hands this slot's remaining items to the
+  other players and nothing in Archipelago undoes it. Commands are now an
+  allowlist of the ones that only read, held on the bridge so there is one list
+  rather than one per component, with a token bucket behind it and a per-player
+  cooldown in the plugin.
+- **The state file is no longer the only copy of a run.** `Connected` carries
+  the slot's checked locations and the bridge used to count them for a log line
+  and throw them away. It adopts what it is missing now, so a lost or rolled
+  back state file costs the item history and not the checks. A seed change also
+  moves the old file to `bridge.<seed>.json` instead of writing over it.
+- **The game gets to say the wave table is wrong.** Every wave count came off
+  the wiki and a wrong one on the goal mission makes a seed unwinnable with
+  nothing to notice at play time. The plugin sends `waves_total` with each
+  check, the bridge compares it with `gamedata` and serves the disagreements as
+  `wave_drift` in `/healthz`. The check still counts.
+- **`/healthz` is the operator's window.** It reported the session and nothing
+  else, so "did my wave count" had no answer on the bridge's side. It now
+  carries the API version, the seed, the checks held, the last check and when it
+  landed, the acknowledged sequence and the wave drift.
+- **The unlock set is keyed by grant kind** rather than a field per kind. A kind
+  added to `gamedata` appears on the wire with no change on either side, and a
+  plugin that does not know it skips it. The credits exclusion falls out of
+  `OneShot` instead of being a hardcoded list in two places.
+- **A check the plugin holds is recoverable.** Its queue is in memory and bounded
+  at 64, so an srcds crash during a long Archipelago outage loses whatever is in
+  it. Every objective is written to the SourceMod log as it is queued and again
+  when the bridge takes it, and `docs/operate/troubleshooting.md` says how to
+  replay one with `sm_ap_report`.
+
+The state file is format version 2. Version 1 is still read, because it holds
+the only record of a run's checks; anything newer is refused as before. Reading
+an older file copies it to `bridge.v1.json` before promoting it, so rolling the
+image back is still an option once the first check rewrites it.
+
+Found by review and fixed in the same pass:
+
+- The grant poll and the unlock fetch each kept themselves alive by starting the
+  next request from their own callback, so one native error anywhere in a
+  callback ended them for the rest of the map with no timer left to notice.
+  `Timer_DrainPending` is now a watchdog over both.
+- `waves_total` was a `uint8` on the wire. It is read from a network property
+  nobody has seen answer, and a value that failed to parse took the check down
+  with it: the plugin reads that `400` as "this objective does not exist" and
+  drops a cleared wave. It is a lenient `int` now, ignored when it is not a
+  length a mission could have.
+- `ReadKey` truncates a JSON key without saying so, and reading the truncated
+  key back out is a native error rather than a miss, which is the opposite of
+  the "skip a kind this plugin does not know" the keyed unlock set exists for.
+  The buffer is wider and `HasKey` makes the skip real.
+- `grants` and `messages` were `null` on the wire when empty. SourcePawn reads a
+  null where it expects an array and errors out mid-callback.
+- `Grant.Amount` was `omitempty`, so a zero-credit grant would have omitted the
+  key, and reading a key that is not there is a native error too.
+- An acknowledgement could outlive the items it counted, after Archipelago
+  answered a `Sync` with a shorter list. It is clamped to the list now.
+- A late acknowledgement from a run that had already ended pinned the plugin's
+  cursor above where it was, so it stopped acknowledging for the rest of the
+  run.
+- `BindSeed` left the seed in memory but not on disk when the write failed, and
+  on the wipe path it replaced the run before persisting, with no way back. Both
+  roll back now, the archive included.
+- A failed `AdoptChecks` ended the Archipelago session, which reconnected into
+  the same failing write forever. The server still holds those checks, so it
+  logs and carries on.
+- `/grants` read the grants and the sequence under two separate locks, so a seed
+  wipe landing between them answered a plugin with the old run's grants and the
+  new run's sequence.
+
+Cross-barrier checks grew with the contract: `httpapi` reads the plugin source
+and holds it to the API version and to every route the bridge serves, the way
+`gamedata` already does for the keys.
 
 ## Carried over from spec.md
 

@@ -4,7 +4,7 @@ Glossary of the terms used across `gamedata/`, `bridge/`, `apworld/` and
 `plugin/`. Two vocabularies meet in this project and they use some of the same
 words for different things, so both are pinned down here.
 
-Last updated: 2026-08-13.
+Last updated: 2026-08-16.
 
 ## Archipelago vocabulary
 
@@ -148,6 +148,29 @@ Archipelago-agnostic.
 The plugin's vocabulary for what the bridge calls a received item. The bridge
 sends `grant_weapon_slot{slot}`; the plugin does not know an item id was
 involved.
+
+**State grant / effect grant**
+The two kinds of grant, told apart by `ItemKind.OneShot` in `gamedata`. A state
+grant is a fact that stays true: a class is playable, a loadout slot is open, a
+mission is unlocked. Applying it twice is applying it once, so it can be resent
+whenever the plugin asks. An effect happens and is over: credits are paid, and a
+trap fires. Applying one twice is money nobody earned or a trap nobody deserved,
+so the bridge sends it once and stops sending it once the plugin acknowledges
+it. Only state grants appear in the unlock set.
+
+**Acknowledgement**
+The plugin telling the bridge which sequence it has applied, so effects at or
+below it are never sent again. It lives on the bridge, on disk, because the
+plugin remembers nothing across a reload and that reload is exactly when an
+effect would otherwise happen twice. It is also the cursor the plugin resumes
+from, which is why the unlock set reports it rather than the length of the item
+list: a cursor above an unapplied effect loses that effect for good.
+
+**Wave drift**
+The game reporting a mission length that `gamedata` disagrees with. Every wave
+count in the tables comes from the wiki, and a wrong one makes a mission clear
+fire early or never. The plugin sends what the game says with each check and the
+bridge serves the disagreements at `/healthz`. It never refuses the check.
 
 **Sequence**
 The plugin's cursor over what the bridge has granted, counting received items

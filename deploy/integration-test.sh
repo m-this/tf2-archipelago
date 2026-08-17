@@ -93,16 +93,18 @@ else
 fi
 
 log "the starting inventory reached the plugin's view"
+# The unlock set is keyed by grant kind, so a kind added later needs no change
+# on either side of the wire.
 unlocks=$(curl -fsS "$bridge/unlocks")
-seq=$(printf '%s' "$unlocks" | json "json.load(sys.stdin)['seq']")
-classes=$(printf '%s' "$unlocks" | json "len(json.load(sys.stdin)['classes'])")
-slots=$(printf '%s' "$unlocks" | json "len(json.load(sys.stdin)['slots'])")
-missions=$(printf '%s' "$unlocks" | json "len(json.load(sys.stdin)['missions'])")
+classes=$(printf '%s' "$unlocks" | json "len(json.load(sys.stdin)['unlocks']['class'])")
+slots=$(printf '%s' "$unlocks" | json "len(json.load(sys.stdin)['unlocks']['weapon_slot'])")
+missions=$(printf '%s' "$unlocks" | json "len(json.load(sys.stdin)['unlocks']['mission_ticket'])")
+items=$(curl -fsS "$bridge/healthz" | json "json.load(sys.stdin)['items']")
 
 # The apworld precollects a ticket, at least one class and at least one slot,
 # which is the sphere 0 guarantee arriving intact at the other end of the
 # stack.
-[ "${seq:-0}" -ge 3 ] && pass "unlock sequence is $seq" || fail "unlock sequence is ${seq:-unset}"
+[ "${items:-0}" -ge 3 ] && pass "the run holds $items item(s)" || fail "the run holds ${items:-unset} item(s)"
 [ "${classes:-0}" -ge 1 ] && pass "$classes class(es) unlocked" || fail "no classes unlocked"
 [ "${slots:-0}" -ge 1 ] && pass "$slots weapon slot(s) unlocked" || fail "no weapon slots unlocked"
 [ "${missions:-0}" -ge 1 ] && pass "$missions mission(s) unlocked" || fail "no missions unlocked"
@@ -156,12 +158,57 @@ ahead=$(curl -fsS "$bridge/grants?since=9999" | json "json.load(sys.stdin)['seq'
 	&& pass "the bridge answered with its own sequence, $ahead" \
 	|| fail "the bridge left a plugin that is ahead waiting"
 
+log "the multiworld refuses a command that would end the run"
+status=$(curl -sS -o /dev/null -w '%{http_code}' -X POST "$bridge/say" \
+	-d '{"text":"!release"}')
+[ "$status" = "403" ] && pass "!release cannot be sent from the game" \
+	|| fail "!release answered $status"
+
+log "the game disagreeing about a mission's length is reported"
+curl -fsS -o /dev/null -X POST "$bridge/objective" \
+	-d "{\"kind\":\"wave_cleared\",\"popfile\":\"$mission\",\"wave\":1,\"waves_total\":99}"
+drift=$(curl -fsS "$bridge/healthz" | json "json.load(sys.stdin)['wave_drift'][0]['observed']")
+[ "${drift:-0}" = "99" ] && pass "the wave count from the game is reported as drift" \
+	|| fail "a mission length the tables disagree with went unreported"
+
+log "the cursor the plugin resumes from is the acknowledged one"
+resume=$(printf '%s' "$unlocks" | json "json.load(sys.stdin)['resume_from']")
+[ "${resume:-x}" = "0" ] && pass "nothing acknowledged yet, so the cursor is 0" \
+	|| fail "resume_from is ${resume:-unset} before any acknowledgement"
+
+# Resuming from that cursor has to hand back everything the plugin has not
+# applied, including what the unlock set does not carry. A cursor set to the
+# length of the item list would step over an unapplied cash bundle and lose it.
+resumed=$(curl -fsS "$bridge/grants?since=$resume" | json "len(json.load(sys.stdin)['grants'])")
+[ "${resumed:-0}" -ge 1 ] && pass "resuming from $resume returned $resumed grant(s)" \
+	|| fail "resuming from $resume returned nothing, so a grant would be lost"
+
+log "an acknowledgement is durable and holds effects back"
+acked=$(curl -fsS "$bridge/grants?since=0" | json "json.load(sys.stdin)['seq']")
+status=$(curl -fsS -o /dev/null -w '%{http_code}' -X POST "$bridge/grants/ack" \
+	-d "{\"seq\":$acked}")
+[ "$status" = "204" ] && pass "the bridge took the acknowledgement at $acked" \
+	|| fail "the acknowledgement answered $status"
+
+resume=$(curl -fsS "$bridge/unlocks" | json "json.load(sys.stdin)['resume_from']")
+[ "${resume:-0}" = "${acked:-x}" ] && pass "the cursor moved to $resume" \
+	|| fail "the cursor is ${resume:-unset} after acknowledging $acked"
+
+# A plugin that reloaded resumes from there. State comes back, effects must not.
+effects=$(curl -fsS "$bridge/grants?since=$resume" \
+	| json "len([g for g in json.load(sys.stdin)['grants'] if g['kind'] == 'credits'])")
+[ "${effects:-0}" = "0" ] && pass "no effect was handed out a second time" \
+	|| fail "$effects effect(s) came back after being acknowledged"
+
 log "the state survives a restart"
 $compose restart bridge >/dev/null
 waitfor "the bridge came back and reconnected" "$check_timeout" bridge_connected
-after=$(curl -fsS "$bridge/unlocks" | json "json.load(sys.stdin)['seq']")
-[ "${after:-0}" -ge "${seq:-0}" ] && pass "the unlock set survived at sequence $after" \
-	|| fail "the unlock set came back as ${after:-unset}, was $seq"
+after=$(curl -fsS "$bridge/healthz" | json "json.load(sys.stdin)['items']")
+kept=$(curl -fsS "$bridge/healthz" | json "json.load(sys.stdin)['acked_seq']")
+[ "${kept:-0}" = "${acked:-0}" ] && pass "the acknowledgement survived at $kept" \
+	|| fail "the acknowledgement came back as ${kept:-unset}, was $acked"
+[ "${after:-0}" -ge "${items:-0}" ] && pass "the run survived with $after item(s)" \
+	|| fail "the run came back with ${after:-unset} item(s), had $items"
 
 if [ "$failures" -eq 0 ]; then
 	log "all checks passed"

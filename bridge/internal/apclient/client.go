@@ -63,6 +63,9 @@ type Client struct {
 	opts Options
 	uuid string
 
+	// said bounds what the game server can pour into the multiworld.
+	said *bucket
+
 	writeMu sync.Mutex
 
 	mu        sync.Mutex
@@ -85,7 +88,7 @@ func New(opts Options) *Client {
 		// A session with nowhere to put chat still has to run.
 		opts.Chat = chat.New(1)
 	}
-	return &Client{opts: opts, uuid: randomUUID()}
+	return &Client{opts: opts, uuid: randomUUID(), said: newBucket(time.Now)}
 }
 
 // Health reports the session state. The plugin uses it to tell a player the
@@ -227,13 +230,13 @@ func (c *Client) onRoomInfo(ctx context.Context, conn *websocket.Conn, message j
 	if err := json.Unmarshal(message, &room); err != nil {
 		return err
 	}
-	wiped, err := c.opts.Store.BindSeed(room.SeedName)
+	archive, err := c.opts.Store.BindSeed(room.SeedName)
 	if err != nil {
 		return err
 	}
-	if wiped {
-		c.opts.Logger.WarnContext(ctx, "new seed, dropped the previous run",
-			"seed", room.SeedName)
+	if archive != "" {
+		c.opts.Logger.WarnContext(ctx, "new seed, set the previous run aside",
+			"seed", room.SeedName, "archive", archive)
 	}
 	return c.send(ctx, conn, connectMessage{
 		Cmd:           "Connect",
@@ -263,6 +266,25 @@ func (c *Client) onConnected(message json.RawMessage, ready chan struct{}) error
 	}
 	if slot.DeathLink {
 		c.opts.Logger.Warn("the seed asks for DeathLink, which this bridge does not do")
+	}
+
+	// The server holds the same check list for this slot, and the seed is
+	// already bound, so this is the run coming back after a state file was lost
+	// or rolled back. It happens before the handshake is announced ready, so
+	// the first report upstream carries the whole set.
+	//
+	// A failure here does not end the session. The server still holds every one
+	// of these checks and will offer them again on the next connect, whereas
+	// returning the error reconnects into the same failing write for as long as
+	// the disk stays full.
+	adopted, err := c.opts.Store.AdoptChecks(payload.CheckedLocations)
+	switch {
+	case err != nil:
+		c.opts.Logger.Error("cannot hold the checks the server already had",
+			"server_checks", len(payload.CheckedLocations), "error", err)
+	case adopted > 0:
+		c.opts.Logger.Warn("the server knew checks this bridge did not, and they are held now",
+			"adopted", adopted, "server_checks", len(payload.CheckedLocations))
 	}
 
 	c.mu.Lock()
@@ -372,8 +394,15 @@ func (c *Client) pump(ctx context.Context, conn *websocket.Conn, ready chan stru
 }
 
 // Say passes a line to the multiworld. Anything starting with ! is a server
-// command there, which is how a player runs !hint from inside the game.
+// command there, which is how a player runs !hint from inside the game, and is
+// also why the line is checked against a policy before it goes anywhere.
 func (c *Client) Say(ctx context.Context, text string) error {
+	if err := checkSayable(text); err != nil {
+		return err
+	}
+	if !c.said.take() {
+		return ErrSaidTooMuch
+	}
 	c.mu.Lock()
 	conn, connected := c.conn, c.connected
 	c.mu.Unlock()
