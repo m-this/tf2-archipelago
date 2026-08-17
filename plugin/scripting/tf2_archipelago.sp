@@ -23,7 +23,7 @@
 #include "tf2_archipelago/unlocks.inc"
 #include "tf2_archipelago/bridge.inc"
 
-#define PLUGIN_VERSION "0.1.0"
+#define PLUGIN_VERSION "1.0.0"
 
 // Only used when the wave events turn out not to exist.
 #define WavePollInterval 1.0
