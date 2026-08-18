@@ -9,14 +9,13 @@ import (
 	"github.com/lxn/walk"
 	declarative "github.com/lxn/walk/declarative"
 
-	"github.com/m-this/tf2-archipelago/launcher/internal/installer"
 	"github.com/m-this/tf2-archipelago/launcher/internal/runshape"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 )
 
 // runSettingsDialog asks for the values worth changing between evenings. It
 // returns the edited settings and whether the player accepted them.
-func runSettingsDialog(owner walk.Form, s settings.Settings) (settings.Settings, bool, error) {
+func runSettingsDialog(owner walk.Form, s settings.Settings, repair func() ([]string, error)) (settings.Settings, bool, error) {
 	var (
 		dialog   *walk.Dialog
 		accept   *walk.PushButton
@@ -102,7 +101,7 @@ func runSettingsDialog(owner walk.Form, s settings.Settings) (settings.Settings,
 			declarative.Composite{
 				Layout: declarative.HBox{},
 				Children: []declarative.Widget{
-					declarative.PushButton{Text: "Clear cache", OnClicked: func() { clearCache(dialog, s.InstallRoot) }},
+					declarative.PushButton{Text: "Repair", OnClicked: func() { runRepair(dialog, repair) }},
 					declarative.HSpacer{},
 					declarative.PushButton{AssignTo: &accept, Text: "Save", OnClicked: func() {
 						// Read every field here, not after Run returns: closing
@@ -165,30 +164,31 @@ func runSettingsDialog(owner walk.Form, s settings.Settings) (settings.Settings,
 	return edited, true, nil
 }
 
-// clearCache throws away SteamCMD, the mods and Steam's download record, for a
+// runRepair throws away SteamCMD, the mods and Steam's download record, for a
 // player whose install will not go through. The next Start puts them back.
-func clearCache(owner walk.Form, installRoot string) {
-	answer := walk.MsgBox(owner, "Clear cache",
-		"This removes SteamCMD, the mods and Steam's record of the download, "+
-			"then the next Start fetches them again.\n\n"+
-			"It keeps the game files and the run: no 14 GB download, no lost checks.\n\n"+
-			"Stop the server first if it is running.",
+//
+// The caller stops the server and any install first, so the button works on
+// the first press rather than the third.
+func runRepair(owner walk.Form, repair func() ([]string, error)) {
+	answer := walk.MsgBox(owner, "Repair",
+		"This stops the server, then removes SteamCMD, the mods and Steam's "+
+			"record of the download. The next Start fetches them again.\n\n"+
+			"It keeps the game files and the run: no 14 GB download, no lost checks.",
 		walk.MsgBoxOKCancel|walk.MsgBoxIconQuestion)
 	if answer != walk.DlgCmdOK {
 		return
 	}
-	removed, err := installer.Clean(installRoot)
-	if err != nil {
-		walk.MsgBox(owner, "Clear cache", err.Error(), walk.MsgBoxIconError)
-		return
+	removed, err := repair()
+	switch {
+	case err != nil:
+		walk.MsgBox(owner, "Repair", err.Error(), walk.MsgBoxIconError)
+	case len(removed) == 0:
+		walk.MsgBox(owner, "Repair", "Nothing to remove.", walk.MsgBoxIconInformation)
+	default:
+		walk.MsgBox(owner, "Repair",
+			"Removed:\n"+strings.Join(removed, "\n")+"\n\nPress Start when you are ready.",
+			walk.MsgBoxIconInformation)
 	}
-	if len(removed) == 0 {
-		walk.MsgBox(owner, "Clear cache", "Nothing to remove.", walk.MsgBoxIconInformation)
-		return
-	}
-	walk.MsgBox(owner, "Clear cache",
-		"Removed:\n"+strings.Join(removed, "\n")+"\n\nPress Start when you are ready.",
-		walk.MsgBoxIconInformation)
 }
 
 func tierLabel(tiers []runshape.Tier, key string) string {

@@ -49,9 +49,10 @@ type window struct {
 	supervisor *apruntime.Supervisor
 	logger     *slog.Logger
 
-	mu    sync.Mutex
-	lines []string
-	busy  bool
+	mu            sync.Mutex
+	lines         []string
+	busy          bool
+	cancelInstall context.CancelFunc
 }
 
 // Run opens the window and blocks until the player closes it. The server is
@@ -188,16 +189,19 @@ func (w *window) onRestart() {
 // start installs whatever is missing, writes the server configs, then brings
 // the pair up. It runs off the UI thread: the first install downloads 14 GB.
 func (w *window) start() {
+	ctx, cancel := context.WithCancel(context.Background())
 	w.mu.Lock()
 	if w.busy {
 		w.mu.Unlock()
+		cancel()
 		return
 	}
-	w.busy = true
+	w.busy, w.cancelInstall = true, cancel
 	w.mu.Unlock()
 	defer func() {
+		cancel()
 		w.mu.Lock()
-		w.busy = false
+		w.busy, w.cancelInstall = false, nil
 		w.mu.Unlock()
 		w.main.Synchronize(w.refresh)
 	}()
@@ -205,7 +209,10 @@ func (w *window) start() {
 	w.main.Synchronize(w.refresh)
 	s := w.supervisor.Settings()
 
-	if _, err := installer.Ensure(context.Background(), s.InstallRoot, w.installLog); err != nil {
+	if _, err := installer.Ensure(ctx, s.InstallRoot, w.installLog); err != nil {
+		if ctx.Err() != nil {
+			return
+		}
 		w.say("install failed: %v", err)
 		w.say("%s.", installer.RepairAdvice)
 		return
@@ -300,11 +307,33 @@ func (w *window) onSend() {
 	}()
 }
 
+// idle stops the server and any install in flight, and waits for both. Repair
+// deletes files those two hold open, so it has to run first.
+func (w *window) idle() {
+	w.mu.Lock()
+	cancel := w.cancelInstall
+	w.mu.Unlock()
+	if cancel != nil {
+		w.say("stopping the install first")
+		cancel()
+	}
+	w.supervisor.Stop()
+	for range 100 {
+		w.mu.Lock()
+		busy := w.busy
+		w.mu.Unlock()
+		if !busy {
+			break
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+}
+
 // editSettings opens the dialog with the handful of values a player changes.
 // The rest stay in `tf2ap.exe -configure`.
 func (w *window) editSettings() {
 	s := w.supervisor.Settings()
-	next, ok, err := runSettingsDialog(w.main, s)
+	next, ok, err := runSettingsDialog(w.main, s, w.repair)
 	if err != nil {
 		w.say("settings: %v", err)
 		return
@@ -327,6 +356,21 @@ func (w *window) editSettings() {
 	if !w.supervisor.Running() {
 		go w.start()
 	}
+}
+
+// repair is what the dialog's Repair button calls. Everything the launcher
+// started has to be down before the files it holds can go.
+func (w *window) repair() ([]string, error) {
+	w.idle()
+	removed, err := installer.Clean(w.supervisor.Settings().InstallRoot)
+	for _, path := range removed {
+		w.say("repair removed %s", path)
+	}
+	if err != nil {
+		w.say("repair: %v", err)
+	}
+	w.main.Synchronize(w.refresh)
+	return removed, err
 }
 
 // mapNames lists the maps for the dialog's combo box. gamedata owns the list.

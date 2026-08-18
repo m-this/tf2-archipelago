@@ -149,11 +149,20 @@ func installGame(ctx context.Context, steamcmdDir, gameDir string, logf func(str
 	}
 
 	args := []string{
+		// No console is attached, so a prompt would hang with nobody to answer
+		// it, and a failed command has to stop the script rather than carry on
+		// to +quit and report success.
+		"+@NoPromptForPassword", "1",
+		"+@ShutdownOnFailedCommand", "1",
 		"+force_install_dir", gameDir,
 		"+login", "anonymous",
+		// Without fresh app info, app_update fails with "Missing
+		// configuration" however good the login was.
+		"+app_info_update", "1",
 		"+app_update", AppID, "validate",
 		"+quit",
 	}
+	logf("steamcmd %s", strings.Join(args, " "))
 	err := runSteamcmd(ctx, exe, steamcmdDir, logf, args...)
 	if err == nil {
 		return nil
@@ -161,43 +170,18 @@ func installGame(ctx context.Context, steamcmdDir, gameDir string, logf func(str
 	if ctx.Err() != nil {
 		return err
 	}
-	logf("SteamCMD failed (%v), trying once more", err)
+
+	// The app info cache is what "Missing configuration" is usually about, and
+	// a fetch that stopped half way leaves one behind. It costs a few seconds
+	// to fetch again.
+	logf("SteamCMD failed (%v), clearing its app cache and trying once more", err)
+	if err := removeWithRetry(filepath.Join(steamcmdDir, "appcache")); err != nil {
+		logf("%v", err)
+	}
 	if err := runSteamcmd(ctx, exe, steamcmdDir, logf, args...); err != nil {
 		return fmt.Errorf("SteamCMD could not install app %s: %w. %s", AppID, err, RepairAdvice)
 	}
 	return nil
-}
-
-// RepairAdvice is what to tell a player whose install will not go through. It
-// is one sentence because it lands in a log line and in an error.
-const RepairAdvice = "If it keeps failing, open Settings and press Clear cache, " +
-	"which throws away SteamCMD and the mods and fetches them again"
-
-// Clean removes what an install can leave broken: SteamCMD itself, the mods
-// this project installs, and Steam's record of what it downloaded. Ensure puts
-// all three back on the next start.
-//
-// It keeps the two things a player cannot get back cheaply: the 14 GB of game
-// files, and bridge-state, which holds the checks and the unlocks of the run.
-// Removing the app manifest costs a verify pass over those game files, not
-// another download.
-func Clean(installRoot string) ([]string, error) {
-	targets := []string{
-		filepath.Join(installRoot, "steamcmd"),
-		filepath.Join(installRoot, "tf-dedicated", "tf", "addons"),
-		filepath.Join(installRoot, "tf-dedicated", "steamapps"),
-	}
-	var removed []string
-	for _, target := range targets {
-		if !exists(target) {
-			continue
-		}
-		if err := os.RemoveAll(target); err != nil {
-			return removed, fmt.Errorf("cannot remove %s: %w", target, err)
-		}
-		removed = append(removed, target)
-	}
-	return removed, nil
 }
 
 // runSteamcmd runs one SteamCMD command with its own directory as the working
@@ -354,3 +338,66 @@ func (l *lineSplitter) Write(p []byte) (int, error) {
 	}
 	return len(p), nil
 }
+
+// RepairAdvice is what to tell a player whose install will not go through. It
+// is one sentence because it lands in a log line and in an error.
+const RepairAdvice = "If it keeps failing, open Settings and press Repair, " +
+	"which throws away SteamCMD and the mods and fetches them again"
+
+// Clean removes what an install can leave broken: SteamCMD itself, the mods
+// this project installs, and Steam's record of what it downloaded. Ensure puts
+// all three back on the next start.
+//
+// It keeps the two things a player cannot get back cheaply: the 14 GB of game
+// files, and bridge-state, which holds the checks and the unlocks of the run.
+// Removing the app manifest costs a verify pass over those game files, not
+// another download.
+//
+// Stop the server and any install in flight first. Windows will not unlink a
+// file another process has open.
+func Clean(installRoot string) ([]string, error) {
+	targets := []string{
+		filepath.Join(installRoot, "steamcmd"),
+		filepath.Join(installRoot, "tf-dedicated", "tf", "addons"),
+		filepath.Join(installRoot, "tf-dedicated", "steamapps"),
+	}
+	var removed []string
+	for _, target := range targets {
+		if !exists(target) {
+			continue
+		}
+		if err := removeWithRetry(target); err != nil {
+			return removed, err
+		}
+		removed = append(removed, target)
+	}
+	return removed, nil
+}
+
+// removeWithRetry deletes a directory, waiting for whatever still holds it.
+//
+// Windows refuses to unlink a file another process has open, and SteamCMD can
+// take a moment to go after it is asked to stop. Without this, a repair is a
+// button the player has to press three times.
+func removeWithRetry(target string) error {
+	if !exists(target) {
+		return nil
+	}
+	delay := 200 * time.Millisecond
+	var err error
+	for attempt := range removeAttemptsMax {
+		if err = os.RemoveAll(target); err == nil {
+			return nil
+		}
+		if attempt == removeAttemptsMax-1 {
+			break
+		}
+		time.Sleep(delay)
+		delay *= 2
+	}
+	return fmt.Errorf("cannot remove %s, something still has it open: %w", target, err)
+}
+
+// removeAttemptsMax spans about six seconds of doubling waits, which covers a
+// process on its way out. Longer than that is a file lock a wait will not fix.
+const removeAttemptsMax = 6
