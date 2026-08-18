@@ -103,3 +103,15 @@ func TestSupervisorRefusesAnIncompleteConfiguration(t *testing.T) {
 		t.Fatal("Start with no room address and no RCON password succeeded")
 	}
 }
+
+// The window passes a sink and no logger. Anything that reports has to survive
+// that: a method call on a nil *slog.Logger panics, and one took the launcher
+// down at startup.
+func TestReportSurvivesANilLogger(t *testing.T) {
+	var got []Line
+	report(nil, func(line Line) { got = append(got, line) }, "the console did not come up")
+	if len(got) != 1 || got[0].Source != "launcher" {
+		t.Fatalf("the sink got %+v", got)
+	}
+	report(nil, nil, "nobody is listening") // must not panic
+}

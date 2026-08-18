@@ -6,10 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"path/filepath"
 	"sync"
 	"time"
 
 	"github.com/m-this/tf2-archipelago/bridge"
+	"github.com/m-this/tf2-archipelago/bridge/config"
+	"github.com/m-this/tf2-archipelago/fakeroom"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 )
 
@@ -84,8 +87,21 @@ func (s *Supervisor) Start(onExit func(error)) error {
 		s.mu.Unlock()
 		return err
 	}
+	ctxRoom, cancelRoom := context.WithCancel(context.Background())
+	room, err := s.startTestRoom(ctxRoom, &cfg)
+	if err != nil {
+		cancelRoom()
+		s.mu.Unlock()
+		return err
+	}
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
+	stopRoom := func() {
+		cancelRoom()
+		if room != nil {
+			_ = room.Close()
+		}
+	}
 	s.cancel, s.done, s.running, s.stopped = cancel, done, true, false
 	current := s.settings
 	s.mu.Unlock()
@@ -101,9 +117,11 @@ func (s *Supervisor) Start(onExit func(error)) error {
 	go func() {
 		srcdsErr <- runSrcdsWithSink(ctx, current, s.logger, s.sink)
 	}()
+	go watchSourcemodErrors(ctx, filepath.Join(current.InstallRoot, "tf-dedicated"), s.sink)
 
 	go func() {
 		defer close(done)
+		defer stopRoom()
 		var reason error
 		select {
 		case err := <-bridgeErr:
@@ -152,6 +170,28 @@ func (s *Supervisor) Stop() {
 func (s *Supervisor) Restart(onExit func(error)) error {
 	s.Stop()
 	return s.Start(onExit)
+}
+
+// startTestRoom serves the multiworld of one and repoints the bridge at it,
+// when the settings ask for test mode. It returns nil otherwise.
+//
+// The room's address replaces whatever the player set: a test run that quietly
+// dialled a real room would send checks to somebody's actual game.
+func (s *Supervisor) startTestRoom(ctx context.Context, cfg *config.Config) (*fakeroom.Room, error) {
+	if !s.settings.TestMode {
+		return nil, nil //nolint:nilnil // no room and no error is the normal case
+	}
+	room, address, err := fakeroom.Start(ctx, fakeroom.Options{
+		SlotName:     s.settings.APSlotName,
+		Goal:         s.settings.MvmGoal,
+		MissionCount: s.settings.MvmMissionCount,
+		Log:          func(text string) { s.emit(text) },
+	})
+	if err != nil {
+		return nil, err
+	}
+	cfg.ArchipelagoURL = address
+	return room, nil
 }
 
 func (s *Supervisor) emit(text string) {

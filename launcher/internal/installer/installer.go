@@ -26,6 +26,14 @@ import (
 // AppID is the Steam AppID for the TF2 dedicated server.
 const AppID = "232250"
 
+// gameBytesNeeded is the room the game files take, plus the room SteamCMD
+// needs while it unpacks them. Checked before the download rather than after,
+// where SteamCMD reports it as "state is 0x202" and nothing else.
+const (
+	gigabyte        = 1_000_000_000
+	gameBytesNeeded = 20 * gigabyte
+)
+
 // Status reports what the installer did, for the UI to show.
 type Status struct {
 	SteamcmdInstalled  bool   `json:"steamcmd_installed"`
@@ -69,6 +77,11 @@ func Ensure(ctx context.Context, installRoot string, logf func(format string, ar
 	}
 
 	if !gameInstalled(result.GameDir) {
+		if free, ok := winproc.FreeBytes(installRoot); ok && free < gameBytesNeeded {
+			return result, fmt.Errorf(
+				"the game server needs about %d GB and %s has %d GB free",
+				gameBytesNeeded/gigabyte, installRoot, free/gigabyte)
+		}
 		logf("installing the TF2 dedicated server (~14 GB, this is the long part)")
 		if err := installGame(ctx, result.SteamcmdDir, result.GameDir, logf); err != nil {
 			return result, err
@@ -139,13 +152,35 @@ func installGame(ctx context.Context, steamcmdDir, gameDir string, logf func(str
 		exe = filepath.Join(steamcmdDir, "steamcmd.sh")
 	}
 
-	// The bootstrap run is expected to fail. A freshly unpacked steamcmd.exe
-	// downloads the rest of itself and then exits non-zero (7 is the usual
-	// one) to say it restarted. Treating that as an error stops the install
-	// before it starts.
+	// Two runs before the real one, both of which SteamCMD needs and neither
+	// of which is allowed to fail the install.
+	//
+	// The first is the bootstrap: a freshly unpacked steamcmd.exe downloads
+	// the rest of itself and exits non-zero (7 is the usual one) to say it
+	// restarted.
+	//
+	// The second is a login and nothing else. A SteamCMD that has never logged
+	// in fails its first app_update with "Failed to install app '232250'
+	// (Missing configuration)", every time, and the same command works on the
+	// next run. Spending one session on the login is what makes the install
+	// work on the first press rather than the second.
 	logf("preparing SteamCMD")
 	if err := runSteamcmd(ctx, exe, steamcmdDir, logf, "+quit"); err != nil {
 		logf("SteamCMD updated itself (%v), carrying on", err)
+	}
+	if err := runSteamcmd(ctx, exe, steamcmdDir, logf, "+login", "anonymous", "+quit"); err != nil {
+		logf("the warm-up login did not finish (%v), carrying on", err)
+	}
+
+	// SteamCMD tokenises its own command line, so a path holding a space or an
+	// accent reaches it broken. The short form has neither, and it needs the
+	// directory to exist before Windows will name it.
+	if err := os.MkdirAll(gameDir, 0o755); err != nil {
+		return fmt.Errorf("cannot create %s: %w", gameDir, err)
+	}
+	installDir := winproc.ShortPath(gameDir)
+	if installDir != gameDir {
+		logf("installing into %s (the short name for %s)", installDir, gameDir)
 	}
 
 	args := []string{
@@ -154,7 +189,7 @@ func installGame(ctx context.Context, steamcmdDir, gameDir string, logf func(str
 		// to +quit and report success.
 		"+@NoPromptForPassword", "1",
 		"+@ShutdownOnFailedCommand", "1",
-		"+force_install_dir", gameDir,
+		"+force_install_dir", installDir,
 		"+login", "anonymous",
 		// Without fresh app info, app_update fails with "Missing
 		// configuration" however good the login was.
@@ -171,17 +206,25 @@ func installGame(ctx context.Context, steamcmdDir, gameDir string, logf func(str
 		return err
 	}
 
-	// The app info cache is what "Missing configuration" is usually about, and
-	// a fetch that stopped half way leaves one behind. It costs a few seconds
-	// to fetch again.
-	logf("SteamCMD failed (%v), clearing its app cache and trying once more", err)
-	if err := removeWithRetry(filepath.Join(steamcmdDir, "appcache")); err != nil {
-		logf("%v", err)
-	}
+	// Plain retry, keeping the app cache. Deleting it puts SteamCMD back in
+	// the state that fails, so the second attempt fails the same way.
+	logf("SteamCMD failed (%v), trying once more", err)
 	if err := runSteamcmd(ctx, exe, steamcmdDir, logf, args...); err != nil {
 		return fmt.Errorf("SteamCMD could not install app %s: %w. %s", AppID, err, RepairAdvice)
 	}
 	return nil
+}
+
+// steamcmdStateAdvice turns the state SteamCMD reports into something a player
+// can act on. It prints the number and stops.
+func steamcmdStateAdvice(line string) string {
+	switch {
+	case strings.Contains(line, "state is 0x202"):
+		return "SteamCMD could not write the game files. The disk is full, or the folder is not writable."
+	case strings.Contains(line, "state is 0x602"):
+		return "SteamCMD lost the download. Check the connection, then press Start again."
+	}
+	return ""
 }
 
 // runSteamcmd runs one SteamCMD command with its own directory as the working
@@ -334,6 +377,9 @@ func (l *lineSplitter) Write(p []byte) (int, error) {
 		l.buf = l.buf[i+1:]
 		if line != "" {
 			l.logf("  %s", line)
+			if advice := steamcmdStateAdvice(line); advice != "" {
+				l.logf("%s", advice)
+			}
 		}
 	}
 	return len(p), nil

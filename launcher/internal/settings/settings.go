@@ -18,6 +18,11 @@ type Settings struct {
 	// live. Default is <home>/tf2-archipelago.
 	InstallRoot string `json:"install_root"`
 
+	// TestMode plays without Archipelago: the launcher serves a multiworld of
+	// one on loopback, makes up a seed, and hands out unlocks as waves are
+	// cleared. For trying the server out, and for play-testing.
+	TestMode bool `json:"test_mode"`
+
 	// Archipelago room.
 	APHost     string `json:"ap_host"`
 	APPort     int    `json:"ap_port"`
@@ -106,6 +111,16 @@ func Load() (Settings, error) {
 	}
 	s.applyDefaults()
 	return s, nil
+}
+
+// Render returns the settings as the JSON that Save writes. The debug bundle
+// uses it to ship a copy with the passwords taken out.
+func Render(s Settings) (string, error) {
+	data, err := json.MarshalIndent(s, "", "  ")
+	if err != nil {
+		return "", err
+	}
+	return string(data) + "\n", nil
 }
 
 // Save writes the config file, creating the directory.

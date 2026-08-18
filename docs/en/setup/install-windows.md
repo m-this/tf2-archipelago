@@ -103,6 +103,34 @@ classes, fight, buy their own upgrades and ready themselves.
 harder run. [The bots on your team](../play/defender-bots.md) says what they
 do and what they are bad at.
 
+## Try it without Archipelago
+
+Settings has a **Test mode** box. With it on, the launcher serves a multiworld
+of one on your own machine. It makes up a seed from your player options and
+hands out an unlock for every wave you clear.
+
+It also plays the other players: they find things, send you things and die.
+Every line of that reaches the log and the game's chat.
+
+Nothing leaves the machine, and you need no room and no seed. Use it to try the
+server out, and to play-test when something looks wrong.
+
+## When you need help with it
+
+Settings has two buttons for that.
+
+**Debug logs** writes `debug-logs-<date>.zip` next to the game files, then
+opens the folder. It holds the launcher log, SourceMod's logs, the server
+console, the player file and your settings, and it leaves every password out.
+Send that file to whoever helps you.
+
+**Repair** throws away SteamCMD and the mods and fetches them again. It stops
+the server first. It keeps the game files and the run, so no 14 GB comes down
+again and the checks stay.
+
+The **Player options** tab also has **Open tf2.yaml**, which writes the player
+file from what is on screen and opens it.
+
 ## The commands
 
 The window covers an evening. These are for a script, or for a setting the

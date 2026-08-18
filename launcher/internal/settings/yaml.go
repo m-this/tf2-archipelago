@@ -2,6 +2,8 @@ package settings
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -38,4 +40,22 @@ func PlayerYAML(s Settings, archipelagoVersion string) string {
 // whatever the player typed, so neither can go in bare.
 func yamlString(value string) string {
 	return `"` + strings.ReplaceAll(value, `"`, `\"`) + `"`
+}
+
+// PlayerFileName is what the player file is called inside the install root.
+const PlayerFileName = "tf2.yaml"
+
+// WritePlayerFile writes the player file into the install root and returns
+// where it went. It overwrites: the file is derived from the run shape, so the
+// copy here follows whatever the settings now say. The copy the player put in
+// the Archipelago app is theirs and is never touched.
+func WritePlayerFile(s Settings, archipelagoVersion string) (string, error) {
+	if err := os.MkdirAll(s.InstallRoot, 0o755); err != nil {
+		return "", fmt.Errorf("cannot create %s: %w", s.InstallRoot, err)
+	}
+	path := filepath.Join(s.InstallRoot, PlayerFileName)
+	if err := os.WriteFile(path, []byte(PlayerYAML(s, archipelagoVersion)), 0o644); err != nil {
+		return "", fmt.Errorf("cannot write %s: %w", path, err)
+	}
+	return path, nil
 }

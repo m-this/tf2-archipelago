@@ -17,7 +17,6 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"syscall"
 
 	"github.com/m-this/tf2-archipelago/gamedata"
@@ -144,16 +143,12 @@ func guided(logger *slog.Logger, s settings.Settings) error {
 	return runtime.Run(ctx, s, logger)
 }
 
-// writeStarterYAML drops the player file next to the game files the first time
-// only. Generation happens in the Archipelago app, and this is the file it
-// needs; rewriting it on every start would undo an edit made there.
+// writeStarterYAML drops the player file next to the game files, for the
+// Archipelago app to generate from.
 func writeStarterYAML(s settings.Settings) error {
-	path := filepath.Join(s.InstallRoot, "tf2.yaml")
-	if _, err := os.Stat(path); err == nil {
-		return nil
-	}
-	if err := os.WriteFile(path, []byte(settings.PlayerYAML(s, assets.ArchipelagoVersion)), 0o644); err != nil {
-		return fmt.Errorf("cannot write %s: %w", path, err)
+	path, err := settings.WritePlayerFile(s, assets.ArchipelagoVersion)
+	if err != nil {
+		return err
 	}
 	fmt.Printf("wrote %s for the Archipelago app to generate from\n", path)
 	return nil

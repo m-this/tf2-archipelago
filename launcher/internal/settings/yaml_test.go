@@ -1,6 +1,8 @@
 package settings
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -39,5 +41,36 @@ func TestPlayerYAMLQuotesTheGameKey(t *testing.T) {
 	}
 	if strings.Contains(got, "requires") {
 		t.Error("an empty Archipelago version still wrote a requires block")
+	}
+}
+
+func TestWritePlayerFile(t *testing.T) {
+	s := Defaults()
+	s.InstallRoot = filepath.Join(t.TempDir(), "not-created-yet")
+	s.APSlotName = "mathis"
+
+	path, err := WritePlayerFile(s, "0.6.7")
+	if err != nil {
+		t.Fatalf("WritePlayerFile: %v", err)
+	}
+	if want := filepath.Join(s.InstallRoot, PlayerFileName); path != want {
+		t.Errorf("wrote %s, want %s", path, want)
+	}
+	body, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("cannot read it back: %v", err)
+	}
+	if !strings.Contains(string(body), `name: "mathis"`) {
+		t.Errorf("the file does not hold the slot name:\n%s", body)
+	}
+
+	// The run shape can change between evenings, so the file follows it.
+	s.MvmGoal = "missionsanity"
+	if _, err := WritePlayerFile(s, "0.6.7"); err != nil {
+		t.Fatalf("second write: %v", err)
+	}
+	body, _ = os.ReadFile(path)
+	if !strings.Contains(string(body), "goal: missionsanity") {
+		t.Errorf("the file was not rewritten:\n%s", body)
 	}
 }

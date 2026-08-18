@@ -6,6 +6,7 @@ package runtime
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -21,6 +22,9 @@ import (
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 	"github.com/m-this/tf2-archipelago/launcher/internal/winproc"
 )
+
+// consoleWait bounds the wait for the console the game server reads from.
+const consoleWait = 5 * time.Second
 
 // Run starts the bridge in-process and the game server as a subprocess, and
 // blocks until the context is cancelled or one of them stops. The bridge gets
@@ -63,7 +67,7 @@ func bridgeConfig(s settings.Settings) (config.Config, error) {
 	if s.SrcdsRconPw == "" {
 		return config.Config{}, fmt.Errorf("SRCDS_RCONPW is not set")
 	}
-	if s.APPort == 0 {
+	if s.APPort == 0 && !s.TestMode {
 		return config.Config{}, fmt.Errorf("AP_PORT is not set; create a room on archipelago.gg first")
 	}
 	port := fmt.Sprintf("%d", s.APPort)
@@ -120,7 +124,18 @@ func runSrcdsWithSink(ctx context.Context, s settings.Settings, logger *slog.Log
 	}
 	cmd := exec.CommandContext(ctx, filepath.Join(gameDir, exeName), args...)
 	cmd.Dir = gameDir
-	winproc.HideConsole(cmd)
+	// -console reads the console input buffer, so the server needs a real one
+	// as its standard input. CREATE_NO_WINDOW would deny it any console at
+	// all, and the server dies on its first read. Its output still comes back
+	// through the pipes below.
+	stdin, err := winproc.ConsoleStdinTimeout(consoleWait)
+	switch {
+	case errors.Is(err, winproc.ErrNoConsole):
+	case err != nil:
+		report(logger, sink, fmt.Sprintf("no console for the game server: %v", err))
+	default:
+		cmd.Stdin = stdin
+	}
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return err
@@ -146,6 +161,20 @@ func runSrcdsWithSink(ctx context.Context, s settings.Settings, logger *slog.Log
 	return waitErr
 }
 
+// report says something to whoever is listening. The window passes a sink and
+// no logger, the console flow passes a logger and no sink, and neither is
+// allowed to be assumed: calling a method on a nil *slog.Logger panics, and
+// that took the whole launcher down once.
+func report(logger *slog.Logger, sink Sink, text string) {
+	if sink != nil {
+		sink(Line{At: time.Now(), Source: "launcher", Text: text})
+		return
+	}
+	if logger != nil {
+		logger.Warn("launcher", "message", text)
+	}
+}
+
 func pipeLines(r io.Reader, source string, logger *slog.Logger, sink Sink, wg *sync.WaitGroup) {
 	defer wg.Done()
 	scanner := bufio.NewScanner(r)
@@ -159,6 +188,8 @@ func pipeLines(r io.Reader, source string, logger *slog.Logger, sink Sink, wg *s
 			sink(Line{At: time.Now(), Source: source, Text: line})
 			continue
 		}
-		logger.Info("srcds output", "source", source, "line", line)
+		if logger != nil {
+			logger.Info("srcds output", "source", source, "line", line)
+		}
 	}
 }

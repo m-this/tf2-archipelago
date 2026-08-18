@@ -105,6 +105,34 @@ améliorations et se déclarent prêts.
 `tf2ap.exe -configure` les coupe, ou remplit RED avec moins de six joueurs pour
 une partie plus dure. Voir [Les bots de votre équipe](../play/defender-bots.md).
 
+## Essayer sans Archipelago
+
+La fenêtre Settings porte une case **Test mode**. Cochez-la : le lanceur sert
+alors un multiworld d'un seul joueur sur votre machine. Il invente une seed depuis vos
+options de partie et donne un déblocage à chaque vague réussie.
+
+Il joue aussi les autres joueurs : ils trouvent des objets, vous en envoient et
+meurent. Chaque ligne arrive dans le journal et dans le chat du jeu.
+
+Rien ne quitte la machine, et vous n'avez besoin ni de room ni de seed. Servez-
+vous en pour essayer le serveur, et pour tester quand quelque chose cloche.
+
+## Quand vous avez besoin d'aide
+
+La fenêtre Settings porte deux boutons pour ça.
+
+**Debug logs** écrit `debug-logs-<date>.zip` à côté des fichiers du jeu, puis
+ouvre le dossier. Il contient le journal du lanceur, les journaux de SourceMod,
+la console du serveur, le fichier joueur et vos réglages, sans aucun mot de
+passe. Envoyez ce fichier à qui vous aide.
+
+**Repair** jette SteamCMD et les mods, puis les récupère. Il arrête d'abord le
+serveur. Il garde les fichiers du jeu et la partie : pas de 14 Go à retélécharger
+et les checks restent.
+
+L'onglet **Player options** porte aussi **Open tf2.yaml**. Ce bouton écrit le
+fichier joueur depuis les valeurs de la fenêtre, puis l'ouvre.
+
 ## Les commandes
 
 La fenêtre couvre une soirée. Ces commandes servent à un script, ou à un

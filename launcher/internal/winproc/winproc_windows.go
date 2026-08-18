@@ -14,12 +14,13 @@ const createNoWindow = 0x08000000
 
 // HideConsole keeps a console program from opening a console window.
 //
-// The game server and SteamCMD are console programs and the launcher is not,
-// so Windows gives each of them a console of its own. That console steals the
-// foreground, and it leaves the launcher's window half laid out: the toolbar
-// and the log keep their old size while the rest resizes around them. Their
-// output still reaches the log view, because that comes through the pipes
-// either way.
+// SteamCMD is a console program and the launcher is not, so Windows would give
+// it a console of its own, which appears in front of the player. Its output
+// still reaches the log view: that comes through the pipes either way.
+//
+// Not for the game server. srcds runs with -console and reads the console
+// input buffer, so denying it a console kills it on the first read. It gets
+// the hidden one this program allocates instead; see ConsoleStdin.
 func HideConsole(cmd *exec.Cmd) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{CreationFlags: createNoWindow}
 }

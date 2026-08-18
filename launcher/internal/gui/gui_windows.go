@@ -10,6 +10,8 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -20,11 +22,13 @@ import (
 	"github.com/lxn/win"
 
 	"github.com/m-this/tf2-archipelago/gamedata"
+	"github.com/m-this/tf2-archipelago/launcher/internal/assets"
 	"github.com/m-this/tf2-archipelago/launcher/internal/installer"
 	"github.com/m-this/tf2-archipelago/launcher/internal/rcon"
 	apruntime "github.com/m-this/tf2-archipelago/launcher/internal/runtime"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 	"github.com/m-this/tf2-archipelago/launcher/internal/srcdsconfig"
+	"github.com/m-this/tf2-archipelago/launcher/internal/winproc"
 )
 
 // linesMax caps the log view: a wave produces a few hundred lines and an
@@ -32,8 +36,13 @@ import (
 // where the trim restarts, so the rewrite that costs happens once every few
 // hundred lines rather than on every one.
 const (
-	linesMax  = 4000
-	linesTrim = 1000
+	linesMax  = 20000
+	linesTrim = 5000
+
+	// flushEvery batches the lines a busy install or a wave produces. Handing
+	// the window one line at a time floods its message queue and it stops
+	// repainting, which reads as a frozen log.
+	flushEvery = 120 * time.Millisecond
 )
 
 type window struct {
@@ -51,8 +60,11 @@ type window struct {
 
 	mu            sync.Mutex
 	lines         []string
+	pending       []string
+	flushQueued   bool
 	busy          bool
 	cancelInstall context.CancelFunc
+	logFile       *os.File
 }
 
 // Run opens the window and blocks until the player closes it. The server is
@@ -68,11 +80,25 @@ func Run(s settings.Settings, logger *slog.Logger) error {
 
 	w := &window{logger: logger}
 	w.supervisor = apruntime.NewSupervisor(s, nil, w.append)
+	w.openLogFile(s.InstallRoot)
+	defer func() {
+		if w.logFile != nil {
+			_ = w.logFile.Close()
+		}
+	}()
 
 	if err := w.build(); err != nil {
 		return err
 	}
+	// An edit control holds 32 KB by default and silently drops everything
+	// after that, which is a log that stops halfway through the install. 0
+	// asks for the largest limit the control allows.
+	win.SendMessage(w.log.Handle(), win.EM_SETLIMITTEXT, 0, 0)
 	w.refresh()
+	if w.logFile != nil {
+		w.say("logging to %s", w.logFile.Name())
+	}
+	w.writePlayerFile(s)
 
 	// A first run has no room address, so the settings dialog is the first
 	// thing on screen rather than an error in the log.
@@ -142,6 +168,27 @@ func (w *window) append(line apruntime.Line) {
 
 	w.mu.Lock()
 	w.lines = append(w.lines, text)
+	w.pending = append(w.pending, text)
+	if w.logFile != nil {
+		_, _ = w.logFile.WriteString(text + "\r\n")
+	}
+	queue := !w.flushQueued && w.main != nil
+	if queue {
+		w.flushQueued = true
+	}
+	w.mu.Unlock()
+
+	if queue {
+		time.AfterFunc(flushEvery, func() { w.main.Synchronize(w.flush) })
+	}
+}
+
+// flush writes the lines that arrived since the last one, on the UI thread.
+func (w *window) flush() {
+	w.mu.Lock()
+	w.flushQueued = false
+	pending := w.pending
+	w.pending = nil
 	trimmed := ""
 	if len(w.lines) > linesMax {
 		w.lines = w.lines[linesTrim:]
@@ -149,19 +196,33 @@ func (w *window) append(line apruntime.Line) {
 	}
 	w.mu.Unlock()
 
-	if w.main == nil {
+	switch {
+	case trimmed != "":
+		w.log.SetText(trimmed)
+	case len(pending) > 0:
+		w.log.AppendText(strings.Join(pending, "\r\n") + "\r\n")
+	default:
 		return
 	}
-	w.main.Synchronize(func() {
-		if trimmed != "" {
-			w.log.SetText(trimmed)
-		} else {
-			w.log.AppendText(text + "\r\n")
-		}
-		// Scroll the log itself to the bottom. Moving the caret instead makes
-		// the window scroll sideways to reveal it.
-		win.SendMessage(w.log.Handle(), win.WM_VSCROLL, win.SB_BOTTOM, 0)
-	})
+	// Scroll the log itself to the bottom. Moving the caret instead makes the
+	// window scroll sideways to reveal it.
+	win.SendMessage(w.log.Handle(), win.WM_VSCROLL, win.SB_BOTTOM, 0)
+}
+
+// openLogFile keeps this run's log next to the game files. The window shows
+// the same lines, but a file is what a player can send to somebody who can
+// read it. One run per file: the interesting one is always the last.
+func (w *window) openLogFile(installRoot string) {
+	if err := os.MkdirAll(installRoot, 0o755); err != nil {
+		return
+	}
+	file, err := os.Create(filepath.Join(installRoot, "launcher.log"))
+	if err != nil {
+		return
+	}
+	w.mu.Lock()
+	w.logFile = file
+	w.mu.Unlock()
 }
 
 func (w *window) say(format string, args ...any) {
@@ -221,6 +282,15 @@ func (w *window) start() {
 		w.say("cannot write the server configs: %v", err)
 		return
 	}
+	// The game server inherits the hidden console allocated at startup, so it
+	// opens no window of its own. Taking the focus back covers the case where
+	// something did appear.
+	defer w.main.Synchronize(func() { _ = w.main.SetFocus() })
+
+	for _, line := range apruntime.ConnectLines(s) {
+		w.say("%s", line)
+	}
+
 	if err := w.supervisor.Start(func(err error) {
 		if err != nil {
 			w.say("%v", err)
@@ -351,6 +421,7 @@ func (w *window) editSettings() {
 		return
 	}
 	w.supervisor.SetSettings(next)
+	w.writePlayerFile(next)
 	w.refresh()
 	w.say("settings saved. Restart to apply them to a running server.")
 	if !w.supervisor.Running() {
@@ -362,7 +433,15 @@ func (w *window) editSettings() {
 // started has to be down before the files it holds can go.
 func (w *window) repair() ([]string, error) {
 	w.idle()
-	removed, err := installer.Clean(w.supervisor.Settings().InstallRoot)
+	root := w.supervisor.Settings().InstallRoot
+	killed, err := winproc.KillUnder(root)
+	for _, path := range killed {
+		w.say("repair stopped %s", path)
+	}
+	if err != nil {
+		w.say("repair could not check the running programs: %v", err)
+	}
+	removed, err := installer.Clean(root)
 	for _, path := range removed {
 		w.say("repair removed %s", path)
 	}
@@ -371,6 +450,18 @@ func (w *window) repair() ([]string, error) {
 	}
 	w.main.Synchronize(w.refresh)
 	return removed, err
+}
+
+// writePlayerFile keeps the Archipelago player file in step with the run
+// shape. The player copies it into the Archipelago app and generates there;
+// this launcher does not generate seeds, because that is Python.
+func (w *window) writePlayerFile(s settings.Settings) {
+	path, err := settings.WritePlayerFile(s, assets.ArchipelagoVersion)
+	if err != nil {
+		w.say("%v", err)
+		return
+	}
+	w.say("wrote %s: copy it into the Archipelago app's Players folder to generate the seed", path)
 }
 
 // mapNames lists the maps for the dialog's combo box. gamedata owns the list.
