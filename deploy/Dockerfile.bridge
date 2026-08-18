@@ -12,6 +12,7 @@ RUN go mod download
 
 COPY gamedata gamedata
 COPY bridge bridge
+COPY fakeroom fakeroom
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /bridge ./bridge/cmd/bridge
 
 # The state directory has to exist in the image and belong to the user that

@@ -42,7 +42,7 @@ GO_SRC := $$(find . -type f -name '*.go')
         apworld-fmt apworld-test apworld-build plugin bots bots-from-source \
         integration build docs \
         docs-build docs-down dist compose-release version-check clean \
-        launcher launcher-assets
+        launcher launcher-assets embed-placeholders
 
 help:
 	@echo "tf2-archipelago"
@@ -116,20 +116,39 @@ fmt-check:
 		exit 1; \
 	fi
 
+# The launcher embeds four build artefacts, and Go refuses to compile a
+# package whose //go:embed pattern matches nothing. Every Go target here
+# depends on this so a fresh clone can vet, lint, build and test without first
+# building the plugin, staging the bots and running the apworld through Docker.
+# The placeholders are a zero-byte plugin and the smallest valid zip; `make
+# launcher-assets` replaces them with the real files and never sees these.
+EMBED_PLACEHOLDERS = $(EMBED)/tf2_archipelago.smx $(EMBED)/sm-ripext-windows.zip \
+	$(EMBED)/defender-bots-windows.zip $(EMBED)/tf2_mvm.apworld
+
+embed-placeholders:
+	@mkdir -p $(EMBED)
+	@for f in $(EMBED_PLACEHOLDERS); do \
+		[ -e "$$f" ] && continue; \
+		case "$$f" in \
+			*.smx) : > "$$f" ;; \
+			*) printf 'PK\005\006\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000' > "$$f" ;; \
+		esac; \
+	done
+
 # Not in `check`: every analyzer it registers is in golangci-lint's govet.
-vet:
+vet: embed-placeholders
 	go vet ./...
 
-lint:
+lint: embed-placeholders
 	$(GOLANGCI_LINT) run ./...
 
-lint-fix:
+lint-fix: embed-placeholders
 	$(GOLANGCI_LINT) run --fix ./...
 
 # `go fix` must be a no-op: whatever it would rewrite belongs in the commit.
 # `-diff` reports without touching the tree, so this is safe on a dirty working
 # copy.
-fix-check:
+fix-check: embed-placeholders
 	@out="$$(go fix -diff ./...)"; \
 	if [ -n "$$out" ]; then \
 		printf '%s\n' "$$out"; \
@@ -139,10 +158,10 @@ fix-check:
 
 # Reports only the vulnerabilities whose vulnerable symbol this code can
 # actually reach, so a hit is a bug to fix rather than a number to argue with.
-vuln:
+vuln: embed-placeholders
 	$(GOVULNCHECK) ./...
 
-compile:
+compile: embed-placeholders
 	go build ./...
 
 # The race detector is the only tool that sees a data race, and the bridge is
@@ -152,10 +171,10 @@ compile:
 # This also guards the committed export: TestCommittedExportIsCurrent
 # regenerates it and fails if the tree is stale, which is why there is no
 # separate freshness target.
-test:
+test: embed-placeholders
 	CGO_ENABLED=1 go test -race -shuffle=on ./...
 
-test-fast:
+test-fast: embed-placeholders
 	go test ./...
 
 export:

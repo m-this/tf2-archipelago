@@ -68,19 +68,11 @@ jobs:
         run: make compile
 
       # The launcher is a Windows exe cross-compiled from Go, window and all:
-      # walk is pure Go, so this needs no toolchain. The embed placeholders (a
-      # zero-byte .smx and minimal zips) are enough to prove it compiles; the
-      # real assets are fetched by `make launcher-assets` in the release
-      # workflow.
+      # walk is pure Go, so this needs no toolchain. `make compile` above put
+      # the embed placeholders in place; the real assets are fetched by `make
+      # launcher-assets` in the release workflow.
       - name: launcher cross-compile
-        run: |
-          mkdir -p launcher/internal/assets/embedded
-          touch launcher/internal/assets/embedded/tf2_archipelago.smx
-          empty='PK\x05\x06\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-          printf "$empty" > launcher/internal/assets/embedded/sm-ripext-windows.zip
-          printf "$empty" > launcher/internal/assets/embedded/defender-bots-windows.zip
-          printf "$empty" > launcher/internal/assets/embedded/tf2_mvm.apworld
-          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o /dev/null ./launcher/cmd/tf2ap
+        run: GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o /dev/null ./launcher/cmd/tf2ap
 
       # The race detector is the only thing in this pipeline that can see a
       # data race, and the bridge is three goroutines around one state store.
