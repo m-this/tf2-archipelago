@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -211,7 +212,16 @@ func safeSeedName(seed string) string {
 }
 
 // syncDir makes the rename durable: without it the file survives a crash but its name may not.
+// syncDir flushes a directory, so a rename inside it survives a power cut.
+//
+// That is a Unix idea. Windows has no directory handle to fsync: opening a
+// directory for it fails with "Access denied", and every persist after that
+// reported an error it did not have. NTFS makes the rename durable on its own,
+// so the flush is skipped there rather than failed.
 func syncDir(dir string) error {
+	if runtime.GOOS == "windows" {
+		return nil
+	}
 	handle, err := os.Open(dir)
 	if err != nil {
 		return err
