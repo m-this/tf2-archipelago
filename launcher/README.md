@@ -28,7 +28,10 @@ injects the pinned versions from `deploy/env/versions.env` with `-ldflags`.
 | `internal/installer` | SteamCMD, TF2 server, Metamod, SourceMod, ripext, plugin, bots |
 | `internal/srcdsconfig` | Renders `server.cfg`, `admins_simple.ini`, `tf2_archipelago.cfg` |
 | `internal/runtime` | The `srcds.exe` subprocess and the in-process bridge, interleaved |
-| `internal/ui` | Interactive prompts with saved-config defaults |
+| `internal/gui` | The window: log view, Start/Stop, settings dialog, rcon box |
+| `internal/rcon` | Source RCON client, the Go port of `deploy/rcon.py` |
+| `internal/runshape` | The run's choices, counted from `gamedata` |
+| `internal/ui` | Console prompts, and the console the window build attaches to |
 
 ## Configuration
 
@@ -41,6 +44,17 @@ the environment. `settings.ApplyEnv` reads the names `deploy/.env.example`
 already uses, so a compose operator's file works here unchanged. An environment
 value is never written back: an override for one run must not become the saved
 answer.
+
+## The window and the console
+
+`tf2ap.exe` with no arguments opens the window on Windows. `runtime.Supervisor`
+owns the pair of processes behind the Start and Stop buttons, and every log
+line reaches the view through its sink. The exe links with `-H windowsgui`, so
+a double-click opens no console; `ui.AttachConsole` gives the flags their
+output back when a terminal started them.
+
+`-console` runs the old prompt flow, which is also what every other platform
+gets: `gui.Available()` is false there.
 
 ## How it fits
 

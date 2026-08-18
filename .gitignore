@@ -15,6 +15,9 @@ tmp/
 # defender bots. deploy/bots/*.sh and deploy/patches/ are what we keep.
 /deploy/bots/build/
 
+# The launcher's Windows resource, generated from tf2ap.manifest by rsrc.
+*.syso
+
 # Built apworld bundle. Rebuilt from apworld/tf2_mvm/ on demand.
 *.apworld
 

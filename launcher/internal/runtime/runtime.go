@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/m-this/tf2-archipelago/bridge"
 	"github.com/m-this/tf2-archipelago/bridge/config"
@@ -87,6 +88,10 @@ func bridgeConfig(s settings.Settings) (config.Config, error) {
 }
 
 func runSrcds(ctx context.Context, s settings.Settings, logger *slog.Logger) error {
+	return runSrcdsWithSink(ctx, s, logger, nil)
+}
+
+func runSrcdsWithSink(ctx context.Context, s settings.Settings, logger *slog.Logger, sink Sink) error {
 	gameDir := filepath.Join(s.InstallRoot, "tf-dedicated")
 	exeName := "srcds.exe"
 	if _, err := os.Stat(filepath.Join(gameDir, "srcds_run")); err == nil {
@@ -127,8 +132,8 @@ func runSrcds(ctx context.Context, s settings.Settings, logger *slog.Logger) err
 	}
 	var wg sync.WaitGroup
 	wg.Add(2)
-	go pipeLines(stdout, "srcds", logger, &wg)
-	go pipeLines(stderr, "srcds", logger, &wg)
+	go pipeLines(stdout, "srcds", logger, sink, &wg)
+	go pipeLines(stderr, "srcds", logger, sink, &wg)
 	waitErr := cmd.Wait()
 	wg.Wait()
 	// A non-nil waitErr after context cancellation is the subprocess being
@@ -139,14 +144,19 @@ func runSrcds(ctx context.Context, s settings.Settings, logger *slog.Logger) err
 	return waitErr
 }
 
-func pipeLines(r io.Reader, source string, logger *slog.Logger, wg *sync.WaitGroup) {
+func pipeLines(r io.Reader, source string, logger *slog.Logger, sink Sink, wg *sync.WaitGroup) {
 	defer wg.Done()
 	scanner := bufio.NewScanner(r)
 	scanner.Buffer(make([]byte, 0, 4096), 1024*1024)
 	for scanner.Scan() {
 		line := strings.TrimRight(scanner.Text(), " \t\r")
-		if line != "" {
-			logger.Info("srcds output", "source", source, "line", line)
+		if line == "" {
+			continue
 		}
+		if sink != nil {
+			sink(Line{At: time.Now(), Source: source, Text: line})
+			continue
+		}
+		logger.Info("srcds output", "source", source, "line", line)
 	}
 }

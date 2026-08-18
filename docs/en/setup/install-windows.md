@@ -9,16 +9,23 @@ run it.
 
 ## What tf2ap.exe does
 
-1. It installs SteamCMD, the TF2 dedicated server, Metamod:Source, SourceMod,
-   the plugin and the defender bots. The game server is about 14 GB. This is
-   the long part, and it happens once.
-2. It asks one question: the address of your Archipelago room. Everything
-   else has a default that works, and the launcher invents the RCON password
-   itself.
-3. It starts the game server and the bridge together. Press Ctrl-C to stop
-   both.
+Double-click it and a window opens. The window holds everything an evening
+needs:
 
-Every later run takes seconds. The game files stay on your disk, and the
+- **Start**, **Stop** and **Restart**, so the server goes up and down without a
+  terminal.
+- A log, where the game server, the bridge and the installer write. This is
+  what you read when something looks wrong.
+- **Settings**, for the room address, the map, the bots and the shape of the
+  run.
+- An **rcon** box at the bottom. It sends a command to the server and prints
+  the answer in the log. `sm_ap_status` is the one to know.
+
+The first Start installs SteamCMD, the TF2 dedicated server, Metamod:Source,
+SourceMod, the plugin and the defender bots. The game server is about 14 GB.
+This is the long part, and it happens once. The log tracks it.
+
+Closing the window stops the server. Every later run takes seconds, and the
 launcher saves your answers in `%APPDATA%\tf2ap\config.json`.
 
 ## What you need
@@ -98,11 +105,15 @@ do and what they are bad at.
 
 ## The commands
 
+The window covers an evening. These are for a script, or for a setting the
+window does not show. Run them from a terminal: the exe attaches to it.
+
 | Command | What it does |
 | --- | --- |
-| `tf2ap.exe` | Ask for the room on a first run, install the rest, start |
-| `tf2ap.exe -room <host:port>` | Set the room address, then start |
-| `tf2ap.exe -configure` | Edit every setting, then exit |
+| `tf2ap.exe` | Open the window |
+| `tf2ap.exe -room <host:port>` | Set the room address, then open the window |
+| `tf2ap.exe -console` | Run in the terminal, with no window |
+| `tf2ap.exe -configure` | Edit every setting in the terminal, then exit |
 | `tf2ap.exe -install` | Install or repair the server, then exit |
 | `tf2ap.exe -status` | Show the settings and the install state |
 | `tf2ap.exe -yaml <path>` | Write the Archipelago player file, then exit |

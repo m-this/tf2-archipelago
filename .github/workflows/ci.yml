@@ -67,10 +67,11 @@ jobs:
       - name: go build
         run: make compile
 
-      # The launcher is a Windows exe cross-compiled from Go. The embed
-      # placeholders (a zero-byte .smx and a minimal zip) are enough to prove
-      # it compiles; the real assets are fetched by `make launcher-assets` in
-      # the release workflow.
+      # The launcher is a Windows exe cross-compiled from Go, window and all:
+      # walk is pure Go, so this needs no toolchain. The embed placeholders (a
+      # zero-byte .smx and minimal zips) are enough to prove it compiles; the
+      # real assets are fetched by `make launcher-assets` in the release
+      # workflow.
       - name: launcher cross-compile
         run: |
           mkdir -p launcher/internal/assets/embedded

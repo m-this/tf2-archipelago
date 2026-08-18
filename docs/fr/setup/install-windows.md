@@ -9,18 +9,24 @@ puis lancez-le.
 
 ## Ce que tf2ap.exe fait
 
-1. Il installe SteamCMD, le serveur dédié TF2, Metamod:Source, SourceMod, le
-   plugin et les bots défenseurs. Le serveur fait environ 14 Go. C'est la
-   partie longue, et elle n'arrive qu'une fois.
-2. Il pose une seule question : l'adresse de votre room Archipelago. Tout le
-   reste a une valeur par défaut qui marche. Le lanceur invente lui-même le
-   mot de passe RCON.
-3. Il démarre le serveur de jeu et le bridge ensemble. Appuyez sur Ctrl-C pour
-   arrêter les deux.
+Double-cliquez dessus : une fenêtre s'ouvre. Elle porte tout ce qu'une soirée
+demande.
 
-Chaque démarrage suivant prend quelques secondes. Les fichiers du jeu restent
-sur le disque, et le lanceur garde vos réponses dans
-`%APPDATA%\tf2ap\config.json`.
+- **Start**, **Stop** et **Restart** : le serveur monte et descend sans
+  terminal.
+- Un journal, où le serveur de jeu, le bridge et l'installation écrivent. C'est
+  ce que vous lisez quand quelque chose cloche.
+- **Settings** : l'adresse de la room, la carte, les bots et la forme de la
+  partie.
+- Une case **rcon** en bas. Elle envoie une commande au serveur et affiche la
+  réponse dans le journal. `sm_ap_status` est celle à connaître.
+
+Le premier Start installe SteamCMD, le serveur dédié TF2, Metamod:Source,
+SourceMod, le plugin et les bots défenseurs. Le serveur fait environ 14 Go.
+C'est la partie longue, et elle n'arrive qu'une fois. Le journal la suit.
+
+Fermer la fenêtre arrête le serveur. Chaque démarrage suivant prend quelques
+secondes, et le lanceur garde vos réponses dans `%APPDATA%\tf2ap\config.json`.
 
 ## Ce qu'il vous faut
 
@@ -67,27 +73,19 @@ Double-cliquez sur `tf2ap.exe`, ou lancez-le depuis un terminal :
 tf2ap.exe
 ```
 
-Une fenêtre de terminal s'ouvre. Le premier démarrage se déroule ainsi :
+Le premier démarrage se déroule ainsi :
 
-1. Le lanceur demande l'adresse de la room. Collez la ligne de votre page de
-   room, par exemple `archipelago.gg:12345`, puis appuyez sur Entrée. La
-   question vient en premier, donc une faute de frappe coûte une seconde et
-   non un téléchargement.
-2. Le lanceur installe SteamCMD. Quelques secondes.
-3. Le lanceur installe le serveur dédié TF2. C'est le téléchargement de 14 Go.
-   La durée dépend de votre connexion.
-4. Le lanceur installe Metamod:Source, SourceMod, le plugin et les bots.
-5. Le lanceur affiche ce qu'il a choisi pour vous, mot de passe RCON compris,
-   puis démarre le serveur. Le journal affiche
-   `connected to archipelago slot=tf2`.
+1. La fenêtre Settings s'ouvre d'elle-même : vous n'avez pas encore de room.
+   Collez la ligne de votre page de room dans **Room address**, par exemple
+   `archipelago.gg:12345`. Le bouton Save reste gris tant que l'adresse ne se
+   lit pas comme `hôte:port`. Tout le reste a déjà une valeur qui marche.
+2. Appuyez sur **Save**. L'installation démarre toute seule.
+3. SteamCMD, puis les 14 Go du serveur de jeu, puis Metamod:Source, SourceMod,
+   le plugin et les bots. Le journal montre chaque étape. La longue est le
+   serveur de jeu, et la durée dépend de votre connexion.
+4. Le serveur démarre. Le journal affiche `connected to archipelago slot=tf2`.
 
-Les démarrages suivants ne demandent plus rien.
-
-`tf2ap.exe -configure` change n'importe quel défaut. Le nom du serveur, le
-port, la carte de départ, les bots, la forme de la partie.
-
-`tf2ap.exe -room archipelago.gg:12345` donne l'adresse en ligne de commande.
-Le lanceur saute alors la question.
+Les démarrages suivants vont directement à cette dernière étape.
 
 Vos amis se connectent depuis la console développeur :
 
@@ -109,11 +107,16 @@ une partie plus dure. Voir [Les bots de votre équipe](../play/defender-bots.md)
 
 ## Les commandes
 
+La fenêtre couvre une soirée. Ces commandes servent à un script, ou à un
+réglage que la fenêtre n'affiche pas. Lancez-les depuis un terminal : l'exe s'y
+rattache.
+
 | Commande | Ce qu'elle fait |
 | --- | --- |
-| `tf2ap.exe` | Demande la room au premier lancement, installe le reste, démarre |
-| `tf2ap.exe -room <hôte:port>` | Règle l'adresse de la room, puis démarre |
-| `tf2ap.exe -configure` | Édite tous les réglages, puis quitte |
+| `tf2ap.exe` | Ouvre la fenêtre |
+| `tf2ap.exe -room <hôte:port>` | Règle l'adresse, puis ouvre la fenêtre |
+| `tf2ap.exe -console` | Tourne dans le terminal, sans fenêtre |
+| `tf2ap.exe -configure` | Édite tous les réglages dans le terminal, puis quitte |
 | `tf2ap.exe -install` | Installe ou répare le serveur, puis quitte |
 | `tf2ap.exe -status` | Affiche les réglages et l'état de l'installation |
 | `tf2ap.exe -yaml <chemin>` | Écrit le fichier joueur Archipelago, puis quitte |

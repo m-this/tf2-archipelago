@@ -250,10 +250,16 @@ launcher-assets: bots
 		echo "no plugin/build/tf2_archipelago.smx (run 'make plugin' on Linux, or CI will) — building with the placeholder"; \
 	fi
 
+# -H windowsgui links for the windows subsystem: a double-click opens the
+# window and no console behind it. The flags that print keep working, because
+# the launcher attaches to the terminal's console when it was given arguments.
 launcher: launcher-assets
 	mkdir -p $(DIST)
+	go run github.com/akavel/rsrc@$(RSRC_VERSION) \
+		-manifest launcher/cmd/tf2ap/tf2ap.manifest \
+		-arch amd64 -o launcher/cmd/tf2ap/rsrc_windows_amd64.syso
 	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath \
-		-ldflags="-s -w $(LAUNCHER_LDFLAGS)" \
+		-ldflags="-s -w -H windowsgui $(LAUNCHER_LDFLAGS)" \
 		-o $(DIST)/tf2ap.exe ./launcher/cmd/tf2ap
 
 # --- Integration ---

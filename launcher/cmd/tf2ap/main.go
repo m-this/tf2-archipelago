@@ -22,6 +22,7 @@ import (
 
 	"github.com/m-this/tf2-archipelago/gamedata"
 	"github.com/m-this/tf2-archipelago/launcher/internal/assets"
+	"github.com/m-this/tf2-archipelago/launcher/internal/gui"
 	"github.com/m-this/tf2-archipelago/launcher/internal/installer"
 	"github.com/m-this/tf2-archipelago/launcher/internal/runshape"
 	"github.com/m-this/tf2-archipelago/launcher/internal/runtime"
@@ -41,12 +42,19 @@ func main() {
 }
 
 func run(logger *slog.Logger) error {
+	// Linked for the windows subsystem, so a run from a terminal has no
+	// streams until this hands them back. Every flag below prints.
+	if len(os.Args) > 1 {
+		ui.AttachConsole()
+	}
+
 	installFlag := flag.Bool("install", false, "install or repair the server, then exit")
 	configureFlag := flag.Bool("configure", false, "edit the configuration, then exit")
 	statusFlag := flag.Bool("status", false, "show the configuration and install state, then exit")
 	roomFlag := flag.String("room", "", "the Archipelago room address, as host:port")
 	yamlFlag := flag.String("yaml", "", "write the Archipelago player file to this path, then exit")
 	envFlag := flag.Bool("env", false, "list the environment variables that override the configuration, then exit")
+	consoleFlag := flag.Bool("console", false, "run in the terminal instead of the window")
 	showVersion := flag.Bool("version", false, "print the version and exit")
 	flag.Parse()
 
@@ -103,6 +111,9 @@ func run(logger *slog.Logger) error {
 		return nil
 	}
 
+	if gui.Available() && !*consoleFlag {
+		return gui.Run(s, nil)
+	}
 	return guided(logger, s)
 }
 
