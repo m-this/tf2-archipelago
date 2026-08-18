@@ -10,24 +10,31 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/lxn/walk"
 	declarative "github.com/lxn/walk/declarative"
+	"github.com/lxn/win"
 
 	"github.com/m-this/tf2-archipelago/gamedata"
 	"github.com/m-this/tf2-archipelago/launcher/internal/installer"
 	"github.com/m-this/tf2-archipelago/launcher/internal/rcon"
-	"github.com/m-this/tf2-archipelago/launcher/internal/runtime"
+	apruntime "github.com/m-this/tf2-archipelago/launcher/internal/runtime"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 	"github.com/m-this/tf2-archipelago/launcher/internal/srcdsconfig"
 )
 
-// linesMax caps the log view. A wave produces a few hundred lines and an
-// evening produces tens of thousands, which a TextEdit redraws badly.
-const linesMax = 4000
+// linesMax caps the log view: a wave produces a few hundred lines and an
+// evening tens of thousands, which a TextEdit redraws badly. linesTrim is
+// where the trim restarts, so the rewrite that costs happens once every few
+// hundred lines rather than on every one.
+const (
+	linesMax  = 4000
+	linesTrim = 1000
+)
 
 type window struct {
 	main       *walk.MainWindow
@@ -39,7 +46,7 @@ type window struct {
 	restart    *walk.PushButton
 	settingsBt *walk.PushButton
 
-	supervisor *runtime.Supervisor
+	supervisor *apruntime.Supervisor
 	logger     *slog.Logger
 
 	mu    sync.Mutex
@@ -50,8 +57,16 @@ type window struct {
 // Run opens the window and blocks until the player closes it. The server is
 // stopped on the way out, so closing the window is a clean shutdown.
 func Run(s settings.Settings, logger *slog.Logger) error {
+	// Win32 delivers a window's messages to the thread that created it, and Go
+	// moves a goroutine between threads at any blocking call. Without this the
+	// message loop can end up on a different thread from the window, which
+	// leaves it half laid out: the toolbar and the log keep the sizes they had
+	// at creation while the rest of the window resizes around them.
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+
 	w := &window{logger: logger}
-	w.supervisor = runtime.NewSupervisor(s, nil, w.append)
+	w.supervisor = apruntime.NewSupervisor(s, nil, w.append)
 
 	if err := w.build(); err != nil {
 		return err
@@ -75,28 +90,39 @@ func (w *window) build() error {
 	return declarative.MainWindow{
 		AssignTo: &w.main,
 		Title:    "Mann vs Archipelago",
-		MinSize:  declarative.Size{Width: 760, Height: 520},
+		Size:     declarative.Size{Width: 900, Height: 600},
 		Layout:   declarative.VBox{},
 		Children: []declarative.Widget{
 			declarative.Composite{
-				Layout: declarative.HBox{MarginsZero: true},
+				Layout:    declarative.HBox{MarginsZero: true},
+				MaxSize:   declarative.Size{Height: 28},
+				Alignment: declarative.AlignHNearVCenter,
 				Children: []declarative.Widget{
-					declarative.Label{AssignTo: &w.status, Text: "stopped"},
-					declarative.HSpacer{Size: 16},
-					declarative.Label{AssignTo: &w.room, Text: ""},
+					declarative.Label{AssignTo: &w.status, Text: "stopped", MinSize: declarative.Size{Width: 60}},
+					declarative.Label{AssignTo: &w.room, Text: "", MinSize: declarative.Size{Width: 240}},
 					declarative.HSpacer{},
-					declarative.PushButton{AssignTo: &w.startStop, Text: "Start", OnClicked: w.onStartStop},
-					declarative.PushButton{AssignTo: &w.restart, Text: "Restart", OnClicked: w.onRestart},
-					declarative.PushButton{AssignTo: &w.settingsBt, Text: "Settings", OnClicked: w.editSettings},
+					declarative.PushButton{AssignTo: &w.startStop, Text: "Start", OnClicked: w.onStartStop, MinSize: declarative.Size{Width: 90}},
+					declarative.PushButton{AssignTo: &w.restart, Text: "Restart", OnClicked: w.onRestart, MinSize: declarative.Size{Width: 90}},
+					declarative.PushButton{AssignTo: &w.settingsBt, Text: "Settings", OnClicked: w.editSettings, MinSize: declarative.Size{Width: 90}},
 				},
 			},
-			declarative.TextEdit{AssignTo: &w.log, ReadOnly: true, VScroll: true, HScroll: true},
+			// No HScroll, and a MinSize rather than a preferred size: a
+			// TextEdit sized by its content makes one long log line stretch
+			// the whole window past the screen.
+			declarative.TextEdit{
+				AssignTo:      &w.log,
+				ReadOnly:      true,
+				VScroll:       true,
+				MinSize:       declarative.Size{Width: 400, Height: 200},
+				StretchFactor: 1,
+			},
 			declarative.Composite{
-				Layout: declarative.HBox{MarginsZero: true},
+				Layout:  declarative.HBox{MarginsZero: true},
+				MaxSize: declarative.Size{Height: 28},
 				Children: []declarative.Widget{
-					declarative.Label{Text: "rcon"},
+					declarative.Label{Text: "rcon", MinSize: declarative.Size{Width: 30}},
 					declarative.LineEdit{AssignTo: &w.command, OnKeyDown: w.onCommandKey},
-					declarative.PushButton{Text: "Send", OnClicked: w.onSend},
+					declarative.PushButton{Text: "Send", OnClicked: w.onSend, MinSize: declarative.Size{Width: 90}},
 				},
 			},
 		},
@@ -106,29 +132,39 @@ func (w *window) build() error {
 // append is the sink every log line arrives on, from goroutines that are not
 // the UI thread. Synchronize hands the update to the thread that owns the
 // window, which is the only one allowed to touch it.
-func (w *window) append(line runtime.Line) {
+//
+// One line at a time, appended. Rewriting the whole buffer on every line is
+// quadratic, and it makes the TextEdit ask the layout for a new size hundreds
+// of times a wave, which drags the toolbar around with it.
+func (w *window) append(line apruntime.Line) {
 	text := fmt.Sprintf("%s  %-8s %s", line.At.Format("15:04:05"), line.Source, line.Text)
 
 	w.mu.Lock()
 	w.lines = append(w.lines, text)
+	trimmed := ""
 	if len(w.lines) > linesMax {
-		w.lines = w.lines[len(w.lines)-linesMax:]
+		w.lines = w.lines[linesTrim:]
+		trimmed = strings.Join(w.lines, "\r\n") + "\r\n"
 	}
-	body := strings.Join(w.lines, "\r\n")
 	w.mu.Unlock()
 
 	if w.main == nil {
 		return
 	}
 	w.main.Synchronize(func() {
-		w.log.SetText(body)
-		w.log.SetTextSelection(len(body), len(body))
-		w.log.ScrollToCaret()
+		if trimmed != "" {
+			w.log.SetText(trimmed)
+		} else {
+			w.log.AppendText(text + "\r\n")
+		}
+		// Scroll the log itself to the bottom. Moving the caret instead makes
+		// the window scroll sideways to reveal it.
+		win.SendMessage(w.log.Handle(), win.WM_VSCROLL, win.SB_BOTTOM, 0)
 	})
 }
 
 func (w *window) say(format string, args ...any) {
-	w.append(runtime.Line{At: time.Now(), Source: "launcher", Text: fmt.Sprintf(format, args...)})
+	w.append(apruntime.Line{At: time.Now(), Source: "launcher", Text: fmt.Sprintf(format, args...)})
 }
 
 func (w *window) onStartStop() {
@@ -188,7 +224,7 @@ func (w *window) start() {
 }
 
 func (w *window) installLog(format string, args ...any) {
-	w.append(runtime.Line{At: time.Now(), Source: "install", Text: fmt.Sprintf(format, args...)})
+	w.append(apruntime.Line{At: time.Now(), Source: "install", Text: fmt.Sprintf(format, args...)})
 }
 
 func (w *window) refresh() {
@@ -257,7 +293,7 @@ func (w *window) onSend() {
 		}
 		for _, line := range strings.Split(reply, "\n") {
 			if strings.TrimSpace(line) != "" {
-				w.append(runtime.Line{At: time.Now(), Source: "rcon", Text: line})
+				w.append(apruntime.Line{At: time.Now(), Source: "rcon", Text: line})
 			}
 		}
 	}()

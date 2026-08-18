@@ -56,6 +56,18 @@ output back when a terminal started them.
 `-console` runs the old prompt flow, which is also what every other platform
 gets: `gui.Available()` is false there.
 
+Three Win32 details the window depends on, each found by running the exe under
+Wine:
+
+- `runtime.LockOSThread` in `gui.Run`. Windows delivers a window's messages to
+  the thread that created it, and Go moves a goroutine between threads at any
+  blocking call.
+- `CREATE_NO_WINDOW` on the game server (`runtime.hideConsole`). srcds is a
+  console program and this is not, so Windows gives the child a console of its
+  own. That console leaves this window half laid out.
+- The settings dialog reads its fields in the Save handler. Closing a dialog
+  destroys its children, and a destroyed control reads back empty.
+
 ## How it fits
 
 The launcher imports `bridge/` and runs it in-process. The `srcds.exe`

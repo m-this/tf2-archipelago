@@ -119,6 +119,7 @@ func runSrcdsWithSink(ctx context.Context, s settings.Settings, logger *slog.Log
 	}
 	cmd := exec.CommandContext(ctx, filepath.Join(gameDir, exeName), args...)
 	cmd.Dir = gameDir
+	hideConsole(cmd)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return err

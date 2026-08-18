@@ -44,24 +44,25 @@ func runSettingsDialog(owner walk.Form, s settings.Settings) (settings.Settings,
 	}
 
 	current := settings.Room{Host: s.APHost, Port: s.APPort}
+	edited := s
 
 	err := declarative.Dialog{
-		AssignTo:      &dialog,
-		Title:         "Settings",
-		DefaultButton: &accept,
-		CancelButton:  &cancel,
-		MinSize:       declarative.Size{Width: 460, Height: 380},
-		Layout:        declarative.VBox{},
+		AssignTo:     &dialog,
+		Title:        "Settings",
+		CancelButton: &cancel,
+		Size:         declarative.Size{Width: 560, Height: 520},
+		MinSize:      declarative.Size{Width: 520, Height: 470},
+		Layout:       declarative.VBox{},
 		Children: []declarative.Widget{
 			declarative.GroupBox{
 				Title:  "Archipelago room",
 				Layout: declarative.Grid{Columns: 2},
 				Children: []declarative.Widget{
-					declarative.Label{Text: "Room address"},
+					declarative.Label{Text: "Room address", MinSize: declarative.Size{Width: 130}},
 					declarative.LineEdit{AssignTo: &roomEdit, Text: current.String(), CueBanner: "archipelago.gg:12345"},
 					declarative.Label{Text: ""},
 					declarative.Label{AssignTo: &roomWarn, Text: ""},
-					declarative.Label{Text: "Slot name"},
+					declarative.Label{Text: "Slot name", MinSize: declarative.Size{Width: 130}},
 					declarative.LineEdit{AssignTo: &slotEdit, Text: s.APSlotName},
 				},
 			},
@@ -69,13 +70,13 @@ func runSettingsDialog(owner walk.Form, s settings.Settings) (settings.Settings,
 				Title:  "Server",
 				Layout: declarative.Grid{Columns: 2},
 				Children: []declarative.Widget{
-					declarative.Label{Text: "Server name"},
+					declarative.Label{Text: "Server name", MinSize: declarative.Size{Width: 130}},
 					declarative.LineEdit{AssignTo: &nameEdit, Text: s.SrcdsHostname},
-					declarative.Label{Text: "Start map"},
+					declarative.Label{Text: "Start map", MinSize: declarative.Size{Width: 130}},
 					declarative.ComboBox{AssignTo: &mapBox, Model: mapNames(), Value: s.SrcdsStartMap},
-					declarative.Label{Text: "Defender bots"},
+					declarative.Label{Text: "Defender bots", MinSize: declarative.Size{Width: 130}},
 					declarative.CheckBox{AssignTo: &botsBox, Text: "fill the RED team", Checked: s.SrcdsBots},
-					declarative.Label{Text: "Fill RED to"},
+					declarative.Label{Text: "Fill RED to", MinSize: declarative.Size{Width: 130}},
 					declarative.NumberEdit{AssignTo: &botsSize, Value: float64(s.SrcdsBotTeamSize), MinValue: 1, MaxValue: 6, Decimals: 0},
 				},
 			},
@@ -83,11 +84,11 @@ func runSettingsDialog(owner walk.Form, s settings.Settings) (settings.Settings,
 				Title:  "Run shape (used when you generate the seed)",
 				Layout: declarative.Grid{Columns: 2},
 				Children: []declarative.Widget{
-					declarative.Label{Text: "Difficulty pool"},
+					declarative.Label{Text: "Difficulty", MinSize: declarative.Size{Width: 130}},
 					declarative.ComboBox{AssignTo: &tierBox, Model: tierLabels, Value: tierLabel(tiers, s.MvmDifficulty)},
-					declarative.Label{Text: "Missions"},
+					declarative.Label{Text: "Missions", MinSize: declarative.Size{Width: 130}},
 					declarative.NumberEdit{AssignTo: &missions, Value: float64(s.MvmMissionCount), MinValue: 1, MaxValue: 29, Decimals: 0},
-					declarative.Label{Text: "Goal"},
+					declarative.Label{Text: "Goal", MinSize: declarative.Size{Width: 130}},
 					declarative.ComboBox{AssignTo: &goalBox, Model: goalLabels, Value: goalLabel(goals, s.MvmGoal)},
 				},
 			},
@@ -95,7 +96,32 @@ func runSettingsDialog(owner walk.Form, s settings.Settings) (settings.Settings,
 				Layout: declarative.HBox{},
 				Children: []declarative.Widget{
 					declarative.HSpacer{},
-					declarative.PushButton{AssignTo: &accept, Text: "Save", OnClicked: func() { dialog.Accept() }},
+					declarative.PushButton{AssignTo: &accept, Text: "Save", OnClicked: func() {
+						// Read every field here, not after Run returns: closing
+						// the dialog destroys its children, and a destroyed
+						// LineEdit reads back empty.
+						//
+						// The address is checked here too, rather than as the
+						// player types. A disabled button with no explanation
+						// is a dead end, and a paste with the mouse sends no
+						// keystroke to check on.
+						room, err := settings.ParseRoom(roomEdit.Text())
+						if err != nil {
+							roomWarn.SetText(err.Error())
+							return
+						}
+						edited = s
+						edited.APHost, edited.APPort, edited.APTls = room.Host, room.Port, room.TLS
+						edited.APSlotName = strings.TrimSpace(slotEdit.Text())
+						edited.SrcdsHostname = strings.TrimSpace(nameEdit.Text())
+						edited.SrcdsStartMap = mapBox.Text()
+						edited.SrcdsBots = botsBox.Checked()
+						edited.SrcdsBotTeamSize = int(botsSize.Value())
+						edited.MvmDifficulty = tiers[max(tierBox.CurrentIndex(), 0)].Key
+						edited.MvmMissionCount = int(missions.Value())
+						edited.MvmGoal = goals[max(goalBox.CurrentIndex(), 0)].Key
+						dialog.Accept()
+					}},
 					declarative.PushButton{AssignTo: &cancel, Text: "Cancel", OnClicked: func() { dialog.Cancel() }},
 				},
 			},
@@ -105,38 +131,20 @@ func runSettingsDialog(owner walk.Form, s settings.Settings) (settings.Settings,
 		return s, false, err
 	}
 
-	// The address is the one field with a wrong answer, so it is checked as it
-	// is typed and Save stays disabled until it parses.
-	validate := func() {
-		if _, err := settings.ParseRoom(roomEdit.Text()); err != nil {
-			roomWarn.SetText(err.Error())
-			accept.SetEnabled(false)
-			return
+	// Clear the complaint as soon as the address looks right again.
+	roomEdit.TextChanged().Attach(func() {
+		if _, err := settings.ParseRoom(roomEdit.Text()); err == nil {
+			roomWarn.SetText("")
 		}
-		roomWarn.SetText("")
-		accept.SetEnabled(true)
+	})
+	if s.APPort == 0 {
+		roomWarn.SetText("paste the address from your Archipelago room page")
 	}
-	roomEdit.TextChanged().Attach(validate)
-	validate()
 
 	if dialog.Run() != walk.DlgCmdOK {
 		return s, false, nil
 	}
-
-	room, err := settings.ParseRoom(roomEdit.Text())
-	if err != nil {
-		return s, false, err
-	}
-	s.APHost, s.APPort, s.APTls = room.Host, room.Port, room.TLS
-	s.APSlotName = strings.TrimSpace(slotEdit.Text())
-	s.SrcdsHostname = strings.TrimSpace(nameEdit.Text())
-	s.SrcdsStartMap = mapBox.Text()
-	s.SrcdsBots = botsBox.Checked()
-	s.SrcdsBotTeamSize = int(botsSize.Value())
-	s.MvmDifficulty = tiers[max(tierBox.CurrentIndex(), 0)].Key
-	s.MvmMissionCount = int(missions.Value())
-	s.MvmGoal = goals[max(goalBox.CurrentIndex(), 0)].Key
-	return s, true, nil
+	return edited, true, nil
 }
 
 func tierLabel(tiers []runshape.Tier, key string) string {
