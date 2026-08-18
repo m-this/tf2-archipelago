@@ -78,6 +78,12 @@ install_server_cfg() {
 	target="$GAME/cfg/server.cfg"
 	[ -d "$(dirname "$target")" ] || return 0
 
+	if [ "${SRCDS_BOTS:-1}" = 0 ]; then
+		bots_mode=0
+	else
+		bots_mode=2
+	fi
+
 	staged=$(mktemp)
 	cat >"$staged" <<-CFG
 	// Managed by the tf2-archipelago image. Edits here are replaced the next
@@ -96,10 +102,24 @@ install_server_cfg() {
 
 	// A wave starts when enough players have readied up, and one is enough
 	// here. A private server is a handful of friends, so one of them arriving
-	// late is not a reason for the evening to stall. It is also the only way to
-	// test a wave alone: a bot cannot ready up, so without this the host cannot
-	// reach the one part of the plugin nothing has proven.
+	// late is not a reason for the evening to stall, and it is what lets one
+	// player start a wave alone.
 	tf_mvm_min_players_to_start 1
+
+	// The defender bots. Valve tunes every wave for six players on RED, so a
+	// run with fewer than that is unwinnable without them.
+	//
+	// Mode 2 is AUTO_BOTS: the mod fills RED when mvm_begin_wave fires and
+	// tops it back up every second for the rest of the wave. Mode 0 leaves the
+	// bots to an admin's !addbots, which is what SRCDS_BOTS=0 means here: the
+	// plugins stay loaded, nothing spawns on its own.
+	//
+	// min_players -1 disables the mod's own ready-up gate. It defaults to 3
+	// and counts RED before the wave, where a solo player has no bots yet, so
+	// leaving it on blocks the F4 that would have spawned them.
+	sm_redbots_manager_mode ${bots_mode}
+	sm_redbots_manager_defender_team_size ${SRCDS_BOT_TEAM_SIZE:-6}
+	sm_redbots_manager_min_players -1
 
 	// LAN mode skips Steam authentication. The server has no Game Server Login
 	// Token by default, so it never logs in to Steam, and a client trying to

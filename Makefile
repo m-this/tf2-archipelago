@@ -39,7 +39,8 @@ GO_SRC := $$(find . -type f -name '*.go')
 .PHONY: help seed up down restart logs ps rcon \
         check fmt fmt-check vet lint lint-fix fix-check vuln compile test \
         test-fast export apworld-lint \
-        apworld-fmt apworld-test apworld-build plugin integration build docs \
+        apworld-fmt apworld-test apworld-build plugin bots bots-from-source \
+        integration build docs \
         docs-build docs-down dist compose-release version-check clean \
         launcher launcher-assets
 
@@ -53,6 +54,7 @@ help:
 	@echo "  make check         The gate: everything CI runs"
 	@echo "  make export        Regenerate apworld/tf2_mvm/data from gamedata/"
 	@echo "  make plugin        Compile the SourceMod plugin"
+	@echo "  make bots          Stage the MvM defender bots the image installs"
 	@echo "  make apworld-test  Run the apworld's tests inside Archipelago"
 	@echo "  make integration   Bring up Archipelago and the bridge, drive them"
 	@echo "  make dist          Build everything a release attaches into ./dist"
@@ -195,6 +197,21 @@ apworld-build:
 plugin:
 	./plugin/build.sh
 
+# --- The defender bots ---
+
+# Stages the MvM bot stack into deploy/bots/build/package: four plugins
+# compiled from patched source, two extensions from the pinned upstream
+# releases for both Linux and Windows. The image runs this in its own stage;
+# this target is for looking at what it produces.
+bots:
+	./deploy/bots/build.sh
+
+# The same, but compiling the two extensions here instead of downloading them.
+# Needs clang and a 32-bit toolchain. Linux only, and only worth it when a TF2
+# update breaks CBaseNPC and the fix has to be ours.
+bots-from-source:
+	BOTS_BUILD_EXTENSIONS=1 ./deploy/bots/build.sh
+
 # --- The launcher ---
 
 # The all-in-one Windows exe. The .smx and the ripext Windows zip are embedded
@@ -260,10 +277,16 @@ docs-down: .env
 # --- The release ---
 
 # .github/workflows/release.yml calls this and builds nothing of its own.
-dist: apworld-build plugin launcher compose-release
+dist: apworld-build plugin bots launcher compose-release
 	cp plugin/build/tf2_archipelago.smx $(DIST)/
 	cp apworld/tf2_mvm/data/*.json $(DIST)/
 	cp deploy/.env.example $(DIST)/.env.example
+	# The bot stack as one archive rooted at addons/, so a server that is not
+	# this image installs it by unzipping into the game directory. Both the
+	# Linux .so and the Windows .dll are in it: SourceMod takes the one its
+	# platform needs. This is what a Windows server gets.
+	rm -f $(DIST)/tf2-defender-bots.zip
+	cd deploy/bots/build/package && zip -qr $(CURDIR)/$(DIST)/tf2-defender-bots.zip addons
 
 # --no-interpolate leaves every ${VAR} alone, so the operator's .env still fills
 # them in. The awk drops the build: blocks, which point at a repository a
@@ -307,4 +330,4 @@ clean: .env
 	$(COMPOSE_SEED) down -v
 	$(COMPOSE_TEST) down -v
 	$(COMPOSE_DOCS) down -v
-	rm -rf plugin/build/ $(DIST)/
+	rm -rf plugin/build/ deploy/bots/build/ $(DIST)/

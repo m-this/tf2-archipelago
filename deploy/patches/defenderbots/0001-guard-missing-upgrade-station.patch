@@ -1,0 +1,42 @@
+diff --git a/source/redbots3/behavior/gotoupgrade.sp b/source/redbots3/behavior/gotoupgrade.sp
+index b49c332..e12ea6a 100644
+--- a/source/redbots3/behavior/gotoupgrade.sp
++++ b/source/redbots3/behavior/gotoupgrade.sp
+@@ -18,15 +18,14 @@ public Action CTFBotGotoUpgrade_OnStart(BehaviorAction action, int actor, Behavi
+ 	
+ 	m_iStation[actor] = FindClosestUpgradeStation(actor);
+ 
+-	if (m_iStation[actor] <= MaxClients)
++	if (m_iStation[actor] <= MaxClients || !IsValidEntity(m_iStation[actor]))
+ 	{
+ 		//We couldn't find an upgrade station to path to, so let's just pretend we're at one
+ 		TF2_SetInUpgradeZone(actor, true);
+ 		
+ 		// return action.Done("No upgrade station");
+ 	}
+-	
+-	if (GameRules_GetRoundState() == RoundState_RoundRunning)
++	else if (GameRules_GetRoundState() == RoundState_RoundRunning)
+ 	{
+ 		float myOrigin[3]; GetClientAbsOrigin(actor, myOrigin);
+ 		
+@@ -58,6 +57,9 @@ public Action CTFBotGotoUpgrade_Update(BehaviorAction action, int actor, float i
+ 	
+ 	if (!hasGoal)
+ 	{
++		if (station <= MaxClients || !IsValidEntity(station))
++			return action.Done("No upgrade station to path to");
++		
+ 		CNavArea area = TheNavMesh.GetNearestNavArea(WorldSpaceCenter(station), true, 1000.0, false, false, TEAM_ANY);
+ 		
+ 		if (area == NULL_AREA)
+@@ -133,6 +135,9 @@ int FindClosestUpgradeStation(int actor)
+ 		stationcount++;
+ 	}
+ 	
++	if (stationcount == 0)
++		return -1;
++	
+ 	return stations[GetRandomInt(0, stationcount - 1)];
+ }
+ 

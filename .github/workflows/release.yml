@@ -84,6 +84,7 @@ jobs:
             dist/.env.example \
             dist/tf2_mvm.apworld \
             dist/tf2_archipelago.smx \
+            dist/tf2-defender-bots.zip \
             dist/meta.json \
             dist/items.json \
             dist/missions.json

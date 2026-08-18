@@ -19,6 +19,23 @@ COPY plugin/scripting ./scripting
 RUN ./build.sh
 
 
+# The MvM defender bots: the mod that fills RED so a wave tuned for six players
+# is winnable alone. Its own stage so a plugin edit does not refetch it, and so
+# the tree it stages can be copied whole.
+FROM debian:stable-slim AS bots
+
+RUN apt-get update \
+	&& apt-get install --yes --no-install-recommends \
+		git curl ca-certificates unzip \
+	&& rm -rf /var/lib/apt/lists/*
+
+WORKDIR /repo
+COPY deploy/env/versions.env deploy/env/versions.env
+COPY deploy/patches deploy/patches
+COPY deploy/bots deploy/bots
+RUN sh deploy/bots/build.sh
+
+
 FROM cm2network/tf2:sourcemod
 
 ARG RIPEXT_VERSION
@@ -39,6 +56,8 @@ RUN apt-get update \
 	&& apt-get autoremove --yes \
 	&& rm -rf /var/lib/apt/lists/*
 
+COPY --from=bots /repo/deploy/bots/build/package/addons \
+	/opt/tf2-archipelago/addons
 COPY --from=build /plugin/build/tf2_archipelago.smx \
 	/opt/tf2-archipelago/addons/sourcemod/plugins/tf2_archipelago.smx
 COPY deploy/srcds/tf2_archipelago.cfg \

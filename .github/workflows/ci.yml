@@ -127,6 +127,19 @@ jobs:
       - name: spcomp
         run: make plugin
 
+      # The bot stack is downloads plus four spcomp runs, so the cache is what
+      # keeps it cheap: the pins and the patches are the only things that
+      # change what it produces, and both are hashed into the key.
+      - uses: actions/cache@v6
+        with:
+          path: deploy/bots/build
+          key: bots-${{ hashFiles('deploy/env/versions.env', 'deploy/patches/**', 'deploy/bots/*.sh') }}
+
+      # Proves the patches still apply and the mod still compiles. The image
+      # runs the same script, so a break shows up here rather than at a tag.
+      - name: defender bots
+        run: make bots
+
   # Needs a runner with a Docker daemon it can reach: it builds images and
   # brings a stack up. Without one, these two targets are the ones to run by
   # hand before a release. No container: on GitHub the label is a VM with a

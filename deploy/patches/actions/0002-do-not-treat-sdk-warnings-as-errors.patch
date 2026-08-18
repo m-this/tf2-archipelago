@@ -1,0 +1,13 @@
+diff --git a/AMBuildScript b/AMBuildScript
+index 3ad4e9d..a19ae7c 100644
+--- a/AMBuildScript
++++ b/AMBuildScript
+@@ -199,7 +199,7 @@ class ExtensionConfig(object):
+       '-pipe',
+       '-fno-strict-aliasing',
+       '-Wall',
+-      '-Werror',
++      '-Wno-error',
+       '-Wno-unused',
+       '-Wno-switch',
+       '-Wno-array-bounds',
