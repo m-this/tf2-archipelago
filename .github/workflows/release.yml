@@ -21,6 +21,12 @@ jobs:
         with:
           fetch-depth: 1
 
+      # `make dist` cross-compiles the launcher, so this job needs the Go the
+      # module asks for, not whatever the runner image happens to carry.
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
       - name: name the images
         run: |
           echo "IMAGE=ghcr.io/${{ github.repository }}" >> "$GITHUB_ENV"
