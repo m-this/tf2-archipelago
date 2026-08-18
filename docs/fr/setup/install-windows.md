@@ -12,8 +12,9 @@ puis lancez-le.
 1. Il installe SteamCMD, le serveur dédié TF2, Metamod:Source, SourceMod, le
    plugin et les bots défenseurs. Le serveur fait environ 14 Go. C'est la
    partie longue, et elle n'arrive qu'une fois.
-2. Il demande les réglages d'une soirée. L'adresse de votre room Archipelago,
-   un mot de passe RCON, et la forme de la partie.
+2. Il pose une seule question : l'adresse de votre room Archipelago. Tout le
+   reste a une valeur par défaut qui marche. Le lanceur invente lui-même le
+   mot de passe RCON.
 3. Il démarre le serveur de jeu et le bridge ensemble. Appuyez sur Ctrl-C pour
    arrêter les deux.
 
@@ -68,14 +69,25 @@ tf2ap.exe
 
 Une fenêtre de terminal s'ouvre. Le premier démarrage se déroule ainsi :
 
-1. Le lanceur installe SteamCMD. Quelques secondes.
-2. Le lanceur installe le serveur dédié TF2. C'est le téléchargement de 14 Go.
+1. Le lanceur demande l'adresse de la room. Collez la ligne de votre page de
+   room, par exemple `archipelago.gg:12345`, puis appuyez sur Entrée. La
+   question vient en premier, donc une faute de frappe coûte une seconde et
+   non un téléchargement.
+2. Le lanceur installe SteamCMD. Quelques secondes.
+3. Le lanceur installe le serveur dédié TF2. C'est le téléchargement de 14 Go.
    La durée dépend de votre connexion.
-3. Le lanceur installe Metamod:Source, SourceMod, le plugin et les bots.
-4. Le lanceur demande les réglages. Répondez aux questions. Vos réponses
-   précédentes sont entre crochets, et Entrée garde la réponse affichée.
-5. Le lanceur démarre le serveur. Le journal affiche
+4. Le lanceur installe Metamod:Source, SourceMod, le plugin et les bots.
+5. Le lanceur affiche ce qu'il a choisi pour vous, mot de passe RCON compris,
+   puis démarre le serveur. Le journal affiche
    `connected to archipelago slot=tf2`.
+
+Les démarrages suivants ne demandent plus rien.
+
+`tf2ap.exe -configure` change n'importe quel défaut. Le nom du serveur, le
+port, la carte de départ, les bots, la forme de la partie.
+
+`tf2ap.exe -room archipelago.gg:12345` donne l'adresse en ligne de commande.
+Le lanceur saute alors la question.
 
 Vos amis se connectent depuis la console développeur :
 
@@ -99,7 +111,8 @@ une partie plus dure. Voir [Les bots de votre équipe](../play/defender-bots.md)
 
 | Commande | Ce qu'elle fait |
 | --- | --- |
-| `tf2ap.exe` | Installe si besoin, demande les valeurs manquantes, démarre |
+| `tf2ap.exe` | Demande la room au premier lancement, installe le reste, démarre |
+| `tf2ap.exe -room <hôte:port>` | Règle l'adresse de la room, puis démarre |
 | `tf2ap.exe -configure` | Édite tous les réglages, puis quitte |
 | `tf2ap.exe -install` | Installe ou répare le serveur, puis quitte |
 | `tf2ap.exe -status` | Affiche les réglages et l'état de l'installation |
@@ -115,12 +128,13 @@ exécution, et le lanceur ne la garde jamais. Démarrez un serveur sans aucune
 question, depuis un raccourci ou un fichier `.bat` :
 
 ```bat
-set AP_HOST=archipelago.gg
-set AP_PORT=12345
-set SRCDS_RCONPW=un-mot-de-passe-long
+set AP_ROOM=archipelago.gg:12345
 set SRCDS_BOT_TEAM_SIZE=4
 tf2ap.exe
 ```
+
+`AP_ROOM` porte l'adresse entière. `AP_HOST`, `AP_PORT` et `AP_TLS` règlent les
+trois parties séparément, pour un fichier `.env` partagé avec le stack Docker.
 
 `tf2ap.exe -env` affiche chaque nom lu et marque ceux que votre environnement
 donne déjà.

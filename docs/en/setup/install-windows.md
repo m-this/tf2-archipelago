@@ -12,8 +12,9 @@ run it.
 1. It installs SteamCMD, the TF2 dedicated server, Metamod:Source, SourceMod,
    the plugin and the defender bots. The game server is about 14 GB. This is
    the long part, and it happens once.
-2. It asks for the settings an evening needs. The address of your Archipelago
-   room, an RCON password, and the shape of the run.
+2. It asks one question: the address of your Archipelago room. Everything
+   else has a default that works, and the launcher invents the RCON password
+   itself.
 3. It starts the game server and the bridge together. Press Ctrl-C to stop
    both.
 
@@ -67,14 +68,13 @@ tf2ap.exe
 
 A terminal window opens. The first start goes like this:
 
-1. The launcher installs SteamCMD. Seconds.
-2. The launcher installs the TF2 dedicated server. This is the 14 GB download.
+1. The launcher asks for the room address. Paste the line from your room page,
+   such as `archipelago.gg:12345`, and press Enter. This comes first, so a
+   typo costs you a second rather than a download.
+2. The launcher installs SteamCMD. Seconds.
+3. The launcher installs the TF2 dedicated server. This is the 14 GB download.
    The time depends on your connection.
-3. The launcher installs Metamod:Source, SourceMod, the plugin and the bots.
-   Seconds.
-4. The launcher asks for the settings. Answer the questions. Your last answers
-   are in brackets, and Enter keeps one.
-5. The launcher starts the server. The log says
+4. The launcher starts the server. The log says
    `connected to archipelago slot=tf2`, and the room page says
    `tf2 (Team #1) playing Team Fortress 2 Mann vs Machine has joined`.
 
@@ -100,7 +100,8 @@ do and what they are bad at.
 
 | Command | What it does |
 | --- | --- |
-| `tf2ap.exe` | Install if needed, ask for missing values, start the server |
+| `tf2ap.exe` | Ask for the room on a first run, install the rest, start |
+| `tf2ap.exe -room <host:port>` | Set the room address, then start |
 | `tf2ap.exe -configure` | Edit every setting, then exit |
 | `tf2ap.exe -install` | Install or repair the server, then exit |
 | `tf2ap.exe -status` | Show the settings and the install state |
@@ -116,12 +117,13 @@ and the launcher never writes it back. Start a server with no questions from a
 shortcut or a `.bat` file:
 
 ```bat
-set AP_HOST=archipelago.gg
-set AP_PORT=12345
-set SRCDS_RCONPW=choose-something-long
+set AP_ROOM=archipelago.gg:12345
 set SRCDS_BOT_TEAM_SIZE=4
 tf2ap.exe
 ```
+
+`AP_ROOM` carries the whole address. `AP_HOST`, `AP_PORT` and `AP_TLS` set the
+three parts on their own, for a `.env` file shared with the Docker stack.
 
 `tf2ap.exe -env` prints every name it reads and marks the ones your environment
 already sets.

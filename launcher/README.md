@@ -32,6 +32,10 @@ injects the pinned versions from `deploy/env/versions.env` with `-ldflags`.
 
 ## Configuration
 
+The no-args run asks one question, the room address, and only on a first run.
+Everything else carries a default, and `settings.NewRconPassword` invents the
+one secret rather than asking for it. `-configure` opens the full list.
+
 Three layers, in order. The defaults, then `%APPDATA%\tf2ap\config.json`, then
 the environment. `settings.ApplyEnv` reads the names `deploy/.env.example`
 already uses, so a compose operator's file works here unchanged. An environment

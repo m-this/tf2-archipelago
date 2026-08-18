@@ -11,7 +11,7 @@ import (
 // operator's file works here unchanged.
 var EnvNames = []string{
 	"TF2AP_INSTALL_ROOT",
-	"AP_HOST", "AP_PORT", "AP_TLS", "AP_SLOT_NAME", "AP_PASSWORD",
+	"AP_ROOM", "AP_HOST", "AP_PORT", "AP_TLS", "AP_SLOT_NAME", "AP_PASSWORD",
 	"SRCDS_HOSTNAME", "SRCDS_RCONPW", "SRCDS_PW", "SRCDS_PORT",
 	"SRCDS_MAXPLAYERS", "SRCDS_STARTMAP", "SRCDS_TOKEN", "SRCDS_LAN",
 	"SRCDS_ADMIN_STEAMIDS", "SRCDS_BOTS", "SRCDS_BOT_TEAM_SIZE",
@@ -30,6 +30,13 @@ var EnvNames = []string{
 func ApplyEnv(s Settings) Settings {
 	str(&s.InstallRoot, "TF2AP_INSTALL_ROOT")
 
+	// AP_ROOM is the whole address in one variable, which is how the room page
+	// gives it. The three parts stay readable for a compose .env.
+	if value, ok := os.LookupEnv("AP_ROOM"); ok {
+		if room, err := ParseRoom(value); err == nil {
+			s.APHost, s.APPort, s.APTls = room.Host, room.Port, room.TLS
+		}
+	}
 	str(&s.APHost, "AP_HOST")
 	num(&s.APPort, "AP_PORT")
 	boolean(&s.APTls, "AP_TLS")

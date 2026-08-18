@@ -42,6 +42,7 @@ func run(logger *slog.Logger) error {
 	installFlag := flag.Bool("install", false, "install or repair the server, then exit")
 	configureFlag := flag.Bool("configure", false, "edit the configuration, then exit")
 	statusFlag := flag.Bool("status", false, "show the configuration and install state, then exit")
+	roomFlag := flag.String("room", "", "the Archipelago room address, as host:port")
 	yamlFlag := flag.String("yaml", "", "write the Archipelago player file to this path, then exit")
 	envFlag := flag.Bool("env", false, "list the environment variables that override the configuration, then exit")
 	showVersion := flag.Bool("version", false, "print the version and exit")
@@ -69,6 +70,14 @@ func run(logger *slog.Logger) error {
 	// override for one run must not become the saved answer.
 	s := settings.ApplyEnv(saved)
 
+	if *roomFlag != "" {
+		room, err := settings.ParseRoom(*roomFlag)
+		if err != nil {
+			return fmt.Errorf("-room %q: %w", *roomFlag, err)
+		}
+		s.APHost, s.APPort, s.APTls = room.Host, room.Port, room.TLS
+	}
+
 	if *yamlFlag != "" {
 		return writeYAML(s, *yamlFlag)
 	}
@@ -95,21 +104,26 @@ func run(logger *slog.Logger) error {
 	return guided(logger, s)
 }
 
-// guided is the no-args path: install if needed, configure if missing required
-// values, write the server configs, then start.
+// guided is the no-args path: ask for the room if this is a first run, install
+// whatever is missing, write the server configs, then start.
 func guided(logger *slog.Logger, s settings.Settings) error {
-	s = ensureInstalled(s, logger)
-	prompt := ui.New()
-	s = ensureConfigured(prompt, s)
+	// The question comes before the 14 GB, so a player who mistyped the address
+	// finds out in a second rather than after the download.
+	s, err := ensureConfigured(ui.New(), s)
+	if err != nil {
+		return err
+	}
 	if err := settings.Save(s); err != nil {
 		return fmt.Errorf("cannot save the configuration: %w", err)
 	}
+	s = ensureInstalled(s, logger)
 	if err := srcdsconfig.Install(s); err != nil {
 		return fmt.Errorf("cannot write the server configs: %w", err)
 	}
 	if err := writeStarterYAML(s); err != nil {
 		return err
 	}
+	summary(s)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -144,25 +158,72 @@ func ensureInstalled(s settings.Settings, logger *slog.Logger) settings.Settings
 	return s
 }
 
-func ensureConfigured(p *ui.Prompt, s settings.Settings) settings.Settings {
-	fmt.Println("\n--- Configuration ---")
-	if s.SrcdsRconPw == "" {
-		s.SrcdsRconPw = p.Password("Choose an RCON password (admin console, keep this secret)", "")
-	}
+// ensureConfigured asks for the one value nobody can guess, and fills the rest.
+// Everything else has a working default, and `-configure` is there for the
+// player who wants to change one.
+func ensureConfigured(p *ui.Prompt, s settings.Settings) (settings.Settings, error) {
 	if s.APPort == 0 {
-		fmt.Println("\nThe Archipelago room address goes here.")
-		fmt.Println("Create one at https://archipelago.gg after generating a seed with the Archipelago app.")
-		s.APHost = p.Text("  AP host", s.APHost)
-		s.APPort = p.Int("  AP port", s.APPort)
-		s.APTls = p.Bool("  Use TLS (wss, yes for archipelago.gg)", s.APTls)
+		fmt.Println()
+		fmt.Println("Paste the address from your Archipelago room page.")
+		fmt.Println("It looks like archipelago.gg:12345.")
+		for {
+			room, err := settings.ParseRoom(p.Text("  Room address", ""))
+			if err == nil {
+				s.APHost, s.APPort, s.APTls = room.Host, room.Port, room.TLS
+				break
+			}
+			fmt.Printf("  %v\n", err)
+		}
 	}
-	return s
+	if s.SrcdsRconPw == "" {
+		password, err := settings.NewRconPassword()
+		if err != nil {
+			return s, err
+		}
+		s.SrcdsRconPw = password
+	}
+	return s, nil
+}
+
+// summary is what the player sees before the server starts: the room they
+// gave, and the defaults they did not have to answer for.
+func summary(s settings.Settings) {
+	room := settings.Room{Host: s.APHost, Port: s.APPort, TLS: s.APTls}
+	scheme := "ws"
+	if s.APTls {
+		scheme = "wss"
+	}
+	path, _ := settings.Path()
+	fmt.Println()
+	fmt.Printf("  room     %s (%s), slot %s\n", room, scheme, s.APSlotName)
+	fmt.Printf("  server   %q on port %d, %s\n", s.SrcdsHostname, s.SrcdsPort, lanLabel(s.SrcdsLan))
+	fmt.Printf("  map      %s\n", s.SrcdsStartMap)
+	fmt.Printf("  bots     %s\n", botsStatus(s))
+	fmt.Printf("  run      %d missions, %s, goal %s\n", s.MvmMissionCount, s.MvmDifficulty, s.MvmGoal)
+	fmt.Printf("  rcon     %s\n", s.SrcdsRconPw)
+	fmt.Printf("\ntf2ap.exe -configure changes any of this. It is saved in %s.\n", path)
+}
+
+func lanLabel(lan bool) string {
+	if lan {
+		return "local network"
+	}
+	return "public"
 }
 
 func configure(p *ui.Prompt, s settings.Settings) settings.Settings {
 	fmt.Println("--- Archipelago room ---")
-	s.APHost = p.Text("AP host", s.APHost)
-	s.APPort = p.Int("AP port", s.APPort)
+	current := settings.Room{Host: s.APHost, Port: s.APPort, TLS: s.APTls}
+	for {
+		answer := p.Text("Room address (host:port)", current.String())
+		room, err := settings.ParseRoom(answer)
+		if err != nil {
+			fmt.Printf("  %v\n", err)
+			continue
+		}
+		s.APHost, s.APPort, s.APTls = room.Host, room.Port, room.TLS
+		break
+	}
 	s.APTls = p.Bool("Use TLS (wss)", s.APTls)
 	s.APSlotName = p.Text("Slot name", s.APSlotName)
 	s.APPassword = p.Password("Room password", s.APPassword)
@@ -203,7 +264,7 @@ func configure(p *ui.Prompt, s settings.Settings) settings.Settings {
 
 func showStatus(s settings.Settings) {
 	fmt.Printf("Install root:  %s\n", s.InstallRoot)
-	fmt.Printf("Archipelago:   %s:%d (tls=%v)\n", s.APHost, s.APPort, s.APTls)
+	fmt.Printf("Archipelago:   %s (tls=%v)\n", settings.Room{Host: s.APHost, Port: s.APPort}, s.APTls)
 	fmt.Printf("Slot:          %s\n", s.APSlotName)
 	fmt.Printf("Server:        %s on port %d (lan=%v)\n", s.SrcdsHostname, s.SrcdsPort, s.SrcdsLan)
 	fmt.Printf("Start map:     %s\n", s.SrcdsStartMap)
