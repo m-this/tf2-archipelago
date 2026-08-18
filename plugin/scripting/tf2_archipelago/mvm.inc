@@ -150,3 +150,19 @@ stock void MvM_GrantCredits(int amount)
         AP_Debug("The run received %d credits, but there is nobody to pay.", amount);
     }
 }
+
+// Everyone on RED, bots included: a wave fails only when the whole team is
+// down, and a wave failure is what a death means here.
+stock int MvM_KillTeam()
+{
+    int killed = 0;
+    for (int client = 1; client <= MaxClients; client++)
+    {
+        if (IsClientInGame(client) && GetClientTeam(client) == TeamRed && IsPlayerAlive(client))
+        {
+            ForcePlayerSuicide(client);
+            killed++;
+        }
+    }
+    return killed;
+}

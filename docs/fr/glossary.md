@@ -61,9 +61,11 @@ dans `docs/en/spec.md`.
 
 **DeathLink**
 Une convention optionnelle où une mort dans un monde tue tous les autres
-participants DeathLink. Ce projet ne l'implémente pas. Une mort
-individuelle en MvM est normale plutôt que notable, donc il n'y a pas de
-définition propre de « mort » à laquelle l'accrocher. Voir
+participants DeathLink. Ici une mort est une vague perdue par l'équipe :
+une mort individuelle en MvM est routinière, et seul un anéantissement
+complet fait échouer la vague. En sortie, une vague perdue est un
+`Bounce` ; en entrée, un `Bounced` tue tout RED, bots compris, ce qui fait
+échouer la vague. Le plugin ne renvoie pas cette perte-là. Voir
 `docs/en/spec.md`, « Traps and DeathLink ».
 
 **Trap**

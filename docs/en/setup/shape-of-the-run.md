@@ -15,7 +15,7 @@ session keeps them. A change made later does nothing until you
 | `MVM_DIFFICULTY` | `intermediate` | `normal`, `intermediate`, `advanced`, `expert` | The easiest tier that the run can draw |
 | `MVM_GOAL` | `final_boss` | `final_boss`, `missionsanity` | What ends the run |
 | `MVM_MISSIONSANITY_PERCENTAGE` | `80` | 10 to 100 | How much of the run the Missionsanity goal asks for |
-| `MVM_DEATH_LINK` | `false` | `true`, `false` | Not implemented. See below. |
+| `MVM_DEATH_LINK` | `false` | `true`, `false` | A lost wave kills the linked players, and their deaths wipe the team. See below. |
 
 ### `MVM_MISSION_COUNT`
 
@@ -58,11 +58,13 @@ The `final_boss` goal ignores `MVM_MISSIONSANITY_PERCENTAGE`.
 ### `MVM_DEATH_LINK`
 
 DeathLink is a convention where a death in one game kills every other player
-who turned it on. It needs an agreed meaning of "death", and in MvM an
-individual death is normal rather than notable.
+who turned it on. In MvM an individual death is normal rather than notable, so
+here a death is the team losing a wave.
 
-This bridge does not do it. A session that asks for it gets one warning in the
-bridge log and nothing else happens. Leave it at `false`.
+With `true`, a lost wave kills every linked player in the multiworld, and one
+of their deaths kills everyone on your team, bots included, which loses the
+wave you are on. That loss is not sent back out. Expect a run with it on to be
+noticeably harder: a wave can be lost to somebody else's mistake.
 
 ## The session
 

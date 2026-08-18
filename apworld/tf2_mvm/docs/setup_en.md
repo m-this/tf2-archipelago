@@ -28,8 +28,9 @@ The options are under `Team Fortress 2 Mann vs Machine`:
   Haunted only.
 - `goal`: `final_boss` or `missionsanity`.
 - `missionsanity_percentage`: how much of the run Missionsanity asks for.
-- `death_link`: off by default. A death in Mann vs Machine is cheap, so
-  DeathLink is noisier here than in most games.
+- `death_link`: off by default. A death here is a lost wave: losing one kills
+  every linked player, and one of their deaths wipes your team, which loses
+  the wave.
 
 ## Join a game
 

@@ -89,6 +89,7 @@ The answer holds:
 | `connected` | Whether the session with the randomizer server is up right now |
 | `slot` | The name of your server in the session |
 | `missions` | The missions that the run drew |
+| `death_link` | Whether the seed asked for Death Link |
 | `seed` | The identity of the current session |
 | `checks` | How many checks the run holds |
 | `items` | How many items the run has received |

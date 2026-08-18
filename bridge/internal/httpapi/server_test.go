@@ -14,6 +14,7 @@ import (
 
 	"github.com/m-this/tf2-archipelago/bridge/internal/apclient"
 	"github.com/m-this/tf2-archipelago/bridge/internal/chat"
+	"github.com/m-this/tf2-archipelago/bridge/internal/deathlink"
 	"github.com/m-this/tf2-archipelago/bridge/internal/state"
 	"github.com/m-this/tf2-archipelago/gamedata"
 )
@@ -26,10 +27,11 @@ func newTestServer(t *testing.T, pollTimeout time.Duration) (*state.Store, http.
 	}
 	logger := slog.New(slog.DiscardHandler)
 	messages := chat.New(8)
+	deaths := deathlink.New(8)
 	client := apclient.New(apclient.Options{
-		SlotName: "tf2", Store: store, Chat: messages, Logger: logger,
+		SlotName: "tf2", Store: store, Chat: messages, Deaths: deaths, Logger: logger,
 	})
-	return store, New(store, client, messages, pollTimeout, logger).Handler()
+	return store, New(store, client, messages, deaths, pollTimeout, logger).Handler()
 }
 
 func post(t *testing.T, handler http.Handler, body string) *httptest.ResponseRecorder {

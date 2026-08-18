@@ -20,6 +20,7 @@ import (
 	"github.com/m-this/tf2-archipelago/bridge/config"
 	"github.com/m-this/tf2-archipelago/bridge/internal/apclient"
 	"github.com/m-this/tf2-archipelago/bridge/internal/chat"
+	"github.com/m-this/tf2-archipelago/bridge/internal/deathlink"
 	"github.com/m-this/tf2-archipelago/bridge/internal/httpapi"
 	"github.com/m-this/tf2-archipelago/bridge/internal/state"
 	"github.com/m-this/tf2-archipelago/fakeroom"
@@ -34,6 +35,10 @@ const (
 	// ChatHistory is how much a reconnecting plugin can still catch up on; chat
 	// is not state.
 	ChatHistory = 200
+
+	// DeathHistory is the same for deaths. Any it misses were for a team that
+	// was not there to be killed.
+	DeathHistory = 16
 
 	// HealthTimeout bounds the health check; it talks to loopback, so slower
 	// means a stall.
@@ -147,6 +152,7 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
 	}
 
 	messages := chat.New(ChatHistory)
+	deaths := deathlink.New(DeathHistory)
 
 	client := apclient.New(apclient.Options{
 		URL:      cfg.ArchipelagoURL,
@@ -154,9 +160,10 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
 		Password: cfg.Password,
 		Store:    store,
 		Chat:     messages,
+		Deaths:   deaths,
 		Logger:   logger,
 	})
-	api := httpapi.New(store, client, messages, cfg.PollTimeout, logger)
+	api := httpapi.New(store, client, messages, deaths, cfg.PollTimeout, logger)
 	server, metrics := servers(cfg, api)
 
 	logger.InfoContext(ctx, "bridge starting",

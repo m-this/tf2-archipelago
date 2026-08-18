@@ -22,6 +22,7 @@ import (
 
 	"github.com/m-this/tf2-archipelago/bridge/internal/apclient"
 	"github.com/m-this/tf2-archipelago/bridge/internal/chat"
+	"github.com/m-this/tf2-archipelago/bridge/internal/deathlink"
 	"github.com/m-this/tf2-archipelago/bridge/internal/state"
 	"github.com/m-this/tf2-archipelago/gamedata"
 )
@@ -29,7 +30,7 @@ import (
 // APIVersion is the contract with the plugin. The plugin reads it at startup
 // and says so in chat when it does not match: the two ship in one compose file,
 // so a mismatch means one image was updated and the other was not.
-const APIVersion = 1
+const APIVersion = 2
 
 // wavesObservedMax bounds what the game is believed about a mission's length.
 // The property behind it has never been seen answer, so anything past what a
@@ -81,6 +82,22 @@ type messagesResponse struct {
 	Messages []chat.Message `json:"messages"`
 }
 
+// deathRequest is the plugin reporting the team lost a wave, in the game's
+// terms. The bridge words the cause: the plugin does not know what a slot is.
+type deathRequest struct {
+	PopFile string `json:"popfile"`
+	Wave    uint8  `json:"wave"`
+}
+
+// deathsResponse carries whether the seed has DeathLink on at all, so the
+// plugin can say so without asking anything else. Deaths is never null on the
+// wire, for the same reason grants is not.
+type deathsResponse struct {
+	Seq       int               `json:"seq"`
+	DeathLink bool              `json:"death_link"`
+	Deaths    []deathlink.Death `json:"deaths"`
+}
+
 // mission is one mission of the run, in the terms a mission switcher needs: a
 // popfile to load, the map that popfile runs on, and something to show a
 // player. The plugin cannot work the map out for itself, because a popfile
@@ -118,6 +135,7 @@ type healthResponse struct {
 	Connected bool     `json:"connected"`
 	Slot      string   `json:"slot"`
 	Missions  []string `json:"missions"`
+	DeathLink bool     `json:"death_link"`
 	LastError string   `json:"last_error,omitempty"`
 
 	Seed        string     `json:"seed"`
@@ -136,6 +154,7 @@ type Server struct {
 	store       *state.Store
 	client      *apclient.Client
 	chat        *chat.Log
+	deaths      *deathlink.Feed
 	pollTimeout time.Duration
 	logger      *slog.Logger
 
@@ -146,13 +165,14 @@ type Server struct {
 }
 
 func New(
-	store *state.Store, client *apclient.Client, messages *chat.Log,
+	store *state.Store, client *apclient.Client, messages *chat.Log, deaths *deathlink.Feed,
 	pollTimeout time.Duration, logger *slog.Logger,
 ) *Server {
 	return &Server{
 		store:       store,
 		client:      client,
 		chat:        messages,
+		deaths:      deaths,
 		pollTimeout: pollTimeout,
 		logger:      logger,
 		drift:       make(map[string]int),
@@ -169,6 +189,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("POST /grants/ack", s.postGrantsAck)
 	mux.HandleFunc("GET /messages", s.getMessages)
 	mux.HandleFunc("POST /say", s.postSay)
+	mux.HandleFunc("POST /death", s.postDeath)
+	mux.HandleFunc("GET /deaths", s.getDeaths)
 	mux.HandleFunc("GET /healthz", s.getHealth)
 	return mux
 }
@@ -424,6 +446,81 @@ func sayStatus(err error) int {
 	}
 }
 
+// postDeath is the team losing a wave, passed on to every DeathLink player in
+// the multiworld. Never queued: like a chat line, one that lands after the
+// reconnect is a different death. A seed without DeathLink answers as if it had
+// been sent, because the plugin has nothing to do differently either way.
+func (s *Server) postDeath(w http.ResponseWriter, r *http.Request) {
+	var request deathRequest
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&request); err != nil {
+		http.Error(w, "cannot read the body", http.StatusBadRequest)
+		return
+	}
+	err := s.client.Die(r.Context(), deathCause(s.client.Health().Slot, request))
+	switch {
+	case errors.Is(err, apclient.ErrDeathLinkOff), errors.Is(err, apclient.ErrDiedTooMuch):
+		s.logger.DebugContext(r.Context(), "death not sent", "reason", err)
+	case errors.Is(err, apclient.ErrNotConnected):
+		http.Error(w, err.Error(), http.StatusServiceUnavailable)
+		return
+	case err != nil:
+		s.logger.ErrorContext(r.Context(), "cannot send a death", "error", err)
+		http.Error(w, err.Error(), http.StatusServiceUnavailable)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// deathCause words the death for the other players, who know nothing about
+// Mann vs Machine: the mission's name from the tables rather than its popfile.
+func deathCause(slot string, request deathRequest) string {
+	name := request.PopFile
+	if mission, known := gamedata.MissionByPopFile(request.PopFile); known {
+		name = mission.Name
+	}
+	if request.Wave == 0 {
+		return slot + " lost a wave of " + name
+	}
+	return slot + " lost wave " + strconv.Itoa(int(request.Wave)) + " of " + name
+}
+
+// getDeaths long-polls the multiworld's deaths, the way getMessages does chat.
+// A negative sequence asks only where the feed is: a death from before the
+// plugin was listening is not one it should apply.
+func (s *Server) getDeaths(w http.ResponseWriter, r *http.Request) {
+	since, err := strconv.Atoi(r.URL.Query().Get("since"))
+	if err != nil {
+		http.Error(w, "since must be a sequence number", http.StatusBadRequest)
+		return
+	}
+
+	timeout := time.NewTimer(s.pollTimeout)
+	defer timeout.Stop()
+	for {
+		changed := s.deaths.Watch()
+		deaths, latest := s.deaths.Since(since)
+		if deaths == nil {
+			deaths = []deathlink.Death{}
+		}
+		if len(deaths) > 0 || since < 0 {
+			writeJSON(w, s.logger, s.deathsResponse(latest, deaths))
+			return
+		}
+		select {
+		case <-changed:
+		case <-timeout.C:
+			writeJSON(w, s.logger, s.deathsResponse(latest, deaths))
+			return
+		case <-r.Context().Done():
+			return
+		}
+	}
+}
+
+func (s *Server) deathsResponse(latest int, deaths []deathlink.Death) deathsResponse {
+	return deathsResponse{Seq: latest, DeathLink: s.client.Health().DeathLink, Deaths: deaths}
+}
+
 func (s *Server) getHealth(w http.ResponseWriter, r *http.Request) {
 	session, run := s.client.Health(), s.store.Stats()
 	writeJSON(w, s.logger, healthResponse{
@@ -432,6 +529,7 @@ func (s *Server) getHealth(w http.ResponseWriter, r *http.Request) {
 		Connected: session.Connected,
 		Slot:      session.Slot,
 		Missions:  session.Missions,
+		DeathLink: session.DeathLink,
 		LastError: session.LastError,
 
 		Seed:        run.Seed,

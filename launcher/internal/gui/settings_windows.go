@@ -155,7 +155,7 @@ func runSettingsDialog(owner walk.Form, s settings.Settings, repair func() ([]st
 								AssignTo: &sanityPct, Value: float64(s.MvmMissionsanityPct),
 								MinValue: 10, MaxValue: 100, Decimals: 0,
 							},
-							label("Death Link", "Your death kills every other player in the multiworld who has Death Link on, and theirs kills you. Nothing on this side implements it yet."),
+							label("Death Link", "A lost wave kills every other player in the multiworld who has Death Link on, and their deaths wipe your team."),
 							declarative.CheckBox{AssignTo: &deathLink, Text: "share deaths", Checked: s.MvmDeathLink},
 							declarative.Label{
 								Text:        "These are the options the Archipelago website calls player options. They go in tf2.yaml, which the seed is generated from.",

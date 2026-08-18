@@ -28,8 +28,9 @@ Les options se trouvent sous `Team Fortress 2 Mann vs Machine` :
   tous. `expert` n'autorise qu'Expert et Haunted.
 - `goal` : `final_boss` ou `missionsanity`.
 - `missionsanity_percentage` : quelle part de la partie Missionsanity demande.
-- `death_link` : désactivé par défaut. Une mort dans Mann vs Machine coûte peu,
-  donc DeathLink y est plus bruyant que dans la plupart des jeux.
+- `death_link` : désactivé par défaut. Ici une mort est une vague perdue :
+  en perdre une tue tous les joueurs liés, et l'une de leurs morts anéantit
+  votre équipe, ce qui fait perdre la vague.
 
 ## Rejoindre une partie
 

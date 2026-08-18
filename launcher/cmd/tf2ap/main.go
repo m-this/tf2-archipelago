@@ -275,7 +275,7 @@ func configure(p *ui.Prompt, s settings.Settings) settings.Settings {
 		s.MvmMissionsanityPct = p.IntRange("Share of the missions to clear, in percent",
 			s.MvmMissionsanityPct, 10, 100)
 	}
-	s.MvmDeathLink = p.Bool("Death Link, a death here kills every linked player", s.MvmDeathLink)
+	s.MvmDeathLink = p.Bool("Death Link, a lost wave kills every linked player and their deaths wipe the team", s.MvmDeathLink)
 
 	fmt.Println("\n--- Install location ---")
 	s.InstallRoot = p.Text("Install root (14 GB of game files)", s.InstallRoot)

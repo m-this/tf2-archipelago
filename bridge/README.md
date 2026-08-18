@@ -9,7 +9,8 @@ via `gamedata/` the only component that knows the id mapping. Read [ADR
 Northbound, to the Archipelago server, over websocket:
 
 - Holds one session for the server's slot. `Connect`, `Connected`,
-  `LocationChecks`, `ReceivedItems`, `StatusUpdate`, `Bounced`, `Say`.
+  `LocationChecks`, `ReceivedItems`, `StatusUpdate`, `ConnectUpdate`,
+  `Bounce` and `Bounced` (DeathLink), `Say`.
 - Handles `ws://` and `wss://`. Reconnects on its own with backoff, and
   replays anything queued while it was down.
 - Deduplicates received items. Archipelago replays the full item list on
@@ -80,6 +81,8 @@ the HTTP API and nowhere else.
 | `POST` | `/grants/ack` | `{"seq":8}` | `204`. Everything through that sequence is applied, so no effect below it is sent again |
 | `GET` | `/messages?since=-1` | | the multiworld's chat, long-polled. A negative sequence means "start from now" |
 | `POST` | `/say` | `{"text":"!hint Class: Scout"}` | `204`, `403` for a command that cannot be undone, `429` for a flood, `413` for a line too long, `503` when there is no multiworld to say it to |
+| `POST` | `/death` | `{"popfile":"mvm_coaltown","wave":3}` | `204`. The team lost a wave; sent to the multiworld as a DeathLink when the seed asked for one, dropped otherwise. `503` with no multiworld |
+| `GET` | `/deaths?since=-1` | | `{"seq":2,"death_link":true,"deaths":[{"seq":2,"source":"Ana","cause":"…"}]}`, the multiworld's DeathLinks, long-polled like chat |
 | `GET` | `/healthz` | | the API version, the session, the run, and any mission the game says is a different length than the tables do |
 
 An objective naming a mission or a wave that does not exist is a `400`, not a
@@ -121,7 +124,7 @@ Counting grants instead would renumber every later one the day a larger
 `gamedata` makes that id readable, and the plugin would reapply grants it
 already has and miss ones it does not — with nothing to notice it.
 
-Chat is the one thing here that is not durable. A check is a fact about a run
+Chat and deaths are the two things here that are not durable. A check is a fact about a run
 and must survive anything; a line someone typed while the game server was
 restarting is gone, the way it would be in any other chat. `/say` refuses
 rather than queues for the same reason: a message that lands ten minutes late

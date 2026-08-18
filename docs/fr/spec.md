@@ -212,9 +212,16 @@ fil.
 Une mort dans MvM est bon marché. Vous respawnez à la prochaine vague, ou
 après un court délai. Seul un anéantissement complet de l'équipe fait
 échouer la vague. DeathLink sur une mort individuelle n'est donc que du
-bruit. Ce projet n'implémente pas DeathLink. Une partie qui le demande
-reçoit un avertissement dans le journal du bridge, et rien d'autre ne se
-produit.
+bruit. Ici une mort est une vague perdue, dans les deux sens :
+
+- L'équipe perd une vague : le bridge envoie un DeathLink avec le nom de la
+  mission et le numéro de la vague comme cause.
+- Un DeathLink arrive : le plugin tue tout RED, bots compris, ce qui fait
+  échouer la vague. Cette perte-là n'est pas renvoyée, donc deux joueurs
+  DeathLink ne peuvent pas se renvoyer la balle.
+
+La seed décide. Un slot avec `death_link` désactivé ne réclame jamais le
+tag, n'entend aucune mort, et ignore ce que le plugin rapporte.
 
 Pièges venant du fil, tous côté plugin :
 

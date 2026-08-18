@@ -12,7 +12,7 @@
 
 // The plugin-facing contract. The bridge reports its own; a mismatch means one
 // half of the compose file was updated and the other was not.
-#define BridgeAPIVersion 1
+#define BridgeAPIVersion 2
 
 // A mission is at most nine objectives, so nearing this means the bridge has been gone a long time.
 #define PendingMax 64
@@ -71,6 +71,10 @@ bool g_PollingChat;
 
 // A negative sequence means "start from now": joining late must not replay hours of chat.
 int g_ChatSeq = -1;
+
+// Same for deaths: one from before the plugin was listening has nobody to kill.
+bool g_PollingDeaths;
+int g_DeathSeq = -1;
 
 int g_NextObjectiveID = 1;
 bool g_PollingGrants;
@@ -264,6 +268,10 @@ static Action Timer_DrainPending(Handle timer)
     if (!g_PollingChat)
     {
         Bridge_PollMessages();
+    }
+    if (!g_PollingDeaths)
+    {
+        Bridge_PollDeaths();
     }
     if (g_GrantSeq > g_AckedSeq)
     {
@@ -736,6 +744,94 @@ static Action Timer_PollMessagesAgain(Handle timer)
 {
     Bridge_PollMessages();
     return Plugin_Stop;
+}
+
+// The bridge holds the deaths of the multiworld the way it holds its chat:
+// long-polled, not durable, from now rather than from the start.
+void Bridge_PollDeaths()
+{
+    if (g_PollingDeaths)
+    {
+        return;
+    }
+    char path[64];
+    FormatEx(path, sizeof(path), "/deaths?since=%d", g_DeathSeq);
+
+    HTTPRequest request = BridgeRequest(path);
+    request.Timeout = 60;
+    g_PollingDeaths = true;
+    request.Get(OnDeaths);
+}
+
+static void OnDeaths(HTTPResponse response, any value, const char[] error)
+{
+    g_PollingDeaths = false;
+
+    if (!StrEqual(error, "") || response.Status != HTTPStatus_OK)
+    {
+        AP_Debug("The death request failed. The plugin tries again.");
+        CreateTimer(RetryInterval, Timer_PollDeathsAgain);
+        return;
+    }
+
+    JSONObject payload = view_as<JSONObject>(response.Data);
+    g_DeathSeq = payload.GetInt("seq");
+
+    bool on = payload.GetBool("death_link");
+    if (on && !g_DeathLinkOn)
+    {
+        AP_Announce("Death Link is on. A lost wave kills every linked player in the multiworld, and their deaths wipe this team.");
+    }
+    g_DeathLinkOn = on;
+
+    JSONArray deaths = view_as<JSONArray>(payload.Get("deaths"));
+    if (deaths != null)
+    {
+        for (int index = 0; index < deaths.Length; index++)
+        {
+            JSONObject death = view_as<JSONObject>(deaths.Get(index));
+            char source[64], cause[ChatLineMax];
+            death.GetString("source", source, sizeof(source));
+            if (!death.GetString("cause", cause, sizeof(cause)))
+            {
+                cause[0] = '\0';
+            }
+            DeathLink_Received(source, cause);
+            delete death;
+        }
+        delete deaths;
+    }
+    Bridge_PollDeaths();
+}
+
+static Action Timer_PollDeathsAgain(Handle timer)
+{
+    Bridge_PollDeaths();
+    return Plugin_Stop;
+}
+
+// The team lost a wave. Never queued, like a chat line: the bridge passes it on
+// now or not at all, and it is the bridge that knows whether the seed asked.
+void Bridge_ReportDeath(const char[] popFile, int wave)
+{
+    JSONObject body = new JSONObject();
+    body.SetString("popfile", popFile);
+    body.SetInt("wave", wave);
+
+    HTTPRequest request = BridgeRequest("/death");
+    request.Timeout = 10;
+    request.Post(body, OnDeathPosted);
+    delete body;
+}
+
+static void OnDeathPosted(HTTPResponse response, any value, const char[] error)
+{
+    if (StrEqual(error, "") && response.Status == HTTPStatus_NoContent)
+    {
+        AP_Debug("The bridge took the lost wave.");
+        return;
+    }
+    AP_Debug("The bridge did not take the lost wave, status %d. %s", response.Status, error);
 }
 
 void Bridge_ClearCooldown(int client)

@@ -26,6 +26,10 @@ type fakeRoom struct {
 	heard    chan map[string]json.RawMessage
 	refuse   []string
 
+	// bounces is what the room pushes down as Bounced, the way another
+	// player's death arrives.
+	bounces chan map[string]any
+
 	// dropFirst hangs up right after the first handshake, the way a server restarting mid-run does.
 	dropFirst bool
 
@@ -43,6 +47,7 @@ func (f *fakeRoom) accept() int {
 func (f *fakeRoom) start(t *testing.T) string {
 	t.Helper()
 	f.heard = make(chan map[string]json.RawMessage, 32)
+	f.bounces = make(chan map[string]any, 8)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		conn, err := websocket.Accept(w, r, nil)
 		if err != nil {
@@ -87,6 +92,7 @@ func (f *fakeRoom) serve(ctx context.Context, conn *websocket.Conn) {
 			if err := f.acknowledge(ctx, conn); err != nil {
 				return
 			}
+			go f.pushBounces(ctx, conn)
 			if f.dropFirst && session == 1 {
 				return
 			}
@@ -109,6 +115,29 @@ func (f *fakeRoom) acknowledge(ctx context.Context, conn *websocket.Conn) error 
 		},
 		map[string]any{"cmd": "ReceivedItems", "index": 0, "items": items},
 	)
+}
+
+func (f *fakeRoom) pushBounces(ctx context.Context, conn *websocket.Conn) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case bounce := <-f.bounces:
+			if err := writeAll(ctx, conn, bounce); err != nil {
+				return
+			}
+		}
+	}
+}
+
+// bounce is a DeathLink from another slot in the room.
+func (f *fakeRoom) bounce(t *testing.T, source, cause string) {
+	t.Helper()
+	f.bounces <- map[string]any{
+		"cmd":  "Bounced",
+		"tags": []string{deathLinkTag},
+		"data": map[string]any{"time": 1.0, "source": source, "cause": cause},
+	}
 }
 
 func writeAll(ctx context.Context, conn *websocket.Conn, messages ...any) error {

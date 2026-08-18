@@ -193,8 +193,16 @@ that. It is the most original idea in the thread.
 
 A death in MvM is cheap: you respawn at the next wave or after a short
 timer, and only a full team wipe fails it. So DeathLink on individual
-death is only noise, and this project does not support it. A session that
-asks for it gets one warning in the bridge log, and nothing else happens.
+death is only noise. Here a death is a lost wave, in both directions:
+
+- The team loses a wave: the bridge sends a DeathLink with the mission's
+  name and the wave number as the cause.
+- A DeathLink arrives: the plugin kills everyone on RED, bots included,
+  which fails the wave. That loss is not sent back out, so two DeathLink
+  players cannot ping-pong.
+
+The seed decides. A slot with `death_link` off never claims the tag, never
+hears a death, and drops what the plugin reports.
 
 Traps from the thread, all plugin-side:
 

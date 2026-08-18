@@ -13,6 +13,7 @@ import (
 
 	"github.com/m-this/tf2-archipelago/bridge/internal/apclient"
 	"github.com/m-this/tf2-archipelago/bridge/internal/chat"
+	"github.com/m-this/tf2-archipelago/bridge/internal/deathlink"
 	"github.com/m-this/tf2-archipelago/bridge/internal/state"
 	"github.com/m-this/tf2-archipelago/gamedata"
 )
@@ -30,7 +31,7 @@ func newTestMetrics(t *testing.T) (http.Handler, http.Handler) {
 	client := apclient.New(apclient.Options{
 		SlotName: "tf2", Store: store, Chat: messages, Logger: logger,
 	})
-	server := New(store, client, messages, time.Second, logger)
+	server := New(store, client, messages, deathlink.New(1), time.Second, logger)
 	return server.Handler(), server.MetricsHandler("")
 }
 
@@ -47,7 +48,7 @@ func newTestMetricsWithGame(t *testing.T, gameAddr string) http.Handler {
 	client := apclient.New(apclient.Options{
 		SlotName: "tf2", Store: store, Chat: messages, Logger: logger,
 	})
-	server := New(store, client, messages, time.Second, logger)
+	server := New(store, client, messages, deathlink.New(1), time.Second, logger)
 	return server.MetricsHandler(gameAddr)
 }
 

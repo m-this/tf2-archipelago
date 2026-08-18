@@ -21,6 +21,7 @@
 #include "tf2_archipelago/log.inc"
 #include "tf2_archipelago/mvm.inc"
 #include "tf2_archipelago/unlocks.inc"
+#include "tf2_archipelago/deathlink.inc"
 #include "tf2_archipelago/bridge.inc"
 
 #define PLUGIN_VERSION "1.1.0"
@@ -51,6 +52,7 @@ int g_MaxWaves;
 bool g_HaveBeginWave;
 bool g_HaveWaveComplete;
 bool g_HaveMissionComplete;
+bool g_HaveWaveFailed;
 
 int g_PolledWave;
 
@@ -72,6 +74,7 @@ public void OnPluginStart()
     g_HaveBeginWave = HookEventEx("mvm_begin_wave", Event_BeginWave);
     g_HaveWaveComplete = HookEventEx("mvm_wave_complete", Event_WaveComplete);
     g_HaveMissionComplete = HookEventEx("mvm_mission_complete", Event_MissionComplete);
+    g_HaveWaveFailed = HookEventEx("mvm_wave_failed", Event_WaveFailed);
     HookEvent("post_inventory_application", Event_InventoryApplied);
     HookEvent("player_spawn", Event_PlayerSpawn);
 
@@ -81,7 +84,7 @@ public void OnPluginStart()
     RegAdminCmd("sm_ap_status", Command_Status, ADMFLAG_GENERIC,
         "Show the state of the Archipelago integration");
     RegAdminCmd("sm_ap_report", Command_Report, ADMFLAG_ROOT,
-        "Report an objective by hand: sm_ap_report <wave_cleared|mission_cleared> [wave]");
+        "Report an objective by hand: sm_ap_report <wave_cleared|mission_cleared|death> [wave]");
     RegAdminCmd("sm_ap_resync", Command_Resync, ADMFLAG_GENERIC,
         "Ask the bridge for the unlock set again");
     RegAdminCmd("sm_ap_mission", Command_Mission, ADMFLAG_CHANGEMAP,
@@ -99,6 +102,10 @@ public void OnPluginStart()
     {
         AP_Error("This server has no mvm_begin_wave event. The plugin reads wave numbers from the game.");
     }
+    if (!g_HaveWaveFailed)
+    {
+        AP_Error("This server has no mvm_wave_failed event. A lost wave cannot reach Death Link.");
+    }
 
     // No grant poll here. It starts once the unlock set has landed: polling
     // before that means polling from sequence zero, and every effect the run
@@ -107,6 +114,7 @@ public void OnPluginStart()
     Bridge_FetchUnlocks();
     Bridge_FetchMissions();
     Bridge_PollMessages();
+    Bridge_PollDeaths();
 }
 
 public void OnClientPutInServer(int client)
@@ -137,6 +145,10 @@ public Action Timer_Welcome(Handle timer, any userid)
     AP_PrintToClient(client, "Mission: %s. Each wave you clear is a check.", popFile);
     AP_PrintToClient(client, "Unlocked classes: %s", Status_ClassList());
     AP_PrintToClient(client, "Unlocked slots: %s", Status_SlotList());
+    if (g_DeathLinkOn)
+    {
+        AP_PrintToClient(client, "Death Link is on: a lost wave kills every linked player, and their deaths wipe this team.");
+    }
     AP_PrintToClient(client, "Type \x07FFD700!ap\x01 to speak to the multiworld. Examples: \x07FFD700!ap hint Class: Scout\x01 and \x07FFD700!ap missing\x01.");
     return Plugin_Stop;
 }
@@ -276,6 +288,23 @@ public void Event_WaveComplete(Event event, const char[] name, bool dontBroadcas
 public void Event_MissionComplete(Event event, const char[] name, bool dontBroadcast)
 {
     ReportMissionCleared();
+}
+
+public void Event_WaveFailed(Event event, const char[] name, bool dontBroadcast)
+{
+    ReportWaveFailed(g_CurrentWave > 0 ? g_CurrentWave : MvM_WaveFromGame());
+}
+
+static void ReportWaveFailed(int wave)
+{
+    if (!MvM_IsActive())
+    {
+        return;
+    }
+    char popFile[64];
+    MvM_PopFile(popFile, sizeof(popFile));
+    AP_Debug("Wave %d of %s lost.", wave, popFile);
+    DeathLink_WaveFailed(popFile, wave);
 }
 
 static void ReportWaveCleared(int wave)
@@ -500,10 +529,12 @@ public Action Command_Status(int client, int argc)
     ReplyToCommand(client, "[AP] version %s, mvm %s, mission %s, wave %d of %d",
         PLUGIN_VERSION, MvM_IsActive() ? "yes" : "no", popFile,
         g_CurrentWave, g_MaxWaves > 0 ? g_MaxWaves : MvM_MaxWavesFromGame());
-    ReplyToCommand(client, "[AP] events: begin_wave %s, wave_complete %s, mission_complete %s",
+    ReplyToCommand(client, "[AP] events: begin_wave %s, wave_complete %s, mission_complete %s, wave_failed %s",
         g_HaveBeginWave ? "yes" : "no",
         g_HaveWaveComplete ? "yes" : "no",
-        g_HaveMissionComplete ? "yes" : "no");
+        g_HaveMissionComplete ? "yes" : "no",
+        g_HaveWaveFailed ? "yes" : "no");
+    ReplyToCommand(client, "[AP] death link %s", g_DeathLinkOn ? "on" : "off");
     ReplyToCommand(client, "[AP] unlocks %s at sequence %d, %d objective(s) waiting to be sent",
         g_HaveUnlocks ? "held" : "NOT FETCHED", Bridge_Sequence(), Bridge_PendingCount());
     ReplyToCommand(client, "[AP] classes: %s", Status_ClassList());
@@ -554,7 +585,7 @@ public Action Command_Report(int client, int argc)
 {
     if (argc < 1)
     {
-        ReplyToCommand(client, "[AP] Usage: sm_ap_report <wave_cleared|mission_cleared> [wave]");
+        ReplyToCommand(client, "[AP] Usage: sm_ap_report <wave_cleared|mission_cleared|death> [wave]");
         return Plugin_Handled;
     }
     char kind[24];
@@ -563,6 +594,11 @@ public Action Command_Report(int client, int argc)
     if (StrEqual(kind, "mission_cleared"))
     {
         ReportMissionCleared();
+        return Plugin_Handled;
+    }
+    if (StrEqual(kind, "death"))
+    {
+        ReportWaveFailed(g_CurrentWave);
         return Plugin_Handled;
     }
     if (!StrEqual(kind, "wave_cleared"))

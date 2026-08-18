@@ -54,6 +54,35 @@ type syncMessage struct {
 	Cmd string `json:"cmd"`
 }
 
+// connectUpdateMessage changes what Connect said, once the slot data has been
+// read. Tags are the only thing it changes here: DeathLink is a tag, and the
+// seed is what says whether this slot wants it.
+type connectUpdateMessage struct {
+	Cmd           string   `json:"cmd"`
+	ItemsHandling int      `json:"items_handling"`
+	Tags          []string `json:"tags"`
+}
+
+// bounceMessage is a broadcast to every client holding one of the tags. It is
+// how DeathLink travels: a Bounce out, a Bounced in.
+type bounceMessage struct {
+	Cmd  string        `json:"cmd"`
+	Tags []string      `json:"tags"`
+	Data deathLinkData `json:"data"`
+}
+
+// deathLinkData is the payload of a DeathLink bounce, as every client spells it.
+type deathLinkData struct {
+	Time   float64 `json:"time"`
+	Source string  `json:"source"`
+	Cause  string  `json:"cause,omitempty"`
+}
+
+type bounced struct {
+	Tags []string        `json:"tags"`
+	Data json.RawMessage `json:"data"`
+}
+
 type sayMessage struct {
 	Cmd  string `json:"cmd"`
 	Text string `json:"text"`

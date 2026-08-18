@@ -18,6 +18,7 @@ import (
 	"github.com/coder/websocket"
 
 	"github.com/m-this/tf2-archipelago/bridge/internal/chat"
+	"github.com/m-this/tf2-archipelago/bridge/internal/deathlink"
 	"github.com/m-this/tf2-archipelago/bridge/internal/state"
 	"github.com/m-this/tf2-archipelago/gamedata"
 )
@@ -55,6 +56,7 @@ type Options struct {
 	Password string
 	Store    *state.Store
 	Chat     *chat.Log
+	Deaths   *deathlink.Feed
 	Logger   *slog.Logger
 }
 
@@ -63,8 +65,9 @@ type Client struct {
 	opts Options
 	uuid string
 
-	// said bounds what the game server can pour into the multiworld.
+	// said and died bound what the game server can pour into the multiworld.
 	said *bucket
+	died *deaths
 
 	writeMu sync.Mutex
 
@@ -80,6 +83,7 @@ type Health struct {
 	Connected bool     `json:"connected"`
 	Slot      string   `json:"slot"`
 	Missions  []string `json:"missions"`
+	DeathLink bool     `json:"death_link"`
 	LastError string   `json:"last_error,omitempty"`
 }
 
@@ -88,7 +92,10 @@ func New(opts Options) *Client {
 		// A session with nowhere to put chat still has to run.
 		opts.Chat = chat.New(1)
 	}
-	return &Client{opts: opts, uuid: randomUUID(), said: newBucket(time.Now)}
+	if opts.Deaths == nil {
+		opts.Deaths = deathlink.New(1)
+	}
+	return &Client{opts: opts, uuid: randomUUID(), said: newBucket(time.Now), died: &deaths{now: time.Now}}
 }
 
 // Health reports the session state. The plugin uses it to tell a player the
@@ -100,6 +107,7 @@ func (c *Client) Health() Health {
 		Connected: c.connected,
 		Slot:      c.opts.SlotName,
 		Missions:  c.slot.Missions,
+		DeathLink: c.slot.DeathLink,
 		LastError: c.lastError,
 	}
 }
@@ -204,7 +212,7 @@ func (c *Client) handle(
 	case "RoomInfo":
 		return c.onRoomInfo(ctx, conn, message)
 	case "Connected":
-		return c.onConnected(message, ready)
+		return c.onConnected(ctx, conn, message, ready)
 	case "ConnectionRefused":
 		return c.onConnectionRefused(message)
 	case "ReceivedItems":
@@ -218,8 +226,7 @@ func (c *Client) handle(
 		}
 		return nil
 	case "Bounced":
-		// DeathLink lands here; what a death means in MvM is unsettled, so the tag is not claimed.
-		return nil
+		return c.onBounced(ctx, message)
 	default:
 		return nil
 	}
@@ -251,8 +258,12 @@ func (c *Client) onRoomInfo(ctx context.Context, conn *websocket.Conn, message j
 	})
 }
 
-// onConnected records the seed's shape and sends nothing: the pump wakes on ready and reports.
-func (c *Client) onConnected(message json.RawMessage, ready chan struct{}) error {
+// onConnected records the seed's shape. The pump wakes on ready and reports;
+// the only thing sent from here is the DeathLink tag, which cannot go on
+// Connect because the slot data that decides it is what Connected carries.
+func (c *Client) onConnected(
+	ctx context.Context, conn *websocket.Conn, message json.RawMessage, ready chan struct{},
+) error {
 	var payload connected
 	if err := json.Unmarshal(message, &payload); err != nil {
 		return err
@@ -264,10 +275,6 @@ func (c *Client) onConnected(message json.RawMessage, ready chan struct{}) error
 	if err := slot.validate(); err != nil {
 		return permanentError{err}
 	}
-	if slot.DeathLink {
-		c.opts.Logger.Warn("the seed asks for DeathLink, which this bridge does not do")
-	}
-
 	// The server holds the same check list for this slot, and the seed is
 	// already bound, so this is the run coming back after a state file was lost
 	// or rolled back. It happens before the handshake is announced ready, so
@@ -280,10 +287,10 @@ func (c *Client) onConnected(message json.RawMessage, ready chan struct{}) error
 	adopted, err := c.opts.Store.AdoptChecks(payload.CheckedLocations)
 	switch {
 	case err != nil:
-		c.opts.Logger.Error("cannot hold the checks the server already had",
+		c.opts.Logger.ErrorContext(ctx, "cannot hold the checks the server already had",
 			"server_checks", len(payload.CheckedLocations), "error", err)
 	case adopted > 0:
-		c.opts.Logger.Warn("the server knew checks this bridge did not, and they are held now",
+		c.opts.Logger.WarnContext(ctx, "the server knew checks this bridge did not, and they are held now",
 			"adopted", adopted, "server_checks", len(payload.CheckedLocations))
 	}
 
@@ -293,7 +300,7 @@ func (c *Client) onConnected(message json.RawMessage, ready chan struct{}) error
 	c.lastError = ""
 	c.mu.Unlock()
 
-	c.opts.Logger.Info("connected to archipelago",
+	c.opts.Logger.InfoContext(ctx, "connected to archipelago",
 		"slot", c.opts.SlotName,
 		"missions", len(slot.Missions),
 		"goal", slot.Goal,
@@ -303,6 +310,9 @@ func (c *Client) onConnected(message json.RawMessage, ready chan struct{}) error
 	case <-ready:
 	default:
 		close(ready)
+	}
+	if slot.DeathLink {
+		return c.claimDeathLink(ctx, conn)
 	}
 	return nil
 }

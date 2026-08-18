@@ -44,6 +44,15 @@ Players have no Archipelago client, so the plugin is theirs:
 What the multiworld says comes back into chat, so a hint answered or an item
 someone else found shows up in game. `tf2ap_chat 0` turns that off.
 
+## Death Link
+
+When the seed asks for it, the team losing a wave is the death this side
+sends, and a death from anywhere else kills everyone on RED, bots included,
+which loses the wave. That loss is not sent back out: for twenty seconds
+after a received death, `mvm_wave_failed` is taken as its consequence. The
+plugin reports every lost wave and the bridge knows whether the seed asked,
+so nothing here needs configuring.
+
 Anyone joining gets a chat welcome eight seconds after they spawn in. It
 covers what the server is, which mission runs, and what they unlocked so
 far, plus how to use `!ap`. Eight seconds, because a message printed
@@ -55,7 +64,7 @@ during the map load scrolls past before anyone can read it.
 | --- | --- | --- |
 | `sm_ap_status` | generic | The whole picture: mission, wave, which events exist, the unlock set, the queue depth, the last bridge error |
 | `sm_ap_resync` | generic | Fetch the unlock set again |
-| `sm_ap_report <kind> [wave]` | root | Report an objective by hand |
+| `sm_ap_report <kind> [wave]` | root | Report an objective by hand: `wave_cleared`, `mission_cleared` or `death` |
 
 `sm_ap_report` tests the wiring without playing a wave. It also sends a
 check by hand when the game fails to fire the expected event.
@@ -75,10 +84,10 @@ Everything this plugin reads out of the game. It compiles, but the author
 never ran it, because no Team Fortress 2 server was available at the
 time.
 
-- The plugin hooks `mvm_begin_wave`, `mvm_wave_complete` and
-  `mvm_mission_complete` with `HookEventEx`, so a missing one produces a
-  log line and a degraded mode, not a failed load. `sm_ap_status` prints
-  which of the three exist.
+- The plugin hooks `mvm_begin_wave`, `mvm_wave_complete`,
+  `mvm_mission_complete` and `mvm_wave_failed` with `HookEventEx`, so a
+  missing one produces a log line and a degraded mode, not a failed load.
+  `sm_ap_status` prints which of the four exist.
 - If `mvm_wave_complete` turns out not to exist, a one-second timer watches
   `m_nMannVsMachineWaveCount` instead and reports a wave when the counter goes
   up.

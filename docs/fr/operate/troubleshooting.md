@@ -92,6 +92,7 @@ La réponse contient :
 | `connected` | Si la session avec le serveur randomizer est active en ce moment |
 | `slot` | Le nom de votre serveur dans la session |
 | `missions` | Les missions que la partie a tirées |
+| `death_link` | Si la seed a demandé Death Link |
 | `seed` | L'identité de la session en cours |
 | `checks` | Combien de checks la partie tient |
 | `items` | Combien d'items la partie a reçus |

@@ -4,7 +4,7 @@ Glossary of the terms used across `gamedata/`, `bridge/`, `apworld/` and
 `plugin/`. Two vocabularies meet in this project and they use some of the same
 words for different things, so this file defines both.
 
-Last updated: 2026-08-16.
+Last updated: 2026-08-18.
 
 ## Archipelago vocabulary
 
@@ -55,9 +55,11 @@ the seed is unplayable from the start. See the starting-state requirement in
 
 **DeathLink**
 An opt-in convention where a death in one world kills every other DeathLink
-participant. This project does not support it. An individual death in MvM
-is normal rather than notable, so there is no clean definition of "death"
-to hook it to. See `docs/en/spec.md`, "Traps and DeathLink".
+participant. Here a death is the team losing a wave, because an individual
+death in MvM is routine and only a full wipe fails a wave. Outbound, a lost
+wave is a `Bounce`; inbound, a `Bounced` kills everyone on RED, bots
+included, which fails the wave. The plugin does not send that loss back out.
+See `docs/en/spec.md`, "Traps and DeathLink".
 
 **Trap**
 An item with a negative effect. A first-class classification in Archipelago,

@@ -29,13 +29,21 @@ import (
 
 // Room is a running fake multiworld. Close it to stop it.
 type Room struct {
-	server   *http.Server
-	listener net.Listener
-	log      func(string)
+	server    *http.Server
+	listener  net.Listener
+	log       func(string)
+	deathLink bool
 
-	mu    sync.Mutex
-	items []int64 // what the run hands out, in order
-	next  int     // how many of them are gone
+	// seed is unique per process start, not per test session. The bridge's
+	// checks are durable and keyed by seed name: a constant name here would
+	// have it treat every restart as the same run, replay a check list this
+	// room has no memory of granting, and open everything at once.
+	seed string
+
+	mu      sync.Mutex
+	items   []int64        // what the run hands out, in order
+	next    int            // how many of them are gone
+	checked map[int64]bool // locations already rewarded, so a resend hands out nothing
 }
 
 // Options say what the made-up seed looks like. Missions and Goal come from the
@@ -46,6 +54,10 @@ type Options struct {
 	Goal         string
 	Log          func(string)
 	MissionCount int
+
+	// DeathLink makes the made-up seed ask for it, so the deaths this room
+	// invents take the team down the way a real multiworld's would.
+	DeathLink bool
 }
 
 // Start serves a fake room on loopback and returns it with the address the
@@ -62,7 +74,14 @@ func Start(ctx context.Context, options Options) (*Room, string, error) {
 		logf = func(string) {}
 	}
 
-	room := &Room{listener: listener, log: logf, items: unlockOrder()}
+	room := &Room{
+		listener:  listener,
+		log:       logf,
+		items:     unlockOrder(),
+		checked:   make(map[int64]bool),
+		deathLink: options.DeathLink,
+		seed:      fmt.Sprintf("test-mode-%x", rand.Uint64()),
+	}
 	missions := options.Missions
 	if len(missions) == 0 {
 		missions = defaultMissions(options.MissionCount)
@@ -105,7 +124,7 @@ const closeGrace = 2 * time.Second
 
 func (r *Room) serve(ctx context.Context, conn *websocket.Conn, missions []string, goal string) {
 	if err := write(ctx, conn, map[string]any{
-		"cmd": "RoomInfo", "seed_name": "test-mode", "password": false,
+		"cmd": "RoomInfo", "seed_name": r.seed, "password": false,
 	}); err != nil {
 		return
 	}
@@ -130,7 +149,7 @@ func (r *Room) serve(ctx context.Context, conn *websocket.Conn, missions []strin
 	}
 }
 
-// handle answers the four messages that matter. Anything else is read and
+// handle answers the five messages that matter. Anything else is read and
 // dropped, which is what the bridge does with the rest of the protocol too.
 func (r *Room) handle(ctx context.Context, conn *websocket.Conn, cmd string,
 	message map[string]json.RawMessage, missions []string, goal string,
@@ -151,7 +170,7 @@ func (r *Room) handle(ctx context.Context, conn *websocket.Conn, cmd string,
 					"goal":                 goal,
 					"goal_mission":         missions[len(missions)-1],
 					"missionsanity_target": len(missions),
-					"death_link":           false,
+					"death_link":           r.deathLink,
 				},
 			},
 			// An empty first batch: the run starts with nothing, and the
@@ -169,10 +188,14 @@ func (r *Room) handle(ctx context.Context, conn *websocket.Conn, cmd string,
 			r.log("test mode: could not read a LocationChecks message")
 			return nil //nolint:nilerr // the room keeps serving
 		}
-		return r.reward(ctx, conn, len(checks.Locations))
+		return r.reward(ctx, conn, checks.Locations)
 
 	case "StatusUpdate":
 		r.log("test mode: the run reported its status")
+		return nil
+
+	case "Bounce":
+		r.log("test mode: the team lost a wave, and every Death Link player in a real room would die now")
 		return nil
 
 	case "Say":
@@ -181,16 +204,31 @@ func (r *Room) handle(ctx context.Context, conn *websocket.Conn, cmd string,
 	return nil
 }
 
-// reward hands out one unlock per check, in a fixed order, so a tester sees the
-// classes and the weapon slots open up as they clear waves.
-func (r *Room) reward(ctx context.Context, conn *websocket.Conn, checks int) error {
-	if checks <= 0 {
+// reward hands out one unlock per newly checked location, in a fixed order, so
+// a tester sees the classes and the weapon slots open up as they clear waves.
+//
+// The bridge resends its whole check list on every report, by design (a
+// reconnect mid-wave must be a non-event), the way a real Archipelago server's
+// checks are idempotent too. This room has to do that deduplication itself:
+// counting the resend instead of the new locations in it hands out the same
+// wave's reward again on every ping, until the pool the run started with is
+// gone in minutes.
+func (r *Room) reward(ctx context.Context, conn *websocket.Conn, locations []int64) error {
+	r.mu.Lock()
+	fresh := 0
+	for _, location := range locations {
+		if !r.checked[location] {
+			r.checked[location] = true
+			fresh++
+		}
+	}
+	if fresh == 0 {
+		r.mu.Unlock()
 		return nil
 	}
-	r.mu.Lock()
 	index := r.next
 	var handed []map[string]any
-	for range checks {
+	for range fresh {
 		if r.next >= len(r.items) {
 			break
 		}
@@ -205,7 +243,7 @@ func (r *Room) reward(ctx context.Context, conn *websocket.Conn, checks int) err
 		r.log("test mode: a check arrived, and the run has handed out everything it has")
 		return nil
 	}
-	r.log(fmt.Sprintf("test mode: %d check(s) arrived, sending %d unlock(s)", checks, len(handed)))
+	r.log(fmt.Sprintf("test mode: %d check(s) arrived, sending %d unlock(s)", fresh, len(handed)))
 	return write(ctx, conn, map[string]any{
 		"cmd": "ReceivedItems", "index": index, "items": handed,
 	})

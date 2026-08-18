@@ -15,7 +15,7 @@ vous ne [démarrez pas une nouvelle partie](../operate/start-a-new-run.md).
 | `MVM_DIFFICULTY` | `intermediate` | `normal`, `intermediate`, `advanced`, `expert` | Le palier le plus facile que la partie peut tirer |
 | `MVM_GOAL` | `final_boss` | `final_boss`, `missionsanity` | Ce qui termine la partie |
 | `MVM_MISSIONSANITY_PERCENTAGE` | `80` | 10 à 100 | Quelle part de la partie l'objectif Missionsanity demande |
-| `MVM_DEATH_LINK` | `false` | `true`, `false` | Pas implémenté. Voir ci-dessous. |
+| `MVM_DEATH_LINK` | `false` | `true`, `false` | Une vague perdue tue les joueurs liés, et leurs morts anéantissent l'équipe. Voir ci-dessous. |
 
 ### `MVM_MISSION_COUNT`
 
@@ -64,12 +64,14 @@ L'objectif `final_boss` ignore `MVM_MISSIONSANITY_PERCENTAGE`.
 ### `MVM_DEATH_LINK`
 
 DeathLink est une convention où une mort dans un jeu tue tous les autres
-joueurs qui l'ont activée. Elle a besoin d'un sens convenu pour « mort »,
-et dans MvM une mort individuelle est normale plutôt que notable.
+joueurs qui l'ont activée. Dans MvM une mort individuelle est normale
+plutôt que notable, donc ici une mort est une vague perdue par l'équipe.
 
-Ce bridge ne le fait pas. Une session qui le demande reçoit un
-avertissement dans le log du bridge et rien d'autre ne se passe. Laissez
-`false`.
+Avec `true`, une vague perdue tue tous les joueurs liés du multiworld, et
+l'une de leurs morts tue tout votre équipe, bots compris, ce qui fait
+perdre la vague en cours. Cette perte-là n'est pas renvoyée. Attendez-vous
+à une partie nettement plus dure : une vague peut se perdre sur l'erreur
+de quelqu'un d'autre.
 
 ## La session
 
