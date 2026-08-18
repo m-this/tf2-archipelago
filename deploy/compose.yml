@@ -66,6 +66,7 @@ services:
       SRCDS_ADMIN_STEAMIDS: ${SRCDS_ADMIN_STEAMIDS:-}
       SRCDS_LAN: ${SRCDS_LAN:-1}
       SRCDS_BOTS: ${SRCDS_BOTS:-1}
+      TF2AP_TEST_MODE: ${TF2AP_TEST_MODE:-0}
       SRCDS_BOT_TEAM_SIZE: ${SRCDS_BOT_TEAM_SIZE:-6}
     ports:
       # The only public port in the stack, and it is the game's.
@@ -94,6 +95,7 @@ services:
     # costs seconds rather than progress.
     network_mode: "service:srcds"
     environment:
+      TF2AP_TEST_MODE: ${TF2AP_TEST_MODE:-0}
       AP_HOST: ${AP_HOST:?set AP_HOST in .env}
       AP_PORT: ${AP_PORT:?set AP_PORT in .env}
       AP_TLS: ${AP_TLS:-false}

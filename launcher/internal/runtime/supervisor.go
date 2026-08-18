@@ -16,6 +16,9 @@ import (
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 )
 
+// roomCloseGrace bounds the wait when the test room is asked to stop.
+const roomCloseGrace = 3 * time.Second
+
 // Line is one entry for the log view: where it came from and what it said.
 type Line struct {
 	At     time.Time
@@ -99,7 +102,9 @@ func (s *Supervisor) Start(onExit func(error)) error {
 	stopRoom := func() {
 		cancelRoom()
 		if room != nil {
-			_ = room.Close()
+			stop, cancelStop := context.WithTimeout(context.Background(), roomCloseGrace)
+			_ = room.Close(stop)
+			cancelStop()
 		}
 	}
 	s.cancel, s.done, s.running, s.stopped = cancel, done, true, false
@@ -119,34 +124,58 @@ func (s *Supervisor) Start(onExit func(error)) error {
 	}()
 	go watchSourcemodErrors(ctx, filepath.Join(current.InstallRoot, "tf-dedicated"), s.sink)
 
-	go func() {
-		defer close(done)
-		defer stopRoom()
-		var reason error
-		select {
-		case err := <-bridgeErr:
-			reason = wrapExit("bridge", err)
-		case err := <-srcdsErr:
-			reason = wrapExit("game server", err)
-		}
-		cancel()
-
-		s.mu.Lock()
-		asked := s.stopped
-		s.running = false
-		s.mu.Unlock()
-
-		if asked {
-			reason = nil
-			s.emit("stopped")
-		} else if reason != nil {
-			s.emit(reason.Error())
-		}
-		if onExit != nil {
-			onExit(reason)
-		}
-	}()
+	go s.await(session{
+		cancel:    cancel,
+		done:      done,
+		bridgeErr: bridgeErr,
+		srcdsErr:  srcdsErr,
+		stopRoom:  stopRoom,
+		onExit:    onExit,
+	})
 	return nil
+}
+
+// session is what await needs to see one run through to its end.
+type session struct {
+	cancel    context.CancelFunc
+	done      chan struct{}
+	bridgeErr chan error
+	srcdsErr  chan error
+	stopRoom  func()
+	onExit    func(error)
+}
+
+// await watches the pair and reports why they stopped. Whichever of the two
+// ends first ends the other: a bridge with no server has nothing to serve, and
+// a server with no bridge records nothing.
+func (s *Supervisor) await(run session) {
+	defer close(run.done)
+	defer run.stopRoom()
+
+	var reason error
+	select {
+	case err := <-run.bridgeErr:
+		reason = wrapExit("bridge", err)
+	case err := <-run.srcdsErr:
+		reason = wrapExit("game server", err)
+	}
+	run.cancel()
+
+	s.mu.Lock()
+	asked := s.stopped
+	s.running = false
+	s.mu.Unlock()
+
+	switch {
+	case asked:
+		reason = nil
+		s.emit("stopped")
+	case reason != nil:
+		s.emit(reason.Error())
+	}
+	if run.onExit != nil {
+		run.onExit(reason)
+	}
 }
 
 // Stop takes both down and waits for them. Stopping a stopped supervisor does

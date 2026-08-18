@@ -38,6 +38,20 @@ AP_TLS=true
 `SRCDS_RCONPW`, `AP_HOST` et `AP_PORT` sont les trois valeurs sans défaut. La
 stack refuse de démarrer s'il en manque une, et elle affiche laquelle.
 
+## Jouer sans Archipelago
+
+`TF2AP_TEST_MODE=1` dans `.env` dispense la stack de room. Le bridge sert un
+multiworld d'un seul joueur sur la loopback. Il invente une seed depuis le
+nombre de missions et le but que vous avez réglés, puis donne un déblocage à
+chaque vague réussie.
+
+Il joue aussi les autres joueurs : ils trouvent des objets, vous en envoient et
+meurent. Chaque ligne arrive dans le journal du bridge et dans le chat du jeu.
+
+Le bridge ignore `AP_HOST` et `AP_PORT` tant que c'est actif, et rien ne quitte
+la machine. Servez-vous en pour essayer la stack, et pour tester quand quelque
+chose cloche.
+
 ## 4. Démarrer la stack
 
 ```sh

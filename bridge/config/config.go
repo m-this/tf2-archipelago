@@ -38,6 +38,11 @@ type Config struct {
 
 	// PollTimeout is how long GET /grants is held open; the plugin's own timeout must be longer.
 	PollTimeout time.Duration
+
+	// TestMode plays without Archipelago: the bridge serves a multiworld of one
+	// on loopback and dials that instead of ArchipelagoURL. For trying the
+	// stack out, and for play-testing without a room and a seed.
+	TestMode bool
 }
 
 // Load reads the environment. Every value has a default that works inside the
@@ -59,6 +64,11 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 
+	testMode, err := boolEnv("TF2AP_TEST_MODE", false)
+	if err != nil {
+		return Config{}, err
+	}
+
 	cfg := Config{
 		ArchipelagoURL: (&url.URL{Scheme: scheme, Host: host + ":" + port}).String(),
 		SlotName:       env("AP_SLOT_NAME", "tf2"),
@@ -68,6 +78,7 @@ func Load() (Config, error) {
 		GameQueryAddr:  env("BRIDGE_GAME_QUERY", "srcds:27015"),
 		StatePath:      env("BRIDGE_STATE", "/data/bridge.json"),
 		PollTimeout:    timeout,
+		TestMode:       testMode,
 	}
 	if cfg.SlotName == "" {
 		return Config{}, fmt.Errorf("AP_SLOT_NAME is empty")

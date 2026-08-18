@@ -54,3 +54,19 @@ func TestBadValuesAreRefusedAtStartup(t *testing.T) {
 		})
 	}
 }
+
+func TestTestModeFromTheEnvironment(t *testing.T) {
+	t.Setenv("TF2AP_TEST_MODE", "1")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if !cfg.TestMode {
+		t.Error("TF2AP_TEST_MODE=1 did not turn test mode on")
+	}
+
+	t.Setenv("TF2AP_TEST_MODE", "nonsense")
+	if _, err := Load(); err == nil {
+		t.Error("a value that is not a boolean was accepted")
+	}
+}

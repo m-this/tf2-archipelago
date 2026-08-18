@@ -26,7 +26,7 @@ func TestFakeRoomServesThisClient(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Start: %v", err)
 	}
-	defer func() { _ = room.Close() }()
+	defer func() { _ = room.Close(context.Background()) }()
 
 	store := newStore(t)
 	client := New(Options{

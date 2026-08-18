@@ -92,12 +92,16 @@ func Start(ctx context.Context, options Options) (*Room, string, error) {
 	return room, address, nil
 }
 
-// Close stops serving.
-func (r *Room) Close() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+// Close stops serving. The context bounds the wait for connections to go.
+func (r *Room) Close(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, closeGrace)
 	defer cancel()
 	return r.server.Shutdown(ctx)
 }
+
+// closeGrace is how long a connection has to finish once the room is asked to
+// stop. It serves one bridge on loopback, so this is generous.
+const closeGrace = 2 * time.Second
 
 func (r *Room) serve(ctx context.Context, conn *websocket.Conn, missions []string, goal string) {
 	if err := write(ctx, conn, map[string]any{

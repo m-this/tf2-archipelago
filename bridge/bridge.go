@@ -22,6 +22,7 @@ import (
 	"github.com/m-this/tf2-archipelago/bridge/internal/chat"
 	"github.com/m-this/tf2-archipelago/bridge/internal/httpapi"
 	"github.com/m-this/tf2-archipelago/bridge/internal/state"
+	"github.com/m-this/tf2-archipelago/fakeroom"
 	"github.com/m-this/tf2-archipelago/gamedata"
 )
 
@@ -122,6 +123,27 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
 	store, err := state.Open(cfg.StatePath)
 	if err != nil {
 		return err
+	}
+
+	// Test mode: serve the multiworld and dial that, whatever the room settings
+	// say. A test run that quietly reached a real room would send checks into
+	// somebody's actual game.
+	if cfg.TestMode {
+		room, address, err := fakeroom.Start(ctx, fakeroom.Options{
+			SlotName: cfg.SlotName,
+			Log:      func(text string) { logger.InfoContext(ctx, "test mode", "message", text) },
+		})
+		if err != nil {
+			return err
+		}
+		defer func() {
+			// The run's context is already done by the time this fires, so the
+			// shutdown gets a fresh one of its own.
+			stop, cancel := context.WithTimeout(context.WithoutCancel(ctx), ShutdownGrace)
+			defer cancel()
+			_ = room.Close(stop)
+		}()
+		cfg.ArchipelagoURL = address
 	}
 
 	messages := chat.New(ChatHistory)
