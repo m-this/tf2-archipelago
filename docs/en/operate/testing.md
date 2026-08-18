@@ -178,37 +178,17 @@ wave with the events intact.
 
 ### Bots on the RED team
 
-Five bots fill the team, which MvM caps at six. None of this is part of
-the stack: these are console commands for a tester who plays alone.
+The server ships them. RED is filled to six when a wave begins, and the
+bots pick classes, fight, buy their own upgrades at the station and ready
+themselves. Nothing has to be typed: `SRCDS_BOTS=1` is the default, and
+`SRCDS_BOT_TEAM_SIZE` sets the number. `SRCDS_BOTS=0` leaves them to an
+admin's `!addbots`.
 
-```sh
-make rcon CMD="tf_bot_add 5 red heavyweapons"
-make rcon CMD="tf_bot_quota 0"
-```
+So one tester alone is a full team. Press F4 and the wave starts.
 
-**Team before class.** The order is `tf_bot_add <count> <team> <class>`,
-so `5 red heavyweapons`, never `5 heavyweapons red`.
-
-**Zero the quota after every add.** `tf_bot_add` raises `tf_bot_quota` by
-what it added, and in MvM a quota above 0 spawns bots and never stops. The
-count climbs on its own and waves never end. The extra bots look like the
-wave from inside the game, so the cause stays invisible. With the quota at
-0 the count is exact: five asked for, five present, five a minute later.
-
-**Ready them, or no wave starts.** MvM waits for every RED player, and a
-bot never readies itself, so F4 does nothing while one is on the team. The
-ready state is a client command, and bots take client commands. That is
-all the third-party "make players ready" plugins do from the inside:
-
-```sh
-make rcon CMD="bot_command all tournament_player_readystate 1"
-```
-
-Run that between waves, before F4.
-
-Count the bots with the bridge's metrics, not with `status`. `status`
-lists every fake client, robots included, so it reads about 25 for a team
-of five mid-wave. A2S counts only the defenders:
+Count them with the bridge's metrics, not with `status`. `status` lists
+every fake client, robots included, so it reads about 25 for a team of
+five mid-wave. A2S counts only the defenders:
 
 ```sh
 curl -s 127.0.0.1:24681/metrics | grep tf2ap_game_
@@ -216,23 +196,29 @@ curl -s 127.0.0.1:24681/metrics | grep tf2ap_game_
 
 `tf2ap_game_bots 5` with `tf2ap_game_players_human 1` is a full RED team.
 
-To remove the bots, set the quota to 0 before you kick, or the server
-replaces each one killed, for good. `tf_bot_kill` against a quota above 0
-never ends:
-
-```sh
-make rcon CMD="tf_bot_quota 0"
-make rcon CMD="tf_bot_kick all"
-```
-
-Two limits remain. A bot never buys an upgrade. MvM has no navigation for
-the defending team, so bots mostly stand in spawn and take damage. To make
-them fight you need a third-party plugin, which is a personal choice and
-not part of this repository.
-
 Leave `tf_bot_difficulty` alone. It is one setting for every bot on the
 server, robots included. Raise it for the team and the robots get the same
 raise. Robots already alive keep the value they spawned under.
+
+To take the bots out mid-session, without restarting:
+
+```sh
+make rcon CMD="sm_redbots_manager_mode 0"
+make rcon CMD="sm_purgebots"
+```
+
+The convar first: `sm_purgebots` on its own removes them and the next
+wave brings them straight back. `sm_addbots` puts them back by hand, and
+the next map load returns to whatever `SRCDS_BOTS` says, because
+server.cfg sets the convar again. `sm_addbots` and `sm_purgebots` are
+admin commands, so the Steam id has to be in `SRCDS_ADMIN_STEAMIDS` or
+the call has to come over rcon.
+
+**Do not use `tf_bot_add` for this.** It raises `tf_bot_quota`, and in MvM
+a quota above 0 spawns bots and never stops: the count climbs on its own
+and waves never end. The mod adds with `noquota` and does not have that
+problem. If you have used `tf_bot_add` by hand, `tf_bot_quota 0` before
+`tf_bot_kick all`, or the server replaces every bot you kill, for good.
 
 **Confirms:** `mvm_wave_complete` fires and the plugin reports the check.
 `mvm_begin_wave` gave the plugin the right wave number beforehand.

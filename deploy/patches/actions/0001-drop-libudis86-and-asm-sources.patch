@@ -1,0 +1,15 @@
+diff --git a/AMBuilder b/AMBuilder
+index 8a4d4d4..72b2ac6 100644
+--- a/AMBuilder
++++ b/AMBuilder
+@@ -65,8 +65,8 @@ else:
+ 
+ project.sources += sourceFiles
+ project.sources += detourSources
+-project.sources += asmSources
+-project.sources += libUdisSources
++#project.sources += asmSources
++#project.sources += libUdisSources
+ 
+ for sdk_name in Extension.sdks:
+     sdk = Extension.sdks[sdk_name]

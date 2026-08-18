@@ -11,6 +11,10 @@ tmp/
 *.smx
 /plugin/build/
 
+# Upstream sources, downloaded releases and the staged tree for the MvM
+# defender bots. deploy/bots/*.sh and deploy/patches/ are what we keep.
+/deploy/bots/build/
+
 # Built apworld bundle. Rebuilt from apworld/tf2_mvm/ on demand.
 *.apworld
 

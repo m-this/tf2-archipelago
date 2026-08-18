@@ -1,0 +1,13 @@
+diff --git a/source/actions_natives.h b/source/actions_natives.h
+index e45f10f..51dff74 100644
+--- a/source/actions_natives.h
++++ b/source/actions_natives.h
+@@ -230,7 +230,7 @@ cell_t NAT_actions_SetHandleEntity(IPluginContext* pContext, const cell_t* param
+ 	}
+ 	else
+ 	{
+-		handle = INVALID_EHANDLE_INDEX;
++		handle.Term();
+ 	}
+ 
+ 	return 0;

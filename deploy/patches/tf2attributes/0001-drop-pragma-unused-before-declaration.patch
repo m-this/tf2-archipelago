@@ -1,0 +1,12 @@
+diff --git a/scripting/tf2attributes.sp b/scripting/tf2attributes.sp
+index cdf8808..cbeb3b8 100644
+--- a/scripting/tf2attributes.sp
++++ b/scripting/tf2attributes.sp
+@@ -1136,7 +1136,6 @@ static bool IsNetworkedRuntimeAttribute(Address pDefType) {
+ /**
+  * Unloads the attribute in a given CEconItemAttribute instance.
+  */
+-#pragma unused UnloadAttributeValue
+ static void UnloadAttributeValue(Address pAttrDef, Address pEconItemAttribute) {
+ 	Address pDefType = DereferencePointer(pAttrDef + view_as<Address>(0x08));
+ 	Address pAttributeValue = pEconItemAttribute + view_as<Address>(0x08);
