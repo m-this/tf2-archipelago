@@ -20,8 +20,10 @@ import (
 	"path/filepath"
 	"syscall"
 
+	"github.com/m-this/tf2-archipelago/gamedata"
 	"github.com/m-this/tf2-archipelago/launcher/internal/assets"
 	"github.com/m-this/tf2-archipelago/launcher/internal/installer"
+	"github.com/m-this/tf2-archipelago/launcher/internal/runshape"
 	"github.com/m-this/tf2-archipelago/launcher/internal/runtime"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 	"github.com/m-this/tf2-archipelago/launcher/internal/srcdsconfig"
@@ -233,7 +235,7 @@ func configure(p *ui.Prompt, s settings.Settings) settings.Settings {
 	s.SrcdsRconPw = p.Password("RCON password", s.SrcdsRconPw)
 	s.SrcdsPw = p.Password("Player password (blank for none)", s.SrcdsPw)
 	s.SrcdsPort = p.Int("Game port", s.SrcdsPort)
-	s.SrcdsStartMap = p.Text("Start map", s.SrcdsStartMap)
+	s.SrcdsStartMap = p.Select("Start map", mapOptions(), s.SrcdsStartMap)
 	s.SrcdsAdminSteamIDs = p.Text("Admin Steam IDs (comma-separated, blank for none)", s.SrcdsAdminSteamIDs)
 	s.SrcdsLan = p.Bool("LAN mode (yes for friends, no for public)", s.SrcdsLan)
 	if s.SrcdsLan {
@@ -248,18 +250,71 @@ func configure(p *ui.Prompt, s settings.Settings) settings.Settings {
 		s.SrcdsBotTeamSize = p.Int("Fill RED to how many players", s.SrcdsBotTeamSize)
 	}
 
-	fmt.Println("\n--- Run shape (for seed generation) ---")
-	s.MvmMissionCount = p.Int("Mission count", s.MvmMissionCount)
-	s.MvmDifficulty = p.Choice("Difficulty", []string{"normal", "intermediate", "advanced", "expert"}, s.MvmDifficulty)
-	s.MvmGoal = p.Choice("Goal", []string{"final_boss", "missionsanity"}, s.MvmGoal)
+	fmt.Println("\n--- Run shape ---")
+	fmt.Println("These go in the player file the Archipelago app generates from.")
+	fmt.Println("Change them here, then generate again, for a new seed.")
+
+	tiers := runshape.Tiers()
+	s.MvmDifficulty = p.Select("Difficulty pool, the easiest tier the run draws",
+		tierOptions(tiers), s.MvmDifficulty)
+
+	pool := runshape.MissionsInPool(s.MvmDifficulty)
+	s.MvmMissionCount = p.IntRange("Missions in the run", s.MvmMissionCount, 1, pool)
+	fmt.Printf("  about %d waves.\n", wavesFor(tiers, s.MvmDifficulty, s.MvmMissionCount))
+
+	s.MvmGoal = p.Select("Goal", goalOptions(), s.MvmGoal)
 	if s.MvmGoal == "missionsanity" {
-		s.MvmMissionsanityPct = p.Int("Missionsanity percentage", s.MvmMissionsanityPct)
+		s.MvmMissionsanityPct = p.IntRange("Share of the missions to clear, in percent",
+			s.MvmMissionsanityPct, 10, 100)
 	}
-	s.MvmDeathLink = p.Bool("Death Link", s.MvmDeathLink)
+	s.MvmDeathLink = p.Bool("Death Link, a death here kills every linked player", s.MvmDeathLink)
 
 	fmt.Println("\n--- Install location ---")
 	s.InstallRoot = p.Text("Install root (14 GB of game files)", s.InstallRoot)
 	return s
+}
+
+// mapOptions lists the seven Valve MvM maps, each with the mission the server
+// loads with it. gamedata owns that list; see ADR 0001.
+func mapOptions() []ui.Option {
+	options := make([]ui.Option, 0, len(gamedata.Maps))
+	for _, m := range gamedata.Maps {
+		label := m.Name
+		for _, mission := range gamedata.Missions {
+			if mission.Map == m.ID {
+				label = fmt.Sprintf("%-16s %s", m.Name, mission.Name)
+				break
+			}
+		}
+		options = append(options, ui.Option{Value: m.Name, Label: label})
+	}
+	return options
+}
+
+func tierOptions(tiers []runshape.Tier) []ui.Option {
+	options := make([]ui.Option, 0, len(tiers))
+	for _, tier := range tiers {
+		options = append(options, ui.Option{Value: tier.Key, Label: tier.Label()})
+	}
+	return options
+}
+
+func goalOptions() []ui.Option {
+	goals := runshape.Goals()
+	options := make([]ui.Option, 0, len(goals))
+	for _, goal := range goals {
+		options = append(options, ui.Option{Value: goal.Key, Label: goal.Label()})
+	}
+	return options
+}
+
+func wavesFor(tiers []runshape.Tier, key string, missions int) int {
+	for _, tier := range tiers {
+		if tier.Key == key {
+			return tier.WavesFor(missions)
+		}
+	}
+	return 0
 }
 
 func showStatus(s settings.Settings) {

@@ -123,3 +123,76 @@ func (p *Prompt) readMaskedLine() string {
 	line, _ := p.reader.ReadString('\n')
 	return line
 }
+
+// Option is one row of a Select: the value that gets saved, and the line the
+// player reads.
+type Option struct {
+	Value string
+	Label string
+}
+
+// Select asks for one of a numbered list. It takes the number, the value, or
+// Enter for the default, which is marked in the list. A list beats free text
+// wherever the set is known and short: nobody has to remember how ghost_town
+// is spelled.
+func (p *Prompt) Select(label string, options []Option, def string) string {
+	fmt.Printf("%s:\n", label)
+	for i, option := range options {
+		marker := " "
+		if option.Value == def {
+			marker = "*"
+		}
+		fmt.Printf("  %s %2d. %s\n", marker, i+1, option.Label)
+	}
+	for {
+		fmt.Printf("  Number or name [%s]: ", def)
+		line, _ := p.reader.ReadString('\n')
+		line = strings.TrimSpace(line)
+		if line == "" {
+			return def
+		}
+		if n, err := strconv.Atoi(line); err == nil {
+			if n >= 1 && n <= len(options) {
+				return options[n-1].Value
+			}
+			fmt.Printf("  pick a number between 1 and %d\n", len(options))
+			continue
+		}
+		for _, option := range options {
+			if strings.EqualFold(line, option.Value) {
+				return option.Value
+			}
+		}
+		fmt.Println("  pick a number, or type one of the names")
+	}
+}
+
+// IntRange asks for a number inside a range, and says what the range is. An
+// answer outside it re-prompts rather than being clamped, because a silently
+// corrected number is one the player never sees.
+func (p *Prompt) IntRange(label string, def, low, high int) int {
+	if def < low {
+		def = low
+	}
+	if def > high {
+		def = high
+	}
+	for {
+		fmt.Printf("%s (%d to %d) [%d]: ", label, low, high, def)
+		line, _ := p.reader.ReadString('\n')
+		line = strings.TrimSpace(line)
+		if line == "" {
+			return def
+		}
+		n, err := strconv.Atoi(line)
+		if err != nil {
+			fmt.Println("  enter a whole number, or press Enter for the default")
+			continue
+		}
+		if n < low || n > high {
+			fmt.Printf("  pick a number between %d and %d\n", low, high)
+			continue
+		}
+		return n
+	}
+}
