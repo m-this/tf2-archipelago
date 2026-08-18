@@ -120,6 +120,12 @@ install_server_cfg() {
 	sm_redbots_manager_mode ${bots_mode}
 	sm_redbots_manager_defender_team_size ${SRCDS_BOT_TEAM_SIZE:-6}
 	sm_redbots_manager_min_players -1
+	// Keep the bots between waves. The mod's default kicks every bot inside
+	// the mvm_wave_complete handler and respawns a fresh set at the next
+	// wave: five KickClient calls in the middle of the wave-end sequence, on
+	// a team that just lost its one human. That is where a play-test froze.
+	// Nothing on a private server wants the reroll anyway.
+	sm_redbots_manager_kick_bots 0
 
 	// LAN mode skips Steam authentication. The server has no Game Server Login
 	// Token by default, so it never logs in to Steam, and a client trying to

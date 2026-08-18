@@ -669,6 +669,30 @@ were at a station (the mod's existing fallback) instead of throwing.
 Not yet confirmed on a live server: whether that is the whole of #13, or only
 the crash the reporter hit. Only a real MvM round answers that.
 
+## The wave-clear freeze, and kick_bots
+
+The first live run on Windows, 2026-08-18: one human, five defender bots, no
+room reachable. The human died as wave 1 ended, the client lost its connection,
+and srcds stayed up but wrote nothing more. No crash, no error, no exit.
+
+The lines that would settle it were not being captured. SourceMod writes plugin
+errors to `addons/sourcemod/logs/errors_*.log`, not to the console, and the
+launcher now tails that file into its window. The next occurrence names the
+plugin and the line.
+
+The one thing that runs at that exact moment and does something violent is the
+mod's own `mvm_wave_complete` handler (`redbots3/events.sp:65`). With
+`sm_redbots_manager_kick_bots` at its default of `1`, it calls
+`RemoveAllDefenderBots`, which is a `KickClient` on every bot, synchronously,
+inside the event, and then stops the manager until the next `mvm_begin_wave`
+re-arms it. Five kicks in the middle of the wave-end sequence, on a team whose
+one human is dead, is a plausible cause and a pointless one: nothing on a
+private server wants the bots rerolled between waves.
+
+So both `server.cfg` writers set `sm_redbots_manager_kick_bots 0`. This is not
+a proof. This note records a suspect. If the freeze happens again with the bots
+kept, the SourceMod log is the next thing to read.
+
 ## What is settled and what is still open
 
 Settled by this research:
