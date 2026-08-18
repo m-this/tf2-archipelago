@@ -40,6 +40,8 @@ unread.
 
 ## What happens during a wave
 
+- Bots fill the RED team to six when the wave begins, and stay filled for the
+  rest of it. See [The bots on your team](defender-bots.md).
 - The class menu refuses a class that the run has not unlocked, with a line in
   the chat.
 - Locked weapon slots stay empty at every spawn, at the resupply locker and at

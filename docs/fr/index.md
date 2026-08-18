@@ -5,11 +5,15 @@ randomizer. Les classes, les emplacements d'arme et les missions
 commencent verrouillés. L'équipe les débloque quand elle réussit des vagues.
 Tout le monde sur le serveur partage les mêmes déblocages.
 
-Vous l'hébergez avec Docker. La stack fait tourner deux conteneurs : un
-serveur dédié Team Fortress 2, et un petit programme qui le relie à la session
-randomisée. La session elle-même tourne sur `archipelago.gg`, et la stack
-l'héberge pour vous si vous préférez. Vos amis rejoignent avec un client Team
-Fortress 2 standard et n'installent rien.
+Vous l'hébergez de deux façons. Sur Windows, un seul exe installe et lance
+l'ensemble. Partout où Docker tourne, une stack de deux conteneurs
+fait la même chose. Un serveur dédié Team Fortress 2, et un petit programme
+qui le relie à la session. La session tourne sur `archipelago.gg`, et la stack
+l'héberge pour vous si vous préférez. Vos amis rejoignent avec un client
+Team Fortress 2 standard et n'installent rien.
+
+Le serveur remplit aussi l'équipe RED avec des bots qui jouent, donc deux
+joueurs gagnent une partie que Valve a calibrée pour six.
 
 Ce livre s'adresse à l'hébergeur. Il suppose que vous connaissez Mann vs
 Machine et que vous n'avez jamais utilisé un randomizer de ce genre. Il
@@ -26,13 +30,22 @@ définit chaque mot avant de l'utiliser.
    la difficulté d'une soirée.
 5. [Créer la session](setup/create-the-session.md) fabrique la partie et la
    met sur `archipelago.gg`.
-6. [Installation](setup/install.md) fait tourner la stack.
+6. [Installer sur Windows](setup/install-windows.md) ou
+   [Installer avec Docker](setup/install.md) fait tourner le serveur.
 7. [Inviter vos amis](setup/invite-your-friends.md) ouvre le serveur.
+   [Les bots de votre équipe](play/defender-bots.md) dit qui remplit les
+   places vides.
 8. [Tests](operate/testing.md) donne la marche à suivre pour confirmer
    chaque comportement sur un serveur réel. À lire avant la première
    session.
 
 ## La version courte
+
+Sur Windows, téléchargez `tf2ap.exe` depuis la
+[dernière version](https://github.com/m-this/tf2-archipelago/releases/latest),
+puis lancez-le. Il demande l'adresse de la room et installe le reste.
+
+Avec Docker :
 
 ```sh
 cp deploy/.env.example .env   # puis réglez SRCDS_RCONPW

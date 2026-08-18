@@ -142,6 +142,16 @@ the AP protocol and the id mapping. ADR 0002.
 The SourcePawn plugin inside the `srcds` container. Sees the game, knows
 nothing about Archipelago, holds no authoritative state.
 
+**Launcher**
+The Windows exe, `tf2ap.exe`. Installs the game server and its mods, and runs
+the bridge in-process next to `srcds.exe`. Its window holds the log, the start
+and stop buttons and an rcon box. The Windows equivalent of the compose stack.
+
+**Defender bots**
+OfficerSpy's MvM Defender TFBots and its five dependencies, staged by
+`deploy/bots/build.sh` and patched from `deploy/patches/`. They fill the RED
+team so a wave balanced for six players is winnable by fewer.
+
 **Objective**
 The plugin's vocabulary for what the bridge calls a location. The plugin
 reports `wave_cleared{mission, wave}`; the bridge turns that into a location

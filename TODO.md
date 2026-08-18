@@ -57,9 +57,11 @@ Driven over rcon, no game client, so nothing below needed a player.
 | Recreating `srcds` alone | orphans the bridge: it stays healthy, reaches nothing, and `docker restart` fails with `joining network namespace: No such container` | recreated srcds, watched the plugin lose the bridge |
 
 A wave was never started: Mann vs Machine waits for a **human** to ready up and
-a bot cannot. So the three events exist but have not been seen to fire, and
-`m_nCurrency`, the slot enforcement and the class move are still unobserved.
-`tf_bot_add 5 red` populates RED and 31 robots spawn, which is as far as bots go.
+a stock bot never readies itself. So the three events exist but have not been
+seen to fire, and `m_nCurrency`, the slot enforcement and the class move are
+still unobserved. Two shipped changes remove that block, and neither has run on
+a live server: `tf_mvm_min_players_to_start 1` lets one player start a wave
+alone, and the defender bots ready themselves.
 
 The `.pop` files being inside the VPK matters: nothing can read them from the
 host without a VPK extractor. Wave counts therefore come from the table below,
@@ -566,8 +568,10 @@ ships off:
 
 - [ ] Shop check injection: can a plugin add a purchasable entry to the upgrade
       station UI? Blocks the `shop_checks` group entirely.
-- [ ] Allied bot upgrade sharing: do RED bots still work in MvM, and can they
-      inherit purchased upgrades? Blocks `Allied Mercs`.
+- [x] Allied bot upgrade sharing: answered by shipping OfficerSpy's defender
+      bots. They buy their own upgrades at the station, so nothing has to
+      inherit the player's. Still unobserved live, and upstream issue #13
+      broke that path until the patch in `deploy/patches/defenderbots/`.
 - [ ] DeathLink semantics: individual death is noise in MvM. Wave failure, or
       death outside the respawn grace window?
 

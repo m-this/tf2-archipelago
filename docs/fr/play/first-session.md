@@ -41,6 +41,10 @@ défilerait sans être lu.
 
 ## Ce qui se passe pendant une vague
 
+- Des bots remplissent l'équipe RED jusqu'à six au début de la vague, et la
+  gardent pleine ensuite. Voir
+  [Les bots de votre équipe](defender-bots.md).
+
 - Le menu de classe refuse une classe que la partie n'a pas débloquée, avec
   une ligne dans le chat.
 - Les emplacements d'arme verrouillés restent vides à chaque spawn, au

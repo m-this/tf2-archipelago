@@ -1,5 +1,9 @@
 # Prérequis
 
+Deux façons de lancer le serveur. **Windows** est la plus simple : un seul
+exe, sans Docker. **Docker** marche sur tous les systèmes. Les deux font
+tourner le même logiciel.
+
 ## La machine
 
 | Chose | Ce qu'il vous faut |
@@ -7,12 +11,30 @@
 | Disque | Environ 20 Go libres. Le serveur de jeu télécharge environ 14 Go au premier démarrage. |
 | Mémoire | 4 Go pour six joueurs. |
 | Processeur | Deux cœurs. |
-| Docker | Docker avec le plugin compose. |
 | Réseau | Un port que vos amis peuvent atteindre, UDP et TCP. |
+
+## Windows (recommandé)
+
+| Chose | Ce qu'il vous faut |
+| --- | --- |
+| Windows | 10 ou 11, 64 bits. |
+| Le lanceur | `tf2ap.exe`, depuis la [dernière version](https://github.com/m-this/tf2-archipelago/releases/latest). |
+| Archipelago | L'[application officielle](https://github.com/ArchipelagoMW/Archipelago/releases), pour générer la seed. |
+
+Sans Docker, sans clone, sans compilateur. Voir
+[Installer sur Windows](install-windows.md).
+
+## Docker
+
+| Chose | Ce qu'il vous faut |
+| --- | --- |
+| Docker | Docker avec le plugin compose. |
 
 Les fichiers du jeu restent dans un volume Docker nommé
 `tf2-archipelago_tf2game`. Gardez ce volume. Le supprimer retélécharge
 14 Go.
+
+Voir [Installer avec Docker](install.md).
 
 ## Le réseau
 

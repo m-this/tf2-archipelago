@@ -186,10 +186,13 @@ Damonj17. Un multiplicateur compense les dégâts manquants, mais pas un
 Medic manquant, un Engineer manquant, ou un Scout manquant pour ramasser
 l'argent. Les bots occupent au moins les rôles.
 
-Les bots RED n'achètent pas d'améliorations par eux-mêmes. Le choix
-retenu : les bots partagent directement les améliorations débloquées du
-joueur. C'est la suggestion d'adeleine64DS venue du fil, et la solution la
-moins chère.
+**Ce qui est livré :** le serveur embarque le mod MvM Defender TFBots
+d'OfficerSpy. Il remplit RED au début de la vague. Ces bots choisissent leur
+classe, se battent, achètent leurs propres améliorations et se déclarent
+prêts. Partager les améliorations du joueur était le plan tant que les bots
+RED d'origine semblaient la seule option. Des bots qui achètent les leurs
+valent mieux, et ce sont eux qui tournent. Voir
+[Les bots de votre équipe](play/defender-bots.md).
 
 Les équipements de bot sont eux-mêmes des items sous `Robot Templates` ou
 `Single Templates`, ce qui transforme « qui est dans mon équipe » en une
