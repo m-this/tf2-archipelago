@@ -100,6 +100,12 @@ func runSrcds(ctx context.Context, s settings.Settings, logger *slog.Logger) err
 		"+hostport", fmt.Sprintf("%d", s.SrcdsPort),
 		"+rcon_password", s.SrcdsRconPw,
 	}
+	if exeName == "srcds.exe" {
+		// Without -console, srcds.exe opens its own window and waits for a
+		// click on Start, so the launcher would sit there having apparently
+		// done nothing. -nocrashdialog keeps a crash from doing the same.
+		args = append([]string{"-console", "-nocrashdialog"}, args...)
+	}
 	if s.SrcdsLan {
 		args = append(args, "+sv_lan", "1")
 	}

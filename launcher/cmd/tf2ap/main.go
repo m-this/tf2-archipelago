@@ -17,6 +17,7 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 
 	"github.com/m-this/tf2-archipelago/launcher/internal/assets"
@@ -41,21 +42,35 @@ func run(logger *slog.Logger) error {
 	installFlag := flag.Bool("install", false, "install or repair the server, then exit")
 	configureFlag := flag.Bool("configure", false, "edit the configuration, then exit")
 	statusFlag := flag.Bool("status", false, "show the configuration and install state, then exit")
+	yamlFlag := flag.String("yaml", "", "write the Archipelago player file to this path, then exit")
+	envFlag := flag.Bool("env", false, "list the environment variables that override the configuration, then exit")
 	showVersion := flag.Bool("version", false, "print the version and exit")
 	flag.Parse()
 
 	if *showVersion {
 		v := assets.Versions()
 		fmt.Printf("tf2ap %s\n", version)
-		fmt.Printf("  sourcemod:   %s\n", v["sourcemod"])
-		fmt.Printf("  ripext:      %s\n", v["ripext"])
-		fmt.Printf("  archipelago: %s\n", v["archipelago"])
+		for _, name := range []string{"metamod", "sourcemod", "ripext", "archipelago"} {
+			fmt.Printf("  %-12s %s\n", name+":", v[name])
+		}
 		return nil
 	}
 
-	s, err := settings.Load()
+	if *envFlag {
+		showEnv()
+		return nil
+	}
+
+	saved, err := settings.Load()
 	if err != nil {
 		return fmt.Errorf("cannot load the configuration: %w", err)
+	}
+	// The environment wins over the file, and is never written back: an
+	// override for one run must not become the saved answer.
+	s := settings.ApplyEnv(saved)
+
+	if *yamlFlag != "" {
+		return writeYAML(s, *yamlFlag)
 	}
 
 	if *statusFlag {
@@ -92,11 +107,29 @@ func guided(logger *slog.Logger, s settings.Settings) error {
 	if err := srcdsconfig.Install(s); err != nil {
 		return fmt.Errorf("cannot write the server configs: %w", err)
 	}
+	if err := writeStarterYAML(s); err != nil {
+		return err
+	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 	fmt.Println("starting the server. press Ctrl-C to stop.")
 	return runtime.Run(ctx, s, logger)
+}
+
+// writeStarterYAML drops the player file next to the game files the first time
+// only. Generation happens in the Archipelago app, and this is the file it
+// needs; rewriting it on every start would undo an edit made there.
+func writeStarterYAML(s settings.Settings) error {
+	path := filepath.Join(s.InstallRoot, "tf2.yaml")
+	if _, err := os.Stat(path); err == nil {
+		return nil
+	}
+	if err := os.WriteFile(path, []byte(settings.PlayerYAML(s, assets.ArchipelagoVersion)), 0o644); err != nil {
+		return fmt.Errorf("cannot write %s: %w", path, err)
+	}
+	fmt.Printf("wrote %s for the Archipelago app to generate from\n", path)
+	return nil
 }
 
 func ensureInstalled(s settings.Settings, logger *slog.Logger) settings.Settings {
@@ -148,6 +181,12 @@ func configure(p *ui.Prompt, s settings.Settings) settings.Settings {
 		s.SrcdsToken = p.Text("Game Server Login Token", s.SrcdsToken)
 	}
 
+	fmt.Println("\n--- Defender bots ---")
+	s.SrcdsBots = p.Bool("Fill the RED team with bots", s.SrcdsBots)
+	if s.SrcdsBots {
+		s.SrcdsBotTeamSize = p.Int("Fill RED to how many players", s.SrcdsBotTeamSize)
+	}
+
 	fmt.Println("\n--- Run shape (for seed generation) ---")
 	s.MvmMissionCount = p.Int("Mission count", s.MvmMissionCount)
 	s.MvmDifficulty = p.Choice("Difficulty", []string{"normal", "intermediate", "advanced", "expert"}, s.MvmDifficulty)
@@ -155,6 +194,7 @@ func configure(p *ui.Prompt, s settings.Settings) settings.Settings {
 	if s.MvmGoal == "missionsanity" {
 		s.MvmMissionsanityPct = p.Int("Missionsanity percentage", s.MvmMissionsanityPct)
 	}
+	s.MvmDeathLink = p.Bool("Death Link", s.MvmDeathLink)
 
 	fmt.Println("\n--- Install location ---")
 	s.InstallRoot = p.Text("Install root (14 GB of game files)", s.InstallRoot)
@@ -168,7 +208,39 @@ func showStatus(s settings.Settings) {
 	fmt.Printf("Server:        %s on port %d (lan=%v)\n", s.SrcdsHostname, s.SrcdsPort, s.SrcdsLan)
 	fmt.Printf("Start map:     %s\n", s.SrcdsStartMap)
 	fmt.Printf("Run:           %d missions, %s, goal=%s\n", s.MvmMissionCount, s.MvmDifficulty, s.MvmGoal)
+	fmt.Printf("Bots:          %s\n", botsStatus(s))
 	fmt.Printf("RCON password: %s\n", masked(s.SrcdsRconPw))
+}
+
+func botsStatus(s settings.Settings) string {
+	if !s.SrcdsBots {
+		return "off"
+	}
+	return fmt.Sprintf("RED filled to %d", s.SrcdsBotTeamSize)
+}
+
+// showEnv prints the override names. Every one of them is a value the guided
+// flow would otherwise ask for, so a shortcut or a .bat can start a server
+// with no prompt at all.
+func showEnv() {
+	fmt.Println("These override the saved configuration for one run:")
+	for _, name := range settings.EnvNames {
+		if value, ok := os.LookupEnv(name); ok && value != "" {
+			fmt.Printf("  %-30s (set)\n", name)
+			continue
+		}
+		fmt.Printf("  %s\n", name)
+	}
+}
+
+func writeYAML(s settings.Settings, path string) error {
+	content := settings.PlayerYAML(s, assets.ArchipelagoVersion)
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		return fmt.Errorf("cannot write %s: %w", path, err)
+	}
+	fmt.Printf("wrote %s\n", path)
+	fmt.Println("drop it in the Archipelago app's Players folder, then generate.")
+	return nil
 }
 
 func masked(s string) string {

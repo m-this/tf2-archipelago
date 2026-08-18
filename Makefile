@@ -229,11 +229,18 @@ bots-from-source:
 EMBED := launcher/internal/assets/embedded
 LAUNCHER_LDFLAGS := -X github.com/m-this/tf2-archipelago/launcher/internal/assets.SourcemodBranch=$(SOURCEMOD_BRANCH) \
 	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.SourcemodVersion=$(SOURCEMOD_VERSION) \
+	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.MetamodBranch=$(MMSOURCE_BRANCH) \
+	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.MetamodVersion=$(MMSOURCE_VERSION) \
 	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.RipextVersion=$(RIPEXT_VERSION) \
 	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.ArchipelagoVersion=$(ARCHIPELAGO_VERSION)
 
-launcher-assets:
+# The bots go in as a Windows-only zip: the staged tree carries both platforms'
+# extensions, and the 20 MB of Linux .so has no business inside a .exe.
+launcher-assets: bots
 	mkdir -p $(EMBED)
+	rm -f $(EMBED)/defender-bots-windows.zip
+	cd deploy/bots/build/package && zip -qr $(CURDIR)/$(EMBED)/defender-bots-windows.zip \
+		addons -x '*.so'
 	curl -fsSL -o $(EMBED)/sm-ripext-windows.zip \
 		"https://github.com/ErikMinekus/sm-ripext/releases/download/$(RIPEXT_VERSION)/sm-ripext-$(RIPEXT_VERSION)-windows.zip"
 	@if [ -f plugin/build/tf2_archipelago.smx ]; then \

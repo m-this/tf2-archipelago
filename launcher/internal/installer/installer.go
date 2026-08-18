@@ -78,20 +78,28 @@ func Ensure(ctx context.Context, installRoot string, logf func(format string, ar
 		result.Done.GameInstalled = true
 	}
 
-	sourcemodDir := filepath.Join(result.GameDir, "tf", "addons", "sourcemod")
-	if !exists(sourcemodDir) {
-		logf("installing SourceMod %s", assets.SourcemodVersion)
-		if err := installSourcemod(ctx, result.GameDir, logf); err != nil {
+	modDir := filepath.Join(result.GameDir, "tf")
+	if !exists(filepath.Join(modDir, "addons", "metamod")) {
+		logf("installing Metamod:Source %s", assets.MetamodVersion)
+		if err := installMetamod(ctx, modDir); err != nil {
 			return result, err
 		}
-		result.Done.SourcemodInstalled = true
-	} else {
-		result.Done.SourcemodInstalled = true
 	}
 
-	logf("installing ripext %s and the plugin", assets.RipextVersion)
-	if err := installRipextAndPlugin(result.GameDir); err != nil {
+	if !exists(filepath.Join(modDir, "addons", "sourcemod")) {
+		logf("installing SourceMod %s", assets.SourcemodVersion)
+		if err := installSourcemod(ctx, modDir, logf); err != nil {
+			return result, err
+		}
+	}
+	result.Done.SourcemodInstalled = true
+
+	logf("installing ripext %s, the plugin and the defender bots", assets.RipextVersion)
+	if err := installRipextAndPlugin(modDir); err != nil {
 		return result, err
+	}
+	if err := unzipTo(assets.DefenderBotsZip(), modDir); err != nil {
+		return result, fmt.Errorf("cannot install the defender bots: %w", err)
 	}
 
 	return result, nil
@@ -126,9 +134,22 @@ func installGame(ctx context.Context, steamcmdDir, gameDir string, logf func(str
 	return cmd.Run()
 }
 
+// installMetamod unpacks Metamod:Source, which loads SourceMod. Without it
+// SourceMod is inert and every plugin in this project is missing.
+func installMetamod(ctx context.Context, modDir string) error {
+	url := fmt.Sprintf("https://mms.alliedmods.net/mmsdrop/%s/mmsource-%s-windows.zip",
+		assets.MetamodBranch, assets.MetamodVersion)
+	data, err := fetch(ctx, url)
+	if err != nil {
+		return fmt.Errorf("cannot download Metamod:Source: %w", err)
+	}
+	return unzipTo(data, modDir)
+}
+
 // installSourcemod fetches the Windows SourceMod build and unpacks it into the
-// game tree.
-func installSourcemod(ctx context.Context, gameDir string, logf func(string, ...any)) error {
+// mod directory. These archives root at addons/ and cfg/, which belong under
+// tf/, not next to srcds.exe.
+func installSourcemod(ctx context.Context, modDir string, logf func(string, ...any)) error {
 	url := fmt.Sprintf("https://sm.alliedmods.net/smdrop/%s/sourcemod-%s-windows.zip",
 		assets.SourcemodBranch, assets.SourcemodVersion)
 	logf("downloading SourceMod from %s", url)
@@ -136,16 +157,16 @@ func installSourcemod(ctx context.Context, gameDir string, logf func(string, ...
 	if err != nil {
 		return fmt.Errorf("cannot download SourceMod: %w", err)
 	}
-	return unzipTo(data, gameDir)
+	return unzipTo(data, modDir)
 }
 
 // installRipextAndPlugin unpacks the embedded ripext zip and copies the plugin
 // into the game's SourceMod tree.
-func installRipextAndPlugin(gameDir string) error {
-	if err := unzipTo(assets.RipextZip(), gameDir); err != nil {
+func installRipextAndPlugin(modDir string) error {
+	if err := unzipTo(assets.RipextZip(), modDir); err != nil {
 		return fmt.Errorf("cannot install ripext: %w", err)
 	}
-	pluginDir := filepath.Join(gameDir, "tf", "addons", "sourcemod", "plugins")
+	pluginDir := filepath.Join(modDir, "addons", "sourcemod", "plugins")
 	if err := os.MkdirAll(pluginDir, 0o755); err != nil {
 		return err
 	}

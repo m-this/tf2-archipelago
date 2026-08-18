@@ -45,6 +45,8 @@ func installServerCfg(gameDir string, s settings.Settings) error {
 		"RconPassword":   s.SrcdsRconPw,
 		"PlayerPassword": s.SrcdsPw,
 		"Lan":            boolToInt(s.SrcdsLan),
+		"BotsMode":       botsMode(s.SrcdsBots),
+		"BotTeamSize":    s.SrcdsBotTeamSize,
 	}); err != nil {
 		return fmt.Errorf("cannot render server.cfg: %w", err)
 	}
@@ -112,6 +114,15 @@ func splitAdmins(list string) []string {
 		return r == ',' || r == '\n' || r == '\t' || r == ' '
 	})
 	return out
+}
+
+// botsMode maps the on/off setting to the mod's convar: 2 is AUTO_BOTS, 0
+// leaves the bots to an admin.
+func botsMode(enabled bool) int {
+	if enabled {
+		return 2
+	}
+	return 0
 }
 
 func boolToInt(b bool) int {

@@ -106,6 +106,10 @@ checks tout de même. Ne testez pas contre lui par erreur.
 
 ## 5. Réussissez une vague seul
 
+Le serveur remplit RED avec des bots qui jouent, donc un testeur seul
+forme une équipe complète. Voir
+[Les bots de votre équipe](../play/defender-bots.md).
+
 MvM ne démarre pas une vague tant qu'un joueur humain ne s'est pas
 déclaré prêt. Déclarez-vous prêt, puis lancez ce bloc de commandes. Il
 termine la vague sans la jouer :
@@ -120,7 +124,8 @@ rcon tf_mvm_tank_kill
 
 `god` se tape dans votre propre console, pas via rcon. Rcon tourne comme
 le serveur, et le serveur n'est pas un joueur. `tf_bot_kill all` tue ce
-qui est vivant maintenant. La mission continue d'envoyer le reste de la
+qui est vivant maintenant, bots défenseurs compris. Le mod les remplace
+dans la seconde. La mission continue d'envoyer le reste de la
 vague.
 
 Relancez la commande toutes les quelques secondes, jusqu'à la fin de la

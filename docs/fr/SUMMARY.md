@@ -20,6 +20,7 @@
 
 * [La première session](play/first-session.md)
 * [Commandes de chat](play/chat-commands.md)
+* [Les bots de votre équipe](play/defender-bots.md)
 
 ## Faire tourner
 

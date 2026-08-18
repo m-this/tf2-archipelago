@@ -104,3 +104,43 @@ func TestInstallPluginCfg(t *testing.T) {
 		t.Errorf("tf2_archipelago.cfg does not contain the bridge url setting:\n%s", cfg)
 	}
 }
+
+func TestInstallServerCfgBots(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		s    settings.Settings
+		want []string
+	}{
+		{
+			name: "on",
+			s:    settings.Settings{SrcdsBots: true, SrcdsBotTeamSize: 6},
+			want: []string{"sm_redbots_manager_mode 2", "sm_redbots_manager_defender_team_size 6"},
+		},
+		{
+			name: "off",
+			s:    settings.Settings{SrcdsBots: false, SrcdsBotTeamSize: 6},
+			want: []string{"sm_redbots_manager_mode 0"},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.s.InstallRoot = t.TempDir()
+			if err := Install(tc.s); err != nil {
+				t.Fatalf("Install: %v", err)
+			}
+			cfg, err := os.ReadFile(filepath.Join(gameDir(tc.s.InstallRoot), "cfg", "server.cfg"))
+			if err != nil {
+				t.Fatalf("cannot read server.cfg: %v", err)
+			}
+			for _, want := range tc.want {
+				if !strings.Contains(string(cfg), want) {
+					t.Errorf("missing %q in:\n%s", want, cfg)
+				}
+			}
+			// The mod's own gate counts RED before the wave, where a solo
+			// player has no bots yet, so it must always be off.
+			if !strings.Contains(string(cfg), "sm_redbots_manager_min_players -1") {
+				t.Error("the ready-up gate was left on")
+			}
+		})
+	}
+}

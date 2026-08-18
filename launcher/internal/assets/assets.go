@@ -21,6 +21,9 @@ var plugin []byte
 //go:embed embedded/sm-ripext-windows.zip
 var ripextZip []byte
 
+//go:embed embedded/defender-bots-windows.zip
+var defenderBotsZip []byte
+
 //go:embed embedded/tf2_archipelago.cfg
 var pluginConfig []byte
 
@@ -33,6 +36,8 @@ var serverCfgTemplate string
 var (
 	SourcemodBranch    = ""
 	SourcemodVersion   = ""
+	MetamodBranch      = ""
+	MetamodVersion     = ""
 	RipextVersion      = ""
 	ArchipelagoVersion = ""
 )
@@ -43,6 +48,11 @@ func Plugin() []byte { return plugin }
 // RipextZip returns the Windows ripext distribution, unpacked into the game's
 // addons tree at install time.
 func RipextZip() []byte { return ripextZip }
+
+// DefenderBotsZip returns the MvM defender bot stack for Windows: the four
+// plugins, the two extension .dlls, their gamedata and the per-map navigation
+// hints, rooted at addons/.
+func DefenderBotsZip() []byte { return defenderBotsZip }
 
 // PluginConfig returns tf2_archipelago.cfg, copied verbatim into the server's
 // cfg/sourcemod/ directory.
@@ -57,6 +67,7 @@ func ServerCfgTemplate() string { return serverCfgTemplate }
 func Versions() map[string]string {
 	return map[string]string{
 		"sourcemod":   SourcemodVersion,
+		"metamod":     MetamodVersion,
 		"ripext":      RipextVersion,
 		"archipelago": ArchipelagoVersion,
 	}

@@ -11,11 +11,16 @@ sv_password "{{.PlayerPassword}}"
 sv_visiblemaxplayers 6
 
 // A wave starts when enough players have readied up, and one is enough
-// here. A private server is a handful of friends, so one of them arriving
-// late is not a reason for the evening to stall. It is also the only way to
-// test a wave alone: a bot cannot ready up, so without this the host cannot
-// reach the one part of the plugin nothing has proven.
+// here, so one player can start a wave alone.
 tf_mvm_min_players_to_start 1
+
+// The defender bots. Mode 2 fills RED when a wave begins and tops it back up
+// for the rest of it; mode 0 waits for an admin's !addbots. min_players -1
+// turns off the mod's own ready-up gate, which counts RED before the wave and
+// would block the F4 that spawns the bots.
+sm_redbots_manager_mode {{.BotsMode}}
+sm_redbots_manager_defender_team_size {{.BotTeamSize}}
+sm_redbots_manager_min_players -1
 
 // LAN mode skips Steam authentication. The server has no Game Server Login
 // Token by default, so it never logs in to Steam, and a client trying to

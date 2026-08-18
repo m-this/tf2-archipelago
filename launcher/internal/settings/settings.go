@@ -36,12 +36,17 @@ type Settings struct {
 	SrcdsLan           bool   `json:"srcds_lan"`
 	SrcdsAdminSteamIDs string `json:"srcds_admin_steamids,omitempty"`
 
+	// Defender bots. RED is filled to SrcdsBotTeamSize when a wave begins.
+	SrcdsBots        bool `json:"srcds_bots"`
+	SrcdsBotTeamSize int  `json:"srcds_bot_team_size"`
+
 	// Run shape, for seed generation guidance (the launcher does not generate
 	// seeds itself, but it can write a starter YAML for the Archipelago app).
 	MvmMissionCount     int    `json:"mvm_mission_count"`
 	MvmDifficulty       string `json:"mvm_difficulty"`
 	MvmGoal             string `json:"mvm_goal"`
 	MvmMissionsanityPct int    `json:"mvm_missionsanity_percentage"`
+	MvmDeathLink        bool   `json:"mvm_death_link"`
 
 	// Whether to enable the metrics listener and on what port.
 	MetricsPort int `json:"metrics_port"`
@@ -61,6 +66,8 @@ func Defaults() Settings {
 		SrcdsStartMap:       "mvm_decoy",
 		SrcdsToken:          "0",
 		SrcdsLan:            true,
+		SrcdsBots:           true,
+		SrcdsBotTeamSize:    6,
 		MvmMissionCount:     8,
 		MvmDifficulty:       "intermediate",
 		MvmGoal:             "final_boss",
@@ -138,6 +145,9 @@ func (s *Settings) applyDefaults() {
 	}
 	if s.SrcdsMaxPlayers == 0 {
 		s.SrcdsMaxPlayers = d.SrcdsMaxPlayers
+	}
+	if s.SrcdsBotTeamSize == 0 {
+		s.SrcdsBotTeamSize = d.SrcdsBotTeamSize
 	}
 	if s.SrcdsStartMap == "" {
 		s.SrcdsStartMap = d.SrcdsStartMap
