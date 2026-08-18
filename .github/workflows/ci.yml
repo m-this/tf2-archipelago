@@ -79,6 +79,7 @@ jobs:
           empty='PK\x05\x06\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
           printf "$empty" > launcher/internal/assets/embedded/sm-ripext-windows.zip
           printf "$empty" > launcher/internal/assets/embedded/defender-bots-windows.zip
+          printf "$empty" > launcher/internal/assets/embedded/tf2_mvm.apworld
           GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o /dev/null ./launcher/cmd/tf2ap
 
       # The race detector is the only thing in this pipeline that can see a

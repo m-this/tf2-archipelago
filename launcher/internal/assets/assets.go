@@ -24,6 +24,9 @@ var ripextZip []byte
 //go:embed embedded/defender-bots-windows.zip
 var defenderBotsZip []byte
 
+//go:embed embedded/tf2_mvm.apworld
+var apworld []byte
+
 //go:embed embedded/tf2_archipelago.cfg
 var pluginConfig []byte
 
@@ -53,6 +56,11 @@ func RipextZip() []byte { return ripextZip }
 // plugins, the two extension .dlls, their gamedata and the per-map navigation
 // hints, rooted at addons/.
 func DefenderBotsZip() []byte { return defenderBotsZip }
+
+// Apworld returns the world file the Archipelago app generates seeds with. The
+// launcher installs it into the app before it runs the generator, so the player
+// never has to find the custom_worlds folder.
+func Apworld() []byte { return apworld }
 
 // PluginConfig returns tf2_archipelago.cfg, copied verbatim into the server's
 // cfg/sourcemod/ directory.

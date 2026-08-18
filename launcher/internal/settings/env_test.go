@@ -67,6 +67,7 @@ func TestEveryFieldHasAnEnvVar(t *testing.T) {
 	byField := map[string]string{
 		"InstallRoot":         "TF2AP_INSTALL_ROOT",
 		"TestMode":            "TF2AP_TEST_MODE",
+		"ArchipelagoDir":      "TF2AP_ARCHIPELAGO_DIR",
 		"APHost":              "AP_HOST",
 		"APPort":              "AP_PORT",
 		"APTls":               "AP_TLS",

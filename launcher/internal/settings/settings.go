@@ -18,6 +18,10 @@ type Settings struct {
 	// live. Default is <home>/tf2-archipelago.
 	InstallRoot string `json:"install_root"`
 
+	// ArchipelagoDir is where the Archipelago app is, when it is not where its
+	// installer puts it. Empty means look in the usual places.
+	ArchipelagoDir string `json:"archipelago_dir,omitempty"`
+
 	// TestMode plays without Archipelago: the launcher serves a multiworld of
 	// one on loopback, makes up a seed, and hands out unlocks as waves are
 	// cleared. For trying the server out, and for play-testing.

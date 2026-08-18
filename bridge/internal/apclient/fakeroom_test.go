@@ -3,6 +3,7 @@ package apclient
 import (
 	"context"
 	"log/slog"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -17,16 +18,29 @@ func TestFakeRoomServesThisClient(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
+	// The room logs from its own goroutines, and one of them can fire after
+	// this function returns, which the testing package treats as a failure.
+	// So the room's log goes to a channel-free sink that stops caring once the
+	// test is done.
+	var done atomic.Bool
 	room, address, err := fakeroom.Start(ctx, fakeroom.Options{
 		SlotName:     "tester",
 		Goal:         "final_boss",
 		MissionCount: 3,
-		Log:          func(text string) { t.Log(text) },
+		Log: func(text string) {
+			if !done.Load() {
+				t.Log(text)
+			}
+		},
 	})
 	if err != nil {
 		t.Fatalf("Start: %v", err)
 	}
-	defer func() { _ = room.Close(context.Background()) }()
+	t.Cleanup(func() {
+		done.Store(true)
+		cancel()
+		_ = room.Close(context.Background())
+	})
 
 	store := newStore(t)
 	client := New(Options{

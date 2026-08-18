@@ -11,7 +11,7 @@ import (
 // operator's file works here unchanged.
 var EnvNames = []string{
 	"TF2AP_INSTALL_ROOT",
-	"TF2AP_TEST_MODE",
+	"TF2AP_TEST_MODE", "TF2AP_ARCHIPELAGO_DIR",
 	"AP_ROOM", "AP_HOST", "AP_PORT", "AP_TLS", "AP_SLOT_NAME", "AP_PASSWORD",
 	"SRCDS_HOSTNAME", "SRCDS_RCONPW", "SRCDS_PW", "SRCDS_PORT",
 	"SRCDS_MAXPLAYERS", "SRCDS_STARTMAP", "SRCDS_TOKEN", "SRCDS_LAN",
@@ -31,6 +31,7 @@ var EnvNames = []string{
 func ApplyEnv(s Settings) Settings {
 	str(&s.InstallRoot, "TF2AP_INSTALL_ROOT")
 	boolean(&s.TestMode, "TF2AP_TEST_MODE")
+	str(&s.ArchipelagoDir, "TF2AP_ARCHIPELAGO_DIR")
 
 	// AP_ROOM is the whole address in one variable, which is how the room page
 	// gives it. The three parts stay readable for a compose .env.

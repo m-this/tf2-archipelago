@@ -236,8 +236,9 @@ LAUNCHER_LDFLAGS := -X github.com/m-this/tf2-archipelago/launcher/internal/asset
 
 # The bots go in as a Windows-only zip: the staged tree carries both platforms'
 # extensions, and the 20 MB of Linux .so has no business inside a .exe.
-launcher-assets: bots
+launcher-assets: bots apworld-build
 	mkdir -p $(EMBED)
+	cp $(DIST)/tf2_mvm.apworld $(EMBED)/tf2_mvm.apworld
 	rm -f $(EMBED)/defender-bots-windows.zip
 	cd deploy/bots/build/package && zip -qr $(CURDIR)/$(EMBED)/defender-bots-windows.zip \
 		addons -x '*.so'

@@ -44,24 +44,26 @@ le serveur.
 ## La session Archipelago
 
 Le lanceur gère le serveur TF2. La session multiworld reste séparée. Mann vs
-Machine ne fait pas partie des jeux livrés avec Archipelago, et le générateur
-est en Python.
+Machine ne fait pas partie des jeux livrés avec Archipelago. Le générateur est
+en Python, donc il reste dans l'application officielle.
 
 1. Installez l'application officielle
-   [Archipelago](https://github.com/ArchipelagoMW/Archipelago/releases). Elle
-   porte son propre Python.
-2. Téléchargez `tf2_mvm.apworld` depuis la même version que `tf2ap.exe`.
-3. Placez `tf2_mvm.apworld` dans le dossier `custom_worlds/` de cette
-   installation.
-4. Copiez `%USERPROFILE%\tf2-archipelago\tf2.yaml` dans le dossier `Players/`
-   de la même installation. Le lanceur écrit ce fichier au premier démarrage,
-   depuis vos réglages. `tf2ap.exe -yaml <chemin>` l'écrit où vous voulez.
-5. Ouvrez l'application Archipelago et générez. Envoyez l'archive sur
+   [Archipelago](https://github.com/ArchipelagoMW/Archipelago/releases). Le
+   lanceur la trouve là où l'installeur la met.
+2. Dans le lanceur, ouvrez **Settings**, réglez les options de partie, puis
+   appuyez sur **Generate seed**. Le lanceur place le fichier du monde dans
+   l'application et écrit le fichier joueur. Il lance ensuite le générateur et
+   ouvre le dossier qui contient l'archive.
+3. Envoyez cette archive sur
    [archipelago.gg/uploads](https://archipelago.gg/uploads) pour ouvrir une
    room.
 
-La page de la room donne une adresse comme `archipelago.gg:12345`. Donnez les
-deux moitiés au lanceur quand il les demande.
+La page de la room donne une adresse comme `archipelago.gg:12345`. Collez-la
+dans l'onglet **Archipelago room**.
+
+Le fichier joueur est aussi dans `%USERPROFILE%\tf2-archipelago\tf2.yaml`, et
+**Open tf2.yaml** l'affiche. C'est pour qui veut générer à la main dans
+l'application.
 
 Voir [Créer la session](create-the-session.md) pour le détail de chaque étape.
 

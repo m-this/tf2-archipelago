@@ -3,6 +3,7 @@
 package gui
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/m-this/tf2-archipelago/launcher/internal/assets"
 	"github.com/m-this/tf2-archipelago/launcher/internal/debugbundle"
+	"github.com/m-this/tf2-archipelago/launcher/internal/generate"
 	"github.com/m-this/tf2-archipelago/launcher/internal/runshape"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 	"github.com/m-this/tf2-archipelago/launcher/internal/winproc"
@@ -166,6 +168,11 @@ func runSettingsDialog(owner walk.Form, s settings.Settings, repair func() ([]st
 								MaxSize:    declarative.Size{Height: 32},
 								Children: []declarative.Widget{
 									declarative.PushButton{
+										Text:        "Generate seed",
+										ToolTipText: "Make the seed with the Archipelago app installed on this machine: the launcher installs the world file into it, writes the player file, runs the generator and opens the folder with the archive. Upload that archive at archipelago.gg/uploads to open a room.",
+										OnClicked:   func() { generateSeed(dialog, collect) },
+									},
+									declarative.PushButton{
 										Text:        "Open tf2.yaml",
 										ToolTipText: "Write the player file from what is on screen, then open it. Copy it into the Archipelago app's Players folder to generate the seed.",
 										OnClicked:   func() { openPlayerFile(dialog, collect) },
@@ -189,7 +196,7 @@ func runSettingsDialog(owner walk.Form, s settings.Settings, repair func() ([]st
 							label("Room address", "The line from your room page on archipelago.gg: host and port. A room on your own machine works too, as localhost:38281."),
 							declarative.LineEdit{AssignTo: &roomEdit, Text: current.String(), CueBanner: "archipelago.gg:12345"},
 							declarative.Label{Text: ""},
-							declarative.Label{AssignTo: &roomWarn, Text: ""},
+							declarative.Label{AssignTo: &roomWarn, Text: "", MaxSize: declarative.Size{Height: 18}},
 							label("Room password", "Only if the room asks for one. Leave it blank otherwise."),
 							declarative.LineEdit{AssignTo: &roomPass, Text: s.APPassword, PasswordMode: true, CueBanner: "optional"},
 							label("Slot name", "The name this server plays under in the multiworld. It has to match the name in tf2.yaml, and the launcher keeps the two in step."),
@@ -284,20 +291,70 @@ func runSettingsDialog(owner walk.Form, s settings.Settings, repair func() ([]st
 		}
 	})
 
-	// Clear the complaint as soon as the address looks right again.
-	roomEdit.TextChanged().Attach(func() {
-		if _, err := settings.ParseRoom(roomEdit.Text()); err == nil {
-			roomWarn.SetText("")
+	// The complaint under the address: what is missing, or that test mode
+	// makes it optional. Cleared as soon as the address looks right.
+	explain := func() {
+		switch {
+		case testBox.Checked():
+			roomWarn.SetText("not needed in test mode: the launcher serves its own room")
+		case roomEdit.Text() == "":
+			roomWarn.SetText("paste the address from your Archipelago room page")
+		default:
+			if _, err := settings.ParseRoom(roomEdit.Text()); err == nil {
+				roomWarn.SetText("")
+			}
 		}
-	})
-	if s.APPort == 0 {
-		roomWarn.SetText("paste the address from your Archipelago room page")
 	}
+	roomEdit.TextChanged().Attach(explain)
+	testBox.CheckedChanged().Attach(explain)
+	explain()
 
 	if dialog.Run() != walk.DlgCmdOK {
 		return s, false, nil
 	}
 	return edited, true, nil
+}
+
+// generateSeed makes the seed with the Archipelago app and opens the folder the
+// archive landed in. It runs off the UI thread and reports through message
+// boxes, because the dialog is modal and the log view is behind it.
+func generateSeed(owner walk.Form, collect func() (settings.Settings, error)) {
+	next, err := collect()
+	if err != nil {
+		walk.MsgBox(owner, "Generate seed", err.Error(), walk.MsgBoxIconError)
+		return
+	}
+	if _, err := generate.FindApp(next.ArchipelagoDir); err != nil {
+		walk.MsgBox(owner, "Generate seed",
+			"The Archipelago app was not found.\n\nInstall it from "+
+				"github.com/ArchipelagoMW/Archipelago/releases, then press this again. "+
+				"The launcher looks in the folder its installer uses.",
+			walk.MsgBoxIconWarning)
+		return
+	}
+
+	var lines []string
+	result, err := generate.Run(context.Background(), generate.Options{
+		Settings:           next,
+		AppDir:             next.ArchipelagoDir,
+		Apworld:            assets.Apworld(),
+		ArchipelagoVersion: assets.ArchipelagoVersion,
+		Log:                func(line string) { lines = append(lines, line) },
+	})
+	if err != nil {
+		tail := lines
+		if len(tail) > 12 {
+			tail = tail[len(tail)-12:]
+		}
+		walk.MsgBox(owner, "Generate seed",
+			err.Error()+"\n\n"+strings.Join(tail, "\n"), walk.MsgBoxIconError)
+		return
+	}
+	walk.MsgBox(owner, "Generate seed",
+		"Seed written to\n"+result.Archive+"\n\nUpload it at archipelago.gg/uploads to open a room, "+
+			"then paste the room address into the Archipelago room tab.",
+		walk.MsgBoxIconInformation)
+	_ = winproc.Open(filepath.Dir(result.Archive))
 }
 
 // openPlayerFile writes the player file from what is on screen and opens it.

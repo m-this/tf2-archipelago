@@ -29,6 +29,9 @@ injects the pinned versions from `deploy/env/versions.env` with `-ldflags`.
 | `internal/srcdsconfig` | Renders `server.cfg`, `admins_simple.ini`, `tf2_archipelago.cfg` |
 | `internal/runtime` | The `srcds.exe` subprocess and the in-process bridge, interleaved |
 | `internal/gui` | The window: log view, Start/Stop, settings dialog, rcon box |
+| `internal/generate` | Drives the Archipelago app's generator: installs the apworld, writes the player file, runs it |
+| `internal/debugbundle` | The zip a play-tester sends: logs, settings without passwords, player file |
+| `../fakeroom` | The multiworld of one that test mode serves, shared with the bridge |
 | `internal/rcon` | Source RCON client, the Go port of `deploy/rcon.py` |
 | `internal/runshape` | The run's choices, counted from `gamedata` |
 | `internal/ui` | Console prompts, and the console the window build attaches to |
@@ -75,11 +78,12 @@ subprocess shares the machine's loopback with the bridge, so the plugin reaches
 it at `127.0.0.1:24680` exactly as it does under `network_mode: service:srcds`
 in compose.
 
-Seed generation stays out. The Archipelago generator is Python, and a bundled
-Python breaks the one-exe promise. The launcher writes the player YAML from the
-saved run shape: on demand with `-yaml`, and once into the install root on the
-first start. The player drops that file into the Archipelago app and generates
-there.
+Seed generation stays with the Archipelago app: the generator is Python, and a
+bundled Python breaks the one-exe promise. What the launcher does is drive that
+app. Generate seed finds it where the installer put it and installs the
+embedded apworld into `custom_worlds`. It writes the player file into a folder
+of its own, runs `ArchipelagoGenerate.exe`, and opens the folder the archive
+landed in. The player uploads that archive to archipelago.gg.
 
 ## The embeds
 
@@ -88,6 +92,7 @@ there.
 - `tf2_archipelago.smx` (gitignored, copied by `make launcher-assets`)
 - `sm-ripext-windows.zip` (gitignored, fetched by `make launcher-assets`)
 - `defender-bots-windows.zip` (gitignored, built by `make bots`, `.so` stripped)
+- `tf2_mvm.apworld` (gitignored, built by `make apworld-build`)
 - `tf2_archipelago.cfg` (committed)
 - `server.cfg.tmpl` (committed)
 
