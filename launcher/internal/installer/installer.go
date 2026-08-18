@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/m-this/tf2-archipelago/launcher/internal/assets"
+	"github.com/m-this/tf2-archipelago/launcher/internal/winproc"
 )
 
 // AppID is the Steam AppID for the TF2 dedicated server.
@@ -118,19 +119,95 @@ func installSteamcmd(ctx context.Context, dir string) error {
 }
 
 // installGame runs steamcmd to install the TF2 dedicated server.
+//
+// Two things about the command, both of which SteamCMD is picky over:
+//
+//   - force_install_dir comes before login. Valve's own example has that
+//     order, and the other way round SteamCMD can refuse the app with
+//     "Failed to install app '232250' (Missing configuration)".
+//   - A freshly unpacked steamcmd.exe is a bootstrapper: its first run
+//     downloads the rest of itself. Doing that in the same run as app_update
+//     is what leaves it without the app configuration, so the bootstrap gets
+//     a run of its own.
+//
+// A failed install is retried once. SteamCMD drops a download often enough
+// that one retry is the difference between a working install and a player
+// starting over.
 func installGame(ctx context.Context, steamcmdDir, gameDir string, logf func(string, ...any)) error {
 	exe := filepath.Join(steamcmdDir, "steamcmd.exe")
 	if !exists(exe) {
 		exe = filepath.Join(steamcmdDir, "steamcmd.sh")
 	}
-	cmd := exec.CommandContext(ctx, exe,
-		"+login", "anonymous",
+
+	// The bootstrap run is expected to fail. A freshly unpacked steamcmd.exe
+	// downloads the rest of itself and then exits non-zero (7 is the usual
+	// one) to say it restarted. Treating that as an error stops the install
+	// before it starts.
+	logf("preparing SteamCMD")
+	if err := runSteamcmd(ctx, exe, steamcmdDir, logf, "+quit"); err != nil {
+		logf("SteamCMD updated itself (%v), carrying on", err)
+	}
+
+	args := []string{
 		"+force_install_dir", gameDir,
+		"+login", "anonymous",
 		"+app_update", AppID, "validate",
 		"+quit",
-	)
+	}
+	err := runSteamcmd(ctx, exe, steamcmdDir, logf, args...)
+	if err == nil {
+		return nil
+	}
+	if ctx.Err() != nil {
+		return err
+	}
+	logf("SteamCMD failed (%v), trying once more", err)
+	if err := runSteamcmd(ctx, exe, steamcmdDir, logf, args...); err != nil {
+		return fmt.Errorf("SteamCMD could not install app %s: %w. %s", AppID, err, RepairAdvice)
+	}
+	return nil
+}
+
+// RepairAdvice is what to tell a player whose install will not go through. It
+// is one sentence because it lands in a log line and in an error.
+const RepairAdvice = "If it keeps failing, open Settings and press Clear cache, " +
+	"which throws away SteamCMD and the mods and fetches them again"
+
+// Clean removes what an install can leave broken: SteamCMD itself, the mods
+// this project installs, and Steam's record of what it downloaded. Ensure puts
+// all three back on the next start.
+//
+// It keeps the two things a player cannot get back cheaply: the 14 GB of game
+// files, and bridge-state, which holds the checks and the unlocks of the run.
+// Removing the app manifest costs a verify pass over those game files, not
+// another download.
+func Clean(installRoot string) ([]string, error) {
+	targets := []string{
+		filepath.Join(installRoot, "steamcmd"),
+		filepath.Join(installRoot, "tf-dedicated", "tf", "addons"),
+		filepath.Join(installRoot, "tf-dedicated", "steamapps"),
+	}
+	var removed []string
+	for _, target := range targets {
+		if !exists(target) {
+			continue
+		}
+		if err := os.RemoveAll(target); err != nil {
+			return removed, fmt.Errorf("cannot remove %s: %w", target, err)
+		}
+		removed = append(removed, target)
+	}
+	return removed, nil
+}
+
+// runSteamcmd runs one SteamCMD command with its own directory as the working
+// directory, which is where it keeps the files it downloads for itself.
+func runSteamcmd(ctx context.Context, exe, dir string, logf func(string, ...any), args ...string) error {
+	cmd := exec.CommandContext(ctx, exe, args...)
+	cmd.Dir = dir
 	cmd.Stdout = lineWriter(logf)
 	cmd.Stderr = lineWriter(logf)
+	winproc.HideConsole(cmd)
 	return cmd.Run()
 }
 

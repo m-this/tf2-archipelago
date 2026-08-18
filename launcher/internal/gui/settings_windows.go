@@ -9,6 +9,7 @@ import (
 	"github.com/lxn/walk"
 	declarative "github.com/lxn/walk/declarative"
 
+	"github.com/m-this/tf2-archipelago/launcher/internal/installer"
 	"github.com/m-this/tf2-archipelago/launcher/internal/runshape"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 )
@@ -84,10 +85,16 @@ func runSettingsDialog(owner walk.Form, s settings.Settings) (settings.Settings,
 				Title:  "Run shape (used when you generate the seed)",
 				Layout: declarative.Grid{Columns: 2},
 				Children: []declarative.Widget{
-					declarative.Label{Text: "Difficulty", MinSize: declarative.Size{Width: 130}},
+					declarative.Label{Text: "Easiest tier", MinSize: declarative.Size{Width: 130}},
 					declarative.ComboBox{AssignTo: &tierBox, Model: tierLabels, Value: tierLabel(tiers, s.MvmDifficulty)},
-					declarative.Label{Text: "Missions", MinSize: declarative.Size{Width: 130}},
-					declarative.NumberEdit{AssignTo: &missions, Value: float64(s.MvmMissionCount), MinValue: 1, MaxValue: 29, Decimals: 0},
+					declarative.Label{Text: "Missions used", MinSize: declarative.Size{Width: 130}},
+					declarative.NumberEdit{
+						AssignTo: &missions,
+						Value:    float64(s.MvmMissionCount),
+						MinValue: 1,
+						MaxValue: float64(runshape.MissionsInPool(s.MvmDifficulty)),
+						Decimals: 0,
+					},
 					declarative.Label{Text: "Goal", MinSize: declarative.Size{Width: 130}},
 					declarative.ComboBox{AssignTo: &goalBox, Model: goalLabels, Value: goalLabel(goals, s.MvmGoal)},
 				},
@@ -95,6 +102,7 @@ func runSettingsDialog(owner walk.Form, s settings.Settings) (settings.Settings,
 			declarative.Composite{
 				Layout: declarative.HBox{},
 				Children: []declarative.Widget{
+					declarative.PushButton{Text: "Clear cache", OnClicked: func() { clearCache(dialog, s.InstallRoot) }},
 					declarative.HSpacer{},
 					declarative.PushButton{AssignTo: &accept, Text: "Save", OnClicked: func() {
 						// Read every field here, not after Run returns: closing
@@ -131,6 +139,16 @@ func runSettingsDialog(owner walk.Form, s settings.Settings) (settings.Settings,
 		return s, false, err
 	}
 
+	// A harder floor leaves fewer missions to draw from, so the count that a
+	// run can ask for follows the tier.
+	tierBox.CurrentIndexChanged().Attach(func() {
+		pool := tiers[max(tierBox.CurrentIndex(), 0)].Missions
+		_ = missions.SetRange(1, float64(pool))
+		if missions.Value() > float64(pool) {
+			_ = missions.SetValue(float64(pool))
+		}
+	})
+
 	// Clear the complaint as soon as the address looks right again.
 	roomEdit.TextChanged().Attach(func() {
 		if _, err := settings.ParseRoom(roomEdit.Text()); err == nil {
@@ -145,6 +163,32 @@ func runSettingsDialog(owner walk.Form, s settings.Settings) (settings.Settings,
 		return s, false, nil
 	}
 	return edited, true, nil
+}
+
+// clearCache throws away SteamCMD, the mods and Steam's download record, for a
+// player whose install will not go through. The next Start puts them back.
+func clearCache(owner walk.Form, installRoot string) {
+	answer := walk.MsgBox(owner, "Clear cache",
+		"This removes SteamCMD, the mods and Steam's record of the download, "+
+			"then the next Start fetches them again.\n\n"+
+			"It keeps the game files and the run: no 14 GB download, no lost checks.\n\n"+
+			"Stop the server first if it is running.",
+		walk.MsgBoxOKCancel|walk.MsgBoxIconQuestion)
+	if answer != walk.DlgCmdOK {
+		return
+	}
+	removed, err := installer.Clean(installRoot)
+	if err != nil {
+		walk.MsgBox(owner, "Clear cache", err.Error(), walk.MsgBoxIconError)
+		return
+	}
+	if len(removed) == 0 {
+		walk.MsgBox(owner, "Clear cache", "Nothing to remove.", walk.MsgBoxIconInformation)
+		return
+	}
+	walk.MsgBox(owner, "Clear cache",
+		"Removed:\n"+strings.Join(removed, "\n")+"\n\nPress Start when you are ready.",
+		walk.MsgBoxIconInformation)
 }
 
 func tierLabel(tiers []runshape.Tier, key string) string {

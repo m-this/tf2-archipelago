@@ -162,7 +162,7 @@ func writeStarterYAML(s settings.Settings) error {
 func ensureInstalled(s settings.Settings, logger *slog.Logger) settings.Settings {
 	result, err := installer.Ensure(context.Background(), s.InstallRoot, logf(logger))
 	if err != nil {
-		logger.Error("install failed", "error", err)
+		logger.Error("install failed", "error", err, "advice", installer.RepairAdvice)
 		os.Exit(1)
 	}
 	if result.Done.Message != "" {
@@ -265,12 +265,14 @@ func configure(p *ui.Prompt, s settings.Settings) settings.Settings {
 	fmt.Println("These go in the player file the Archipelago app generates from.")
 	fmt.Println("Change them here, then generate again, for a new seed.")
 
+	fmt.Println("The easiest tier a mission may come from. Harder tiers are")
+	fmt.Println("always in as well, so the pool shrinks as the floor rises.")
 	tiers := runshape.Tiers()
-	s.MvmDifficulty = p.Select("Difficulty pool, the easiest tier the run draws",
-		tierOptions(tiers), s.MvmDifficulty)
+	s.MvmDifficulty = p.Select("Difficulty floor", tierOptions(tiers), s.MvmDifficulty)
 
 	pool := runshape.MissionsInPool(s.MvmDifficulty)
-	s.MvmMissionCount = p.IntRange("Missions in the run", s.MvmMissionCount, 1, pool)
+	s.MvmMissionCount = p.IntRange("Missions the run uses, out of that pool",
+		s.MvmMissionCount, 1, pool)
 	fmt.Printf("  about %d waves.\n", wavesFor(tiers, s.MvmDifficulty, s.MvmMissionCount))
 
 	s.MvmGoal = p.Select("Goal", goalOptions(), s.MvmGoal)

@@ -19,6 +19,7 @@ import (
 	"github.com/m-this/tf2-archipelago/bridge"
 	"github.com/m-this/tf2-archipelago/bridge/config"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
+	"github.com/m-this/tf2-archipelago/launcher/internal/winproc"
 )
 
 // Run starts the bridge in-process and the game server as a subprocess, and
@@ -119,7 +120,7 @@ func runSrcdsWithSink(ctx context.Context, s settings.Settings, logger *slog.Log
 	}
 	cmd := exec.CommandContext(ctx, filepath.Join(gameDir, exeName), args...)
 	cmd.Dir = gameDir
-	hideConsole(cmd)
+	winproc.HideConsole(cmd)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return err

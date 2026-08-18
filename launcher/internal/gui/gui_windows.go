@@ -207,6 +207,7 @@ func (w *window) start() {
 
 	if _, err := installer.Ensure(context.Background(), s.InstallRoot, w.installLog); err != nil {
 		w.say("install failed: %v", err)
+		w.say("%s.", installer.RepairAdvice)
 		return
 	}
 	if err := srcdsconfig.Install(s); err != nil {

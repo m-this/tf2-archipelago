@@ -11,8 +11,9 @@ import (
 	"github.com/m-this/tf2-archipelago/gamedata"
 )
 
-// Tier is one choice of difficulty pool: the easiest tier a run can draw, and
-// what drawing from there leaves to draw.
+// Tier is one choice of difficulty floor: the easiest tier a run may draw, and
+// how many missions that leaves in the pool. A choice includes every harder
+// tier, so the pool shrinks as the floor rises.
 type Tier struct {
 	Key      string
 	Missions int
@@ -53,8 +54,13 @@ func MissionsInPool(key string) int {
 }
 
 // Label describes a tier in one line, for a menu.
+//
+// The number is the pool the choice leaves, not the length of a run: picking a
+// tier draws that tier and every harder one, and the mission count decides how
+// many of them a run uses. Saying "29 missions" against normal and "4" against
+// expert reads backwards without that word.
 func (t Tier) Label() string {
-	return fmt.Sprintf("%-14s %2d missions, %3d waves", t.Key, t.Missions, t.Waves)
+	return fmt.Sprintf("%-14s draws from %2d missions", t.Key, t.Missions)
 }
 
 // Goal is one way for a run to end.

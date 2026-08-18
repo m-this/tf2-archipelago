@@ -66,3 +66,58 @@ func TestUnzipToRejectsAnEscapingEntry(t *testing.T) {
 		t.Error("the entry was written outside the install directory")
 	}
 }
+
+func TestCleanKeepsWhatCannotBeFetchedAgain(t *testing.T) {
+	root := t.TempDir()
+	write := func(parts ...string) string {
+		path := filepath.Join(append([]string{root}, parts...)...)
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatalf("cannot create %s: %v", path, err)
+		}
+		if err := os.WriteFile(path, []byte("x"), 0o644); err != nil {
+			t.Fatalf("cannot write %s: %v", path, err)
+		}
+		return path
+	}
+
+	gone := []string{
+		write("steamcmd", "steamcmd.exe"),
+		write("tf-dedicated", "tf", "addons", "sourcemod", "plugins", "tf2_archipelago.smx"),
+		write("tf-dedicated", "steamapps", "appmanifest_232250.acf"),
+	}
+	kept := []string{
+		write("tf-dedicated", "srcds.exe"),
+		write("tf-dedicated", "tf", "maps", "mvm_decoy.bsp"),
+		write("bridge-state", "bridge.json"),
+		write("tf2.yaml"),
+	}
+
+	removed, err := Clean(root)
+	if err != nil {
+		t.Fatalf("Clean: %v", err)
+	}
+	if len(removed) != 3 {
+		t.Errorf("removed %d directories, want 3: %v", len(removed), removed)
+	}
+	for _, path := range gone {
+		if _, err := os.Stat(path); err == nil {
+			t.Errorf("%s survived", path)
+		}
+	}
+	for _, path := range kept {
+		if _, err := os.Stat(path); err != nil {
+			t.Errorf("%s was removed: %v", path, err)
+		}
+	}
+}
+
+// A repair on a half-installed tree must not fail on what is not there.
+func TestCleanOnAnEmptyRoot(t *testing.T) {
+	removed, err := Clean(t.TempDir())
+	if err != nil {
+		t.Fatalf("Clean: %v", err)
+	}
+	if len(removed) != 0 {
+		t.Errorf("removed %v from an empty root", removed)
+	}
+}
