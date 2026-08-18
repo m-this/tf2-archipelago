@@ -141,8 +141,9 @@ func TestInstallServerCfgBots(t *testing.T) {
 			if !strings.Contains(string(cfg), "sm_redbots_manager_min_players -1") {
 				t.Error("the ready-up gate was left on")
 			}
-			// The mod kicks every bot inside mvm_wave_complete by default,
-			// which is where a play-test froze.
+			// The mod kicks every bot inside mvm_wave_complete by default.
+			// With that, the game server froze at wave clear; with this, it
+			// does not.
 			if !strings.Contains(string(cfg), "sm_redbots_manager_kick_bots 0") {
 				t.Error("the bots are still kicked at wave end")
 			}
