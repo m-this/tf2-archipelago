@@ -43,8 +43,8 @@ Sur Windows, le lanceur pose les mêmes questions. Voir
 CBaseNPC, Actions, TF2Attributes, TF Econ Data et TF2Utils. Le serveur les
 compile depuis la source, avec deux correctifs à nous dans `deploy/patches/`.
 
-Le mod est un travail en cours chez son auteur, et son comportement ici aussi.
-Un bot qui rentre dans un mur se signale à ce dépôt, pas à celui-ci.
+Le comportement des bots est celui du mod. Un bot qui rentre dans un mur se
+signale à ce dépôt, pas à celui-ci.
 
 [mod]: https://github.com/OfficerSpy/TF2-MvM-Defender-TFBots
 

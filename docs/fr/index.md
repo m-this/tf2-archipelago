@@ -35,9 +35,6 @@ définit chaque mot avant de l'utiliser.
 7. [Inviter vos amis](setup/invite-your-friends.md) ouvre le serveur.
    [Les bots de votre équipe](play/defender-bots.md) dit qui remplit les
    places vides.
-8. [Tests](operate/testing.md) donne la marche à suivre pour confirmer
-   chaque comportement sur un serveur réel. À lire avant la première
-   session.
 
 ## La version courte
 

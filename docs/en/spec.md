@@ -3,9 +3,7 @@
 This is the consolidated reading of
 [`discord-mvm-thread.md`](./discord-mvm-thread.md) plus the architecture
 decisions in [`adr/`](./adr/). Where the thread and this file disagree, this
-file wins, and the text calls out the divergence. See
-[Testing](operate/testing.md) for what a human still has to confirm on a
-live server.
+file wins, and the text calls out the divergence.
 
 ## Scope
 
@@ -175,8 +173,7 @@ fills RED when a wave begins, and those bots pick classes, fight, buy their own
 upgrades at the station and ready themselves. Sharing the player's upgrades was
 the plan while stock RED bots looked like the only option. Bots that buy their
 own is the better answer, and it is the one running. See
-[The bots on your team](play/defender-bots.md) and
-[the research note](mvm-defender-bots.md).
+[The bots on your team](play/defender-bots.md).
 
 Bot loadouts are themselves items under `Robot Templates` or `Single
 Templates`, which turns "who is on my team" into part of the progression. Keep

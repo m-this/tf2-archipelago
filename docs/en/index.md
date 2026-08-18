@@ -35,8 +35,6 @@ it.
 7. [Invite your friends](setup/invite-your-friends.md) opens the server.
    [The bots on your team](play/defender-bots.md) says who fills the empty
    slots.
-8. [Testing](operate/testing.md) gives the step-by-step to confirm each
-   behavior on a live server. Read it before the first session.
 
 ## The short version
 

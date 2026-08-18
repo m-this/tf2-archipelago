@@ -2,22 +2,17 @@
 
 ## Before anybody joins
 
-Read [Testing](../operate/testing.md) for what still needs a first real run.
-It tells a bug apart from an untested path.
-
-Turn on the loud mode before the first wave:
+The plugin has a loud mode. With it on, the server writes every game event it
+sees and every call it makes into the chat. It is noisy, and it is the fastest
+way to see what the server does with a wave. Turn it on for the first evening:
 
 ```
 rcon_password your-SRCDS_RCONPW
 rcon tf2ap_debug 1
 ```
 
-Type that in the Team Fortress 2 console after you connect. With it on, the
-server writes every game event it sees and every call it makes into the chat.
-It is noisy. It is also the only way to find out which events this game version
-actually sends.
-
-Keep `make logs` open in a terminal on the host at the same time.
+Type that in the Team Fortress 2 console after you connect. Keep the launcher's
+log, or `make logs`, in view at the same time.
 
 ## What a player sees
 

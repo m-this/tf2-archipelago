@@ -38,12 +38,11 @@ On Windows the launcher asks the same two questions. See
 
 [OfficerSpy/TF2-MvM-Defender-TFBots][mod], GPL-3.0, plus five dependencies:
 CBaseNPC, Actions, TF2Attributes, TF Econ Data and TF2Utils. The server builds
-them from source, with two fixes of our own in `deploy/patches/`.
-[MvM Defender TFBots and the build-from-source question](../mvm-defender-bots.md)
-is the long version.
+them from source, with two fixes of our own in `deploy/patches/`, whose README
+says why each exists.
 
-The mod is a work in progress upstream, and so is its behaviour here. Report a
-bot that walks into a wall to that repository, not to this one.
+The bots' behaviour is the mod's. Report a bot that walks into a wall to that
+repository, not to this one.
 
 [mod]: https://github.com/OfficerSpy/TF2-MvM-Defender-TFBots
 

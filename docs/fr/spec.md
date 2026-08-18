@@ -3,9 +3,7 @@
 Ce document est la lecture consolidée du fil de discussion d'origine, en
 anglais dans [`discord-mvm-thread.md`](./discord-mvm-thread.md), plus les
 décisions d'architecture dans [`adr/`](./adr/). Là où le fil et ce fichier
-sont en désaccord, ce fichier gagne, et nous signalons le désaccord. Voir
-[Tests](operate/testing.md) pour ce qu'il reste à confirmer humainement sur
-un serveur réel.
+sont en désaccord, ce fichier gagne, et nous signalons le désaccord.
 
 ## Périmètre
 

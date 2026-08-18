@@ -26,7 +26,6 @@
 
 * [Troubleshooting](operate/troubleshooting.md)
 * [Start a new run](operate/start-a-new-run.md)
-* [Testing](operate/testing.md)
 
 ## Reference
 
@@ -34,6 +33,5 @@
 * [ADR 0001: Go owns the game data](adr/0001-go-owns-the-game-data.md)
 * [ADR 0002: Server-side plugin with a Go bridge](adr/0002-server-side-plugin-with-a-go-bridge.md)
 * [Prior art](prior-art.md)
-* [MvM Defender TFBots and the build-from-source question](mvm-defender-bots.md)
 * [The Discord thread](discord-mvm-thread.md)
 * [Glossary](glossary.md)

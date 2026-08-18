@@ -255,9 +255,9 @@ donc cela n'arrive que si un seul service est redémarré à la main.
 
 ## Quand les décomptes de vagues sont faux
 
-Chaque décompte de vagues de ce projet vient du wiki. Personne ne l'a
-vérifié contre le jeu. Un mauvais décompte fait qu'une fin de mission se
-déclenche une vague trop tôt, ou jamais.
+Chaque décompte de vagues de ce projet vient du wiki, et le jeu fait foi. Un
+mauvais décompte fait qu'une fin de mission se déclenche une vague trop tôt,
+ou jamais.
 
 Le plugin envoie la longueur de mission que le jeu rapporte avec chaque
 check. Le bridge la compare à sa propre table et sert les désaccords comme

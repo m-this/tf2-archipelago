@@ -2,23 +2,18 @@
 
 ## Avant que quelqu'un rejoigne
 
-Lisez [Tests](../operate/testing.md) pour savoir ce qui a encore besoin
-d'un premier vrai passage. Cela permet de distinguer un bug d'un chemin
-jamais testé.
-
-Activez le mode bavard avant la première vague :
+Le plugin a un mode bavard. Activé, le serveur écrit dans le chat chaque
+événement de jeu qu'il voit et chaque appel qu'il fait. C'est bruyant, et
+c'est le moyen le plus rapide de voir ce que le serveur fait d'une vague.
+Activez-le pour la première soirée :
 
 ```
 rcon_password votre-SRCDS_RCONPW
 rcon tf2ap_debug 1
 ```
 
-Tapez cela dans la console Team Fortress 2 après vous être connecté. Une
-fois activé, le serveur écrit chaque événement de jeu qu'il voit et chaque
-appel qu'il fait dans le chat. C'est bruyant. C'est aussi le seul moyen de
-savoir quels événements cette version du jeu envoie vraiment.
-
-Gardez `make logs` ouvert dans un terminal sur l'hôte en même temps.
+Tapez cela dans la console Team Fortress 2 après vous être connecté. Gardez le
+journal du lanceur, ou `make logs`, sous les yeux en même temps.
 
 ## Ce qu'un joueur voit
 

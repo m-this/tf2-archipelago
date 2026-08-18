@@ -26,7 +26,6 @@
 
 * [Dépannage](operate/troubleshooting.md)
 * [Démarrer une nouvelle partie](operate/start-a-new-run.md)
-* [Tests](operate/testing.md)
 
 ## Référence
 

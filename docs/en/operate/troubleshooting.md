@@ -240,9 +240,8 @@ happens when a single service is restarted by hand.
 
 ## When the wave counts are wrong
 
-Every wave count in this project comes from the wiki. Nobody has checked one
-against the game. A wrong count makes a mission clear fire one wave early, or
-never.
+Every wave count in this project comes from the wiki, and the game is the
+authority. A wrong count makes a mission clear fire one wave early, or never.
 
 The plugin sends the mission length that the game reports with each check. The
 bridge compares it with its own table and serves the disagreements as

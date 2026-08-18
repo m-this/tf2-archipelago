@@ -24,7 +24,7 @@
 #     license on it.
 #
 # Versions come from deploy/env/versions.env, source fixes from
-# deploy/patches/. docs/en/mvm-defender-bots.md explains every patch.
+# deploy/patches/, whose README explains every patch.
 set -eu
 
 root=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
