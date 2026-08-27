@@ -139,6 +139,8 @@ The design comes from the Archipelago Discord thread.
   **TheBreadstick**, **CrystalClear** and **Pixel Silzavon** contributed.
 - **SwagDoll420** and **EZKSupernova** play-tested the runs the issue list comes
   from. Most of what the bots do came from their reports.
+- **kelly-cs** wrote the weapon buffs, the community map support and the spawn
+  recovery the bots needed to play those maps.
 
 The bots are [OfficerSpy's MvM Defender TFBots](https://github.com/OfficerSpy/TF2-MvM-Defender-TFBots),
 carried in [a fork](https://github.com/m-this/tf2-mvm-bots).
