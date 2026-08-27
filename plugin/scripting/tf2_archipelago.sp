@@ -13,14 +13,18 @@
 #pragma newdecls required
 
 #include <sourcemod>
+#include <sdkhooks>
 #include <sdktools>
 #include <tf2>
 #include <tf2_stocks>
 #include <ripext>
+#include <tf2attributes>
 
 #include "tf2_archipelago/log.inc"
 #include "tf2_archipelago/mvm.inc"
 #include "tf2_archipelago/unlocks.inc"
+#include "tf2_archipelago/weapon_buffs_data.inc"
+#include "tf2_archipelago/weapon_buffs.inc"
 #include "tf2_archipelago/deathlink.inc"
 #include "tf2_archipelago/bridge.inc"
 #include "tf2_archipelago/missions.inc"
@@ -97,9 +101,11 @@ static any Native_GetBundleCredits(Handle plugin, int numParams)
 
 public void OnPluginStart()
 {
+    LoadTranslations("common.phrases");
     Log_Init();
     MvM_Init();
     Unlocks_Init();
+    WeaponBuffs_Init();
     Bridge_Init();
     Missions_Init();
     Bots_Init();
@@ -135,6 +141,16 @@ public void OnPluginStart()
         "Ask the bridge for the unlock set again");
     RegAdminCmd("sm_ap_mission", Command_Mission, ADMFLAG_CHANGEMAP,
         "List the run's missions, or switch to one: sm_ap_mission [number|popfile]");
+    RegConsoleCmd("sm_ap_buffs", Command_WeaponBuffs,
+        "Show the Archipelago buffs for your current loadout");
+    RegAdminCmd("sm_ap_buff_test", Command_TestWeaponBuff, ADMFLAG_ROOT,
+        "Test an active-weapon effect: sm_ap_buff_test <number|key|all> [levels]");
+    RegAdminCmd("sm_ap_buff_give", Command_GiveWeaponBuff, ADMFLAG_ROOT,
+        "Give a test effect to a player's active weapon: sm_ap_buff_give <target> <number|key|all> [levels]");
+    RegAdminCmd("sm_ap_projectile_debug", Command_ProjectileDebug, ADMFLAG_ROOT,
+        "Toggle projectile diagnostics: sm_ap_projectile_debug [on|off]");
+    RegAdminCmd("sm_ap_unlock_override", Command_UnlockOverride, ADMFLAG_ROOT,
+        "Temporarily allow every class and weapon slot: sm_ap_unlock_override <on|off>");
 
     AutoExecConfig(true, "tf2_archipelago");
 
@@ -169,6 +185,7 @@ public void OnPluginStart()
 
 public void OnClientPutInServer(int client)
 {
+    WeaponBuffs_HookClient(client);
     // Client indexes are reused, so the previous occupant's cooldown is not
     // this player's.
     Bridge_ClearCooldown(client);
@@ -503,6 +520,7 @@ public void Event_InventoryApplied(Event event, const char[] name, bool dontBroa
     if (MvM_IsPlayer(client))
     {
         Unlocks_EnforceSlots(client);
+        WeaponBuffs_Apply(client);
     }
 }
 
@@ -512,6 +530,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
     if (MvM_IsPlayer(client))
     {
         Unlocks_EnforceClass(client);
+        Unlocks_RestoreOverrideNextFrame(client);
     }
 }
 

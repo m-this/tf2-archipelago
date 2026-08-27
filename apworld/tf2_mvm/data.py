@@ -67,6 +67,9 @@ class Item:
     mission_id: int
     class_id: int
     credits: int
+    weapon_buff_id: int
+    stackable: bool
+    eligible: bool
 
 
 def _read_missions() -> tuple[Mission, ...]:
@@ -105,6 +108,9 @@ def _read_items() -> tuple[Item, ...]:
             mission_id=entry.get("mission_id", 0),
             class_id=entry.get("class_id", 0),
             credits=entry.get("credits", 0),
+            weapon_buff_id=entry.get("weapon_buff_id", 0),
+            stackable=entry.get("stackable", False),
+            eligible=entry.get("eligible", False),
         )
         for entry in _load("items.json")["items"]
     )
@@ -146,6 +152,12 @@ MISSION_NAMES: frozenset[str] = frozenset(mission.name for mission in MISSIONS)
 FILLER_NAMES: tuple[str, ...] = tuple(
     item.name for item in ITEMS if item.classification == "filler"
 )
+WEAPON_BUFF_NAMES: tuple[str, ...] = tuple(
+    item.name for item in ITEMS if item.kind == "weapon_buff" and item.eligible
+)
+STACKABLE_WEAPON_BUFF_NAMES: frozenset[str] = frozenset(
+    item.name for item in ITEMS if item.kind == "weapon_buff" and item.eligible and item.stackable
+)
 
 _weapon_slot_items = [item for item in ITEMS if item.kind == "weapon_slot"]
 if len(_weapon_slot_items) != 1:
@@ -158,4 +170,5 @@ WEAPON_SLOT_COUNT: int = _weapon_slot_items[0].count
 ITEM_NAME_GROUPS: dict[str, set[str]] = {
     "Classes": set(CLASS_NAMES),
     "Mission Tickets": set(TICKET_NAMES.values()),
+    "Weapon Buffs": set(WEAPON_BUFF_NAMES),
 }

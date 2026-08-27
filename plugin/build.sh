@@ -19,6 +19,7 @@ fi
 build="$root/build"
 toolchain="$build/sourcemod-$SOURCEMOD_VERSION"
 ripext="$build/ripext-$RIPEXT_VERSION"
+tf2attributes="$build/tf2attributes-$TF2ATTRIBUTES_VERSION"
 
 mkdir -p "$build"
 
@@ -38,6 +39,13 @@ if [ ! -d "$ripext" ]; then
 	rm -f "$build/ripext.zip"
 fi
 
+if [ ! -d "$tf2attributes" ]; then
+	echo "fetching tf2attributes $TF2ATTRIBUTES_VERSION includes"
+	mkdir -p "$tf2attributes"
+	curl -fsSL "https://github.com/FlaminSarge/tf2attributes/archive/refs/tags/$TF2ATTRIBUTES_VERSION.tar.gz" |
+		tar xz -C "$tf2attributes" --strip-components=1
+fi
+
 spcomp="$toolchain/addons/sourcemod/scripting/spcomp64"
 [ -x "$spcomp" ] || spcomp="$toolchain/addons/sourcemod/scripting/spcomp"
 
@@ -45,6 +53,7 @@ cd "$root/scripting"
 exec "$spcomp" \
 	-i"$toolchain/addons/sourcemod/scripting/include" \
 	-i"$ripext/addons/sourcemod/scripting/include" \
+	-i"$tf2attributes/scripting/include" \
 	-E \
 	-o"$build/tf2_archipelago.smx" \
 	tf2_archipelago.sp

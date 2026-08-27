@@ -43,6 +43,8 @@ unread.
   the chat.
 - Locked weapon slots stay empty at every spawn, at the resupply locker and at
   the upgrade station.
+- Entering the upgrade station opens a numbered summary of any Archipelago
+  buffs on the current loadout. `sm_ap_buffs` opens it again.
 - Each wave that the team clears writes `[AP] Wave 3 cleared.` in the chat.
 - Each item that the run receives writes `[AP] Unlocked: Class: Pyro` or
   `[AP] The run received 200 credits for 4 player(s).`

@@ -15,6 +15,7 @@ enum
 
 // False until the bridge answers once; enforcement is a no-op until then, too much kit beats none.
 bool g_HaveUnlocks;
+bool g_UnlocksTestOverride;
 
 bool g_ClassUnlocked[view_as<int>(TFClass_Engineer) + 1];
 bool g_SlotUnlocked[Slot_Count];
@@ -74,6 +75,7 @@ void Unlocks_Clear()
         g_SlotUnlocked[slot] = false;
     }
     g_UnlockedMissions.Clear();
+    WeaponBuffs_Clear();
 }
 
 TFClassType Unlocks_ClassFromKey(const char[] key)
@@ -140,7 +142,7 @@ bool Unlocks_HasMission(const char[] popFile)
 // which is what a play-test saw: every class pickable for the first four waves.
 bool Unlocks_ClassesEnforced()
 {
-    if (!g_HaveUnlocks)
+    if (!g_HaveUnlocks || g_UnlocksTestOverride)
     {
         return false;
     }
@@ -156,7 +158,7 @@ bool Unlocks_ClassesEnforced()
 
 bool Unlocks_SlotsEnforced()
 {
-    if (!g_HaveUnlocks)
+    if (!g_HaveUnlocks || g_UnlocksTestOverride)
     {
         return false;
     }
@@ -168,6 +170,79 @@ bool Unlocks_SlotsEnforced()
         }
     }
     return false;
+}
+
+public Action Command_UnlockOverride(int client, int args)
+{
+    if (args < 1)
+    {
+        ReplyToCommand(client, "[AP] Class/slot override is %s. Usage: sm_ap_unlock_override <on|off>",
+            g_UnlocksTestOverride ? "ON" : "OFF");
+        return Plugin_Handled;
+    }
+    char wanted[16];
+    GetCmdArg(1, wanted, sizeof(wanted));
+    bool enabled = StrEqual(wanted, "on", false) || StrEqual(wanted, "1");
+    bool disabled = StrEqual(wanted, "off", false) || StrEqual(wanted, "0");
+    if (!enabled && !disabled)
+    {
+        ReplyToCommand(client, "[AP] Usage: sm_ap_unlock_override <on|off>");
+        return Plugin_Handled;
+    }
+    g_UnlocksTestOverride = enabled;
+    if (enabled)
+    {
+        for (int target = 1; target <= MaxClients; target++)
+        {
+            if (MvM_IsPlayer(target) && IsPlayerAlive(target))
+            {
+                Unlocks_RestoreFullLoadout(target);
+            }
+        }
+    }
+    else
+    {
+        Unlocks_ApplyToAll();
+    }
+    ReplyToCommand(client, "[AP] Class/slot override %s.", enabled ? "enabled" : "disabled");
+    PrintToChatAll("[AP] Class and weapon-slot override %s for every player.",
+        enabled ? "enabled" : "disabled");
+    return Plugin_Handled;
+}
+
+static void Unlocks_RestoreFullLoadout(int client)
+{
+    if (!MvM_IsPlayer(client) || !IsPlayerAlive(client))
+    {
+        return;
+    }
+    // A between-wave respawn reconstructs weapons removed with
+    // TF2_RemoveWeaponSlot more reliably than inventory regeneration alone.
+    if (GameRules_GetRoundState() == RoundState_BetweenRounds)
+    {
+        TF2_RespawnPlayer(client);
+    }
+    else
+    {
+        TF2_RegeneratePlayer(client);
+    }
+}
+
+static void Frame_UnlockOverrideLoadout(any userid)
+{
+    int client = GetClientOfUserId(userid);
+    if (g_UnlocksTestOverride && MvM_IsPlayer(client) && IsPlayerAlive(client))
+    {
+        TF2_RegeneratePlayer(client);
+    }
+}
+
+void Unlocks_RestoreOverrideNextFrame(int client)
+{
+    if (g_UnlocksTestOverride && client > 0)
+    {
+        RequestFrame(Frame_UnlockOverrideLoadout, GetClientUserId(client));
+    }
 }
 
 // Runs as soon as the bridge answers: a grant that waits for the next spawn looks like no grant.
@@ -185,6 +260,7 @@ void Unlocks_ApplyToAll()
         }
         Unlocks_EnforceClass(client);
         Unlocks_EnforceSlots(client);
+        WeaponBuffs_Apply(client);
     }
 }
 

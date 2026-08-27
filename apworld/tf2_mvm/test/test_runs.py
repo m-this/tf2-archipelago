@@ -10,6 +10,8 @@ below attack it from the corners: shortest run, longest, hardest starting tier.
 import math
 from typing import Any, ClassVar
 
+from BaseClasses import ItemClassification
+
 from .. import data
 from ..rules import REQUIREMENTS
 from . import TF2MvMTestBase
@@ -17,6 +19,117 @@ from . import TF2MvMTestBase
 
 class TestDefaults(TF2MvMTestBase):
     options: ClassVar[dict[str, Any]] = {}
+
+    def test_every_spare_reward_is_a_weapon_buff_by_default(self) -> None:
+        buffs = [
+            item.name for item in self.multiworld.itempool if item.name in data.WEAPON_BUFF_NAMES
+        ]
+        cash = [item for item in self.multiworld.itempool if item.name in data.FILLER_NAMES]
+        self.assertGreater(len(buffs), 0)
+        self.assertFalse(cash)
+
+    def test_only_numeric_weapon_buffs_repeat(self) -> None:
+        buffs = [
+            item.name for item in self.multiworld.itempool if item.name in data.WEAPON_BUFF_NAMES
+        ]
+        repeated = {name for name in buffs if buffs.count(name) > 1}
+        self.assertLessEqual(repeated, data.STACKABLE_WEAPON_BUFF_NAMES)
+
+
+class TestNoWeaponBuffs(TF2MvMTestBase):
+    options: ClassVar[dict[str, Any]] = {
+        "cash_rewards": True,
+        "weapon_buff_percentage": 0,
+    }
+
+    def test_every_non_progression_reward_is_cash(self) -> None:
+        self.assertFalse(
+            any(item.name in data.WEAPON_BUFF_NAMES for item in self.multiworld.itempool)
+        )
+        self.assertTrue(any(item.name in data.FILLER_NAMES for item in self.multiworld.itempool))
+
+
+class TestUniqueWeaponBuffs(TF2MvMTestBase):
+    options: ClassVar[dict[str, Any]] = {
+        "weapon_buff_percentage": 100,
+        "weapon_buff_stack_chance": 0,
+    }
+
+    def test_every_spare_reward_is_a_distinct_buff(self) -> None:
+        buffs = [
+            item.name for item in self.multiworld.itempool if item.name in data.WEAPON_BUFF_NAMES
+        ]
+        self.assertGreater(len(buffs), 0)
+        self.assertEqual(len(buffs), len(set(buffs)))
+        self.assertFalse(any(item.name in data.FILLER_NAMES for item in self.multiworld.itempool))
+
+
+class TestCashRewards(TF2MvMTestBase):
+    options: ClassVar[dict[str, Any]] = {
+        "cash_rewards": True,
+        "weapon_buff_percentage": 75,
+    }
+
+    def test_cash_and_buffs_share_spare_checks_when_enabled(self) -> None:
+        buffs = [item for item in self.multiworld.itempool if item.name in data.WEAPON_BUFF_NAMES]
+        cash = [item for item in self.multiworld.itempool if item.name in data.FILLER_NAMES]
+        self.assertGreater(len(buffs), 0)
+        self.assertGreater(len(cash), 0)
+        self.assertEqual(math.ceil((len(buffs) + len(cash)) * 0.75), len(buffs))
+
+
+class TestUsefulUnlockModes(TF2MvMTestBase):
+    options: ClassVar[dict[str, Any]] = {
+        "mission_ticket_importance": "useful",
+        "class_unlock_importance": "useful",
+        "weapon_slot_importance": "useful",
+    }
+
+    def test_every_mission_is_reachable_without_unlocks(self) -> None:
+        for mission in self.world.missions:
+            self.assertTrue(self.can_reach_region(mission.name))
+
+    def test_unlock_items_are_useful(self) -> None:
+        kinds = {"mission_ticket", "class", "weapon_slot"}
+        items = [
+            item for item in self.multiworld.itempool if data.ITEMS_BY_NAME[item.name].kind in kinds
+        ]
+        self.assertTrue(items)
+        self.assertTrue(all(item.classification == ItemClassification.useful for item in items))
+
+
+class TestProgressionWeaponBuffs(TF2MvMTestBase):
+    options: ClassVar[dict[str, Any]] = {
+        "weapon_buff_importance": "progression",
+        "cash_rewards": True,
+        "weapon_buff_percentage": 0,
+    }
+
+    def test_buffs_are_progression_items(self) -> None:
+        buffs = [item for item in self.multiworld.itempool if item.name in data.WEAPON_BUFF_NAMES]
+        self.assertGreaterEqual(len(buffs), 5)
+        self.assertTrue(
+            all(item.classification == ItemClassification.progression for item in buffs)
+        )
+
+    def test_non_start_mission_needs_buffs(self) -> None:
+        mission = next(m for m in self.world.missions if m is not self.world.start_mission)
+        self.assertFalse(self.can_reach_region(mission.name))
+
+
+class TestStackedWeaponBuffs(TF2MvMTestBase):
+    options: ClassVar[dict[str, Any]] = {
+        "weapon_buff_percentage": 100,
+        "weapon_buff_stack_chance": 100,
+    }
+
+    def test_repeated_rewards_are_numeric_levels(self) -> None:
+        buffs = [
+            item.name for item in self.multiworld.itempool if item.name in data.WEAPON_BUFF_NAMES
+        ]
+        repeated = {name for name in buffs if buffs.count(name) > 1}
+        self.assertTrue(repeated)
+        self.assertLessEqual(repeated, data.STACKABLE_WEAPON_BUFF_NAMES)
 
 
 class TestWholeRoster(TF2MvMTestBase):

@@ -25,6 +25,9 @@ var EnvNames = []string{
 	"MVM_MISSION_COUNT", "MVM_DIFFICULTY", "MVM_GOAL",
 	"MVM_MISSIONSANITY_PERCENTAGE", "MVM_DEATH_LINK", "MVM_EXCLUDED_MISSIONS",
 	"MVM_START_MISSION", "MVM_START_CLASS",
+	"MVM_MISSION_TICKET_IMPORTANCE", "MVM_CLASS_UNLOCK_IMPORTANCE",
+	"MVM_WEAPON_SLOT_IMPORTANCE", "MVM_WEAPON_BUFF_IMPORTANCE",
+	"MVM_CASH_REWARDS", "MVM_WEAPON_BUFF_PERCENTAGE", "MVM_WEAPON_BUFF_STACK_CHANCE",
 	"BRIDGE_METRICS_PORT",
 }
 
@@ -98,9 +101,20 @@ func ApplyEnv(s Settings) Settings {
 	list(&s.MvmExcludedMissions, "MVM_EXCLUDED_MISSIONS")
 	str(&s.MvmStartMission, "MVM_START_MISSION")
 	str(&s.MvmStartClass, "MVM_START_CLASS")
+	applyRewardEnv(&s)
 
 	num(&s.MetricsPort, "BRIDGE_METRICS_PORT")
 	return s
+}
+
+func applyRewardEnv(s *Settings) {
+	str(&s.MvmMissionTicketImportance, "MVM_MISSION_TICKET_IMPORTANCE")
+	str(&s.MvmClassUnlockImportance, "MVM_CLASS_UNLOCK_IMPORTANCE")
+	str(&s.MvmWeaponSlotImportance, "MVM_WEAPON_SLOT_IMPORTANCE")
+	str(&s.MvmWeaponBuffImportance, "MVM_WEAPON_BUFF_IMPORTANCE")
+	boolean(&s.MvmCashRewards, "MVM_CASH_REWARDS")
+	num(&s.MvmWeaponBuffPct, "MVM_WEAPON_BUFF_PERCENTAGE")
+	num(&s.MvmWeaponBuffStackChance, "MVM_WEAPON_BUFF_STACK_CHANCE")
 }
 
 // FromEnv reports whether name is set, so the UI can skip a prompt whose

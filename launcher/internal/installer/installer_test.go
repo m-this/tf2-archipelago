@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/m-this/tf2-archipelago/launcher/internal/assets"
 )
 
 func zipWith(t *testing.T, entries map[string]string) []byte {
@@ -64,6 +66,26 @@ func TestUnzipToRejectsAnEscapingEntry(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(dir, "escaped.txt")); err == nil {
 		t.Error("the entry was written outside the install directory")
+	}
+}
+
+func TestInstallPluginIncludesNativeProjectileGameData(t *testing.T) {
+	modDir := filepath.Join(t.TempDir(), "tf")
+	if err := installRipextAndPlugin(modDir); err != nil {
+		t.Fatal(err)
+	}
+	wants := map[string][]byte{
+		filepath.Join("addons", "sourcemod", "plugins", "tf2_archipelago.smx"):  assets.Plugin(),
+		filepath.Join("addons", "sourcemod", "gamedata", "tf2_archipelago.txt"): assets.PluginGameData(),
+	}
+	for relative, want := range wants {
+		got, err := os.ReadFile(filepath.Join(modDir, relative))
+		if err != nil {
+			t.Fatalf("read %s: %v", relative, err)
+		}
+		if !bytes.Equal(got, want) {
+			t.Errorf("%s differs from embedded asset", relative)
+		}
 	}
 }
 

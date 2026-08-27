@@ -337,7 +337,15 @@ func installRipextAndPlugin(modDir string) error {
 		return err
 	}
 	pluginPath := filepath.Join(pluginDir, "tf2_archipelago.smx")
-	return os.WriteFile(pluginPath, assets.Plugin(), 0o644)
+	if err := os.WriteFile(pluginPath, assets.Plugin(), 0o644); err != nil {
+		return err
+	}
+	gamedataDir := filepath.Join(modDir, "addons", "sourcemod", "gamedata")
+	if err := os.MkdirAll(gamedataDir, 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(filepath.Join(gamedataDir, "tf2_archipelago.txt"),
+		assets.PluginGameData(), 0o644)
 }
 
 // fetch downloads a URL into memory with a timeout.

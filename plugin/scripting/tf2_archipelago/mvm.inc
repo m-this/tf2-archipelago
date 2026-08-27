@@ -342,13 +342,20 @@ stock void MvM_OnMapStart()
  */
 stock void MvM_OnCommandKeyValues(int client, const char[] name)
 {
+    if (StrEqual(name, "MvM_UpgradesBegin", false))
+    {
+        WeaponBuffs_ShowMenu(client);
+        return;
+    }
     if (StrEqual(name, "MVM_Respec", false))
     {
         RequestFrame(Frame_RestoreBundles, GetClientUserId(client));
+        WeaponBuffs_ApplyNextFrame(client);
         return;
     }
     if (StrEqual(name, "MVM_Upgrade", false))
     {
+        WeaponBuffs_ApplyNextFrame(client);
         return;
     }
     bool seen;

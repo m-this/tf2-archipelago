@@ -26,6 +26,21 @@ CLASSIFICATIONS = {
     "trap": ItemClassification.trap,
 }
 
+BUFF_REQUIREMENTS = {
+    "normal": 1,
+    "intermediate": 2,
+    "advanced": 3,
+    "expert": 4,
+    "haunted": 5,
+}
+
+IMPORTANCE_OPTION_BY_KIND = {
+    "mission_ticket": "mission_ticket_importance",
+    "class": "class_unlock_importance",
+    "weapon_slot": "weapon_slot_importance",
+    "weapon_buff": "weapon_buff_importance",
+}
+
 
 class TF2MvMItem(Item):
     game = data.GAME
@@ -196,8 +211,35 @@ class TF2MvMWorld(World):
             self.create_item(data.PROGRESSIVE_WEAPON_SLOT)
             for _ in range(data.WEAPON_SLOT_COUNT - slots_held)
         ]
+
+        # Buffs and cash share the non-progression space. Numeric permutations
+        # may repeat as levels; toggle permutations remain unique.
+        open_slots = self._check_count(self.missions) - len(pool)
+        buff_count = open_slots
+        if self.options.cash_rewards.value:
+            buff_count = math.ceil(open_slots * self.options.weapon_buff_percentage.value / 100)
+        if self.options.weapon_buff_importance.current_key == "progression":
+            buff_count = max(buff_count, max(BUFF_REQUIREMENTS.values()))
+        pool += [self.create_item(name) for name in self._draw_weapon_buffs(buff_count)]
         pool += [self.create_filler() for _ in range(self._check_count(self.missions) - len(pool))]
         self.multiworld.itempool += pool
+
+    def _draw_weapon_buffs(self, count: int) -> list[str]:
+        """Draw reward names, repeating numeric buffs but never toggles."""
+        unused = list(data.WEAPON_BUFF_NAMES)
+        stackable_drawn: list[str] = []
+        drawn: list[str] = []
+        stack_chance = self.options.weapon_buff_stack_chance.value
+        while len(drawn) < count and (unused or stackable_drawn):
+            stack = bool(stackable_drawn) and self.random.randrange(100) < stack_chance
+            if stack or not unused:
+                drawn.append(self.random.choice(stackable_drawn))
+                continue
+            name = unused.pop(self.random.randrange(len(unused)))
+            drawn.append(name)
+            if name in data.STACKABLE_WEAPON_BUFF_NAMES:
+                stackable_drawn.append(name)
+        return drawn
 
     def set_rules(self) -> None:
         if self.options.goal.current_key == "missionsanity":
@@ -207,7 +249,10 @@ class TF2MvMWorld(World):
 
     def create_item(self, name: str) -> TF2MvMItem:
         item = data.ITEMS_BY_NAME[name]
-        return TF2MvMItem(name, CLASSIFICATIONS[item.classification], item.id, self.player)
+        classification = item.classification
+        if option_name := IMPORTANCE_OPTION_BY_KIND.get(item.kind):
+            classification = getattr(self.options, option_name).current_key
+        return TF2MvMItem(name, CLASSIFICATIONS[classification], item.id, self.player)
 
     def get_filler_item_name(self) -> str:
         return self.random.choice(data.FILLER_NAMES)
@@ -222,6 +267,7 @@ class TF2MvMWorld(World):
             "goal_mission": self.goal_mission.pop_file,
             "missionsanity_target": self.missionsanity_target,
             "death_link": bool(self.options.death_link.value),
+            "mission_ticket_importance": self.options.mission_ticket_importance.current_key,
         }
 
     def _available_missions(self) -> list[data.Mission]:
@@ -258,6 +304,8 @@ class TF2MvMWorld(World):
             + data.WEAPON_SLOT_COUNT
             - requirement.slots
         )
+        if self.options.weapon_buff_importance.current_key == "progression":
+            unlocks += max(BUFF_REQUIREMENTS.values())
         return unlocks - self._check_count(missions)
 
     def _deploy_rule(self, mission: data.Mission) -> Callable[[CollectionState], bool]:
@@ -266,11 +314,23 @@ class TF2MvMWorld(World):
         player = self.player
 
         def can_deploy(state: CollectionState) -> bool:
-            return (
-                state.has(ticket, player)
-                and state.has_group("Classes", player, requirement.classes)
-                and state.has(data.PROGRESSIVE_WEAPON_SLOT, player, requirement.slots)
+            ticket_ready = (
+                self.options.mission_ticket_importance.current_key == "useful"
+                or state.has(ticket, player)
             )
+            classes_ready = (
+                self.options.class_unlock_importance.current_key == "useful"
+                or state.has_group("Classes", player, requirement.classes)
+            )
+            slots_ready = self.options.weapon_slot_importance.current_key == "useful" or state.has(
+                data.PROGRESSIVE_WEAPON_SLOT, player, requirement.slots
+            )
+            buffs_ready = (
+                mission is self.start_mission
+                or self.options.weapon_buff_importance.current_key == "useful"
+                or state.has_group("Weapon Buffs", player, BUFF_REQUIREMENTS[mission.difficulty])
+            )
+            return ticket_ready and classes_ready and slots_ready and buffs_ready
 
         return can_deploy
 

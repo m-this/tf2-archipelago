@@ -89,6 +89,9 @@ type itemJSON struct {
 	MissionID      MissionID `json:"mission_id,omitempty"`
 	ClassID        ClassID   `json:"class_id,omitempty"`
 	Credits        uint16    `json:"credits,omitempty"`
+	WeaponBuffID   uint16    `json:"weapon_buff_id,omitempty"`
+	Stackable      bool      `json:"stackable,omitempty"`
+	Eligible       bool      `json:"eligible,omitempty"`
 }
 
 // Export writes the three data files into dir, replacing what is there.
@@ -174,6 +177,14 @@ func buildItemsFile() itemsFile {
 		Items:         make([]itemJSON, 0, len(Items)),
 	}
 	for _, it := range Items {
+		stackable := false
+		eligible := false
+		if it.Kind == ItemWeaponBuff {
+			if buff, ok := WeaponBuffByID(it.WeaponBuff); ok {
+				stackable = buff.Mode != BuffToggle
+				eligible = buff.Eligible
+			}
+		}
 		file.Items = append(file.Items, itemJSON{
 			ID:             it.ID,
 			Name:           it.Name,
@@ -183,6 +194,9 @@ func buildItemsFile() itemsFile {
 			MissionID:      it.Mission,
 			ClassID:        it.Class,
 			Credits:        it.Credits,
+			WeaponBuffID:   it.WeaponBuff,
+			Stackable:      stackable,
+			Eligible:       eligible,
 		})
 	}
 	return file

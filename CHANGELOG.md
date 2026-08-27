@@ -6,6 +6,14 @@ in the release notes, so this file is the only place to write it.
 
 ## Unreleased
 
+### Weapon buffs
+
+- Add curated, stackable weapon buffs as Archipelago rewards.
+- Support extra rockets, grenades, stickies, arrows, bolts, flares, syringes,
+  energy projectiles and thrown jars.
+- Add configurable reward classifications and optional cash rewards.
+- Add admin commands for targeted buff and unlock testing.
+
 ## v1.10.0
 
 Most of this release is what the 1.9.0 play-tests found.

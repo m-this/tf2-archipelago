@@ -25,6 +25,13 @@ func TestPlayerYAMLHoldsTheRunShape(t *testing.T) {
 		"  goal: missionsanity",
 		"  missionsanity_percentage: 60",
 		"  death_link: true",
+		"  mission_ticket_importance: progression",
+		"  class_unlock_importance: progression",
+		"  weapon_slot_importance: progression",
+		"  weapon_buff_importance: useful",
+		"  cash_rewards: false",
+		"  weapon_buff_percentage: 75",
+		"  weapon_buff_stack_chance: 25",
 	} {
 		if !strings.Contains(got, want) {
 			t.Errorf("missing %q in:\n%s", want, got)

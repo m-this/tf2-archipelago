@@ -10,6 +10,12 @@
 *.yaml text eol=lf
 *.yml text eol=lf
 
+# Keep generated reward catalogs collapsed in pull request reviews.
+apworld/tf2_mvm/data/items.json linguist-generated=true
+gamedata/buff_weapons_generated.go linguist-generated=true
+gamedata/testdata/ids-frozen.json linguist-generated=true
+plugin/scripting/tf2_archipelago/weapon_buffs_data.inc linguist-generated=true
+
 *.smx binary
 *.png binary
 *.vpk binary

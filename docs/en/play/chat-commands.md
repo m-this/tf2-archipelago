@@ -118,8 +118,30 @@ rcon sm_ap_status
 | `sm_ap_status` | Print the mission, the wave, which game events exist, the unlocks, the missions, the state of the chat relay, the queue depth, and the last error |
 | `sm_ap_mission` | List the missions of the run. With an argument, switch to one |
 | `sm_ap_resync` | Ask the bridge for the unlock set again |
-| `sm_ap_report wave_cleared 3` | Report a cleared wave by hand |
+| `sm_ap_buffs` | Open the numbered menu of buffs applying to the current loadout |
+
+### Debug and test commands
+
+These require root admin access. Test buffs last until the plugin, map, or run
+state reloads them.
+
+| Command | What it does |
+| --- | --- |
+| `sm_ap_buff_test <1-80\|effect-key\|all> [levels]` | Add effects to your active weapon. Example: `sm_ap_buff_test projectile-count 3` |
+| `sm_ap_buff_give <target> <1-80\|effect-key\|all> [levels]` | Add effects to another living RED player's active weapon |
+| `sm_ap_projectile_debug on` | Enable projectile diagnostics and print the active weapon state |
+| `sm_ap_projectile_debug` | Print the 24 most recent projectile diagnostic lines |
+| `sm_ap_projectile_debug off` | Disable projectile diagnostics |
+| `sm_ap_unlock_override <on\|off>` | Temporarily allow every class and weapon slot, or restore the run's locks |
+| `sm_ap_bundle [credits]` | Pay a test Cash Bundle, defaulting to 200 credits |
+| `sm_ap_report wave_cleared [wave]` | Report a cleared wave by hand |
 | `sm_ap_report mission_cleared` | Report a cleared mission by hand |
+| `sm_ap_report death` | Report a failed wave by hand |
+
+In chat, omit the `sm_` prefix and use `!ap_buff_test projectile-count 3`.
+From the TF2 client console, send the command to the server with
+`cmd sm_ap_buff_test projectile-count 3`; entering `sm_ap_buff_test` directly
+asks the client for a local command and prints `Unknown command`.
 
 The console is not a player, so it is not an admin either: rcon runs as the
 server itself and reaches every command above whatever `SRCDS_ADMIN_STEAMIDS`

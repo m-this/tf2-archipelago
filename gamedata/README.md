@@ -16,12 +16,19 @@ project knows, and for every Archipelago id. Read [ADR
 | `ids.go` | The base id and every derivation from it |
 | `locations.go` | The 210 checks, and the objective the plugin reports for each |
 | `items.go` | The item pool template |
+| `weapons.go` | Weapons available to defender bot loadouts |
+| `buff_weapons_generated.go` | Append-only buff weapon catalog and legacy item IDs |
+| `weapon_effects.go` | Positive weapon buff effects |
 | `validate.go` | Every invariant the id scheme rests on |
 | `export.go` | Writes `apworld/tf2_mvm/data/*.json` |
 
-Not here yet, and deliberately not in v1: weapons, upgrade lines, canteens,
-allied robot templates, traps. Weapon *slots* are enough to make a progression,
-and the weapon table is the largest data-entry job in the project.
+Not here yet, and deliberately not in v1: weapon ownership, canteens, allied
+robot templates, and traps. Weapon ownership still uses progressive slots;
+`WeaponBuffs` adds item-specific bonuses without unlocking a weapon.
+
+`tools/import_tf2_weapons.py` reads Valve's installed item schema to discover
+new buff targets. Its output is reviewed and appended because a game update
+must never renumber existing Archipelago ids.
 
 ## When the weapon tables land
 
