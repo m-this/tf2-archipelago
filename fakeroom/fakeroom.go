@@ -487,8 +487,66 @@ func unlockOrder(held []int64) []int64 {
 			}
 		}
 	}
-	return append(append(classes, slots...), rest...)
+	return append(append(classes, slots...), promoteBuffs(rest)...)
 }
+
+/*
+	promoteBuffs brings a handful of weapon buffs to the front of the tail.
+
+Test mode hands the run out in one order: the classes, then the weapon slots,
+then everything else. Everything else is fifty mission tickets and then sixteen
+thousand buffs, so the first buff arrives about sixty waves in and nobody
+testing them ever sees one.
+
+Spread rather than the first few, because the first few are sixteen levels of
+one effect on one weapon. A stride across the list gives different weapons and
+different effects, which is what somebody trying the feature wants to see.
+
+Test mode only. A real run draws its own order from the multiworld and never
+comes through here.
+*/
+func promoteBuffs(rest []int64) []int64 {
+	// The set is built once. Asking gamedata per id is a scan of seventeen
+	// thousand items inside a loop over seventeen thousand ids.
+	isBuff := make(map[int64]bool, len(gamedata.Items))
+	for _, item := range gamedata.Items {
+		if item.Kind == gamedata.ItemWeaponBuff {
+			isBuff[item.ID] = true
+		}
+	}
+
+	var buffs, others []int64
+	for _, id := range rest {
+		if isBuff[id] {
+			buffs = append(buffs, id)
+			continue
+		}
+		others = append(others, id)
+	}
+	if len(buffs) <= buffsUpFront {
+		return append(others, buffs...)
+	}
+	stride := len(buffs) / buffsUpFront
+
+	front := make([]int64, 0, buffsUpFront)
+	taken := make(map[int]bool, buffsUpFront)
+	for i := range buffsUpFront {
+		at := i * stride
+		front = append(front, buffs[at])
+		taken[at] = true
+	}
+	tail := make([]int64, 0, len(buffs)-len(front))
+	for at, id := range buffs {
+		if !taken[at] {
+			tail = append(tail, id)
+		}
+	}
+	return append(append(front, others...), tail...)
+}
+
+// buffsUpFront is how many arrive before the mission tickets. Enough to try the
+// feature on several weapons, few enough that a test run still unlocks missions.
+const buffsUpFront = 8
 
 // defaultMissions picks the first missions the game data lists, which is the
 // normal tier first: the gentlest thing to test against. Excluded popfiles
