@@ -18,7 +18,7 @@ var EnvNames = []string{
 	"SRCDS_MAXPLAYERS", "SRCDS_START_MISSION", "SRCDS_STARTMAP", "SRCDS_TOKEN",
 	"SRCDS_LAN", "SRCDS_REACH", "SRCDS_ADMIN_STEAMIDS",
 	"SRCDS_BOTS", "SRCDS_BOT_TEAM_SIZE", "SRCDS_BOT_CLASS_BLACKLIST", "SRCDS_BOT_LOADOUTS",
-	"SRCDS_BLU_DAMAGE_PCT", "SRCDS_BLU_HEALTH_PCT", "SRCDS_BLU_SPEED_PCT",
+	"SRCDS_BLU_HEALTH_PCT",
 	"SRCDS_BOT_TEAM_COMP",
 	"SRCDS_BOT_SEAT_LOADOUTS",
 	"SRCDS_BOT_HATS",
@@ -46,9 +46,7 @@ var EnvNames = []string{
 func applyBotEnv(s Settings) Settings {
 	boolean(&s.SrcdsBots, "SRCDS_BOTS")
 	num(&s.SrcdsBotTeamSize, "SRCDS_BOT_TEAM_SIZE")
-	num(&s.SrcdsBluDamagePct, "SRCDS_BLU_DAMAGE_PCT")
 	num(&s.SrcdsBluHealthPct, "SRCDS_BLU_HEALTH_PCT")
-	num(&s.SrcdsBluSpeedPct, "SRCDS_BLU_SPEED_PCT")
 	list(&s.SrcdsBotClassBlacklist, "SRCDS_BOT_CLASS_BLACKLIST")
 	pairs(&s.SrcdsBotLoadouts, "SRCDS_BOT_LOADOUTS")
 	seatList(&s.SrcdsBotTeamComp, "SRCDS_BOT_TEAM_COMP")

@@ -83,19 +83,17 @@ holds the two ways to help a team that is short of them.
 
 Weapon buffs make the team stronger. They are on by default.
 
-The three robot scales make the robots weaker: damage, health and speed. Each is
-what the robots keep with one player on RED, and it rises back to 100 at six. A
-full team therefore always plays the mission as Valve wrote it. All three start
-at 100, which changes nothing.
+Robot health makes the robots weaker. It is what the robots keep with one player
+on RED, and it rises back to 100 at six. A full team therefore always plays the
+mission as Valve wrote it. It starts at 100, which changes nothing.
 
-Only robot damage has a measurement behind it. At 70 it does nothing. At 50 it
-starts to bend a mission: one clear in eight attempts at a wave the unchanged
-build lost every one of twenty four times. Health and speed carry no
-measurement.
+At 50 it bends a mission. The bots killed 108 robots a wave, against 52 to 64 for
+the unchanged build. Three waves in eight cleared, where twenty four attempts on
+that wave cleared none.
 
-Robot speed does more than lower the difficulty. A slower robot lengthens the
-wave and leaves more money on the field. It changes the pace of a mission as
-well.
+Damage and speed scales existed here until a run judged them. Damage worked and
+speed showed nothing, so only health remains: one lever with a measurement
+behind it beats three that need explaining.
 
 ## Changing the team mid-mission
 

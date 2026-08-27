@@ -78,9 +78,7 @@ func runSettingsDialog(
 		cashRewards      *walk.CheckBox
 		buffPct          *walk.NumberEdit
 		buffStack        *walk.NumberEdit
-		bluDamage        *walk.NumberEdit
 		bluHealth        *walk.NumberEdit
-		bluSpeed         *walk.NumberEdit
 
 		startBox      *walk.ComboBox
 		startClassBox *walk.ComboBox
@@ -245,9 +243,7 @@ func runSettingsDialog(
 		next.MvmCashRewards = cashRewards.Checked()
 		next.MvmWeaponBuffPct = int(buffPct.Value())
 		next.MvmWeaponBuffStackChance = int(buffStack.Value())
-		next.SrcdsBluDamagePct = int(bluDamage.Value())
 		next.SrcdsBluHealthPct = int(bluHealth.Value())
-		next.SrcdsBluSpeedPct = int(bluSpeed.Value())
 		next.MvmExcludedMissions = pool.excludedMissions()
 		next.ArchipelagoDir = strings.TrimSpace(appEdit.Text())
 
@@ -495,12 +491,8 @@ func runSettingsDialog(
 							// The other half of balancing. The buffs above make
 							// the team stronger; these make the robots weaker,
 							// and only for a team that is short of players.
-							label("Robot damage (%)", "What robot damage is worth with one player on RED, as a percentage, rising back to 100 at six. 100 leaves the mission as Valve wrote it."),
-							declarative.NumberEdit{AssignTo: &bluDamage, Value: float64(s.SrcdsBluDamagePct), MinValue: 10, MaxValue: 100, Decimals: 0},
-							label("Robot health (%)", "The same for robot health. Untested: nobody has measured whether it bends a mission."),
+							label("Robot health (%)", "What robot health is worth with one player on RED, as a percentage, rising back to 100 at six. 100 leaves the mission as Valve wrote it."),
 							declarative.NumberEdit{AssignTo: &bluHealth, Value: float64(s.SrcdsBluHealthPct), MinValue: 10, MaxValue: 100, Decimals: 0},
-							label("Robot speed (%)", "The same for how fast robots walk. It changes how long a wave takes and how much money is on the field, not only how hard it is."),
-							declarative.NumberEdit{AssignTo: &bluSpeed, Value: float64(s.SrcdsBluSpeedPct), MinValue: 10, MaxValue: 100, Decimals: 0},
 						},
 					},
 					{
@@ -758,7 +750,7 @@ func runSettingsDialog(
 	selectTab(tabs, openOn)
 
 	// Numbers read from the left, like every other field in the dialog.
-	leftAlign(missions, sanityPct, buffPct, buffStack, bluDamage, bluHealth, bluSpeed, portEdit)
+	leftAlign(missions, sanityPct, buffPct, buffStack, bluHealth, portEdit)
 
 	// The help under the buttons, and the complaint about a missing token. Both
 	// follow the selection, because a reach the player cannot use yet has to

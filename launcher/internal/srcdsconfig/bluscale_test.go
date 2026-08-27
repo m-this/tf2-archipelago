@@ -18,26 +18,22 @@ func TestTheRobotScalesReachServerCfg(t *testing.T) {
 		{
 			"untouched settings leave the mission alone",
 			settings.Defaults(),
-			[]string{
-				"sm_redbots_manager_blu_damage_scale 1.0",
-				"sm_redbots_manager_blu_health_scale 1.0",
-				"sm_redbots_manager_blu_speed_scale 1.0",
-			},
+			[]string{"sm_redbots_manager_blu_health_scale 1.0"},
 		},
 		{
 			"a zero is somebody who never set it, not harmless robots",
 			settings.Settings{},
-			[]string{"sm_redbots_manager_blu_damage_scale 1.0"},
+			[]string{"sm_redbots_manager_blu_health_scale 1.0"},
 		},
 		{
-			"the measured damage dose",
-			settings.Settings{SrcdsBluDamagePct: 50},
-			[]string{"sm_redbots_manager_blu_damage_scale 0.50"},
+			"the measured health dose",
+			settings.Settings{SrcdsBluHealthPct: 50},
+			[]string{"sm_redbots_manager_blu_health_scale 0.50"},
 		},
 		{
 			"below the mod's floor is clamped to it",
-			settings.Settings{SrcdsBluSpeedPct: 5},
-			[]string{"sm_redbots_manager_blu_speed_scale 0.10"},
+			settings.Settings{SrcdsBluHealthPct: 5},
+			[]string{"sm_redbots_manager_blu_health_scale 0.10"},
 		},
 	} {
 		got, err := RenderServerCfg(test.s)

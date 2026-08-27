@@ -121,9 +121,7 @@ func (f *settingsForm) rewardFields() []field {
 		 * these make the robots weaker. Each is what the robots keep when one
 		 * human is on RED, rising back to everything at six, so the help is
 		 * only ever felt by a team that is short. */
-		&numberField{label: "Robot damage (%)", help: "What robot damage is worth at one player, as a percentage, rising to 100 at six. 100 leaves the mission as Valve wrote it.", value: &f.edited.SrcdsBluDamagePct, low: 10, high: 100},
-		&numberField{label: "Robot health (%)", help: "The same for robot health. Untested: nobody has measured whether it bends a mission.", value: &f.edited.SrcdsBluHealthPct, low: 10, high: 100},
-		&numberField{label: "Robot speed (%)", help: "The same for how fast robots walk. Changes how long a wave takes and how much money is on the field, not only how hard it is.", value: &f.edited.SrcdsBluSpeedPct, low: 10, high: 100},
+		&numberField{label: "Robot health (%)", help: "What robot health is worth at one player, as a percentage, rising to 100 at six. 100 leaves the mission as Valve wrote it.", value: &f.edited.SrcdsBluHealthPct, low: 10, high: 100},
 	}
 }
 

@@ -5,14 +5,14 @@ import "testing"
 /*
 	A settings file written before a field existed must not leave it at zero.
 
-The window's number boxes for the robot scales take a minimum of ten. walk
+The window's number box for the robot health scale takes a minimum of ten. walk
 refuses a value below the minimum and a refused widget takes the whole settings
 dialog with it, so a zero here is not a wrong setting: it is a launcher nobody
 can configure. Reported as the settings window no longer opening.
 
 Zero is also wrong on its own terms. Nothing said is not nought per cent.
 */
-func TestAnOlderFileGetsTheRobotScales(t *testing.T) {
+func TestAnOlderFileGetsTheRobotScale(t *testing.T) {
 	// A file from before the Balancing page existed: no srcds_blu_* at all.
 	old := []byte(`{"srcds_hostname":"a server","srcds_bot_team_size":6}`)
 
@@ -20,34 +20,35 @@ func TestAnOlderFileGetsTheRobotScales(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, test := range []struct {
-		name string
-		got  int
-	}{
-		{"damage", s.SrcdsBluDamagePct},
-		{"health", s.SrcdsBluHealthPct},
-		{"speed", s.SrcdsBluSpeedPct},
-	} {
-		if test.got != 100 {
-			t.Errorf("%s = %d, want 100: the window refuses anything under 10", test.name, test.got)
-		}
+	if s.SrcdsBluHealthPct != 100 {
+		t.Errorf("health = %d, want 100: the window refuses anything under 10", s.SrcdsBluHealthPct)
 	}
 }
 
-// A file that does name them keeps what it says, including the measured dose.
-func TestAFileThatSetsTheScalesKeepsThem(t *testing.T) {
-	s, err := parse([]byte(`{"srcds_blu_damage_pct":50,"srcds_blu_speed_pct":80}`))
+// A file that does name it keeps what it says.
+func TestAFileThatSetsTheScaleKeepsIt(t *testing.T) {
+	s, err := parse([]byte(`{"srcds_blu_health_pct":50}`))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if s.SrcdsBluDamagePct != 50 {
-		t.Errorf("damage = %d, want 50", s.SrcdsBluDamagePct)
+	if s.SrcdsBluHealthPct != 50 {
+		t.Errorf("health = %d, want 50", s.SrcdsBluHealthPct)
 	}
-	if s.SrcdsBluSpeedPct != 80 {
-		t.Errorf("speed = %d, want 80", s.SrcdsBluSpeedPct)
+}
+
+/*
+	The damage and speed scales were removed after they were measured.
+
+Damage bent a mission and speed showed nothing, and one lever that works beats
+three that need explaining. A file still carrying the old keys must load rather
+than refuse, since every settings file written while they existed has them.
+*/
+func TestAFileWithTheRemovedScalesStillLoads(t *testing.T) {
+	s, err := parse([]byte(`{"srcds_blu_damage_pct":50,"srcds_blu_speed_pct":80,"srcds_blu_health_pct":60}`))
+	if err != nil {
+		t.Fatal(err)
 	}
-	// The one it did not mention still gets a value the window will take.
-	if s.SrcdsBluHealthPct != 100 {
-		t.Errorf("health = %d, want 100", s.SrcdsBluHealthPct)
+	if s.SrcdsBluHealthPct != 60 {
+		t.Errorf("health = %d, want 60", s.SrcdsBluHealthPct)
 	}
 }

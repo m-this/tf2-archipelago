@@ -35,14 +35,17 @@ contributor.
 ### Balancing
 
 - The **Balancing** page holds both halves: weapon buffs make the team
-  stronger, and three new scales make the robots weaker.
-- Robot damage, health and speed. Each is what the robots keep with one player
-  on RED, and it rises back to 100 at six. A full team plays the mission as
-  Valve wrote it.
-- All three start at 100, which changes nothing.
-- Only robot damage has a measurement behind it. At 70 it does nothing. At 50 it
-  cleared a wave that the unchanged build lost twenty four times out of twenty
-  four.
+  stronger, and a robot health scale makes the robots weaker.
+- Robot health is what the robots keep with one player on RED, rising back to
+  100 at six. A full team plays the mission as Valve wrote it. It starts at 100,
+  which changes nothing.
+- At 50 the bots killed 108 robots a wave, against 52 to 64 for the unchanged
+  build, and cleared three waves in eight where twenty four attempts cleared
+  none.
+- Damage and speed scales shipped in a nightly and were taken out again. Both
+  were written against the robot at spawn, where the popfile overwrites them, so
+  neither did anything until that was fixed. Damage then worked and speed still
+  showed nothing, so only health stayed.
 
 ### Weapon buffs, by kelly-cs
 
@@ -82,7 +85,7 @@ contributor.
 ### Under it
 
 - The settings window opens again. On a settings file written before the
-  Balancing page existed, it refused to open at all. The three robot scales came
+  Balancing page existed, it refused to open at all. The robot health scale came
   back as zero, and the window will not take a number below ten.
 - The minus button at the upgrade station gives back credits that came from a
   cash bundle. It refunds one upgrade rather than respeccing, and only the

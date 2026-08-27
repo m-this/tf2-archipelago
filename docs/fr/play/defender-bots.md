@@ -90,19 +90,18 @@ tient les deux façons d'aider une équipe qui n'en a pas six.
 
 Les buffs d'armes rendent l'équipe plus forte. Ils sont actifs par défaut.
 
-Les trois échelles robots rendent les robots plus faibles : dégâts, vie et
-vitesse. Chacune est ce que les robots gardent avec un seul joueur sur RED, et
-elle remonte à 100 à six. Une équipe complète joue donc toujours la mission
-telle que Valve l'a écrite. Les trois partent à 100, ce qui ne change rien.
+La vie des robots les rend plus faibles. C'est ce que les robots gardent avec un
+seul joueur sur RED, et elle remonte à 100 à six. Une équipe complète joue donc
+toujours la mission telle que Valve l'a écrite. Elle démarre à 100, ce qui ne
+change rien.
 
-Seuls les dégâts robots ont une mesure derrière eux. À 70 ils ne font rien. À 50
-ils commencent à infléchir une mission : une réussite sur huit tentatives. La
-vague en question, le build d'origine l'a perdue vingt-quatre fois sur
-vingt-quatre. La vie et la vitesse n'ont aucune mesure.
+À 50, elle infléchit une mission. Les bots tuent 108 robots par vague, contre 52
+à 64 pour la version inchangée. Trois vagues sur huit passent, là où
+vingt-quatre tentatives sur cette vague n'en ont passé aucune.
 
-La vitesse robots fait plus que baisser la difficulté. Un robot plus lent
-allonge la vague et laisse plus d'argent sur le terrain. Elle change aussi le
-rythme d'une mission.
+Des échelles de dégâts et de vitesse ont existé ici, jusqu'à ce qu'un essai les
+juge. Les dégâts fonctionnent, la vitesse ne montre rien : seule la vie reste,
+car un levier mesuré vaut mieux que trois qu'il faut expliquer.
 
 ## Changer l'équipe en pleine mission
 

@@ -161,9 +161,7 @@ type Settings struct {
 	 * Percentages rather than the mod's floats, because a settings page with
 	 * 0.7 in a box asks the player to know what the 1.0 end means.
 	 */
-	SrcdsBluDamagePct int `json:"srcds_blu_damage_pct"`
 	SrcdsBluHealthPct int `json:"srcds_blu_health_pct"`
-	SrcdsBluSpeedPct  int `json:"srcds_blu_speed_pct"`
 
 	// Whether to enable the metrics listener and on what port.
 	MetricsPort int `json:"metrics_port"`
@@ -202,9 +200,7 @@ func Defaults() Settings {
 		MvmWeaponBuffImportance:    "useful",
 		MvmWeaponBuffPct:           75,
 		MvmWeaponBuffStackChance:   25,
-		SrcdsBluDamagePct:          100,
 		SrcdsBluHealthPct:          100,
-		SrcdsBluSpeedPct:           100,
 		MetricsPort:                24681,
 	}
 }
@@ -373,14 +369,8 @@ whole settings dialog with it. Reported as the settings window no longer opening
 at all.
 */
 func (s Settings) withRobotScaleDefaults(d Settings) Settings {
-	if s.SrcdsBluDamagePct == 0 {
-		s.SrcdsBluDamagePct = d.SrcdsBluDamagePct
-	}
 	if s.SrcdsBluHealthPct == 0 {
 		s.SrcdsBluHealthPct = d.SrcdsBluHealthPct
-	}
-	if s.SrcdsBluSpeedPct == 0 {
-		s.SrcdsBluSpeedPct = d.SrcdsBluSpeedPct
 	}
 	return s
 }
