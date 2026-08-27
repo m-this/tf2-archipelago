@@ -21,10 +21,9 @@ l'écrit dans le journal. Il n'a pas le choix : sans token il n'obtient jamais
 de session Steam, et un serveur sans session refuse tout joueur qui essaie de
 rejoindre, y compris ceux de la même maison.
 
-> **`steam` n'est pas fini.** Le relais n'a jamais été mené jusqu'à un client
-> Team Fortress 2 qui a rejoint. Il est proposé quand même, et c'est pour ça
-> que l'onglet du launcher s'appelle **Who can join (beta)**. `port` est celui
-> sur lequel on a joué.
+> **`steam` n'est pas fini.** Aucun essai n'a mené le relais jusqu'à un client
+> Team Fortress 2 qui a rejoint. Le launcher le propose quand même, dans
+> l'onglet **Networking**. `port` est celui sur lequel les joueurs jouent.
 
 ## Le token de connexion
 

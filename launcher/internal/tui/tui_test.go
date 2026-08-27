@@ -129,7 +129,7 @@ func TestTheSettingsScreenEditsTheRun(t *testing.T) {
 		t.Errorf("the settings have %d tabs, want 8", got)
 	}
 	view := m.form.view(100, 30)
-	for _, want := range []string{"Player options", "Balancing", "Bots", "Loadouts", "Who can join (beta)", "Easiest tier"} {
+	for _, want := range []string{"Player options", "Balancing", "Bots", "Loadouts", "Networking", "Easiest tier"} {
 		if !strings.Contains(view, want) {
 			t.Errorf("the settings do not show %q:\n%s", want, view)
 		}

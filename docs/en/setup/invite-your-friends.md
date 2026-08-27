@@ -21,9 +21,8 @@ gets a Steam session, and a server with no session refuses every player who
 tries to join, the ones in the same house included.
 
 > **`steam` is not finished.** No run took the relay all the way to a Team
-> Fortress 2 client that joined. It is offered anyway, and the launcher's tab
-> for it is called **Who can join (beta)** for that reason. `port` is the one
-> that has been played on.
+> Fortress 2 client that joined. The launcher offers it anyway, under
+> **Networking**. `port` is the one people play on.
 
 ## The login token
 

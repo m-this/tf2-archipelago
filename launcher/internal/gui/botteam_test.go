@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/m-this/tf2-archipelago/gamedata"
 	"github.com/m-this/tf2-archipelago/launcher/internal/botloadout"
 )
 
@@ -131,5 +132,65 @@ func TestABuiltLoadoutSurvivesTheMenuIndexes(t *testing.T) {
 	bare := botTeamFrom(picks, botloadout.Library{})
 	if botloadout.CustomName(bare.SeatLoadouts[0]) != "" {
 		t.Errorf("an empty library produced a custom key: %q", bare.SeatLoadouts[0])
+	}
+}
+
+// A loadout saved while the dialog is open joins the menus, and the menu stays
+// on what it already named even though the new one shifted every index.
+func TestReselectLoadoutKeepsThePickWhenAnotherIsSaved(t *testing.T) {
+	class := botloadout.Classes[0]
+	mine := botloadout.Built{Class: class.Key, Melee: botloadout.Stock}
+
+	before := botloadout.Library{Built: map[string]botloadout.Built{"zulu": mine}}.Choices(class)
+	was := before[len(before)-1].Label()
+	wasAt := len(before) - 1
+
+	// A name sorting before it, so the one already picked moves down a place.
+	after := botloadout.Library{Built: map[string]botloadout.Built{
+		"alpha": mine, "zulu": mine,
+	}}.Choices(class)
+	if after[wasAt].Label() == was {
+		t.Fatal("the new loadout did not shift the picked one, so this proves nothing")
+	}
+
+	at := reselectLoadout(was, after)
+	if after[at].Label() != was {
+		t.Fatalf("landed on %q, want %q", after[at].Label(), was)
+	}
+}
+
+// Saving over a name changes the weapons the label spells out. The menu stays
+// on the loadout, because the seat still names it.
+func TestReselectLoadoutFollowsARenamedWeapon(t *testing.T) {
+	class := botloadout.Classes[0]
+	built := botloadout.Built{Class: class.Key, Melee: botloadout.Stock}
+	before := botloadout.Library{Built: map[string]botloadout.Built{"gas runner": built}}.Choices(class)
+	was := before[len(before)-1].Label()
+
+	weapons := gamedata.WeaponsFor(class.Key, "melee")
+	if len(weapons) == 0 {
+		t.Skip("this class ships no melee weapons")
+	}
+	built.Melee = weapons[0].DefIndex
+	after := botloadout.Library{Built: map[string]botloadout.Built{"gas runner": built}}.Choices(class)
+
+	at := reselectLoadout(was, after)
+	if after[at].Name != "gas runner" {
+		t.Fatalf("landed on %q, want the loadout still named gas runner", after[at].Name)
+	}
+}
+
+// A removed loadout falls back to stock rather than to whatever took its index.
+func TestReselectLoadoutFallsBackToStockWhenRemoved(t *testing.T) {
+	class := botloadout.Classes[0]
+	before := botloadout.Library{Built: map[string]botloadout.Built{
+		"gas runner": {Class: class.Key, Melee: botloadout.Stock},
+	}}.Choices(class)
+	was := before[len(before)-1].Label()
+
+	after := botloadout.Library{}.Choices(class)
+	at := reselectLoadout(was, after)
+	if after[at].Key != botloadout.StockKey {
+		t.Fatalf("landed on %q, want stock", after[at].Key)
 	}
 }

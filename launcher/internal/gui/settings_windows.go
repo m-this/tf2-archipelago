@@ -122,6 +122,9 @@ func runSettingsDialog(
 	botTeam.library = func() botloadout.Library {
 		return botloadout.Library{Built: botLoadout.built}
 	}
+	// Saving or removing a loadout puts it in and out of those menus at once,
+	// rather than at the next open of the dialog.
+	botLoadout.changed = botTeam.refreshLoadouts
 	var (
 		reachLan   *walk.RadioButton
 		reachSteam *walk.RadioButton
@@ -317,7 +320,7 @@ func runSettingsDialog(
 	// client that joined. The local network and a forwarded port both have.
 	extraPages := []declarative.TabPage{
 		{
-			Title:  "Who can join (beta)",
+			Title:  "Networking",
 			Layout: declarative.Grid{Columns: 2},
 			Children: []declarative.Widget{
 				label("Who can reach it", "Where the server takes connections from. The local network is the default, because that is what a server with no login token gets anyway: without one it stays there whatever this says."),
@@ -491,11 +494,11 @@ func runSettingsDialog(
 							// The other half of balancing. The buffs above make
 							// the team stronger; these make the robots weaker,
 							// and only for a team that is short of players.
-							label("Robot damage", "What robot damage is worth with one player on RED, as a percentage, rising back to 100 at six. 100 leaves the mission as Valve wrote it."),
+							label("Robot damage (%)", "What robot damage is worth with one player on RED, as a percentage, rising back to 100 at six. 100 leaves the mission as Valve wrote it."),
 							declarative.NumberEdit{AssignTo: &bluDamage, Value: float64(s.SrcdsBluDamagePct), MinValue: 10, MaxValue: 100, Decimals: 0},
-							label("Robot health", "The same for robot health. Untested: nobody has measured whether it bends a mission."),
+							label("Robot health (%)", "The same for robot health. Untested: nobody has measured whether it bends a mission."),
 							declarative.NumberEdit{AssignTo: &bluHealth, Value: float64(s.SrcdsBluHealthPct), MinValue: 10, MaxValue: 100, Decimals: 0},
-							label("Robot speed", "The same for how fast robots walk. It changes how long a wave takes and how much money is on the field, not only how hard it is."),
+							label("Robot speed (%)", "The same for how fast robots walk. It changes how long a wave takes and how much money is on the field, not only how hard it is."),
 							declarative.NumberEdit{AssignTo: &bluSpeed, Value: float64(s.SrcdsBluSpeedPct), MinValue: 10, MaxValue: 100, Decimals: 0},
 						},
 					},
@@ -738,11 +741,14 @@ func runSettingsDialog(
 			say("the bots tab did not build: %v", err)
 			return
 		}
+		// botsSize is made here, long after the call above, so it is aligned
+		// here or not at all.
+		leftAlign(botsSize)
 		say("the bots tab took %s to build", time.Since(started).Round(time.Millisecond))
 	})
 
 	// Numbers read from the left, like every other field in the dialog.
-	leftAlign(missions, sanityPct, buffPct, buffStack, portEdit, botsSize)
+	leftAlign(missions, sanityPct, buffPct, buffStack, bluDamage, bluHealth, bluSpeed, portEdit)
 
 	// The help under the buttons, and the complaint about a missing token. Both
 	// follow the selection, because a reach the player cannot use yet has to
@@ -1004,6 +1010,49 @@ func (e *botTeamEditor) team() settings.BotTeam {
 	return botTeamFrom(picks, e.lib())
 }
 
+/* refreshLoadouts refills every loadout menu on the Team and Classes pages,
+ * leaving each on the loadout it already names.
+ *
+ * The Loadouts page changes what these menus can offer, and a walk ComboBox
+ * keeps the model it was built with. Without this, a loadout only reached the
+ * menus the next time the dialog opened: assigning one to a bot meant saving
+ * every other setting first, which is not what saving a loadout asked for.
+ */
+func (e *botTeamEditor) refreshLoadouts() {
+	library := e.lib()
+	for i, class := range botloadout.Classes {
+		refillLoadouts(e.loadoutBx[i], library.Choices(class))
+	}
+	for seat, box := range e.seatBox {
+		if box == nil || seat >= len(e.seatLoadBx) {
+			continue
+		}
+		// A seat on the draw holds the one entry that says so, and no class to
+		// list loadouts for.
+		class, found := botloadout.ClassByKey(classKeyOfLabel(box.Text()))
+		if !found {
+			continue
+		}
+		refillLoadouts(e.seatLoadBx[seat], library.Choices(class))
+	}
+}
+
+// refillLoadouts puts a new list into one menu and puts the selection back.
+func refillLoadouts(box *walk.ComboBox, choices []botloadout.Loadout) {
+	if box == nil {
+		return
+	}
+	was := box.Text()
+	labels := make([]string, 0, len(choices))
+	for _, loadout := range choices {
+		labels = append(labels, loadout.Label())
+	}
+	_ = box.SetModel(labels)
+	// By index, not by text: SetText on a drop-down list is a no-op, and a
+	// menu with nothing selected draws empty.
+	_ = box.SetCurrentIndex(reselectLoadout(was, choices))
+}
+
 // lib is the loadouts this editor can offer, and the built-in presets alone
 // when nothing wired one in.
 func (e *botTeamEditor) lib() botloadout.Library {
@@ -1024,7 +1073,7 @@ func (e *botTeamEditor) show(team settings.BotTeam) {
 				if seat < len(team.SeatLoadouts) {
 					key = team.SeatLoadouts[seat]
 				}
-				loadout = class.LoadoutByKey(key).Label()
+				loadout = e.lib().Loadout(class, key).Label()
 			}
 		}
 		selectInCombo(box, name)
@@ -1033,7 +1082,7 @@ func (e *botTeamEditor) show(team settings.BotTeam) {
 	}
 	for i, class := range botloadout.Classes {
 		e.classBox[i].SetChecked(!slices.Contains(team.Blacklist, class.Key))
-		selectInCombo(e.loadoutBx[i], class.LoadoutByKey(team.ClassLoadouts[class.Key]).Label())
+		selectInCombo(e.loadoutBx[i], e.lib().Loadout(class, team.ClassLoadouts[class.Key]).Label())
 	}
 }
 

@@ -41,6 +41,11 @@ type botLoadoutEditor struct {
 	 */
 	built map[string]botloadout.Built
 	keep  func(map[string]botloadout.Built)
+
+	// changed is the menus on the other pages, which list what this page
+	// holds. Saving a loadout is asking to assign it, so they are refilled on
+	// the spot rather than at the next open of the dialog.
+	changed func()
 }
 
 func newBotLoadoutEditor(built map[string]botloadout.Built, keep func(map[string]botloadout.Built)) *botLoadoutEditor {
@@ -224,6 +229,7 @@ func (e *botLoadoutEditor) save() {
 	e.built[name] = e.current()
 	e.keep(e.built)
 	e.refreshNames(name)
+	e.tell()
 }
 
 func (e *botLoadoutEditor) load() {
@@ -281,6 +287,7 @@ func (e *botLoadoutEditor) remove() {
 	delete(e.built, name)
 	e.keep(e.built)
 	e.refreshNames("")
+	e.tell()
 }
 
 // refreshNames rebuilds the saved menu and leaves it on the one named.
@@ -307,4 +314,11 @@ func (e *botLoadoutEditor) names() []string {
 	}
 	slices.Sort(names)
 	return names
+}
+
+// tell is the other pages, once this one has changed what they can offer.
+func (e *botLoadoutEditor) tell() {
+	if e.changed != nil {
+		e.changed()
+	}
 }

@@ -1,6 +1,9 @@
 package gui
 
 import (
+	"slices"
+	"strings"
+
 	"github.com/m-this/tf2-archipelago/launcher/internal/botloadout"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 )
@@ -74,4 +77,30 @@ func at(values []int, index int) int {
 		return 0
 	}
 	return values[index]
+}
+
+/*
+reselectLoadout is where a menu should sit after its list was rebuilt, given
+what it said before.
+
+By name rather than by index, because saving a loadout inserts it among the
+others and every index after it moves. By name rather than by the whole label,
+because saving over a name changes the weapons the label spells out and the
+menu should stay on the loadout the seat still names.
+
+A loadout that is gone falls back to zero, which is the class's stock: a seat
+cannot go on holding weapons nobody has any more.
+*/
+func reselectLoadout(was string, choices []botloadout.Loadout) int {
+	if at := slices.IndexFunc(choices, func(l botloadout.Loadout) bool { return l.Label() == was }); at >= 0 {
+		return at
+	}
+	name := was
+	if cut := strings.Index(was, ": "); cut >= 0 {
+		name = was[:cut]
+	}
+	if at := slices.IndexFunc(choices, func(l botloadout.Loadout) bool { return l.Name == name }); at >= 0 {
+		return at
+	}
+	return 0
 }
