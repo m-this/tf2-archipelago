@@ -47,8 +47,47 @@ gives it to you: at spawn, at the resupply locker, and at the upgrade station.
 If the weapon that goes away is the one in your hands, the server puts another
 one there, so you are never left holding nothing.
 
-The individual weapons are not randomized. The Scattergun and the
-Force-A-Nature are the same item to this run: a primary weapon slot.
+Weapon ownership is not randomized. The Scattergun and the Force-A-Nature are
+the same item to the slot lock: either can be equipped once Primary is open.
+
+Individual weapons can receive useful passive buffs, however. The catalog
+contains curated weapon/effect combinations, including many combinations the
+stock game would never create. A buff applies to that functional weapon family
+and combines with upgrades bought at the MvM station. Numeric effects add
+another level each time; on/off effects such as
+airborne crits, ignite, Gas Passer gasoline and Mad Milk clamp at one. Other
+effects include projectile count and speed, bleed duration, afterburn damage,
+extra damage, faster firing or reload, a larger clip and healing on kill.
+Projectile count adds pellets to hitscan weapons and additional rockets per
+trigger pull. Extra rockets ignore direct contact with their shooter while
+retaining normal explosion splash damage.
+
+The second pass adds slow on hit, 50% faster gestures and consumable use,
+active health regeneration, faster deploy, meter recharge and minigun spin-up,
+ammo on hit, mini-crits on kill, increased healing received, rocket-jump damage
+resistance, stronger self-damage launch force, cheaper airblasts, longer Über,
+revealing cloaked or disguised victims and a speed boost on hit.
+
+Mechanic-specific effects stay with weapons that can use them: airblast with
+airblast-capable flamethrowers, building and metal effects with Engineer items,
+healing and Über effects with Medi Guns, and banner duration with banners.
+Passive equipment and consumables do not draw combat effects. Functional
+reskins share one pool, so a Pistol reward also follows the Lugermorph and
+C.A.P.P.E.R., for example.
+
+A run samples weapon/effect permutations for the checks left after its required
+classes, slots and mission tickets. By default every spare check is a buff and
+cash rewards are disabled. If cash is enabled, buffs occupy 75% of this spare
+space and cash fills the rest. Each buff draw has a 25% chance to add another
+level to a numeric permutation already in the seed; toggle effects never
+repeat. The Rewards tab controls the cash split and lets tickets, classes,
+slots and buffs independently be useful or required for progression. Small
+runs therefore contain a subset of the catalog, and a run never creates more
+items than it has locations.
+
+Entering an upgrade station opens a numbered menu listing the buffs that apply
+to the weapons in the current loadout. `sm_ap_buffs` opens the same menu on
+demand.
 
 ## The missions sit behind tickets
 

@@ -118,6 +118,13 @@ func grantFor(item gamedata.Item, slotsGranted int) (Grant, bool) {
 	case gamedata.ItemCredits:
 		return Grant{Kind: item.Kind.Key(), Amount: int(item.Credits), Name: item.Name}, true
 
+	case gamedata.ItemWeaponBuff:
+		buff, ok := gamedata.WeaponBuffByID(item.WeaponBuff)
+		if !ok {
+			return Grant{}, false
+		}
+		return Grant{Kind: item.Kind.Key(), Key: buff.Key, Name: item.Name}, true
+
 	default:
 		return Grant{}, false
 	}
@@ -140,7 +147,13 @@ func unlocksFrom(grants []Grant, resumeFrom int) Unlocks {
 		if !state {
 			continue
 		}
-		unlocks.ByKind[grant.Kind] = appendOnce(held, grant.Key)
+		// Numeric weapon effects count copies. Preserve their duplicate keys so
+		// a plugin rebuilding state after a map change restores every level.
+		if grant.Kind == gamedata.ItemWeaponBuff.Key() {
+			unlocks.ByKind[grant.Kind] = append(held, grant.Key)
+		} else {
+			unlocks.ByKind[grant.Kind] = appendOnce(held, grant.Key)
+		}
 	}
 	return unlocks
 }

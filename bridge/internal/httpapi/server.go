@@ -372,11 +372,13 @@ func (s *Server) getUnlocks(w http.ResponseWriter, r *http.Request) {
 // what the unlock set deliberately does not carry: the unlock set answers "may
 // we play this", this answers "what is there and how do I load it".
 func (s *Server) getMissions(w http.ResponseWriter, r *http.Request) {
+	health := s.client.Health()
 	missions, unknown := missionsFor(
-		s.client.Health().Missions,
+		health.Missions,
 		s.store.Unlocks().Of(gamedata.ItemMissionTicket),
 		s.store.Checks(),
 		s.store.Played(),
+		health.MissionTicketImportance == "useful",
 	)
 	for _, popFile := range unknown {
 		s.logger.WarnContext(r.Context(), "the seed holds a mission the tables do not",
@@ -389,7 +391,7 @@ func (s *Server) getMissions(w http.ResponseWriter, r *http.Request) {
 // and reports the ones the tables do not know. A seed from a newer gamedata is
 // the only way that happens, and skipping such a mission beats serving a name
 // and a map this binary would be guessing at.
-func missionsFor(drawn, unlocked []string, checks, own []int64) ([]mission, []string) {
+func missionsFor(drawn, unlocked []string, checks, own []int64, unlockAll bool) ([]mission, []string) {
 	missions := make([]mission, 0, len(drawn))
 	var unknown []string
 	for _, popFile := range drawn {
@@ -404,7 +406,7 @@ func missionsFor(drawn, unlocked []string, checks, own []int64) ([]mission, []st
 			Name:     known.Name,
 			Map:      played.Name,
 			Waves:    int(known.Waves),
-			Unlocked: slices.Contains(unlocked, known.PopFile),
+			Unlocked: unlockAll || slices.Contains(unlocked, known.PopFile),
 			Cleared:  slices.Contains(checks, known.ClearLocationID()),
 			Played:   slices.Contains(own, known.ClearLocationID()),
 		})

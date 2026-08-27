@@ -90,7 +90,8 @@ type Health struct {
 	// StartMission is empty for a seed from an apworld that predates the
 	// option. The server then finds the first unlocked mission on its own,
 	// which is what it always did.
-	StartMission string `json:"start_mission,omitempty"`
+	StartMission            string `json:"start_mission,omitempty"`
+	MissionTicketImportance string `json:"mission_ticket_importance,omitempty"`
 
 	DeathLink bool   `json:"death_link"`
 	LastError string `json:"last_error,omitempty"`
@@ -113,12 +114,13 @@ func (c *Client) Health() Health {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	return Health{
-		Connected:    c.connected,
-		Slot:         c.opts.SlotName,
-		Missions:     c.slot.Missions,
-		StartMission: c.slot.StartMission,
-		DeathLink:    c.slot.DeathLink,
-		LastError:    c.lastError,
+		Connected:               c.connected,
+		Slot:                    c.opts.SlotName,
+		Missions:                c.slot.Missions,
+		StartMission:            c.slot.StartMission,
+		MissionTicketImportance: c.slot.MissionTicketImportance,
+		DeathLink:               c.slot.DeathLink,
+		LastError:               c.lastError,
 	}
 }
 

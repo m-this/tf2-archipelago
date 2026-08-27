@@ -185,11 +185,12 @@ func (p printJSON) text(names *nameBook) string {
 // SlotData is what the apworld put in the seed. gamedata knows every mission
 // that exists; only the seed knows which ones are in play.
 type SlotData struct {
-	FormatVersion       int      `json:"format_version"`
-	Missions            []string `json:"missions"`
-	StartMission        string   `json:"start_mission"`
-	Goal                string   `json:"goal"`
-	GoalMission         string   `json:"goal_mission"`
-	MissionsanityTarget int      `json:"missionsanity_target"`
-	DeathLink           bool     `json:"death_link"`
+	FormatVersion           int      `json:"format_version"`
+	Missions                []string `json:"missions"`
+	StartMission            string   `json:"start_mission"`
+	Goal                    string   `json:"goal"`
+	GoalMission             string   `json:"goal_mission"`
+	MissionsanityTarget     int      `json:"missionsanity_target"`
+	DeathLink               bool     `json:"death_link"`
+	MissionTicketImportance string   `json:"mission_ticket_importance"`
 }

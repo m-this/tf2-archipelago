@@ -31,6 +31,7 @@ const (
 	itemBlockClass      int64 = 2_000
 	itemBlockWeaponSlot int64 = 3_000
 	itemBlockCredits    int64 = 4_000
+	itemBlockWeaponBuff int64 = 5_000
 )
 
 // Location ids: base + mission*100 + wave, or + 99 for the mission clear.

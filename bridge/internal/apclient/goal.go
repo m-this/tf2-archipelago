@@ -18,6 +18,9 @@ func (s SlotData) validate() error {
 	if len(s.Missions) == 0 {
 		return fmt.Errorf("seed has no missions")
 	}
+	if s.MissionTicketImportance != "" && s.MissionTicketImportance != "useful" && s.MissionTicketImportance != "progression" {
+		return fmt.Errorf("unknown mission ticket importance %q", s.MissionTicketImportance)
+	}
 	for _, popFile := range s.Missions {
 		if _, known := gamedata.MissionByPopFile(popFile); !known {
 			return fmt.Errorf("seed uses mission %q, which is not in the tables", popFile)

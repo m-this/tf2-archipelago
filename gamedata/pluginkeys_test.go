@@ -150,7 +150,7 @@ func TestThePluginHandlesEveryGrantKind(t *testing.T) {
 		t.Fatal(err)
 	}
 	handled := string(body)
-	for _, kind := range []ItemKind{ItemMissionTicket, ItemClass, ItemWeaponSlot, ItemCredits} {
+	for _, kind := range ItemKinds {
 		if !strings.Contains(handled, `"`+kind.Key()+`"`) {
 			t.Errorf("the plugin does not handle a grant of kind %q", kind.Key())
 		}

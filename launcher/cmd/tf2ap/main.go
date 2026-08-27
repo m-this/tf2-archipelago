@@ -366,6 +366,17 @@ func configureRun(p *ui.Prompt, s settings.Settings) settings.Settings {
 			s.MvmMissionsanityPct, 10, 100)
 	}
 	s.MvmDeathLink = p.Bool("Death Link, a lost wave kills every linked player and their deaths wipe the team", s.MvmDeathLink)
+	fmt.Println("\n--- Rewards ---")
+	importance := []ui.Option{{Value: "useful", Label: "Useful"}, {Value: "progression", Label: "Required for progression"}}
+	s.MvmMissionTicketImportance = p.Select("Mission tickets", importance, s.MvmMissionTicketImportance)
+	s.MvmClassUnlockImportance = p.Select("Class unlocks", importance, s.MvmClassUnlockImportance)
+	s.MvmWeaponSlotImportance = p.Select("Weapon slots", importance, s.MvmWeaponSlotImportance)
+	s.MvmWeaponBuffImportance = p.Select("Weapon buffs", importance, s.MvmWeaponBuffImportance)
+	s.MvmCashRewards = p.Bool("Include temporary cash rewards", s.MvmCashRewards)
+	if s.MvmCashRewards {
+		s.MvmWeaponBuffPct = p.IntRange("Percent of spare checks that award buffs", s.MvmWeaponBuffPct, 0, 100)
+	}
+	s.MvmWeaponBuffStackChance = p.IntRange("Chance to stack an existing numeric buff", s.MvmWeaponBuffStackChance, 0, 100)
 	s.MvmExcludedMissions = settings.SplitList(p.Text(
 		"Missions the run never draws (comma-separated popfiles, e.g. mvm_ghost_town_666)",
 		strings.Join(s.MvmExcludedMissions, ",")))

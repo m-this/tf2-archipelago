@@ -10,6 +10,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/m-this/tf2-archipelago/launcher/internal/assets"
 )
 
 func zipWith(t *testing.T, entries map[string]string) []byte {
@@ -189,6 +191,26 @@ func TestAvailableCommunityArchivesRequiresAValidLocalZIP(t *testing.T) {
 	got := AvailableCommunityArchives([]string{missing, invalid})
 	if len(got) != 1 || got[0] != missing {
 		t.Fatalf("available archives = %v, want only %s", got, missing)
+	}
+}
+
+func TestInstallPluginIncludesNativeProjectileGameData(t *testing.T) {
+	modDir := filepath.Join(t.TempDir(), "tf")
+	if err := installRipextAndPlugin(modDir); err != nil {
+		t.Fatal(err)
+	}
+	wants := map[string][]byte{
+		filepath.Join("addons", "sourcemod", "plugins", "tf2_archipelago.smx"):  assets.Plugin(),
+		filepath.Join("addons", "sourcemod", "gamedata", "tf2_archipelago.txt"): assets.PluginGameData(),
+	}
+	for relative, want := range wants {
+		got, err := os.ReadFile(filepath.Join(modDir, relative))
+		if err != nil {
+			t.Fatalf("read %s: %v", relative, err)
+		}
+		if !bytes.Equal(got, want) {
+			t.Errorf("%s differs from embedded asset", relative)
+		}
 	}
 }
 

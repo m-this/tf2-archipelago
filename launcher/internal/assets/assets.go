@@ -19,6 +19,9 @@ import (
 //go:embed embedded/tf2_archipelago.smx
 var plugin []byte
 
+//go:embed embedded/tf2_archipelago.txt
+var pluginGameData []byte
+
 //go:embed embedded/tf2_mvm.apworld
 var apworld []byte
 
@@ -53,6 +56,9 @@ var (
 
 // Plugin returns the compiled SourceMod plugin bytecode.
 func Plugin() []byte { return plugin }
+
+// PluginGameData returns the signatures used for native TF2 projectile calls.
+func PluginGameData() []byte { return pluginGameData }
 
 // RipextZip returns the ripext distribution for this platform, unpacked into
 // the game's addons tree at install time.

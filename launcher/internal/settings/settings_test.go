@@ -183,3 +183,29 @@ func TestTheAppearanceSwitchesStayOffWhenTheFileSaysSo(t *testing.T) {
 		t.Error("effects were on in the file and came back off")
 	}
 }
+
+func TestOldConfigGetsRewardDefaults(t *testing.T) {
+	s, err := parse([]byte(`{"mvm_mission_count": 8}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s.MvmMissionTicketImportance != "progression" ||
+		s.MvmClassUnlockImportance != "progression" ||
+		s.MvmWeaponSlotImportance != "progression" ||
+		s.MvmWeaponBuffImportance != "useful" {
+		t.Errorf("reward importance defaults = %+v", s)
+	}
+	if s.MvmCashRewards || s.MvmWeaponBuffPct != 75 || s.MvmWeaponBuffStackChance != 25 {
+		t.Errorf("reward defaults: cash=%v, buffs=%d, stack=%d", s.MvmCashRewards, s.MvmWeaponBuffPct, s.MvmWeaponBuffStackChance)
+	}
+}
+
+func TestExplicitZeroRewardPercentagesSurvive(t *testing.T) {
+	s, err := parse([]byte(`{"mvm_weapon_buff_percentage": 0, "mvm_weapon_buff_stack_chance": 0}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s.MvmWeaponBuffPct != 0 || s.MvmWeaponBuffStackChance != 0 {
+		t.Errorf("explicit zeros became buffs=%d, stack=%d", s.MvmWeaponBuffPct, s.MvmWeaponBuffStackChance)
+	}
+}

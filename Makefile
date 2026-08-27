@@ -172,7 +172,7 @@ embed-placeholders:
 		[ -e "$$f" ] && continue; \
 		case "$$f" in \
 			*.smx) : > "$$f" ;; \
-			*) printf 'PK\005\006\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000' > "$$f" ;; \
+		*) printf 'PK\005\006\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000' > "$$f" ;; \
 		esac; \
 	done
 
@@ -314,6 +314,7 @@ LAUNCHER_LDFLAGS := -X github.com/m-this/tf2-archipelago/launcher/internal/asset
 launcher-assets-common: bots apworld-package
 	mkdir -p $(EMBED)
 	cp $(DIST)/tf2_mvm.apworld $(EMBED)/tf2_mvm.apworld
+	cp plugin/gamedata/tf2_archipelago.txt $(EMBED)/tf2_archipelago.txt
 	@if [ -f plugin/build/tf2_archipelago.smx ]; then \
 		cp plugin/build/tf2_archipelago.smx $(EMBED)/tf2_archipelago.smx; \
 		echo "copied plugin/build/tf2_archipelago.smx into the embed dir"; \

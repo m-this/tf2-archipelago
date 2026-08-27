@@ -65,11 +65,18 @@ func runSettingsDialog(
 		roomPass *walk.LineEdit
 		slotEdit *walk.LineEdit
 
-		tierBox   *walk.ComboBox
-		missions  *walk.NumberEdit
-		goalBox   *walk.ComboBox
-		sanityPct *walk.NumberEdit
-		deathLink *walk.CheckBox
+		tierBox          *walk.ComboBox
+		missions         *walk.NumberEdit
+		goalBox          *walk.ComboBox
+		sanityPct        *walk.NumberEdit
+		deathLink        *walk.CheckBox
+		ticketImportance *walk.ComboBox
+		classImportance  *walk.ComboBox
+		slotImportance   *walk.ComboBox
+		buffImportance   *walk.ComboBox
+		cashRewards      *walk.CheckBox
+		buffPct          *walk.NumberEdit
+		buffStack        *walk.NumberEdit
 
 		startBox      *walk.ComboBox
 		startClassBox *walk.ComboBox
@@ -146,6 +153,13 @@ func runSettingsDialog(
 	potatoSelected := slices.Contains(s.CommunityPacks, settings.CommunityPackPotato)
 	moonlightSelected := slices.Contains(s.CommunityPacks, settings.CommunityPackMoonlight)
 	pool := newPoolModel(s.MvmExcludedMissions, s.CommunityPacks, availablePacks)
+	importanceLabels := []string{"Useful", "Required for progression"}
+	importanceLabel := func(value string) string {
+		if value == "progression" {
+			return importanceLabels[1]
+		}
+		return importanceLabels[0]
+	}
 
 	current := settings.Room{Host: s.APHost, Port: s.APPort}
 	edited := s
@@ -211,6 +225,19 @@ func runSettingsDialog(
 		if moonlightBox.Checked() {
 			next.CommunityPacks = append(next.CommunityPacks, settings.CommunityPackMoonlight)
 		}
+		importanceValue := func(box *walk.ComboBox) string {
+			if box.CurrentIndex() == 1 {
+				return "progression"
+			}
+			return "useful"
+		}
+		next.MvmMissionTicketImportance = importanceValue(ticketImportance)
+		next.MvmClassUnlockImportance = importanceValue(classImportance)
+		next.MvmWeaponSlotImportance = importanceValue(slotImportance)
+		next.MvmWeaponBuffImportance = importanceValue(buffImportance)
+		next.MvmCashRewards = cashRewards.Checked()
+		next.MvmWeaponBuffPct = int(buffPct.Value())
+		next.MvmWeaponBuffStackChance = int(buffStack.Value())
 		next.MvmExcludedMissions = pool.excludedMissions()
 		next.ArchipelagoDir = strings.TrimSpace(appEdit.Text())
 
@@ -434,6 +461,26 @@ func runSettingsDialog(
 									declarative.HSpacer{},
 								},
 							},
+						},
+					},
+					{
+						Title:  "Rewards",
+						Layout: declarative.Grid{Columns: 2},
+						Children: []declarative.Widget{
+							label("Mission tickets", "Required tickets gate deployment to each mission. Useful tickets leave all missions drawn by the seed available."),
+							declarative.ComboBox{AssignTo: &ticketImportance, Model: importanceLabels, Value: importanceLabel(s.MvmMissionTicketImportance)},
+							label("Class unlocks", "Required classes satisfy mission-tier roster checks. Useful classes only expand the playable roster."),
+							declarative.ComboBox{AssignTo: &classImportance, Model: importanceLabels, Value: importanceLabel(s.MvmClassUnlockImportance)},
+							label("Weapon slots", "Required slots satisfy mission-tier loadout checks. Useful slots only expand the available loadouts."),
+							declarative.ComboBox{AssignTo: &slotImportance, Model: importanceLabels, Value: importanceLabel(s.MvmWeaponSlotImportance)},
+							label("Weapon buffs", "Required buffs gate increasingly difficult tiers by total buff count. Useful buffs remain optional power-ups."),
+							declarative.ComboBox{AssignTo: &buffImportance, Model: importanceLabels, Value: importanceLabel(s.MvmWeaponBuffImportance)},
+							label("Cash rewards", "Include temporary MvM credits in spare checks. Off makes every spare check a persistent weapon buff."),
+							declarative.CheckBox{AssignTo: &cashRewards, Text: "include cash filler", Checked: s.MvmCashRewards},
+							label("Buff share", "Percent of spare checks that award buffs when cash rewards are enabled. The remainder award cash."),
+							declarative.NumberEdit{AssignTo: &buffPct, Value: float64(s.MvmWeaponBuffPct), MinValue: 0, MaxValue: 100, Decimals: 0},
+							label("Buff stack chance", "Chance that another buff reward adds a level to a numeric buff already in the seed. Toggle effects never repeat."),
+							declarative.NumberEdit{AssignTo: &buffStack, Value: float64(s.MvmWeaponBuffStackChance), MinValue: 0, MaxValue: 100, Decimals: 0},
 						},
 					},
 					{
@@ -679,7 +726,7 @@ func runSettingsDialog(
 	})
 
 	// Numbers read from the left, like every other field in the dialog.
-	leftAlign(missions, sanityPct, portEdit, botsSize)
+	leftAlign(missions, sanityPct, buffPct, buffStack, portEdit, botsSize)
 
 	// The help under the buttons, and the complaint about a missing token. Both
 	// follow the selection, because a reach the player cannot use yet has to

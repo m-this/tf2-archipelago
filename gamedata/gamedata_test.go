@@ -50,6 +50,11 @@ func currentIDs() map[string]int64 {
 			}
 		case ItemWeaponSlot, ItemCredits:
 			ids[frozenKey(it.Kind.Key(), "", 0)] = it.ID
+		case ItemWeaponBuff:
+			buff, ok := WeaponBuffByID(it.WeaponBuff)
+			if ok {
+				ids[frozenKey(it.Kind.Key(), buff.Key, 0)] = it.ID
+			}
 		}
 	}
 	return ids
@@ -128,6 +133,9 @@ func TestFrozenKeysHoldOnlyStableIdentifiers(t *testing.T) {
 	for _, c := range Classes {
 		stable[c.Key] = true
 	}
+	for _, buff := range WeaponBuffs {
+		stable[buff.Key] = true
+	}
 
 	for key := range currentIDs() {
 		parts := strings.Split(key, "/")
@@ -136,7 +144,7 @@ func TestFrozenKeysHoldOnlyStableIdentifiers(t *testing.T) {
 			continue
 		}
 		if !stable[parts[1]] {
-			t.Errorf("%q is keyed on %q, which is not a pop file or a class key", key, parts[1])
+			t.Errorf("%q is keyed on unstable owner %q", key, parts[1])
 		}
 	}
 }
@@ -306,6 +314,8 @@ func TestItemPoolCoversEveryGate(t *testing.T) {
 			slots += int(it.Count)
 		case ItemCredits:
 			// Filler, counted by the pool builder rather than here.
+		case ItemWeaponBuff:
+			// Useful rewards, sampled and sometimes stacked by the pool builder.
 		}
 		if it.Classification == Progression && it.Count == 0 {
 			t.Errorf("%q is progression with no copies in the pool", it.Name)

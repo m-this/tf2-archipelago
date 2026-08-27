@@ -146,6 +146,14 @@ type Settings struct {
 	MvmStartMission string `json:"mvm_start_mission,omitempty"`
 	MvmStartClass   string `json:"mvm_start_class,omitempty"`
 
+	MvmMissionTicketImportance string `json:"mvm_mission_ticket_importance"`
+	MvmClassUnlockImportance   string `json:"mvm_class_unlock_importance"`
+	MvmWeaponSlotImportance    string `json:"mvm_weapon_slot_importance"`
+	MvmWeaponBuffImportance    string `json:"mvm_weapon_buff_importance"`
+	MvmCashRewards             bool   `json:"mvm_cash_rewards"`
+	MvmWeaponBuffPct           int    `json:"mvm_weapon_buff_percentage"`
+	MvmWeaponBuffStackChance   int    `json:"mvm_weapon_buff_stack_chance"`
+
 	// Whether to enable the metrics listener and on what port.
 	MetricsPort int `json:"metrics_port"`
 }
@@ -167,17 +175,23 @@ func Defaults() Settings {
 		// Lan, to match SrcdsToken above. Port reach with no token is the one
 		// combination that cannot work: the server never logs in to Steam, so
 		// it answers the query and then refuses the join.
-		SrcdsReach:          ReachLan,
-		SrcdsBots:           true,
-		SrcdsBotTeamSize:    6,
-		SrcdsBotHats:        true,
-		SrcdsBotHatEffects:  true,
-		MvmMissionCount:     8,
-		MvmDifficulty:       "intermediate",
-		MvmGoal:             "final_boss",
-		MvmMissionsanityPct: 80,
-		MvmExcludedMissions: defaultExcludedMissions(),
-		MetricsPort:         24681,
+		SrcdsReach:                 ReachLan,
+		SrcdsBots:                  true,
+		SrcdsBotTeamSize:           6,
+		SrcdsBotHats:               true,
+		SrcdsBotHatEffects:         true,
+		MvmMissionCount:            8,
+		MvmDifficulty:              "intermediate",
+		MvmGoal:                    "final_boss",
+		MvmMissionsanityPct:        80,
+		MvmExcludedMissions:        defaultExcludedMissions(),
+		MvmMissionTicketImportance: "progression",
+		MvmClassUnlockImportance:   "progression",
+		MvmWeaponSlotImportance:    "progression",
+		MvmWeaponBuffImportance:    "useful",
+		MvmWeaponBuffPct:           75,
+		MvmWeaponBuffStackChance:   25,
+		MetricsPort:                24681,
 	}
 }
 
@@ -276,8 +290,10 @@ func parse(data []byte) (Settings, error) {
 // one function that knows why these three are different from the rest.
 func (s Settings) withAppearanceDefaults(data []byte) Settings {
 	var said struct {
-		Hats    *bool `json:"srcds_bot_hats"`
-		Effects *bool `json:"srcds_bot_hat_effects"`
+		Hats                  *bool `json:"srcds_bot_hats"`
+		Effects               *bool `json:"srcds_bot_hat_effects"`
+		WeaponBuffPct         *int  `json:"mvm_weapon_buff_percentage"`
+		WeaponBuffStackChance *int  `json:"mvm_weapon_buff_stack_chance"`
 	}
 	// A file that parsed once parses again; anything else has already been
 	// reported by the caller.
@@ -290,6 +306,12 @@ func (s Settings) withAppearanceDefaults(data []byte) Settings {
 	}
 	if said.Effects == nil {
 		s.SrcdsBotHatEffects = d.SrcdsBotHatEffects
+	}
+	if said.WeaponBuffPct == nil {
+		s.MvmWeaponBuffPct = d.MvmWeaponBuffPct
+	}
+	if said.WeaponBuffStackChance == nil {
+		s.MvmWeaponBuffStackChance = d.MvmWeaponBuffStackChance
 	}
 	return s
 }
@@ -327,11 +349,9 @@ func Save(s Settings) error {
 // predates a field still works.
 func (s Settings) withDefaults() Settings {
 	d := Defaults()
+	s = withCommunityDefaults(s, d)
 	if s.InstallRoot == "" {
 		s.InstallRoot = d.InstallRoot
-	}
-	if s.CommunityContentDir == "" {
-		s.CommunityContentDir = d.CommunityContentDir
 	}
 	if s.APSlotName == "" {
 		s.APSlotName = d.APSlotName
@@ -385,14 +405,33 @@ func (s Settings) withDefaults() Settings {
 	if s.MvmMissionsanityPct == 0 {
 		s.MvmMissionsanityPct = d.MvmMissionsanityPct
 	}
-	if s.MvmExcludedMissions == nil {
-		s.MvmExcludedMissions = slices.Clone(d.MvmExcludedMissions)
+	if s.MvmMissionTicketImportance == "" {
+		s.MvmMissionTicketImportance = d.MvmMissionTicketImportance
 	}
-	if mission, known := gamedata.MissionByPopFile(s.MvmStartMission); known && !gamedata.IsPlayableMission(mission.ID) {
-		s.MvmStartMission = ""
+	if s.MvmClassUnlockImportance == "" {
+		s.MvmClassUnlockImportance = d.MvmClassUnlockImportance
+	}
+	if s.MvmWeaponSlotImportance == "" {
+		s.MvmWeaponSlotImportance = d.MvmWeaponSlotImportance
+	}
+	if s.MvmWeaponBuffImportance == "" {
+		s.MvmWeaponBuffImportance = d.MvmWeaponBuffImportance
 	}
 	if s.MetricsPort == 0 {
 		s.MetricsPort = d.MetricsPort
+	}
+	return s
+}
+
+func withCommunityDefaults(s, defaults Settings) Settings {
+	if s.CommunityContentDir == "" {
+		s.CommunityContentDir = defaults.CommunityContentDir
+	}
+	if s.MvmExcludedMissions == nil {
+		s.MvmExcludedMissions = slices.Clone(defaults.MvmExcludedMissions)
+	}
+	if mission, known := gamedata.MissionByPopFile(s.MvmStartMission); known && !gamedata.IsPlayableMission(mission.ID) {
+		s.MvmStartMission = ""
 	}
 	return s
 }
