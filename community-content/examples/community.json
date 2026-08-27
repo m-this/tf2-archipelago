@@ -1,0 +1,21 @@
+{
+  "format_version": 1,
+  "maps": [
+    {
+      "id": 101,
+      "name": "mvm_underground_rc3"
+    }
+  ],
+  "missions": [
+    {
+      "id": 101,
+      "pop_file": "mvm_underground_rc3_welcometomymine",
+      "name": "WelcomeToMyMine",
+      "map_id": 101,
+      "difficulty": "intermediate",
+      "waves": 12,
+      "has_tank": false,
+      "has_giant": true
+    }
+  ]
+}

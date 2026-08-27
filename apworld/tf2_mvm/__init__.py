@@ -277,7 +277,7 @@ class TF2MvMWorld(World):
         return [
             mission
             for mission in data.MISSIONS
-            if mission.difficulty in allowed and mission.name not in excluded
+            if mission.playable and mission.difficulty in allowed and mission.name not in excluded
         ]
 
     @staticmethod

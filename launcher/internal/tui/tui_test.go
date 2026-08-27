@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -8,6 +9,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/m-this/tf2-archipelago/gamedata"
+	"github.com/m-this/tf2-archipelago/launcher/internal/runshape"
 	apruntime "github.com/m-this/tf2-archipelago/launcher/internal/runtime"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 )
@@ -171,21 +173,59 @@ func TestTheMissionPoolTakesAllAndNone(t *testing.T) {
 	m.Update(key(","))
 	m.form.tab = 2
 
-	// Start mission, start class, All, None: the third and fourth rows.
-	m.form.focused = 3
+	find := func(label string) int {
+		for i, row := range m.form.fields() {
+			if row.Label() == label {
+				return i
+			}
+		}
+		t.Fatalf("missing %q row", label)
+		return -1
+	}
+
+	m.form.focused = find("None in the pool")
 	m.Update(key("enter"))
-	if got := len(m.form.edited.MvmExcludedMissions); got != len(gamedata.Missions) {
-		t.Errorf("None left %d missions out, want all %d", got, len(gamedata.Missions))
+	if got := len(m.form.edited.MvmExcludedMissions); got != len(gamedata.PlayableMissions()) {
+		t.Errorf("None left %d missions out, want all %d", got, len(gamedata.PlayableMissions()))
 	}
 	if view := m.form.view(100, 30); !strings.Contains(view, "left out") {
 		t.Errorf("the rows still say the missions are in the pool:\n%s", view)
 	}
 
-	m.form.focused = 2
+	m.form.focused = find("All in the pool")
 	m.Update(key("enter"))
-	if got := len(m.form.edited.MvmExcludedMissions); got != 0 {
-		t.Errorf("All left %d missions out, want none", got)
+	for _, mission := range runshape.VisibleMissions(m.form.communityAvailable) {
+		if gamedata.IsPlayableMission(mission.ID) && slices.Contains(m.form.edited.MvmExcludedMissions, mission.PopFile) {
+			t.Errorf("All left visible mission %s out", mission.PopFile)
+		}
 	}
+}
+
+func TestCommunityMissionsStayHiddenUntilTheirAssetsAreAvailable(t *testing.T) {
+	m := screen(t)
+	m.Update(key(","))
+	m.form.tab = 2
+	for _, row := range m.form.fields() {
+		if strings.Contains(row.Label(), "Swamp Fever") {
+			t.Fatal("Swamp Fever is visible before its community archive is available")
+		}
+	}
+
+	m.form.communityAvailable = []string{settings.CommunityPackPotato}
+	m.form.build()
+	for _, row := range m.form.fields() {
+		if !strings.Contains(row.Label(), "Swamp Fever") {
+			continue
+		}
+		if !strings.Contains(row.Value(), "missing bot .nav") {
+			t.Fatalf("unavailable row = %q", row.Value())
+		}
+		if row.Handle(key(" ")) {
+			t.Fatal("the unavailable mission accepted a toggle")
+		}
+		return
+	}
+	t.Fatal("Swamp Fever is not visible in the mission list")
 }
 
 // Repair and Reset ask twice, because there is no taking either one back.

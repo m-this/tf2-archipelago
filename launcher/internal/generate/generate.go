@@ -53,6 +53,9 @@ type Result struct {
 
 // Run generates a seed and returns where the archive is.
 func Run(ctx context.Context, options Options) (Result, error) {
+	if _, err := settings.CheckRunSelection(options.Settings); err != nil {
+		return Result{}, err
+	}
 	logf := options.Log
 	if logf == nil {
 		logf = func(string) {}

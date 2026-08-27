@@ -30,7 +30,7 @@ class MissionCount(Range):
 
     display_name = "Mission Count"
     range_start = 1
-    range_end = len(data.MISSIONS)
+    range_end = sum(mission.playable for mission in data.MISSIONS)
     default = 8
 
 
@@ -38,8 +38,9 @@ class DifficultyPool(Choice):
     """The easiest tier that the run can draw. The run also draws every tier
     above it.
 
-    The haunted tier holds one mission. One mission gives too few checks for
-    the items of a run, and generation stops with an error.
+    The haunted tier holds only Caliginous Caper. Its wave, tank, giant and
+    completion checks provide exactly enough locations for its remaining
+    class unlocks, but it has no mission-ticket progression.
     """
 
     display_name = "Difficulty Pool"
@@ -59,7 +60,7 @@ class ExcludedMissions(OptionSet):
     """
 
     display_name = "Excluded Missions"
-    valid_keys = frozenset(mission.name for mission in data.MISSIONS)
+    valid_keys = frozenset(mission.name for mission in data.MISSIONS if mission.playable)
 
 
 # FreeText and not Choice: a Choice needs one class attribute per value, and

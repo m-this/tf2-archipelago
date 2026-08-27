@@ -67,6 +67,8 @@ func TestEveryFieldHasAnEnvVar(t *testing.T) {
 	// once, and the rest map one to one.
 	byField := map[string]string{
 		"InstallRoot":                "TF2AP_INSTALL_ROOT",
+		"CommunityContentDir":        "TF2AP_COMMUNITY_CONTENT_DIR",
+		"CommunityPacks":             "TF2AP_COMMUNITY_PACKS",
 		"TestMode":                   "TF2AP_TEST_MODE",
 		"ArchipelagoDir":             "TF2AP_ARCHIPELAGO_DIR",
 		"APHost":                     "AP_HOST",

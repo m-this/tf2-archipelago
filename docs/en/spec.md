@@ -29,10 +29,10 @@ client and install nothing.
   plugins, so there is nowhere for the integration to live.
 - No upstream submission to `ArchipelagoMW/Archipelago` in v1. Revisit this
   after it generates seeds and someone plays a seed end to end.
-- No community missions (Potato.tf, Moonlight.tf) in v1. `.pop` files carry no
-  stable global id and cannot be read off the host without a VPK extractor.
-  `gamedata/` hardcodes the 29 Valve missions instead, with wave counts taken
-  from the wiki.
+- No automatic execution of server-specific Potato.tf or Moonlight.tf
+  extensions. Community maps, population files, VScript, and standard custom
+  upgrade tables are supported through a versioned manifest; a mission that
+  uses SigMod still needs that dependency installed separately.
 
 ## Architecture
 

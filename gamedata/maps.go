@@ -19,9 +19,9 @@ type Map struct {
 	Name string
 }
 
-// Maps is every map with at least one Valve mission on it. The seven .bsp
-// files shipped in tf/maps.
-var Maps = []Map{
+// valveMaps is every map with at least one Valve mission on it. The seven .bsp
+// files ship in tf/maps.
+var valveMaps = []Map{
 	{MapDecoy, "mvm_decoy"},
 	{MapCoaltown, "mvm_coaltown"},
 	{MapMannworks, "mvm_mannworks"},
@@ -30,6 +30,9 @@ var Maps = []Map{
 	{MapRottenburg, "mvm_rottenburg"},
 	{MapGhostTown, "mvm_ghost_town"},
 }
+
+// Maps contains Valve's maps followed by the entries in community.json.
+var Maps = append(append([]Map(nil), valveMaps...), communityMaps...)
 
 var mapsByID = indexMaps()
 

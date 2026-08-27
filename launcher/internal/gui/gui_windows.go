@@ -422,7 +422,7 @@ func (w *window) start() {
 	w.main.Synchronize(w.refresh)
 	s := w.supervisor.Settings()
 
-	if _, err := installer.Ensure(ctx, s.InstallRoot, w.installLog); err != nil {
+	if _, err := installer.Ensure(ctx, s.InstallRoot, settings.CommunityArchives(s), w.installLog); err != nil {
 		if ctx.Err() != nil {
 			return
 		}

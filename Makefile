@@ -65,11 +65,11 @@ SHADOW := uv run --quiet --with pillow==$(PILLOW_VERSION) python docs/shadow.py
 # not be able to fail our own format check.
 GO_SRC := $$(find . -type f -name '*.go' -not -path './deploy/bots/build/*')
 
-.PHONY: help seed up down restart logs ps rcon \
+.PHONY: help seed up down restart logs ps rcon community-check \
         check fmt fmt-check vet lint lint-fix fix-check vuln compile test shadows \
         window-captures \
         test-fast export apworld-lint \
-        apworld-fmt apworld-test apworld-build plugin bots bots-from-source \
+		apworld-fmt apworld-test apworld-build apworld-package plugin bots bots-from-source \
         integration build docs \
         docs-build docs-down dist compose-release version-check clean \
         go-version-check \
@@ -85,6 +85,7 @@ help:
 	@echo "  make rcon          Send a server command: make rcon CMD='sm_ap_status'"
 	@echo "  make check         The gate: everything CI runs"
 	@echo "  make export        Regenerate apworld/tf2_mvm/data from gamedata/"
+	@echo "  make community-check Validate community.json against community-content/tf"
 	@echo "  make plugin        Compile the SourceMod plugin"
 	@echo "  make bots          Stage the MvM defender bots the image installs"
 	@echo "  make apworld-test  Run the apworld's tests inside Archipelago"
@@ -171,7 +172,7 @@ embed-placeholders:
 		[ -e "$$f" ] && continue; \
 		case "$$f" in \
 			*.smx) : > "$$f" ;; \
-			*) printf 'PK\005\006\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000' > "$$f" ;; \
+		*) printf 'PK\005\006\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000' > "$$f" ;; \
 		esac; \
 	done
 
@@ -220,6 +221,10 @@ test-fast: embed-placeholders
 export:
 	go generate ./gamedata
 
+COMMUNITY_CONTENT ?= ./community-content/tf
+community-check:
+	go run ./gamedata/cmd/communitycheck $(COMMUNITY_CONTENT)
+
 # --- The apworld ---
 
 PYTHON_SRC := apworld/ deploy/rcon.py deploy/player-yaml.py
@@ -250,6 +255,14 @@ apworld-build:
 	id=$$(docker create tf2-archipelago-apworld-build); \
 	docker cp "$$id:/ap/custom_worlds/tf2_mvm.apworld" $(DIST)/tf2_mvm.apworld; \
 	docker rm "$$id"
+
+# The standalone launcher only needs the packaged world, not an Archipelago
+# server image. Archipelago 0.6.7's APWorldContainer format is version 7; the
+# standard-library packager mirrors its archive layout and manifest stamping so
+# WSL users do not need Docker (or the optional zip command) to build the exe.
+apworld-package:
+	python3 deploy/package-zip.py apworld apworld/tf2_mvm $(DIST)/tf2_mvm.apworld \
+		--container-version 7
 
 # --- The plugin ---
 
@@ -298,7 +311,7 @@ LAUNCHER_LDFLAGS := -X github.com/m-this/tf2-archipelago/launcher/internal/asset
 # The bots go in as a Windows-only zip: the staged tree carries both platforms'
 # extensions, and the 20 MB of Linux .so has no business inside a .exe.
 # The apworld and the plugin, which are the same bytes on either platform.
-launcher-assets-common: bots apworld-build
+launcher-assets-common: bots apworld-package
 	mkdir -p $(EMBED)
 	cp $(DIST)/tf2_mvm.apworld $(EMBED)/tf2_mvm.apworld
 	cp plugin/gamedata/tf2_archipelago.txt $(EMBED)/tf2_archipelago.txt
@@ -312,16 +325,14 @@ launcher-assets-common: bots apworld-build
 # One platform's binaries per build: SourceMod loads the .so or the .dll by
 # platform and ignores the other, so each launcher carries only its own.
 launcher-assets: launcher-assets-common
-	rm -f $(EMBED)/defender-bots-windows.zip
-	cd deploy/bots/build/package && zip -qr $(CURDIR)/$(EMBED)/defender-bots-windows.zip \
-		addons -x '*.so'
+	python3 deploy/package-zip.py tree deploy/bots/build/package \
+		$(EMBED)/defender-bots-windows.zip --exclude-suffix .so
 	curl -fsSL -o $(EMBED)/sm-ripext-windows.zip \
 		"https://github.com/ErikMinekus/sm-ripext/releases/download/$(RIPEXT_VERSION)/sm-ripext-$(RIPEXT_VERSION)-windows.zip"
 
 launcher-assets-linux: launcher-assets-common
-	rm -f $(EMBED)/defender-bots-linux.zip
-	cd deploy/bots/build/package && zip -qr $(CURDIR)/$(EMBED)/defender-bots-linux.zip \
-		addons -x '*.dll'
+	python3 deploy/package-zip.py tree deploy/bots/build/package \
+		$(EMBED)/defender-bots-linux.zip --exclude-suffix .dll
 	curl -fsSL -o $(EMBED)/sm-ripext-linux.zip \
 		"https://github.com/ErikMinekus/sm-ripext/releases/download/$(RIPEXT_VERSION)/sm-ripext-$(RIPEXT_VERSION)-linux.zip"
 

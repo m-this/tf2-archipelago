@@ -20,3 +20,8 @@ plugin/scripting/tf2_archipelago/weapon_buffs_data.inc linguist-generated=true
 *.png binary
 *.vpk binary
 *.bsp binary
+
+# Derived from gamedata. Keep these in release archives, but collapse their
+# mechanical changes in code review.
+apworld/tf2_mvm/data/*.json linguist-generated=true
+gamedata/testdata/ids-frozen.json linguist-generated=true

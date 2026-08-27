@@ -1,5 +1,5 @@
 {
-  "format_version": 2,
+  "format_version": 4,
   "game": "Team Fortress 2 Mann vs Machine",
   "base_id": 7442000000,
   "difficulties": [
@@ -32,31 +32,143 @@
   "maps": [
     {
       "id": 1,
-      "name": "mvm_decoy"
+      "name": "mvm_decoy",
+      "community": false
     },
     {
       "id": 2,
-      "name": "mvm_coaltown"
+      "name": "mvm_coaltown",
+      "community": false
     },
     {
       "id": 3,
-      "name": "mvm_mannworks"
+      "name": "mvm_mannworks",
+      "community": false
     },
     {
       "id": 4,
-      "name": "mvm_bigrock"
+      "name": "mvm_bigrock",
+      "community": false
     },
     {
       "id": 5,
-      "name": "mvm_mannhattan"
+      "name": "mvm_mannhattan",
+      "community": false
     },
     {
       "id": 6,
-      "name": "mvm_rottenburg"
+      "name": "mvm_rottenburg",
+      "community": false
     },
     {
       "id": 7,
-      "name": "mvm_ghost_town"
+      "name": "mvm_ghost_town",
+      "community": false
+    },
+    {
+      "id": 101,
+      "name": "mvm_kelly_rc1b",
+      "community": true
+    },
+    {
+      "id": 103,
+      "name": "mvm_condemned_b3",
+      "community": true
+    },
+    {
+      "id": 104,
+      "name": "mvm_area_52_rc3",
+      "community": true
+    },
+    {
+      "id": 105,
+      "name": "mvm_autumnull_rc2",
+      "community": true
+    },
+    {
+      "id": 106,
+      "name": "mvm_bogland_rc12",
+      "community": true
+    },
+    {
+      "id": 107,
+      "name": "mvm_cyberia_rc6a",
+      "community": true
+    },
+    {
+      "id": 108,
+      "name": "mvm_downpour_rc3a",
+      "community": true
+    },
+    {
+      "id": 109,
+      "name": "mvm_frostwynd_rc1",
+      "community": true
+    },
+    {
+      "id": 110,
+      "name": "mvm_heatrock_rc6a",
+      "community": true
+    },
+    {
+      "id": 111,
+      "name": "mvm_hideout_b3",
+      "community": true
+    },
+    {
+      "id": 112,
+      "name": "mvm_lotus_b6",
+      "community": true
+    },
+    {
+      "id": 113,
+      "name": "mvm_null_b9c",
+      "community": true
+    },
+    {
+      "id": 114,
+      "name": "mvm_oilrig_rc5d",
+      "community": true
+    },
+    {
+      "id": 115,
+      "name": "mvm_oxidize_rc3",
+      "community": true
+    },
+    {
+      "id": 116,
+      "name": "mvm_oxidize_rr18",
+      "community": true
+    },
+    {
+      "id": 117,
+      "name": "mvm_radar_b10",
+      "community": true
+    },
+    {
+      "id": 118,
+      "name": "mvm_redstone_ridge_rc5",
+      "community": true
+    },
+    {
+      "id": 119,
+      "name": "mvm_snowpine_rc4_fix1",
+      "community": true
+    },
+    {
+      "id": 120,
+      "name": "mvm_teien_rc6",
+      "community": true
+    },
+    {
+      "id": 121,
+      "name": "mvm_transmission_rc7a",
+      "community": true
+    },
+    {
+      "id": 122,
+      "name": "mvm_yiresa_rc5a",
+      "community": true
     }
   ],
   "classes": [

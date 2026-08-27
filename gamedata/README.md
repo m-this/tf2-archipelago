@@ -9,12 +9,13 @@ project knows, and for every Archipelago id. Read [ADR
 | File | Holds |
 | --- | --- |
 | `gamedata.go` | Game name, format version, difficulty tiers, item classifications |
-| `maps.go` | The 7 maps |
-| `missions.go` | The 29 Valve missions: pop file, name, map, tier, wave count |
+| `maps.go` | Valve maps plus the combined map indexes |
+| `missions.go` | Valve missions plus the combined mission indexes |
+| `community.go` / `community.json` | Stable IDs and metadata for supported community maps and missions |
 | `classes.go` | The 9 classes |
 | `slots.go` | Primary, Secondary, Melee |
 | `ids.go` | The base id and every derivation from it |
-| `locations.go` | The 210 checks, and the objective the plugin reports for each |
+| `locations.go` | Generated checks and the objective the plugin reports for each |
 | `items.go` | The item pool template |
 | `weapons.go` | Weapons available to defender bot loadouts |
 | `buff_weapons_generated.go` | Append-only buff weapon catalog and legacy item IDs |

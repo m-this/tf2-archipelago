@@ -503,8 +503,9 @@ func unlockOrder(held []int64) []int64 {
 func defaultMissions(count int, excluded []string, difficulty, startMission string) []string {
 	floor, known := gamedata.DifficultyByKey(difficulty)
 
-	pool := make([]string, 0, len(gamedata.Missions))
-	for _, mission := range gamedata.Missions {
+	playable := gamedata.PlayableMissions()
+	pool := make([]string, 0, len(playable))
+	for _, mission := range playable {
 		if known && mission.Difficulty < floor {
 			continue
 		}
@@ -516,7 +517,7 @@ func defaultMissions(count int, excluded []string, difficulty, startMission stri
 	// A tier that excludes everything is the player's mistake, not a reason to
 	// serve a room with no mission in it.
 	if len(pool) == 0 {
-		pool = append(pool, gamedata.Missions[0].PopFile)
+		pool = append(pool, playable[0].PopFile)
 	}
 
 	// The run begins on the first mission drawn, so this is how a start
@@ -526,7 +527,7 @@ func defaultMissions(count int, excluded []string, difficulty, startMission stri
 		if at := slices.Index(pool, startMission); at > 0 {
 			pool = slices.Insert(slices.Delete(slices.Clone(pool), at, at+1), 0, startMission)
 		} else if at == -1 {
-			if _, known := gamedata.MissionByPopFile(startMission); known {
+			if mission, known := gamedata.MissionByPopFile(startMission); known && gamedata.IsPlayableMission(mission.ID) {
 				pool = append([]string{startMission}, pool...)
 			}
 		}

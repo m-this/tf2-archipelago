@@ -172,6 +172,6 @@ From [`../docs/en/spec.md`](../docs/en/spec.md):
   `shop_checks` stays off until one does.
 - **Allied bots share the player's unlocked upgrades directly**, since RED
   bots do not buy upgrades on their own.
-- **`gamedata/` hardcodes wave counts from the wiki**, rather than parsing
-  them from `.pop` files. It owns the table; v1 does not support
-  community missions.
+- **`gamedata/` owns wave counts**, rather than parsing mutable `.pop` files at
+  runtime. Valve counts are hardcoded and community counts come from the
+  versioned `community.json` manifest.

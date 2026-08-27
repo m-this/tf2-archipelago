@@ -27,6 +27,11 @@ type Settings struct {
 	// installer puts it. Empty means look in the usual places.
 	ArchipelagoDir string `json:"archipelago_dir,omitempty"`
 
+	// CommunityContentDir holds downloaded or user-supplied community archives.
+	// CommunityPacks names the archives the launcher installs into SRCDS.
+	CommunityContentDir string   `json:"community_content_dir,omitempty"`
+	CommunityPacks      []string `json:"community_packs"`
+
 	// TestMode plays without Archipelago: the launcher serves a multiworld of
 	// one on loopback, makes up a seed, and hands out unlocks as waves are
 	// cleared. For trying the server out, and for play-testing.
@@ -167,16 +172,17 @@ type Settings struct {
 // Defaults returns the factory settings, matching deploy/.env.example.
 func Defaults() Settings {
 	return Settings{
-		InstallRoot:       defaultInstallRoot(),
-		APHost:            "archipelago.gg",
-		APPort:            0,
-		APTls:             true,
-		APSlotName:        "tf2",
-		SrcdsHostname:     "Mann vs Archipelago",
-		SrcdsPort:         27015,
-		SrcdsMaxPlayers:   32,
-		SrcdsStartMission: "mvm_decoy",
-		SrcdsToken:        "0",
+		InstallRoot:         defaultInstallRoot(),
+		CommunityContentDir: defaultCommunityContentDir(),
+		APHost:              "archipelago.gg",
+		APPort:              0,
+		APTls:               true,
+		APSlotName:          "tf2",
+		SrcdsHostname:       "Mann vs Archipelago",
+		SrcdsPort:           27015,
+		SrcdsMaxPlayers:     32,
+		SrcdsStartMission:   "mvm_decoy",
+		SrcdsToken:          "0",
 		// Lan, to match SrcdsToken above. Port reach with no token is the one
 		// combination that cannot work: the server never logs in to Steam, so
 		// it answers the query and then refuses the join.
@@ -189,6 +195,7 @@ func Defaults() Settings {
 		MvmDifficulty:              "intermediate",
 		MvmGoal:                    "final_boss",
 		MvmMissionsanityPct:        80,
+		MvmExcludedMissions:        defaultExcludedMissions(),
 		MvmMissionTicketImportance: "progression",
 		MvmClassUnlockImportance:   "progression",
 		MvmWeaponSlotImportance:    "progression",
@@ -356,6 +363,7 @@ func Save(s Settings) error {
 // predates a field still works.
 func (s Settings) withDefaults() Settings {
 	d := Defaults()
+	s = withCommunityDefaults(s, d)
 	if s.InstallRoot == "" {
 		s.InstallRoot = d.InstallRoot
 	}
@@ -376,6 +384,9 @@ func (s Settings) withDefaults() Settings {
 	}
 	if s.SrcdsStartMission == "" {
 		s.SrcdsStartMission = startMissionFor(s.SrcdsStartMap, d.SrcdsStartMission)
+	}
+	if mission, known := gamedata.MissionByPopFile(s.SrcdsStartMission); known && !gamedata.IsPlayableMission(mission.ID) {
+		s.SrcdsStartMission = d.SrcdsStartMission
 	}
 	s.SrcdsStartMap = ""
 	if s.SrcdsToken == "" {
@@ -426,6 +437,63 @@ func (s Settings) withDefaults() Settings {
 	return s
 }
 
+func withCommunityDefaults(s, defaults Settings) Settings {
+	if s.CommunityContentDir == "" {
+		s.CommunityContentDir = defaults.CommunityContentDir
+	}
+	if s.MvmExcludedMissions == nil {
+		s.MvmExcludedMissions = slices.Clone(defaults.MvmExcludedMissions)
+	}
+	if mission, known := gamedata.MissionByPopFile(s.MvmStartMission); known && !gamedata.IsPlayableMission(mission.ID) {
+		s.MvmStartMission = ""
+	}
+	return s
+}
+
+func defaultExcludedMissions() []string {
+	var excluded []string
+	for _, mission := range gamedata.Missions {
+		if gamedata.IsCommunityMission(mission.ID) {
+			excluded = append(excluded, mission.PopFile)
+		}
+	}
+	return excluded
+}
+
+const (
+	CommunityPackPotato    = "archive-assets.zip"
+	CommunityPackMoonlight = "mlarchive-assets.zip"
+)
+
+// CommunityArchives resolves selected pack names under their configured folder.
+func CommunityArchives(s Settings) []string {
+	paths := make([]string, 0, len(s.CommunityPacks))
+	for _, name := range s.CommunityPacks {
+		if name == CommunityPackPotato || name == CommunityPackMoonlight {
+			paths = append(paths, filepath.Join(s.CommunityContentDir, name))
+		}
+	}
+	return paths
+}
+
+// KnownCommunityArchives resolves every supported pack under dir, whether or
+// not it is selected. The UIs use this to discover already-downloaded or local
+// files before deciding which community missions may be shown.
+func KnownCommunityArchives(dir string) []string {
+	return []string{
+		filepath.Join(dir, CommunityPackPotato),
+		filepath.Join(dir, CommunityPackMoonlight),
+	}
+}
+
+func defaultCommunityContentDir() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "tf2"
+	}
+	return filepath.Join(home, "tf2")
+}
+
 func defaultInstallRoot() string {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -437,7 +505,7 @@ func defaultInstallRoot() string {
 // startMissionFor is the migration from a start map to a start mission: the
 // first mission the tables list on that map, which is its normal tier.
 func startMissionFor(mapName, fallback string) string {
-	for _, mission := range gamedata.Missions {
+	for _, mission := range gamedata.PlayableMissions() {
 		if played, ok := gamedata.MapByID(mission.Map); ok && played.Name == mapName {
 			return mission.PopFile
 		}

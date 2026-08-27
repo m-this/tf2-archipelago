@@ -24,6 +24,12 @@ tmp/
 # What `make dist` assembles for a release. Nothing in it is a source file.
 /dist/
 
+# Local Potato content is several gigabytes. Keep the validation skeleton and
+# guide, never downloaded packs or an extracted TF tree.
+/community-content/*.zip
+/community-content/tf/*
+!/community-content/tf/.gitkeep
+
 # The generated seeds `make seed` writes, one multiworld each. Keep them: a
 # room on archipelago.gg is recreated by uploading the same file again.
 /seed/

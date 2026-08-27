@@ -7,6 +7,7 @@ package runshape
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/m-this/tf2-archipelago/gamedata"
@@ -23,8 +24,9 @@ type Tier struct {
 
 // Tiers lists the pools worth offering, easiest first.
 //
-// Haunted is left out. It holds one mission, and a pool of one gives too few
-// locations for the items of a run, so generation stops with an error.
+// Haunted is left out as a useful launcher preset. It holds only Caliginous
+// Caper, so it has no mission-ticket progression and commits the run to one
+// unusually long 666-robot mission. Hand-authored YAML may still use it.
 func Tiers() []Tier {
 	tiers := make([]Tier, 0, len(gamedata.Difficulties))
 	for _, difficulty := range gamedata.Difficulties {
@@ -32,7 +34,7 @@ func Tiers() []Tier {
 			continue
 		}
 		tier := Tier{Key: difficulty.Key()}
-		for _, mission := range gamedata.Missions {
+		for _, mission := range gamedata.PlayableMissions() {
 			if mission.Difficulty >= difficulty {
 				tier.Missions++
 				tier.Waves += int(mission.Waves)
@@ -51,7 +53,7 @@ func MissionsInPool(key string) int {
 			return tier.Missions
 		}
 	}
-	return len(gamedata.Missions)
+	return len(gamedata.PlayableMissions())
 }
 
 // Label describes a tier in one line, for a menu.
@@ -103,16 +105,55 @@ type MissionChoice struct {
 // MissionChoices lists every mission the tables know, in table order, which
 // is map by map and easiest first.
 func MissionChoices() []MissionChoice {
-	choices := make([]MissionChoice, 0, len(gamedata.Missions))
+	return MissionChoicesForPacks([]string{"archive-assets.zip", "mlarchive-assets.zip"})
+}
+
+// VisibleMissions is the mission table a launcher may populate from the packs
+// that exist locally. Valve missions are always present. Portable community
+// missions and the locked no-NAV rows appear only after their owning archive
+// has been downloaded or supplied locally; RafMod-only missions stay hidden.
+func VisibleMissions(availablePacks []string) []gamedata.Mission {
+	var visible []gamedata.Mission
 	for _, mission := range gamedata.Missions {
+		pack := gamedata.MissionPack(mission.ID)
+		switch {
+		case pack == "" && gamedata.IsPlayableMission(mission.ID):
+			visible = append(visible, mission)
+		case pack != "" && slices.Contains(availablePacks, pack) &&
+			(gamedata.IsPlayableMission(mission.ID) || gamedata.MissionRequirement(mission.ID) == "no_nav"):
+			visible = append(visible, mission)
+		}
+	}
+	return visible
+}
+
+// MissionChoicesForPacks excludes unavailable and locked community missions
+// from menus that can actually select a starting mission.
+func MissionChoicesForPacks(availablePacks []string) []MissionChoice {
+	playable := VisibleMissions(availablePacks)
+	choices := make([]MissionChoice, 0, len(playable))
+	for _, mission := range playable {
+		if !gamedata.IsPlayableMission(mission.ID) {
+			continue
+		}
 		played, _ := gamedata.MapByID(mission.Map)
 		choices = append(choices, MissionChoice{
 			PopFile: mission.PopFile,
-			Label: fmt.Sprintf("%s - %s (%s, %d waves)",
-				played.Name, mission.Name, mission.Difficulty.Key(), mission.Waves),
+			Label: fmt.Sprintf("[%s] %s - %s (%s, %d waves)",
+				missionSource(mission), played.Name, mission.Name, mission.Difficulty.Key(), mission.Waves),
 		})
 	}
 	return choices
+}
+
+func missionSource(mission gamedata.Mission) string {
+	switch gamedata.MissionPack(mission.ID) {
+	case "archive-assets.zip":
+		return "Potato Archive"
+	case "mlarchive-assets.zip":
+		return "Moonlight Archive"
+	}
+	return "Valve"
 }
 
 // MissionLabel is the label of one popfile, or the popfile itself when the
@@ -134,6 +175,11 @@ const AnyLabel = "Any - the run draws it"
 // that decides where a run begins. The empty popfile is the draw.
 func StartMissionChoices() []MissionChoice {
 	return append([]MissionChoice{{PopFile: "", Label: AnyLabel}}, MissionChoices()...)
+}
+
+// StartMissionChoicesForPacks is the availability-aware start menu.
+func StartMissionChoicesForPacks(availablePacks []string) []MissionChoice {
+	return append([]MissionChoice{{PopFile: "", Label: AnyLabel}}, MissionChoicesForPacks(availablePacks)...)
 }
 
 // StartMissionLabel is what StartMissionChoices shows for one popfile.

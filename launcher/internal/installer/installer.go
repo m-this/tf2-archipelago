@@ -10,6 +10,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io"
@@ -32,9 +33,22 @@ const AppID = "232250"
 // needs while it unpacks them. Checked before the download rather than after,
 // where SteamCMD reports it as "state is 0x202" and nothing else.
 const (
-	gigabyte        = 1_000_000_000
-	gameBytesNeeded = 20 * gigabyte
+	gigabyte                  = 1_000_000_000
+	gameBytesNeeded           = 20 * gigabyte
+	communityProgressInterval = 250_000_000
+	communityDownloadTimeout  = 2 * time.Hour
 )
+
+// communityArchiveURLs are the full Potato asset packs. The "no maps"
+// variants are intentionally not accepted: the launcher's community catalog
+// needs the BSP and NAV files from these archives as well as their shared
+// assets.
+var communityArchiveURLs = map[string]string{
+	"archive-assets.zip":   "https://dlarchive.potato.tf/archive-assets.zip",
+	"mlarchive-assets.zip": "https://dlml.potato.tf/mlarchive-assets.zip",
+}
+
+var communityHTTPClient = &http.Client{Timeout: communityDownloadTimeout}
 
 // Status reports what the installer did, for the UI to show.
 type Status struct {
@@ -55,7 +69,7 @@ type Result struct {
 
 // Ensure installs whatever is missing. It prints progress to logf as it goes.
 // Cancel the context to abort a download or a steamcmd run.
-func Ensure(ctx context.Context, installRoot string, logf func(format string, args ...any)) (Result, error) {
+func Ensure(ctx context.Context, installRoot string, communityArchives []string, logf func(format string, args ...any)) (Result, error) {
 	if err := assets.RequireVersions(); err != nil {
 		return Result{}, err
 	}
@@ -104,9 +118,246 @@ func Ensure(ctx context.Context, installRoot string, logf func(format string, ar
 	if err := installMods(ctx, filepath.Join(result.GameDir, "tf"), logf); err != nil {
 		return result, err
 	}
+	if err := installCommunityArchives(communityArchives, filepath.Join(result.GameDir, "tf"), logf); err != nil {
+		return result, err
+	}
 	result.Done.SourcemodInstalled = true
 
 	return result, nil
+}
+
+func installCommunityArchives(archives []string, modDir string, logf func(string, ...any)) error {
+	if err := ValidateCommunityArchives(archives, logf); err != nil {
+		return err
+	}
+	stampDir := filepath.Join(modDir, ".tf2ap-community")
+	for _, path := range archives {
+		info, err := os.Stat(path)
+		if err != nil {
+			return fmt.Errorf("cannot use community pack %s: %w", path, err)
+		}
+		identity := fmt.Sprintf("%s\n%d\n%d\n", path, info.Size(), info.ModTime().UnixNano())
+		sum := sha256.Sum256([]byte(path))
+		stamp := filepath.Join(stampDir, fmt.Sprintf("%x.stamp", sum[:8]))
+		if body, err := os.ReadFile(stamp); err == nil && string(body) == identity {
+			logf("community pack already installed: %s", filepath.Base(path))
+			continue
+		}
+		logf("installing community pack %s (this can take a minute)", filepath.Base(path))
+		if err := installCommunityZip(path, modDir); err != nil {
+			return fmt.Errorf("cannot install community pack %s: %w", path, err)
+		}
+		if err := os.MkdirAll(stampDir, 0o755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(stamp, []byte(identity), 0o644); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// DownloadCommunityArchives is the only path that fetches community content.
+// It downloads recognized full-with-maps Potato packs that are not already
+// cached, then validates every selected ZIP. Start deliberately does not call
+// this function: network downloads require an explicit UI action.
+func DownloadCommunityArchives(ctx context.Context, archives []string, logf func(string, ...any)) error {
+	for _, path := range archives {
+		_, err := os.Stat(path)
+		if errors.Is(err, fs.ErrNotExist) {
+			if err := downloadCommunityArchive(ctx, path, logf); err != nil {
+				return fmt.Errorf("cannot download community pack %s: %w", filepath.Base(path), err)
+			}
+		} else if err != nil {
+			return fmt.Errorf("cannot use community pack %s: %w", path, err)
+		}
+	}
+	return ValidateCommunityArchives(archives, logf)
+}
+
+// ValidateCommunityArchives accepts only existing, readable ZIPs and performs
+// no network access. Ensure uses this before installing selected local packs.
+func ValidateCommunityArchives(archives []string, logf func(string, ...any)) error {
+	for _, path := range archives {
+		if err := validateCommunityArchive(path); err != nil {
+			return err
+		}
+		logf("community pack ready: %s", filepath.Base(path))
+	}
+	return nil
+}
+
+// AvailableCommunityArchives returns the valid files from archives. It is the
+// launchers' source of truth for which community mission rows may be shown.
+func AvailableCommunityArchives(archives []string) []string {
+	available := make([]string, 0, len(archives))
+	for _, path := range archives {
+		if validateCommunityArchive(path) == nil {
+			available = append(available, path)
+		}
+	}
+	return available
+}
+
+func validateCommunityArchive(path string) error {
+	reader, err := zip.OpenReader(path)
+	if err != nil {
+		return fmt.Errorf("community pack %s is not a valid ZIP: %w", path, err)
+	}
+	if err := reader.Close(); err != nil {
+		return fmt.Errorf("cannot close community pack %s: %w", path, err)
+	}
+	return nil
+}
+
+// downloadCommunityArchive caches a recognized full asset pack next to the
+// locally supplied packs. A partial response is written under a temporary
+// name and validated before rename, so cancelling the explicit download can
+// never leave a corrupt ZIP that the next attempt mistakes for a completed
+// download.
+func downloadCommunityArchive(ctx context.Context, path string, logf func(string, ...any)) error {
+	name := filepath.Base(path)
+	url, known := communityArchiveURLs[name]
+	if !known {
+		return fmt.Errorf("%s is not a recognized Potato asset pack", name)
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return err
+	}
+
+	logf("downloading %s from %s (the full pack includes maps)", name, url)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("User-Agent", "tf2-archipelago-launcher")
+	resp, err := communityHTTPClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("%s answered %d", url, resp.StatusCode)
+	}
+
+	tmp, err := os.CreateTemp(filepath.Dir(path), "."+name+"-*.partial")
+	if err != nil {
+		return err
+	}
+	tmpPath := tmp.Name()
+	keep := false
+	defer func() {
+		_ = tmp.Close()
+		if !keep {
+			_ = os.Remove(tmpPath)
+		}
+	}()
+	progress := &communityDownloadWriter{
+		Writer: tmp,
+		name:   name,
+		total:  resp.ContentLength,
+		next:   communityProgressInterval,
+		logf:   logf,
+	}
+	written, copyErr := io.Copy(progress, resp.Body)
+	if closeErr := tmp.Close(); copyErr == nil {
+		copyErr = closeErr
+	}
+	if copyErr != nil {
+		return copyErr
+	}
+	if resp.ContentLength >= 0 && written != resp.ContentLength {
+		return fmt.Errorf("downloaded %d bytes, expected %d", written, resp.ContentLength)
+	}
+	reader, err := zip.OpenReader(tmpPath)
+	if err != nil {
+		return fmt.Errorf("download is not a valid ZIP: %w", err)
+	}
+	if err := reader.Close(); err != nil {
+		return err
+	}
+	if err := os.Rename(tmpPath, path); err != nil {
+		return err
+	}
+	keep = true
+	logf("downloaded %s (%.1f GB) into %s", name, float64(written)/float64(gigabyte), filepath.Dir(path))
+	return nil
+}
+
+type communityDownloadWriter struct {
+	io.Writer
+	name    string
+	total   int64
+	written int64
+	next    int64
+	logf    func(string, ...any)
+}
+
+func (w *communityDownloadWriter) Write(body []byte) (int, error) {
+	n, err := w.Writer.Write(body)
+	w.written += int64(n)
+	if w.written >= w.next {
+		if w.total > 0 {
+			w.logf("downloading %s: %.0f%% (%.1f GB)", w.name, 100*float64(w.written)/float64(w.total), float64(w.written)/float64(gigabyte))
+		} else {
+			w.logf("downloading %s: %.1f GB", w.name, float64(w.written)/float64(gigabyte))
+		}
+		for w.next <= w.written {
+			w.next += communityProgressInterval
+		}
+	}
+	return n, err
+}
+
+// installCommunityZip streams a Potato-style tf/download tree into SRCDS's
+// tf directory. The archives are several gigabytes, so they are never read
+// into memory as the small embedded mod archives are.
+func installCommunityZip(path, modDir string) error {
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = file.Close() }()
+	info, err := file.Stat()
+	if err != nil {
+		return err
+	}
+	reader, err := zip.NewReader(file, info.Size())
+	if err != nil {
+		return err
+	}
+	for _, entry := range reader.File {
+		name := filepath.ToSlash(entry.Name)
+		var relative string
+		switch {
+		case strings.HasPrefix(name, "tf/download/"):
+			relative = strings.TrimPrefix(name, "tf/download/")
+		case strings.HasPrefix(name, "tf/"):
+			relative = strings.TrimPrefix(name, "tf/")
+		default:
+			continue
+		}
+		if relative == "" {
+			continue
+		}
+		target, err := safeJoin(modDir, relative)
+		if err != nil {
+			return err
+		}
+		if entry.FileInfo().IsDir() {
+			if err := os.MkdirAll(target, 0o755); err != nil {
+				return err
+			}
+			continue
+		}
+		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+			return err
+		}
+		if err := extractFile(entry, target); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // installMods puts everything that loads inside the game server into tf/:

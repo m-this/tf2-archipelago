@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/m-this/tf2-archipelago/gamedata"
 )
 
 func TestPlayerYAMLHoldsTheRunShape(t *testing.T) {
@@ -82,6 +84,21 @@ func TestWritePlayerFile(t *testing.T) {
 	}
 }
 
+func TestWritePlayerFileRejectsAnEmptyMissionPool(t *testing.T) {
+	s := Defaults()
+	s.InstallRoot = t.TempDir()
+	for _, mission := range gamedata.PlayableMissions() {
+		s.MvmExcludedMissions = append(s.MvmExcludedMissions, mission.PopFile)
+	}
+	_, err := WritePlayerFile(s, "0.6.7")
+	if err == nil || !strings.Contains(err.Error(), "no missions remain") {
+		t.Fatalf("WritePlayerFile error = %v", err)
+	}
+	if _, statErr := os.Stat(filepath.Join(s.InstallRoot, PlayerFileName)); !os.IsNotExist(statErr) {
+		t.Fatalf("invalid player file was written: %v", statErr)
+	}
+}
+
 func TestPlayerYAMLNamesTheStartMissionAndClass(t *testing.T) {
 	s := Defaults()
 	s.MvmStartMission = "mvm_ghost_town_666"
@@ -128,7 +145,9 @@ func TestPlayerYAMLNamesTheExcludedMissions(t *testing.T) {
 	if strings.Contains(got, "mvm_nowhere") {
 		t.Errorf("a popfile the tables do not know reached the file:\n%s", got)
 	}
-	if !strings.Contains(PlayerYAML(Defaults(), ""), "  excluded_missions: []\n") {
+	empty := Defaults()
+	empty.MvmExcludedMissions = []string{}
+	if !strings.Contains(PlayerYAML(empty, ""), "  excluded_missions: []\n") {
 		t.Error("an empty exclusion list is not written as an empty list")
 	}
 }

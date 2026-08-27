@@ -89,6 +89,10 @@ services:
       - "${BRIDGE_METRICS_BIND:-127.0.0.1}:${BRIDGE_METRICS_PORT:-24681}:${BRIDGE_METRICS_PORT:-24681}/tcp"
     volumes:
       - tf2game:/home/steam/tf-dedicated
+      # A normal TF2 content tree: maps/, scripts/population/, scripts/items/,
+      # materials/, models/, sound/ and scripts/vscripts/ all keep their native
+      # paths. Restarting srcds installs files changed on the host.
+      - ./community-content:/opt/tf2-community-pack:ro
 
   bridge:
     build:

@@ -33,10 +33,11 @@ connectent avec un client TF2 standard et n'installent rien.
 - Aucune tentative de soumettre ceci en amont à
   `ArchipelagoMW/Archipelago` dans la v1. À reconsidérer une fois que ça
   génère réellement et que quelqu'un termine une partie de bout en bout.
-- Aucune mission communautaire (Potato.tf, Moonlight.tf) en v1. Les
-  fichiers `.pop` n'ont pas d'id global stable et ne peuvent pas être lus
-  sur l'hôte sans extracteur de VPK. `gamedata/` code en dur les 29
-  missions Valve, avec des nombres de vagues tirés du wiki.
+- Aucune exécution automatique des extensions serveur propres à Potato.tf ou
+  Moonlight.tf. Les cartes communautaires, fichiers de population, VScript et
+  tables d'améliorations standard sont pris en charge par un manifeste
+  versionné ; une mission SigMod exige toujours l'installation séparée de
+  cette dépendance.
 
 ## Architecture
 

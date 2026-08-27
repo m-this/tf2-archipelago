@@ -41,6 +41,14 @@ func (m *model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 		m.take(apruntime.Line{At: time.Now(), Source: "launcher", Text: string(msg)})
 		return m, nil
 
+	case communityAssetsMsg:
+		if m.form != nil {
+			m.form.applyCommunityAssets(msg)
+		}
+		m.notice = msg.notice
+		m.take(apruntime.Line{At: time.Now(), Source: "launcher", Text: msg.notice})
+		return m, nil
+
 	case tea.KeyMsg:
 		// The settings are a screen over this one, the way the window's dialog
 		// is a window over its own: while it is up, it has the keyboard.

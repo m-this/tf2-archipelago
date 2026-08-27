@@ -54,6 +54,7 @@ func (t *sessionTab) page(onSwitch func(popFile string)) declarative.TabPage {
 					{Title: "#", Width: 30},
 					{Title: "Mission", Width: 200},
 					{Title: "Map", Width: 130},
+					{Title: "Source", Width: 110},
 					{Title: "Waves", Width: 50},
 					{Title: "State", Width: 120},
 				},
@@ -225,6 +226,8 @@ func (m *missionsModel) Value(row, col int) any {
 	case 2:
 		return mission.Map
 	case 3:
+		return mission.Source
+	case 4:
 		return mission.Waves
 	default:
 		return missionState(mission)

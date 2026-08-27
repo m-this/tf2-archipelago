@@ -263,6 +263,9 @@ func StartTestRoom(
 	if !s.TestMode {
 		return nil, nil //nolint:nilnil // no room and no error is the normal case
 	}
+	if _, err := settings.CheckRunSelection(s); err != nil {
+		return nil, err
+	}
 	if emit == nil {
 		emit = func(string) {}
 	}

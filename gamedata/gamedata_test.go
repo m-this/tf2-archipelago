@@ -213,16 +213,17 @@ func TestEveryMissionHasAGiant(t *testing.T) {
 	}
 }
 
-// The three are Mannhattan's, whose missions run on gates rather than tanks.
-// Named here so a careless edit to the table has to argue with a test.
-func TestOnlyMannhattanHasNoTank(t *testing.T) {
+// These missions intentionally have no tank objective. Named here so a
+// careless manifest edit has to argue with a test instead of making an
+// unreachable Archipelago location.
+func TestMissionsWithoutTanksAreExplicit(t *testing.T) {
 	var without []string
 	for _, m := range Missions {
 		if !m.HasTank {
 			without = append(without, m.Name)
 		}
 	}
-	want := []string{"Big Apple Barricade", "Empire Escalation", "Metro Malice"}
+	want := []string{"Big Apple Barricade", "Empire Escalation", "Metro Malice", "Thriller Terror"}
 	if !slices.Equal(without, want) {
 		t.Errorf("missions with no tank: %v, want %v", without, want)
 	}

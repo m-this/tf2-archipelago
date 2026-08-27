@@ -244,6 +244,9 @@ func (m *model) applySettings(next settings.Settings) tea.Cmd {
 			next.SrcdsRconPw = password
 		}
 	}
+	if _, err := settings.CheckRunSelection(next); err != nil {
+		return func() tea.Msg { return noticeMsg(err.Error()) }
+	}
 	if err := settings.Save(next); err != nil {
 		return func() tea.Msg { return noticeMsg("cannot save the settings: " + err.Error()) }
 	}

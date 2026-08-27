@@ -25,7 +25,7 @@ type Mission struct {
 	HasGiant bool
 }
 
-// Missions is the 29 Valve missions. Pop file names come from
+// valveMissions is the 29 Valve missions. Pop file names come from
 // tf2_misc_dir.vpk. Display names, maps, tiers, wave counts and what each
 // mission holds come from the wiki's own mission list, the source of this
 // table:
@@ -41,10 +41,10 @@ type Mission struct {
 // the same as proving. Settle it against resource/tf_english.txt in the VPK:
 // the name is baked into every location name.
 //
-// Community missions are out of scope for v1: nothing on the host can read a
-// wave count out of a .pop file, and a downloaded pack can change under a seed
-// that already references it.
-var Missions = []Mission{
+// Community missions live in the versioned manifest instead. Their wave and
+// objective metadata is explicit because a seed must not depend on parsing a
+// mutable population file at runtime.
+var valveMissions = []Mission{
 	{1, "mvm_decoy", "Doe's Drill", MapDecoy, DifficultyNormal, 8, true, true},
 	{2, "mvm_decoy_intermediate", "Doe's Doom", MapDecoy, DifficultyIntermediate, 7, true, true},
 	{3, "mvm_decoy_intermediate2", "Day of Wreckening", MapDecoy, DifficultyIntermediate, 6, true, true},
@@ -75,6 +75,9 @@ var Missions = []Mission{
 	{28, "mvm_rottenburg_advanced2", "Bavarian Botbash", MapRottenburg, DifficultyAdvanced, 7, true, true},
 	{29, "mvm_ghost_town_666", "Caliginous Caper", MapGhostTown, DifficultyHaunted, 1, true, true},
 }
+
+// Missions contains Valve's missions followed by the entries in community.json.
+var Missions = append(append([]Mission(nil), valveMissions...), communityMissions...)
 
 var (
 	missionsByPopFile = indexMissionsByPopFile()

@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -8,8 +9,25 @@ import (
 	"testing"
 	"time"
 
+	"github.com/m-this/tf2-archipelago/bridge/config"
+	"github.com/m-this/tf2-archipelago/gamedata"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 )
+
+func TestTestModeRejectsAnInvalidRunBeforeOpeningARoom(t *testing.T) {
+	s := settings.Defaults()
+	s.TestMode = true
+	for _, mission := range gamedata.PlayableMissions() {
+		s.MvmExcludedMissions = append(s.MvmExcludedMissions, mission.PopFile)
+	}
+	room, err := StartTestRoom(context.Background(), s, &config.Config{}, nil)
+	if err == nil {
+		if room != nil {
+			_ = room.Close(context.Background())
+		}
+		t.Fatal("Test mode accepted an empty mission pool")
+	}
+}
 
 // fakeServer writes a script in place of srcds_run, so a Start really does
 // launch a process the Stop has to take down.

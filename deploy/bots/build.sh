@@ -113,11 +113,15 @@ if [ ! -d "$work/spcomp" ]; then
 fi
 sm="$work/spcomp/addons/sourcemod/scripting"
 
-if [ ! -d "$work/ripext" ]; then
+ripext_include="$work/ripext/addons/sourcemod/scripting/include/ripext.inc"
+if [ ! -f "$ripext_include" ]; then
 	echo "fetching ripext $RIPEXT_VERSION"
-	mkdir -p "$work/ripext"
+	rm -rf "$work/ripext"
+	# Download before creating the cache directory. If curl is interrupted, the
+	# next build cannot mistake an empty directory for a complete dependency.
 	curl -fsSL -o "$work/ripext.zip" \
 		"https://github.com/ErikMinekus/sm-ripext/releases/download/$RIPEXT_VERSION/sm-ripext-$RIPEXT_VERSION-linux.zip"
+	mkdir -p "$work/ripext"
 	unzip -oq "$work/ripext.zip" -d "$work/ripext"
 	rm -f "$work/ripext.zip"
 fi
@@ -164,29 +168,44 @@ fi
 
 # One include root per project. Never flatten them into a single directory:
 # several projects ship a vector.inc, and the wrong one shadows SourceMod's.
+#
+# Compile from WSL's native filesystem. SourcePawn's include traversal is
+# pathologically slow on a repository mounted through /mnt/<drive>; staging
+# these small source trees turns a multi-minute apparent hang into seconds.
+# Downloads and final artifacts remain in $work and $out respectively.
+compile_work=$(mktemp -d "${TMPDIR:-/tmp}/tf2ap-bots-spcomp.XXXXXX")
+trap 'rm -rf "$compile_work"' EXIT HUP INT TERM
+cp -a "$sm" "$compile_work/scripting"
+cp -a "$src" "$compile_work/src"
+mkdir -p "$compile_work/ripext"
+cp -a "$work/ripext/addons/sourcemod/scripting/include" "$compile_work/ripext/include"
+
+compile_sm="$compile_work/scripting"
+compile_src="$compile_work/src"
+
 compile() {
 	name=$(basename "$1" .sp)
 	echo "compiling $name"
-	"$sm/spcomp64" \
-		-i"$sm/include" \
-		-i"$src/stocklib" \
-		-i"$src/stocksoup-root" \
-		-i"$src/cbasenpc/scripting/include" \
-		-i"$src/actions/sourcemod/include" \
-		-i"$work/ripext/addons/sourcemod/scripting/include" \
-		-i"$src/tf2attributes/scripting/include" \
-		-i"$src/tf_econ_data/scripting/include" \
-		-i"$src/tf2utils/scripting/include" \
+	"$compile_sm/spcomp64" \
+		-i"$compile_sm/include" \
+		-i"$compile_src/stocklib" \
+		-i"$compile_src/stocksoup-root" \
+		-i"$compile_src/cbasenpc/scripting/include" \
+		-i"$compile_src/actions/sourcemod/include" \
+		-i"$compile_work/ripext/include" \
+		-i"$compile_src/tf2attributes/scripting/include" \
+		-i"$compile_src/tf_econ_data/scripting/include" \
+		-i"$compile_src/tf2utils/scripting/include" \
 		-i"$(dirname "$1")" \
 		-o"$out/addons/sourcemod/plugins/$name.smx" \
 		"$1" >"$work/$name.log" 2>&1 ||
 		{ cat "$work/$name.log"; exit 1; }
 }
 
-compile "$src/defenderbots/source/tf2_defenderbots.sp"
-compile "$src/tf2attributes/scripting/tf2attributes.sp"
-compile "$src/tf_econ_data/scripting/tf_econ_data.sp"
-compile "$src/tf2utils/scripting/tf2utils.sp"
+compile "$compile_src/defenderbots/source/tf2_defenderbots.sp"
+compile "$compile_src/tf2attributes/scripting/tf2attributes.sp"
+compile "$compile_src/tf_econ_data/scripting/tf_econ_data.sp"
+compile "$compile_src/tf2utils/scripting/tf2utils.sp"
 
 cp "$src/defenderbots/gamedata/tf2.defenderbots.txt" \
 	"$src/tf2attributes/gamedata/tf2.attributes.txt" \

@@ -46,6 +46,15 @@ func TestInstallServerCfg(t *testing.T) {
 	if !strings.Contains(body, `tf_mvm_min_players_to_start 1`) {
 		t.Errorf("server.cfg missing the MvM ready-up line:\n%s", body)
 	}
+	for name, want := range map[string]string{
+		"sv_allowdownload": "1",
+		"sv_allowupload":   "1",
+		"net_maxfilesize":  "64",
+	} {
+		if got := directive(body, name); got != want {
+			t.Errorf("%s = %q, want %q:\n%s", name, got, want, body)
+		}
+	}
 	// Without this the game takes an idle player's seat on RED and the bots
 	// fill it, which is what a play-test hit.
 	if !strings.Contains(body, `mp_idlemaxtime 0`) {

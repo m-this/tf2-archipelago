@@ -41,11 +41,16 @@ normal run starts with one class and one weapon slot. An expert run starts with
 four classes and all three weapon slots, because an expert mission is not
 playable with less.
 
-**Do not set `haunted`.** That tier holds one mission, Caliginous Caper, and
-that mission holds one wave. Two checks is not enough room for the items that a
-run needs, so generation stops with an error that names the option. The
-container then restarts and prints the same error again. The tier starts
-working the day Valve ships a second haunted mission.
+The standalone launcher omits a `haunted` preset. That tier holds only
+Caliginous Caper: its wave, tank, giant and completion checks provide exactly
+enough locations for the four remaining class unlocks, but a one-mission run
+has no mission-ticket progression and commits the whole run to 666 robots.
+Hand-authored YAML may still select it.
+
+The launcher's **Check Run Selection** action applies the same capacity rule
+before it writes or generates a player file. Saving settings and starting Test
+mode also refuse an empty or undersized pool. The official Archipelago
+generator repeats the validation and remains the final authority.
 
 ### `MVM_GOAL`
 

@@ -1,5 +1,5 @@
 {
-  "format_version": 2,
+  "format_version": 4,
   "items": [
     {
       "id": 7443001001,
@@ -232,6 +232,174 @@
       "classification": "progression",
       "count": 1,
       "mission_id": 29
+    },
+    {
+      "id": 7443001105,
+      "name": "Mission Ticket: Anomalous Materials",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 105
+    },
+    {
+      "id": 7443001106,
+      "name": "Mission Ticket: Urban Uprising",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 106
+    },
+    {
+      "id": 7443001107,
+      "name": "Mission Ticket: Swamp Fever",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 107
+    },
+    {
+      "id": 7443001108,
+      "name": "Mission Ticket: Thriller Terror",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 108
+    },
+    {
+      "id": 7443001109,
+      "name": "Mission Ticket: Silver Snow",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 109
+    },
+    {
+      "id": 7443001110,
+      "name": "Mission Ticket: Flash Flood Flurry",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 110
+    },
+    {
+      "id": 7443001111,
+      "name": "Mission Ticket: Wicked Wizardry",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 111
+    },
+    {
+      "id": 7443001112,
+      "name": "Mission Ticket: Heated Argument",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 112
+    },
+    {
+      "id": 7443001113,
+      "name": "Mission Ticket: Covert Compromise",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 113
+    },
+    {
+      "id": 7443001114,
+      "name": "Mission Ticket: Homestead Happenings",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 114
+    },
+    {
+      "id": 7443001115,
+      "name": "Mission Ticket: Mud",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 115
+    },
+    {
+      "id": 7443001116,
+      "name": "Mission Ticket: Void Voyage",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 116
+    },
+    {
+      "id": 7443001117,
+      "name": "Mission Ticket: Offshore Onslaught",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 117
+    },
+    {
+      "id": 7443001118,
+      "name": "Mission Ticket: Snowy Slaughter",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 118
+    },
+    {
+      "id": 7443001119,
+      "name": "Mission Ticket: Pollution Dilution",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 119
+    },
+    {
+      "id": 7443001120,
+      "name": "Mission Ticket: Recursive Reinforcements",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 120
+    },
+    {
+      "id": 7443001121,
+      "name": "Mission Ticket: Armored Apparatus",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 121
+    },
+    {
+      "id": 7443001122,
+      "name": "Mission Ticket: Alpine Assault",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 122
+    },
+    {
+      "id": 7443001123,
+      "name": "Mission Ticket: Onsen Onslaught",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 123
+    },
+    {
+      "id": 7443001124,
+      "name": "Mission Ticket: Binary Broadcast",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 124
+    },
+    {
+      "id": 7443001125,
+      "name": "Mission Ticket: Black East",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 125
     },
     {
       "id": 7443002001,

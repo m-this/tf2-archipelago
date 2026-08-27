@@ -16,6 +16,9 @@ from .. import data
 from ..rules import REQUIREMENTS
 from . import TF2MvMTestBase
 
+PLAYABLE_MISSIONS = tuple(mission for mission in data.MISSIONS if mission.playable)
+PLAYABLE_MISSION_COUNT = len(PLAYABLE_MISSIONS)
+
 
 class TestDefaults(TF2MvMTestBase):
     options: ClassVar[dict[str, Any]] = {}
@@ -133,7 +136,10 @@ class TestStackedWeaponBuffs(TF2MvMTestBase):
 
 
 class TestWholeRoster(TF2MvMTestBase):
-    options: ClassVar[dict[str, Any]] = {"mission_count": 29, "difficulty_pool": "normal"}
+    options: ClassVar[dict[str, Any]] = {
+        "mission_count": PLAYABLE_MISSION_COUNT,
+        "difficulty_pool": "normal",
+    }
 
 
 class TestShortestRun(TF2MvMTestBase):
@@ -161,7 +167,7 @@ class TestHardestPool(TF2MvMTestBase):
 
 class TestExcludedMissions(TF2MvMTestBase):
     options: ClassVar[dict[str, Any]] = {
-        "mission_count": 29,
+        "mission_count": PLAYABLE_MISSION_COUNT,
         "difficulty_pool": "normal",
         "excluded_missions": {"Caliginous Caper", "Doe's Drill"},
     }
@@ -170,7 +176,7 @@ class TestExcludedMissions(TF2MvMTestBase):
         drawn = {mission.name for mission in self.world.missions}
         self.assertNotIn("Caliginous Caper", drawn)
         self.assertNotIn("Doe's Drill", drawn)
-        self.assertEqual(len(data.MISSIONS) - 2, len(drawn))
+        self.assertEqual(PLAYABLE_MISSION_COUNT - 2, len(drawn))
 
 
 class TestMissionsanity(TF2MvMTestBase):
@@ -203,7 +209,10 @@ class TestTankChecks(TF2MvMTestBase):
     why has_tank comes from the wiki's tank health table and not from a guess.
     """
 
-    options: ClassVar[dict[str, Any]] = {"mission_count": 29, "difficulty_pool": "normal"}
+    options: ClassVar[dict[str, Any]] = {
+        "mission_count": PLAYABLE_MISSION_COUNT,
+        "difficulty_pool": "normal",
+    }
 
     def test_a_mission_with_a_tank_has_the_check(self) -> None:
         quarry = next(m for m in data.MISSIONS if m.name == "Quarry")
@@ -222,14 +231,16 @@ class TestTankChecks(TF2MvMTestBase):
             self.assertEqual(1 if mission.has_tank else 0, len(tanks))
 
     def test_every_mission_has_a_giant_check(self) -> None:
-        # The wiki's mission list gives all 29 a giant, so all 29 get the check.
+        # Every catalogued mission has a giant, and every playable one gets the check.
         for mission in data.MISSIONS:
             giants = [loc for loc in mission.locations if loc.kind == "giant_killed"]
             self.assertTrue(mission.has_giant)
             self.assertEqual(1, len(giants))
-            self.assertIn(
-                f"{mission.name} Giant", self.multiworld.regions.location_cache[self.player]
-            )
+            if mission.playable:
+                self.assertIn(
+                    f"{mission.name} Giant",
+                    self.multiworld.regions.location_cache[self.player],
+                )
 
 
 class TestNamedStartMission(TF2MvMTestBase):
@@ -267,7 +278,7 @@ class TestNamedStartBeatsTheSort(TF2MvMTestBase):
     """
 
     options: ClassVar[dict[str, Any]] = {
-        "mission_count": 29,
+        "mission_count": PLAYABLE_MISSION_COUNT,
         "difficulty_pool": "normal",
         "start_mission": "Quarry",
         "goal": "missionsanity",

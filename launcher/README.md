@@ -18,6 +18,12 @@ Cross-compiles `tf2ap.exe` into `dist/`. The target stages the bots, fetches
 the ripext Windows zip into the embed dir, copies the compiled plugin, and
 injects the pinned versions from `deploy/env/versions.env` with `-ldflags`.
 
+The Missions tab can download missing official Potato/Moonlight full asset
+ZIPs into a player-selected cache folder and install them into SRCDS. It labels Valve and Potato missions
+separately in both the pool table and start-mission menu. See the
+[community-content guide](../community-content/README.md) for the verified
+archive layout, custom-upgrade findings, build commands, and RafMod boundary.
+
 ## Layout
 
 | Package | Holds |
@@ -92,7 +98,7 @@ landed in. The player uploads that archive to archipelago.gg.
 - `tf2_archipelago.smx` (gitignored, copied by `make launcher-assets`)
 - `sm-ripext-windows.zip` (gitignored, fetched by `make launcher-assets`)
 - `defender-bots-windows.zip` (gitignored, built by `make bots`, `.so` stripped)
-- `tf2_mvm.apworld` (gitignored, built by `make apworld-build`)
+- `tf2_mvm.apworld` (gitignored, built without Docker by `make apworld-package`)
 - `tf2_archipelago.cfg` (committed)
 - `server.cfg.tmpl` (committed)
 

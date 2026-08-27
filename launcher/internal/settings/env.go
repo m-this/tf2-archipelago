@@ -11,6 +11,7 @@ import (
 // operator's file works here unchanged.
 var EnvNames = []string{
 	"TF2AP_INSTALL_ROOT",
+	"TF2AP_COMMUNITY_CONTENT_DIR", "TF2AP_COMMUNITY_PACKS",
 	"TF2AP_TEST_MODE", "TF2AP_ARCHIPELAGO_DIR",
 	"AP_ROOM", "AP_HOST", "AP_PORT", "AP_TLS", "AP_SLOT_NAME", "AP_PASSWORD",
 	"SRCDS_HOSTNAME", "SRCDS_RCONPW", "SRCDS_PW", "SRCDS_PORT",
@@ -60,6 +61,8 @@ func applyBotEnv(s Settings) Settings {
 
 func ApplyEnv(s Settings) Settings {
 	str(&s.InstallRoot, "TF2AP_INSTALL_ROOT")
+	str(&s.CommunityContentDir, "TF2AP_COMMUNITY_CONTENT_DIR")
+	list(&s.CommunityPacks, "TF2AP_COMMUNITY_PACKS")
 	boolean(&s.TestMode, "TF2AP_TEST_MODE")
 	str(&s.ArchipelagoDir, "TF2AP_ARCHIPELAGO_DIR")
 

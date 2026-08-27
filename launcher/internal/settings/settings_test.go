@@ -1,9 +1,12 @@
 package settings
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/m-this/tf2-archipelago/gamedata"
 )
 
 // TestSaveLoadRoundTrip writes a config, reads it back, and checks the values
@@ -121,6 +124,33 @@ func TestLoadMigratesTheStartMap(t *testing.T) {
 	}
 	if loaded.SrcdsStartMap != "" {
 		t.Errorf("the start map survived the migration: %q", loaded.SrcdsStartMap)
+	}
+}
+
+func TestLoadMovesAnUnsupportedCommunityStartToSafeDefaults(t *testing.T) {
+	var unsupported string
+	for _, mission := range gamedata.Missions {
+		if gamedata.IsCommunityMission(mission.ID) && !gamedata.IsPlayableMission(mission.ID) {
+			unsupported = mission.PopFile
+			break
+		}
+	}
+	if unsupported == "" {
+		t.Fatal("the catalog has no unavailable community mission")
+	}
+	body := fmt.Sprintf(`{
+		"srcds_start_mission":%q,
+		"mvm_start_mission":%q
+	}`, unsupported, unsupported)
+	loaded, err := parse([]byte(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if loaded.SrcdsStartMission != Defaults().SrcdsStartMission {
+		t.Errorf("server start = %q, want %q", loaded.SrcdsStartMission, Defaults().SrcdsStartMission)
+	}
+	if loaded.MvmStartMission != "" {
+		t.Errorf("run still starts on unsupported mission %q", loaded.MvmStartMission)
 	}
 }
 
