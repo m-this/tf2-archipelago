@@ -361,6 +361,30 @@ func Save(s Settings) error {
 
 // withDefaults fills zero values with the defaults, so an old config file that
 // predates a field still works.
+/* withRobotScaleDefaults fills the three robot scales a file that predates them
+does not mention.
+
+Nothing said is not nought per cent: zero would be robots at a tenth of their
+damage for anybody who upgraded.
+
+The window is what cannot survive it. Its number boxes for these take a minimum
+of ten, walk refuses a value below the minimum, and a refused widget takes the
+whole settings dialog with it. Reported as the settings window no longer opening
+at all.
+*/
+func (s Settings) withRobotScaleDefaults(d Settings) Settings {
+	if s.SrcdsBluDamagePct == 0 {
+		s.SrcdsBluDamagePct = d.SrcdsBluDamagePct
+	}
+	if s.SrcdsBluHealthPct == 0 {
+		s.SrcdsBluHealthPct = d.SrcdsBluHealthPct
+	}
+	if s.SrcdsBluSpeedPct == 0 {
+		s.SrcdsBluSpeedPct = d.SrcdsBluSpeedPct
+	}
+	return s
+}
+
 func (s Settings) withDefaults() Settings {
 	d := Defaults()
 	s = withCommunityDefaults(s, d)
@@ -382,6 +406,7 @@ func (s Settings) withDefaults() Settings {
 	if s.SrcdsBotTeamSize == 0 {
 		s.SrcdsBotTeamSize = d.SrcdsBotTeamSize
 	}
+	s = s.withRobotScaleDefaults(d)
 	if s.SrcdsStartMission == "" {
 		s.SrcdsStartMission = startMissionFor(s.SrcdsStartMap, d.SrcdsStartMission)
 	}
