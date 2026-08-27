@@ -76,6 +76,9 @@ func runSettingsDialog(
 		cashRewards      *walk.CheckBox
 		buffPct          *walk.NumberEdit
 		buffStack        *walk.NumberEdit
+		bluDamage        *walk.NumberEdit
+		bluHealth        *walk.NumberEdit
+		bluSpeed         *walk.NumberEdit
 
 		startBox      *walk.ComboBox
 		startClassBox *walk.ComboBox
@@ -195,6 +198,9 @@ func runSettingsDialog(
 		next.MvmCashRewards = cashRewards.Checked()
 		next.MvmWeaponBuffPct = int(buffPct.Value())
 		next.MvmWeaponBuffStackChance = int(buffStack.Value())
+		next.SrcdsBluDamagePct = int(bluDamage.Value())
+		next.SrcdsBluHealthPct = int(bluHealth.Value())
+		next.SrcdsBluSpeedPct = int(bluSpeed.Value())
 		next.MvmExcludedMissions = pool.excluded()
 		next.ArchipelagoDir = strings.TrimSpace(appEdit.Text())
 
@@ -400,7 +406,7 @@ func runSettingsDialog(
 						},
 					},
 					{
-						Title:  "Rewards",
+						Title:  "Balancing",
 						Layout: declarative.Grid{Columns: 2},
 						Children: []declarative.Widget{
 							label("Mission tickets", "Required tickets gate deployment to each mission. Useful tickets leave all missions drawn by the seed available."),
@@ -417,6 +423,16 @@ func runSettingsDialog(
 							declarative.NumberEdit{AssignTo: &buffPct, Value: float64(s.MvmWeaponBuffPct), MinValue: 0, MaxValue: 100, Decimals: 0},
 							label("Buff stack chance", "Chance that another buff reward adds a level to a numeric buff already in the seed. Toggle effects never repeat."),
 							declarative.NumberEdit{AssignTo: &buffStack, Value: float64(s.MvmWeaponBuffStackChance), MinValue: 0, MaxValue: 100, Decimals: 0},
+
+							// The other half of balancing. The buffs above make
+							// the team stronger; these make the robots weaker,
+							// and only for a team that is short of players.
+							label("Robot damage", "What robot damage is worth with one player on RED, as a percentage, rising back to 100 at six. 100 leaves the mission as Valve wrote it."),
+							declarative.NumberEdit{AssignTo: &bluDamage, Value: float64(s.SrcdsBluDamagePct), MinValue: 10, MaxValue: 100, Decimals: 0},
+							label("Robot health", "The same for robot health. Untested: nobody has measured whether it bends a mission."),
+							declarative.NumberEdit{AssignTo: &bluHealth, Value: float64(s.SrcdsBluHealthPct), MinValue: 10, MaxValue: 100, Decimals: 0},
+							label("Robot speed", "The same for how fast robots walk. It changes how long a wave takes and how much money is on the field, not only how hard it is."),
+							declarative.NumberEdit{AssignTo: &bluSpeed, Value: float64(s.SrcdsBluSpeedPct), MinValue: 10, MaxValue: 100, Decimals: 0},
 						},
 					},
 					{

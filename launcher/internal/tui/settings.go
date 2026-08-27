@@ -77,7 +77,7 @@ func newSettingsForm(s settings.Settings, deps settingsDeps) *settingsForm {
 func (f *settingsForm) build() {
 	f.tabs = []settingsTab{
 		{title: "Player options", fields: f.playerFields()},
-		{title: "Rewards", fields: f.rewardFields()},
+		{title: "Balancing", fields: f.rewardFields()},
 		{title: "Missions", fields: f.missionFields()},
 		{title: "Archipelago room", fields: f.roomFields()},
 		{title: "Game server", fields: f.serverFields()},
@@ -110,6 +110,14 @@ func (f *settingsForm) rewardFields() []field {
 		&toggleField{label: "Cash rewards", help: "Allow temporary MvM credits in spare checks. Off makes every spare reward a persistent weapon buff.", value: &f.edited.MvmCashRewards, on: "include cash", off: "include cash"},
 		&numberField{label: "Buff share", help: "Percent of spare checks that are buffs when cash rewards are enabled.", value: &f.edited.MvmWeaponBuffPct, low: 0, high: 100},
 		&numberField{label: "Buff stack chance", help: "Chance for another level of an already drawn numeric buff. Toggle buffs never repeat.", value: &f.edited.MvmWeaponBuffStackChance, low: 0, high: 100},
+
+		/* The other half of balancing: the buffs above make the team stronger,
+		 * these make the robots weaker. Each is what the robots keep when one
+		 * human is on RED, rising back to everything at six, so the help is
+		 * only ever felt by a team that is short. */
+		&numberField{label: "Robot damage", help: "What robot damage is worth at one player, as a percentage, rising to 100 at six. 100 leaves the mission as Valve wrote it.", value: &f.edited.SrcdsBluDamagePct, low: 10, high: 100},
+		&numberField{label: "Robot health", help: "The same for robot health. Untested: nobody has measured whether it bends a mission.", value: &f.edited.SrcdsBluHealthPct, low: 10, high: 100},
+		&numberField{label: "Robot speed", help: "The same for how fast robots walk. Changes how long a wave takes and how much money is on the field, not only how hard it is.", value: &f.edited.SrcdsBluSpeedPct, low: 10, high: 100},
 	}
 }
 

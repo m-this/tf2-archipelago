@@ -109,6 +109,9 @@ func TestEveryFieldHasAnEnvVar(t *testing.T) {
 		"MvmWeaponBuffPct":           "MVM_WEAPON_BUFF_PERCENTAGE",
 		"MvmWeaponBuffStackChance":   "MVM_WEAPON_BUFF_STACK_CHANCE",
 		"MetricsPort":                "BRIDGE_METRICS_PORT",
+		"SrcdsBluDamagePct":          "SRCDS_BLU_DAMAGE_PCT",
+		"SrcdsBluHealthPct":          "SRCDS_BLU_HEALTH_PCT",
+		"SrcdsBluSpeedPct":           "SRCDS_BLU_SPEED_PCT",
 	}
 	// Fields kept only to read a config file written by an older build. They
 	// are never saved and never asked for, so there is nothing to set.

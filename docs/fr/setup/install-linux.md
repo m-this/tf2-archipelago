@@ -32,7 +32,7 @@ Puis l'interface s'ouvre dessus.
 | `r` | Le redémarre |
 | `j` | Lance Team Fortress 2 et rejoint |
 | `c` | Copie la ligne de connexion, à envoyer à un ami |
-| `,` | Les réglages, dans les sept onglets de la fenêtre |
+| `,` | Les réglages, dans les huit onglets de la fenêtre |
 | `tab` | Entre la partie, le Bot Switcher et le journal |
 | `i` | La ligne rcon. `esc` rend les touches |
 | `p` | Sur l'onglet de la partie, charge la mission sous le curseur |

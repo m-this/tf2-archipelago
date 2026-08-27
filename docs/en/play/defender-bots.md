@@ -76,6 +76,27 @@ Medic cannot hold a Gunslinger.
 
 Remove one and any seat still naming it plays stock. The team is not lost.
 
+## Bending a mission for a short team
+
+Valve tunes every wave for six defenders. The **Balancing** page of the settings
+holds the two ways to help a team that is short of them.
+
+Weapon buffs make the team stronger. They are on by default.
+
+The three robot scales make the robots weaker: damage, health and speed. Each is
+what the robots keep with one player on RED, and it rises back to 100 at six. A
+full team therefore always plays the mission as Valve wrote it. All three start
+at 100, which changes nothing.
+
+Only robot damage has a measurement behind it. At 70 it does nothing. At 50 it
+starts to bend a mission: one clear in eight attempts at a wave the unchanged
+build lost every one of twenty four times. Health and speed carry no
+measurement.
+
+Robot speed does more than lower the difficulty. A slower robot lengthens the
+wave and leaves more money on the field. It changes the pace of a mission as
+well.
+
 ## Changing the team mid-mission
 
 A lineup chosen for wave 1 is the wrong lineup for wave 5. Until now the only

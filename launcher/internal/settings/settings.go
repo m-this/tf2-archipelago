@@ -149,6 +149,17 @@ type Settings struct {
 	MvmWeaponBuffPct           int    `json:"mvm_weapon_buff_percentage"`
 	MvmWeaponBuffStackChance   int    `json:"mvm_weapon_buff_stack_chance"`
 
+	/* The three levers that bend a mission for a short team, each the scale at
+	 * one human on RED rising to 1.0 at six. 1.0 is off, and all three are off
+	 * until a run says otherwise.
+	 *
+	 * Percentages rather than the mod's floats, because a settings page with
+	 * 0.7 in a box asks the player to know what the 1.0 end means.
+	 */
+	SrcdsBluDamagePct int `json:"srcds_blu_damage_pct"`
+	SrcdsBluHealthPct int `json:"srcds_blu_health_pct"`
+	SrcdsBluSpeedPct  int `json:"srcds_blu_speed_pct"`
+
 	// Whether to enable the metrics listener and on what port.
 	MetricsPort int `json:"metrics_port"`
 }
@@ -184,6 +195,9 @@ func Defaults() Settings {
 		MvmWeaponBuffImportance:    "useful",
 		MvmWeaponBuffPct:           75,
 		MvmWeaponBuffStackChance:   25,
+		SrcdsBluDamagePct:          100,
+		SrcdsBluHealthPct:          100,
+		SrcdsBluSpeedPct:           100,
 		MetricsPort:                24681,
 	}
 }

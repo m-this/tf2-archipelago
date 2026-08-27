@@ -83,6 +83,27 @@ classe, parce qu'un Medic ne peut pas tenir un Gunslinger.
 Si vous en supprimez un, toute place qui le nomme encore joue en stock.
 L'équipe n'est pas perdue.
 
+## Adapter une mission à une équipe incomplète
+
+Valve règle chaque vague pour six défenseurs. La page **Balancing** des réglages
+tient les deux façons d'aider une équipe qui n'en a pas six.
+
+Les buffs d'armes rendent l'équipe plus forte. Ils sont actifs par défaut.
+
+Les trois échelles robots rendent les robots plus faibles : dégâts, vie et
+vitesse. Chacune est ce que les robots gardent avec un seul joueur sur RED, et
+elle remonte à 100 à six. Une équipe complète joue donc toujours la mission
+telle que Valve l'a écrite. Les trois partent à 100, ce qui ne change rien.
+
+Seuls les dégâts robots ont une mesure derrière eux. À 70 ils ne font rien. À 50
+ils commencent à infléchir une mission : une réussite sur huit tentatives. La
+vague en question, le build d'origine l'a perdue vingt-quatre fois sur
+vingt-quatre. La vie et la vitesse n'ont aucune mesure.
+
+La vitesse robots fait plus que baisser la difficulté. Un robot plus lent
+allonge la vague et laisse plus d'argent sur le terrain. Elle change aussi le
+rythme d'une mission.
+
 ## Changer l'équipe en pleine mission
 
 Une composition choisie pour la vague 1 est la mauvaise composition pour la

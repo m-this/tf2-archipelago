@@ -3,7 +3,7 @@
 One file. No Docker, no clone, no compiler. This is the same program as the
 Windows launcher. It draws the same interface in the terminal rather than in a
 window. You get the log, the run's missions, the Bot Switcher, the rcon line
-and the same seven tabs of settings. Nothing to install for it, and it works over SSH.
+and the same eight tabs of settings. Nothing to install for it, and it works over SSH.
 
 Download `tf2ap-linux-amd64` from the
 [latest release](https://github.com/m-this/tf2-archipelago/releases/latest),
@@ -30,7 +30,7 @@ Then the interface opens on it.
 | `r` | Restart it |
 | `j` | Start Team Fortress 2 and join |
 | `c` | Copy the join line, for sending to a friend |
-| `,` | The settings, in the seven tabs the window uses |
+| `,` | The settings, in the eight tabs the window uses |
 | `tab` | Between the run, the Bot Switcher and the log |
 | `i` | The rcon line. `esc` gives the keys back |
 | `p` | On the run's tab, load the mission the cursor is on |

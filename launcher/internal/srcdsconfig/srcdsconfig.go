@@ -70,6 +70,9 @@ func RenderServerCfg(s settings.Settings) (string, error) {
 		"BotCustomLoadouts": boolToInt(botlive.LibraryOf(s).Anything(s.SrcdsBotLoadouts,
 			botloadout.Seats(s.SrcdsBotTeamComp, s.SrcdsBotSeatLoadouts))),
 		"BotUpgradesChat": boolToInt(s.BotUpgradesChat),
+		"BluDamage":       scaleOf(s.SrcdsBluDamagePct),
+		"BluHealth":       scaleOf(s.SrcdsBluHealthPct),
+		"BluSpeed":        scaleOf(s.SrcdsBluSpeedPct),
 		"BotHats":         boolToInt(s.SrcdsBotHats),
 		"BotHatEffects":   boolToInt(s.SrcdsBotHatEffects),
 		"StartMission":    s.SrcdsStartMission,
@@ -206,6 +209,23 @@ func botsMode(enabled bool) int {
 		return 2
 	}
 	return 0
+}
+
+/*
+	scaleOf is the mod's float for a percentage the settings hold.
+
+The mod refuses anything under 0.1 and reads 1.0 as off, so a page nobody has
+touched writes 1.0 and changes nothing. A zero is somebody who has not set it
+rather than somebody asking for harmless robots.
+*/
+func scaleOf(pct int) string {
+	if pct <= 0 || pct > 100 {
+		return "1.0"
+	}
+	if pct < 10 {
+		pct = 10
+	}
+	return fmt.Sprintf("%.2f", float64(pct)/100.0)
 }
 
 func boolToInt(b bool) int {
