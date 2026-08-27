@@ -60,6 +60,24 @@ type snapshot struct {
 	AckedSeq int `json:"acked_seq"`
 
 	GoalSent bool `json:"goal_sent"`
+
+	/* Resume is where the team had got to, so a restart does not cost them the
+	 * mission.
+	 *
+	 * A crash takes the game server's own state with it, and the mission it
+	 * comes back on is whatever the settings name, at wave one. The checks
+	 * survive because they are here; the mission does not, because nothing
+	 * wrote it down. Reported from play as having the whole mission to do
+	 * again.
+	 */
+	Resume Resume `json:"resume,omitzero"`
+}
+
+// Resume is the mission the team was playing and the last wave they cleared in
+// it. Wave zero means they had cleared none, so there is nothing to skip.
+type Resume struct {
+	PopFile string `json:"popfile,omitempty"`
+	Wave    int    `json:"wave,omitempty"`
 }
 
 // readSnapshot loads the state file and reports the format version it was

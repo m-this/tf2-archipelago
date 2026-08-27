@@ -273,7 +273,35 @@ func (s *Server) postObjective(w http.ResponseWriter, r *http.Request) {
 	if fresh {
 		s.logger.InfoContext(r.Context(), "check recorded", "location", location.Name)
 	}
+	s.noteProgress(r.Context(), kind, request.PopFile, int(request.Wave))
 	w.WriteHeader(http.StatusNoContent)
+}
+
+/*
+	noteProgress keeps where the team is, so a restart does not cost the mission.
+
+A cleared wave moves the record forward. A cleared mission clears it, because a
+team that finished should not be dropped back into the end of it.
+
+The record is written and never read here: putting a restarted server back is
+the plugin's job, and it asks. Recording it costs one write per wave and buys
+the difference between a crash costing minutes and costing an evening.
+*/
+func (s *Server) noteProgress(ctx context.Context, kind gamedata.ObjectiveKind, popFile string, wave int) {
+	var err error
+	switch kind {
+	case gamedata.ObjectiveWaveCleared:
+		err = s.store.NoteProgress(popFile, wave)
+	case gamedata.ObjectiveMissionCleared:
+		err = s.store.ClearProgress()
+	case gamedata.ObjectiveTankDestroyed, gamedata.ObjectiveGiantKilled:
+		// Neither says a wave was won, so neither moves the record.
+		return
+	}
+	if err != nil {
+		s.logger.ErrorContext(ctx, "cannot record where the run is",
+			"popfile", popFile, "wave", wave, "error", err)
+	}
 }
 
 // noteWaveDrift records the game disagreeing with the tables about a mission's

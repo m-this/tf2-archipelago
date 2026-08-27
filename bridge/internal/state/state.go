@@ -356,6 +356,53 @@ func (s *Store) MarkGoalSent() error {
 
 // persist and broadcast are called with the lock held.
 
+/*
+	NoteProgress records where the team is, so a restart can put them back.
+
+Only ever forward, and only within one mission. A record naming a wave nobody
+reached is a way to skip content, and a wave number from the mission before is
+worse than none at all.
+
+Called on every wave the plugin reports, which is often, so it writes only when
+the record actually moves.
+*/
+func (s *Store) NoteProgress(popFile string, wave int) error {
+	if popFile == "" || wave <= 0 {
+		return nil
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	held := s.data.Resume
+	if held.PopFile == popFile && wave <= held.Wave {
+		return nil
+	}
+	s.data.Resume = Resume{PopFile: popFile, Wave: wave}
+	return s.persist()
+}
+
+// ClearProgress forgets the record, for a mission that is finished. Without it
+// the next start drops the team into the end of a mission they already beat.
+func (s *Store) ClearProgress() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.data.Resume == (Resume{}) {
+		return nil
+	}
+	s.data.Resume = Resume{}
+	return s.persist()
+}
+
+// Progress is where the team had got to, and the zero value when nothing was
+// recorded or the mission finished.
+func (s *Store) Progress() Resume {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	return s.data.Resume
+}
+
 func (s *Store) persist() error {
 	return writeSnapshot(s.path, s.data)
 }
