@@ -440,6 +440,12 @@ static const char PackAmountProps[][] = {"m_nAmount", "m_nCurrencyAmount", "m_iA
  *
  * Said once per map rather than once per bundle. A line that repeats every few
  * seconds is a line nobody reads, and it drowns the log a bundle carries.
+ *
+ * The pack heals the Scout who walks into it, which is the game's rule for
+ * credit piles and is kept on purpose. Scouts only, and per pile rather than
+ * per credit, and bundles pay between waves where a Scout is at full health at
+ * the station: 25 points of overheal that decay. Not worth paying through
+ * m_nCurrency instead, which heals nothing but hides the money from the refund.
  */
 static bool g_PackAmountChecked;
 static int g_PackAmountProp = -1;
