@@ -204,7 +204,7 @@ func (w *window) build() error {
 				StretchFactor: 1,
 				Pages: []declarative.TabPage{
 					w.session.page(w.switchMission),
-					w.bots.page(w.editSettings, w.applyCurrentBotTeam),
+					w.bots.page(func() { w.editSettingsOn("Bots") }, w.applyCurrentBotTeam),
 					{
 						Title:  "Log",
 						Layout: declarative.VBox{MarginsZero: true},
@@ -698,9 +698,13 @@ func (w *window) idle() {
 
 // editSettings opens the dialog with the handful of values a player changes.
 // The rest stay in `tf2ap.exe -configure`.
-func (w *window) editSettings() {
+func (w *window) editSettings() { w.editSettingsOn("") }
+
+// editSettingsOn opens the settings showing one tab, for a button that names
+// what it is about to change.
+func (w *window) editSettingsOn(tab string) {
 	s := w.supervisor.Settings()
-	next, ok, err := runSettingsDialog(w.main, s, w.repair, w.resetSettings, w.say)
+	next, ok, err := runSettingsDialog(w.main, s, w.repair, w.resetSettings, w.say, tab)
 	if err != nil {
 		w.say("settings: %v", err)
 		return

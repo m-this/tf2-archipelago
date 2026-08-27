@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/m-this/tf2-archipelago/gamedata"
 	"github.com/m-this/tf2-archipelago/launcher/internal/botloadout"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 )
@@ -220,4 +221,52 @@ func clone(s settings.Settings) settings.Settings {
 	out.SrcdsBotSeatLoadouts = append([]string(nil), s.SrcdsBotSeatLoadouts...)
 	out.SrcdsBotClassBlacklist = append([]string(nil), s.SrcdsBotClassBlacklist...)
 	return out
+}
+
+// The tab is the only place a player can check what the bots will carry, so a
+// loadout they built has to read as itself rather than as stock.
+func TestTeamNamesACustomLoadout(t *testing.T) {
+	class := botloadout.Classes[0]
+	weapons := gamedata.WeaponsFor(class.Key, "melee")
+	if len(weapons) == 0 {
+		t.Skip("this class ships no melee weapons")
+	}
+
+	s := settings.Settings{
+		SrcdsBotTeamSize:     1,
+		SrcdsBotTeamComp:     []string{class.Key},
+		SrcdsBotSeatLoadouts: []string{botloadout.CustomKey("gas runner")},
+		SrcdsBotCustomLoadouts: map[string]botloadout.Built{
+			"gas runner": {Class: class.Key, Melee: weapons[0].DefIndex},
+		},
+	}
+
+	seats := Team(s)
+	if len(seats) != 1 {
+		t.Fatalf("got %d seats, want 1", len(seats))
+	}
+	if !strings.Contains(seats[0].Weapons, "gas runner") {
+		t.Fatalf("the seat reads %q, want it to name gas runner", seats[0].Weapons)
+	}
+	if !strings.Contains(seats[0].Weapons, weapons[0].Name) {
+		t.Fatalf("the seat reads %q, want it to name %q", seats[0].Weapons, weapons[0].Name)
+	}
+}
+
+// A class-wide custom loadout reaches the seats that do not name one of their
+// own, by the same fallback the mod's loadout file makes.
+func TestTeamNamesACustomLoadoutGivenToTheClass(t *testing.T) {
+	class := botloadout.Classes[0]
+	s := settings.Settings{
+		SrcdsBotTeamSize: 1,
+		SrcdsBotTeamComp: []string{class.Key},
+		SrcdsBotLoadouts: map[string]string{class.Key: botloadout.CustomKey("gas runner")},
+		SrcdsBotCustomLoadouts: map[string]botloadout.Built{
+			"gas runner": {Class: class.Key, Melee: botloadout.Stock},
+		},
+	}
+
+	if got := Team(s)[0].Weapons; !strings.Contains(got, "gas runner") {
+		t.Fatalf("the seat reads %q, want it to name gas runner", got)
+	}
 }

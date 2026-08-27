@@ -1037,3 +1037,17 @@ func startClass(classes []string, index int) string {
 	}
 	return classes[index]
 }
+
+// showTab opens on the tab with that title, and stays where it is for a title
+// no tab carries.
+func (f *settingsForm) showTab(title string) {
+	if title == "" {
+		return
+	}
+	for i, tab := range f.tabs {
+		if tab.title == title {
+			f.tab = i
+			return
+		}
+	}
+}

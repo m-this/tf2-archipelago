@@ -188,13 +188,16 @@ func (m *model) stop() tea.Cmd {
 	}
 }
 
-// openSettings opens the six tabs the window opens, over the top of everything.
-func (m *model) openSettings() {
+// openSettings opens the same tabs the window opens, over the top of
+// everything. It shows the one named, so the key that says it changes the team
+// lands on the page that holds it.
+func (m *model) openSettings(tab string) {
 	m.form = newSettingsForm(m.settings, settingsDeps{
 		saved:  m.applySettings,
 		repair: m.repair,
 		reset:  m.resetSettings,
 	})
+	m.form.showTab(tab)
 }
 
 // repair is the window's Repair button: everything the launcher started has to

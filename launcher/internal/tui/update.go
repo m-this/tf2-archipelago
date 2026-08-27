@@ -156,7 +156,12 @@ func (m *model) key(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.typing = true
 		return m, nil
 	case ",":
-		m.openSettings()
+		// From the Bot Switcher, straight onto the page it names.
+		tab := ""
+		if m.view == viewBots {
+			tab = "Bots"
+		}
+		m.openSettings(tab)
 		return m, nil
 	case "j":
 		return m, m.join()

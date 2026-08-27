@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/m-this/tf2-archipelago/launcher/internal/botloadout"
+	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 )
 
 // The page builds a loadout and saves it under the name typed, and the saved
@@ -107,4 +108,25 @@ func hasChoice(choices []botloadout.Loadout, name string) bool {
 		}
 	}
 	return false
+}
+
+// The Bot Switcher's key says it changes the team on the Bots page, so it opens
+// there rather than on whatever tab happens to be first.
+func TestShowTabOpensOnTheBotsPage(t *testing.T) {
+	form := newSettingsForm(settings.Settings{}, settingsDeps{})
+	form.showTab("Bots")
+	if got := form.tabs[form.tab].title; got != "Bots" {
+		t.Fatalf("opened on %q, want Bots", got)
+	}
+}
+
+// A title no tab carries leaves the form where it was, rather than pushing it
+// to some other page.
+func TestShowTabIgnoresAnUnknownTitle(t *testing.T) {
+	form := newSettingsForm(settings.Settings{}, settingsDeps{})
+	form.showTab("Bots")
+	form.showTab("no such tab")
+	if got := form.tabs[form.tab].title; got != "Bots" {
+		t.Fatalf("moved to %q, want it to stay on Bots", got)
+	}
 }

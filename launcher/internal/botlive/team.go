@@ -55,7 +55,10 @@ func seatAt(s settings.Settings, index int) Seat {
 	if loadout == "" || loadout == botloadout.StockKey {
 		loadout = s.SrcdsBotLoadouts[class.Key]
 	}
-	seat.Weapons = class.LoadoutByKey(loadout).Label()
+	// Through the library, not through the class: the class only knows the
+	// presets this package ships, and a custom loadout is unknown to it, which
+	// is stock. The table said stock for every loadout the player built.
+	seat.Weapons = LibraryOf(s).Loadout(class, loadout).Label()
 	return seat
 }
 

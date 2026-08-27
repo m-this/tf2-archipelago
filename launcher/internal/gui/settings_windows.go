@@ -53,6 +53,7 @@ func runSettingsDialog(
 	owner walk.Form, s settings.Settings,
 	repair func() ([]string, error), reset func() error,
 	say func(format string, args ...any),
+	openOn string,
 ) (settings.Settings, bool, error) {
 	var (
 		dialog *walk.Dialog
@@ -746,6 +747,15 @@ func runSettingsDialog(
 		leftAlign(botsSize)
 		say("the bots tab took %s to build", time.Since(started).Round(time.Millisecond))
 	})
+
+	/* The tab the caller asked for, once the handler above exists.
+	 *
+	 * After the attach, never before: the Bots tab builds itself the first time
+	 * it is selected, and selecting it with nothing listening leaves an empty
+	 * page. Change the team on the Bot Switcher opens straight onto it, which
+	 * is what its tooltip has always claimed.
+	 */
+	selectTab(tabs, openOn)
 
 	// Numbers read from the left, like every other field in the dialog.
 	leftAlign(missions, sanityPct, buffPct, buffStack, bluDamage, bluHealth, bluSpeed, portEdit)
@@ -1934,4 +1944,19 @@ func buildBotsTab(
 			botsScrollPage("Looks", 2, cosmeticRows(s, looksBox)),
 		},
 	}.Create(declarative.NewBuilder(host))
+}
+
+// selectTab shows the tab with that title, and does nothing for a title no tab
+// carries: an unknown tab is not a reason to refuse the dialog.
+func selectTab(tabs *walk.TabWidget, title string) {
+	if tabs == nil || title == "" {
+		return
+	}
+	pages := tabs.Pages()
+	for i := 0; i < pages.Len(); i++ {
+		if pages.At(i).Title() == title {
+			_ = tabs.SetCurrentIndex(i)
+			return
+		}
+	}
 }
