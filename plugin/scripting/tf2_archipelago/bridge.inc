@@ -450,6 +450,19 @@ static void OnMissions(HTTPResponse response, any value, const char[] error)
     delete missions;
 
     AP_Debug("The plugin holds %d mission(s) of the run.", g_Missions.Length);
+
+    // Where the team was when the server last stopped. It rides on this answer
+    // rather than an endpoint of its own, so there is nothing else to fetch.
+    // Absent for a run that has cleared no wave in the mission it is on.
+    if (payload.HasKey("resume"))
+    {
+        JSONObject resume = view_as<JSONObject>(payload.Get("resume"));
+        char popFile[64];
+        resume.GetString("popfile", popFile, sizeof(popFile));
+        Missions_NoteResume(popFile, resume.GetInt("wave"));
+        delete resume;
+    }
+
     Missions_OnListUpdated();
 }
 

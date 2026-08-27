@@ -1224,11 +1224,15 @@ public int Menu_WeaponBuffs(Menu menu, MenuAction action, int client, int select
     return 0;
 }
 
-void WeaponBuffs_ShowMenu(int client)
+/* False when the loadout has nothing to list, and nothing was drawn. A menu
+ * holds the number keys, which are the weapon slots in MvM, so an empty one
+ * costs the player more than the space it takes.
+ */
+bool WeaponBuffs_ShowMenu(int client)
 {
     if (!MvM_IsPlayer(client))
     {
-        return;
+        return false;
     }
     Menu menu = new Menu(Menu_WeaponBuffs);
     menu.SetTitle("Archipelago weapon buffs");
@@ -1264,15 +1268,20 @@ void WeaponBuffs_ShowMenu(int client)
     }
     if (listed == 0)
     {
-        menu.AddItem("none", "No buffs for this loadout yet", ITEMDRAW_DISABLED);
+        delete menu;
+        return false;
     }
     menu.ExitButton = true;
     menu.Display(client, 20);
+    return true;
 }
 
 public Action Command_WeaponBuffs(int client, int args)
 {
-    WeaponBuffs_ShowMenu(client);
+    if (!WeaponBuffs_ShowMenu(client))
+    {
+        ReplyToCommand(client, "[AP] No buffs for this loadout yet.");
+    }
     return Plugin_Handled;
 }
 

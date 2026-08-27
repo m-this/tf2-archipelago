@@ -442,3 +442,153 @@ void Missions_Summary(char[] buffer, int maxlength)
     }
     FormatEx(buffer, maxlength, "%d unlocked of %d, %d cleared", unlocked, count, cleared);
 }
+
+/* Where the team was when the server last stopped.
+ *
+ * The bridge moves this record forward all evening and serves it on every
+ * mission list, so it is a restore only at the first answer after a load. Read
+ * again at the third map change it would drag the team off the mission they
+ * are playing.
+ */
+char g_ResumePopFile[64];
+int g_ResumeWave;
+bool g_ResumeConsulted;
+int g_ResumeTicks;
+
+// How long to keep waiting for the mission to come up before giving the
+// restore up. A changelevel plus the popfile behind it is a few seconds; past
+// two minutes something else went wrong and the team is better left alone.
+#define ResumeTick 1.0
+#define ResumeTicksMax 120
+
+/* What the bridge says the team had cleared, from the mission list answer.
+ *
+ * Acted on once per plugin load. The mission is loaded here, before the guard
+ * above gets a look at the list: that way g_SwitchingPopFile is already set and
+ * the guard leaves the restore alone instead of moving the server elsewhere
+ * first.
+ */
+void Missions_NoteResume(const char[] popFile, int wave)
+{
+    if (g_ResumeConsulted || popFile[0] == '\0' || wave <= 0)
+    {
+        return;
+    }
+    g_ResumeConsulted = true;
+
+    Mission mission;
+    if (!Missions_Find(popFile, mission) || !Missions_Playable(mission))
+    {
+        AP_Error("The run cannot play %s any more, so there is nothing to go back to.", popFile);
+        return;
+    }
+    if (wave >= mission.waves)
+    {
+        AP_Debug("The record has %s cleared to wave %d of %d, which leaves no wave to go back to.",
+            popFile, wave, mission.waves);
+        return;
+    }
+
+    strcopy(g_ResumePopFile, sizeof(g_ResumePopFile), popFile);
+    g_ResumeWave = wave;
+    CreateTimer(ResumeTick, Timer_Resume, _, TIMER_REPEAT);
+
+    char current[64];
+    MvM_PopFile(current, sizeof(current));
+    if (MvM_IsActive() && StrEqual(current, popFile, false))
+    {
+        return;
+    }
+    // The start mission is where the evening begins, and this is not a fresh
+    // evening: the record wins over it.
+    g_StartMissionApplied = true;
+    g_PlannedPopFile[0] = '\0';
+    AP_Announce("The server came back. %s loads again, at the wave the team had reached.", mission.name);
+    Missions_Load(mission);
+}
+
+/* The restore, one look per second until the mission is up.
+ *
+ * Not driven from Missions_OnListUpdated: that returns early while a switch is
+ * in flight, and nothing fetches the list again after the changelevel, so at
+ * the moment the mission finally lands there would be nobody left to jump.
+ */
+static Action Timer_Resume(Handle timer)
+{
+    if (g_ResumePopFile[0] == '\0')
+    {
+        return Plugin_Stop;
+    }
+    if (++g_ResumeTicks > ResumeTicksMax)
+    {
+        AP_Error("The mission %s never came up. The team stays where they are.", g_ResumePopFile);
+        g_ResumePopFile[0] = '\0';
+        return Plugin_Stop;
+    }
+
+    // MvM_PopFile falls back to the map name when the game will not say, and a
+    // mission whose popfile is its map name would then look loaded while the
+    // map was still coming up. The pending name is the map change not finished.
+    if (g_PendingPopFile[0] != '\0')
+    {
+        return Plugin_Continue;
+    }
+    char current[64];
+    MvM_PopFile(current, sizeof(current));
+    if (!MvM_IsActive() || !StrEqual(current, g_ResumePopFile, false))
+    {
+        return Plugin_Continue;
+    }
+
+    Mission mission;
+    if (Missions_Find(g_ResumePopFile, mission))
+    {
+        Missions_Resume(mission, g_ResumeWave);
+    }
+    g_ResumePopFile[0] = '\0';
+    return Plugin_Stop;
+}
+
+// The wave after the last one cleared, and never one the team has not earned:
+// a record naming a wave beyond the mission, or one the game is already at or
+// past, is a way to skip content rather than a way back to it.
+static void Missions_Resume(Mission mission, int cleared)
+{
+    int target = cleared + 1;
+    if (target > mission.waves)
+    {
+        AP_Debug("The record has %s cleared to wave %d of %d. Nothing to go back to.",
+            mission.popFile, cleared, mission.waves);
+        return;
+    }
+    int playing = MvM_WaveFromGame();
+    if (playing >= target)
+    {
+        AP_Debug("%s is already on wave %d, at or past the recorded %d.",
+            mission.popFile, playing, target);
+        return;
+    }
+    AP_Announce("Restored: %s at wave %d of %d. The team had cleared %d before the server stopped.",
+        mission.name, target, mission.waves, cleared);
+    Missions_JumpToWave(target);
+}
+
+// tf_mvm_jump_to_wave is a cheat, and a server left with cheats on is worse
+// than a lost mission. All three go through the command queue so they run in
+// that order: putting the variable back here and now would land before the
+// jump does. The previous value goes back rather than a hardcoded zero,
+// because somebody may have been playing with cheats on.
+static void Missions_JumpToWave(int wave)
+{
+    ConVar cheats = FindConVar("sv_cheats");
+    if (cheats == null)
+    {
+        AP_Error("This server has no sv_cheats, so the wave cannot be jumped to.");
+        return;
+    }
+    char previous[8];
+    cheats.GetString(previous, sizeof(previous));
+    ServerCommand("sv_cheats 1");
+    ServerCommand("tf_mvm_jump_to_wave %d", wave);
+    ServerCommand("sv_cheats %s", previous);
+}
