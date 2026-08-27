@@ -132,6 +132,22 @@ type mission struct {
 
 type missionsResponse struct {
 	Missions []mission `json:"missions"`
+
+	/* Resume is the mission the team was playing and the last wave they cleared,
+	 * so a server that came back from a crash can put them where they were.
+	 *
+	 * On this response rather than an endpoint of its own: the plugin already
+	 * asks for the missions when it starts, which is the moment the answer is
+	 * wanted, and a second round trip would be a second thing to go wrong.
+	 */
+	Resume *resumeAt `json:"resume,omitempty"`
+}
+
+// resumeAt is empty when the run has cleared no waves in the mission it is on,
+// which is every fresh run and every mission just started.
+type resumeAt struct {
+	PopFile string `json:"popfile"`
+	Wave    int    `json:"wave"`
 }
 
 // waveDrift is a mission whose wave count in the tables is not the one the game
@@ -412,7 +428,11 @@ func (s *Server) getMissions(w http.ResponseWriter, r *http.Request) {
 		s.logger.WarnContext(r.Context(), "the seed holds a mission the tables do not",
 			"mission", popFile)
 	}
-	writeJSON(w, s.logger, missionsResponse{Missions: missions})
+	response := missionsResponse{Missions: missions}
+	if held := s.store.Progress(); held.PopFile != "" && held.Wave > 0 {
+		response.Resume = &resumeAt{PopFile: held.PopFile, Wave: held.Wave}
+	}
+	writeJSON(w, s.logger, response)
 }
 
 // missionsFor turns the popfiles the seed drew into what a switcher can act on,

@@ -621,3 +621,36 @@ func TestAMissionCheckedByTheRoomIsNotPlayedHere(t *testing.T) {
 			missions[1].Cleared, missions[1].Played)
 	}
 }
+
+/* The missions answer carries where the team was, so a restarted server can put
+them back without a second round trip.
+
+Absent until there is something to say. A fresh run and a mission just started
+both have nothing, and a plugin that reads an empty record as "resume at wave
+zero" would be worse than one that reads nothing at all.
+*/
+func TestTheMissionsAnswerCarriesWhereTheRunWas(t *testing.T) {
+	server, store := testServer(t)
+
+	body := getJSON(t, server, "/missions")
+	if strings.Contains(body, "resume") {
+		t.Errorf("a fresh run offered somewhere to resume:\n%s", body)
+	}
+
+	if err := store.NoteProgress("mvm_decoy_advanced", 3); err != nil {
+		t.Fatal(err)
+	}
+	body = getJSON(t, server, "/missions")
+	for _, want := range []string{`"resume"`, `"mvm_decoy_advanced"`, `"wave":3`} {
+		if !strings.Contains(body, want) {
+			t.Errorf("missing %q in:\n%s", want, body)
+		}
+	}
+
+	if err := store.ClearProgress(); err != nil {
+		t.Fatal(err)
+	}
+	if body = getJSON(t, server, "/missions"); strings.Contains(body, "resume") {
+		t.Errorf("a finished mission still offered a resume:\n%s", body)
+	}
+}

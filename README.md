@@ -144,8 +144,9 @@ The design comes from the Archipelago Discord thread.
 - **ALPHAMARIOX**'s fork is where the starting data tables come from.
 - **adeleine64DS**, **Amazia**, **Snolid Ice**, **mudkipslike**,
   **TheBreadstick**, **CrystalClear** and **Pixel Silzavon** contributed.
-- **SwagDoll420** and **EZKSupernova** play-tested the runs the issue list comes
-  from. Most of what the bots do came from their reports.
+- **SwagDoll420**, **EZKSupernova**, **k-kaneta**, **Cowser** and **Peppy**
+  play-tested the runs the issue list comes from. Most of what the bots do came
+  from their reports.
 - **kelly-cs** wrote the weapon buffs, the community map support and the spawn
   recovery the bots needed to play those maps.
 
