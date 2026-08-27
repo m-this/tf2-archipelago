@@ -194,7 +194,20 @@ func TestAvailableCommunityArchivesRequiresAValidLocalZIP(t *testing.T) {
 	}
 }
 
+/*
+	The installer writes the plugin and the game data it needs beside it. A
+
+plugin without its game data loads and then cannot find the natives it was
+compiled against, which reads as the plugin being broken.
+
+Skipped without the real assets. `make embed` fetches ripext and the ordinary
+build stands in an empty zip for it, so this runs on a full build and in the
+release job rather than on every `go test`.
+*/
 func TestInstallPluginIncludesNativeProjectileGameData(t *testing.T) {
+	if len(assets.RipextZip()) < 1024 {
+		t.Skip("the embedded ripext is a placeholder; run make embed for the real one")
+	}
 	modDir := filepath.Join(t.TempDir(), "tf")
 	if err := installRipextAndPlugin(modDir); err != nil {
 		t.Fatal(err)
