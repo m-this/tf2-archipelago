@@ -95,10 +95,9 @@ func reselectLoadout(was string, choices []botloadout.Loadout) int {
 	if at := slices.IndexFunc(choices, func(l botloadout.Loadout) bool { return l.Label() == was }); at >= 0 {
 		return at
 	}
-	name := was
-	if cut := strings.Index(was, ": "); cut >= 0 {
-		name = was[:cut]
-	}
+	// Cut leaves the whole string in name when the separator is absent, which
+	// is what a preset label with no weapons after it should give.
+	name, _, _ := strings.Cut(was, ": ")
 	if at := slices.IndexFunc(choices, func(l botloadout.Loadout) bool { return l.Name == name }); at >= 0 {
 		return at
 	}
