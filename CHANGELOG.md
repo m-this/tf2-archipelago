@@ -6,13 +6,77 @@ in the release notes, so this file is the only place to write it.
 
 ## Unreleased
 
-### Weapon buffs
+## v1.11.0
 
-- Add curated, stackable weapon buffs as Archipelago rewards.
-- Support extra rockets, grenades, stickies, arrows, bolts, flares, syringes,
-  energy projectiles and thrown jars.
-- Add configurable reward classifications and optional cash rewards.
-- Add admin commands for targeted buff and unlock testing.
+The four things the 1.10.0 post promised, and two of them came from a
+contributor.
+
+### Change the team without ending the run
+
+- A **Bot Switcher** tab, between the mission list and the log, in the window
+  and in the terminal. It shows what each seat plays and carries, and one button
+  hands a new team to the server.
+- Saving a bot setting no longer restarts the server. Every other setting still
+  does, because the game reads those once at startup.
+- `!ap bots` opens the same team in the game, seat then class.
+- The bots keep the money they earned across a switch. Measured: every one came
+  back holding its full 400 credits and spent it within seconds.
+- A change made during a wave waits for the break. A bot pulled out mid-wave
+  drops its buildings, and its replacement starts again from spawn.
+
+### Build your own loadouts
+
+- A **Loadouts** page in the settings. Pick a class, pick a weapon per slot,
+  name it, save it. The saved ones join every weapon menu for that class.
+- 251 weapons, taken from what the bot mod can hand out and named from the
+  game's own files.
+- Remove a loadout and any seat still naming it plays stock. The team survives.
+
+### Balancing
+
+- The **Balancing** page holds both halves: weapon buffs make the team
+  stronger, and three new scales make the robots weaker.
+- Robot damage, health and speed. Each is what the robots keep with one player
+  on RED, and it rises back to 100 at six. A full team plays the mission as
+  Valve wrote it.
+- All three start at 100, which changes nothing.
+- Only robot damage has a measurement behind it. At 70 it does nothing. At 50 it
+  cleared a wave that the unchanged build lost twenty four times out of twenty
+  four.
+
+### Weapon buffs, by kelly-cs
+
+- Spare checks award stackable weapon buffs instead of cash. Cash is spent
+  inside the wave it arrives in; a buff lasts the run.
+- Extra rockets, grenades, stickies, arrows, bolts, flares, syringes, energy
+  projectiles and thrown jars.
+- On by default, at three quarters of the spare checks.
+
+### Community maps, by kelly-cs
+
+- Optional community mission support. Nothing bundles third-party assets: the
+  launcher fetches what you choose, or imports a ZIP you already have.
+- The list keeps Valve and community missions apart.
+- A map with no bot navigation file shows red, and the list refuses it. The
+  bots cannot walk it.
+- The launcher checks the missions you picked can satisfy the run before it
+  generates anything.
+
+### The bots
+
+- The mod moves a defender that cannot leave spawn to the objective. Some
+  community maps have navigation the bots will not use, and it happens on Valve
+  maps too. Also by kelly-cs.
+- One press of the build button makes one building. Engineers built a second
+  dispenser and a second sentry.
+- A sentry buster blowing itself up is no longer counted as a giant.
+
+### Under it
+
+- The test-bed no longer rewrites a file the running server holds open. That
+  read as a crash deep inside whichever extension it hit.
+- A crashed run now says whether the engine watchdog killed it or it segfaulted,
+  and prints the command that turns the core into a stack.
 
 ## v1.10.0
 
