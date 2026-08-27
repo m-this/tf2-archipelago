@@ -51,6 +51,8 @@ contributor.
 - Extra rockets, grenades, stickies, arrows, bolts, flares, syringes, energy
   projectiles and thrown jars.
 - On by default, at three quarters of the spare checks.
+- Test mode hands out weapon buffs early enough to try them. They were last in a
+  list of seventeen thousand, so the first one arrived about sixty waves in.
 
 ### Community maps, by kelly-cs
 
@@ -64,6 +66,12 @@ contributor.
 
 ### The bots
 
+- Engineers no longer freeze in one spot and build nothing. The mod moves a bot
+  stuck three times in the same place onto ground it can walk on. On Mannworks
+  that took a run from crashing before the first wave to four clean waves.
+- The wave-start stutter on Mannhattan is gone with it. The worst frame in a
+  wave fell from 1833 ms to 141 ms, because a bot that cannot move asks the game
+  for a route every frame.
 - The mod moves a defender that cannot leave spawn to the objective. Some
   community maps have navigation the bots will not use, and it happens on Valve
   maps too. Also by kelly-cs.
@@ -73,6 +81,13 @@ contributor.
 
 ### Under it
 
+- The settings window opens again. On a settings file written before the
+  Balancing page existed, it refused to open at all. The three robot scales came
+  back as zero, and the window will not take a number below ten.
+- The minus button at the upgrade station gives back credits that came from a
+  cash bundle. It refunds one upgrade rather than respeccing, and only the
+  respec put bundle money back. A player who spent bundle credits and then took
+  one upgrade back ended up with less than he started with.
 - The test-bed no longer rewrites a file the running server holds open. That
   read as a crash deep inside whichever extension it hit.
 - A crashed run now says whether the engine watchdog killed it or it segfaulted,
