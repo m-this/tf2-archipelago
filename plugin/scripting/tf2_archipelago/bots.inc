@@ -176,20 +176,27 @@ public void OnClientCommandKeyValues_Post(int client, KeyValues kv)
     }
     char name[32];
     kv.GetSectionName(name, sizeof(name));
-    // The money side wants the refund as much as this wants the purchase.
-    MvM_OnCommandKeyValues(client, name);
+
     if (!StrEqual(name, "MVM_Upgrade"))
     {
+        // The money side wants the refund as much as this wants the purchase.
+        MvM_OnCommandKeyValues(client, name, 0);
         return;
     }
     if (!kv.JumpToKey("upgrade"))
     {
+        MvM_OnCommandKeyValues(client, name, 0);
         return;
     }
     int slot = kv.GetNum("itemslot", -1);
     int index = kv.GetNum("upgrade", -1);
     int count = kv.GetNum("count", 1);
     kv.GoBack();
+
+    /* The count is read before the money side is told, because its sign is the
+     * only thing that separates a sale from a refund. The minus button on the
+     * station sends this same command with a negative count. */
+    MvM_OnCommandKeyValues(client, name, count);
 
     // The mod asks for zero charges when a bot's canteen is already full. The
     // game does nothing with it, so neither does anything here.

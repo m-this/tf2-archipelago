@@ -340,7 +340,7 @@ stock void MvM_OnMapStart()
  * sends is written to the log once, which is how the next bundle says the
  * real name if this one is wrong.
  */
-stock void MvM_OnCommandKeyValues(int client, const char[] name)
+stock void MvM_OnCommandKeyValues(int client, const char[] name, int count)
 {
     if (StrEqual(name, "MvM_UpgradesBegin", false))
     {
@@ -355,6 +355,21 @@ stock void MvM_OnCommandKeyValues(int client, const char[] name)
     }
     if (StrEqual(name, "MVM_Upgrade", false))
     {
+        /* A negative count is the minus button, which is a refund of one
+         * upgrade rather than the whole respec above.
+         *
+         * The game puts the balance back from its own record of the wave, and
+         * that record has never held a single bundle credit, so a player who
+         * spent bundle money and then took one upgrade back was handed a
+         * smaller number than he started with. Reported from play as the minus
+         * button refunding nothing.
+         *
+         * A sale is left alone. The game charges those against a balance that
+         * already has the bundles in it, so there is nothing to put back. */
+        if (count < 0)
+        {
+            RequestFrame(Frame_RestoreBundles, GetClientUserId(client));
+        }
         WeaponBuffs_ApplyNextFrame(client);
         return;
     }
