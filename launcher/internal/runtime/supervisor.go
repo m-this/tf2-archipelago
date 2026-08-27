@@ -131,24 +131,31 @@ func (s *Supervisor) Start(onExit func(error)) error {
 			string(current.SrcdsReach) + " needs one from steamcommunity.com/dev/managegameservers")
 	}
 
+	/* Each of these outlives this call, so a panic on any of them takes the
+	   launcher down with the server it is supervising. guard turns that into a
+	   line in the log a debug bundle carries. */
 	bridgeErr := make(chan error, 1)
-	go func() {
+	go guard("the bridge", s.emit, func() {
 		bridgeErr <- bridge.Run(ctx, cfg, s.bridgeLogger())
-	}()
+	})
 
 	srcdsErr := make(chan error, 1)
-	go func() {
+	go guard("the game server", s.emit, func() {
 		srcdsErr <- runSrcdsWithSink(ctx, current, s.logger, s.sink)
-	}()
-	go watchSourcemodErrors(ctx, filepath.Join(current.InstallRoot, "tf-dedicated"), s.sink)
+	})
+	go guard("the SourceMod error watcher", s.emit, func() {
+		watchSourcemodErrors(ctx, filepath.Join(current.InstallRoot, "tf-dedicated"), s.sink)
+	})
 
-	go s.await(session{
-		cancel:    cancel,
-		done:      done,
-		bridgeErr: bridgeErr,
-		srcdsErr:  srcdsErr,
-		stopRoom:  stopRoom,
-		onExit:    onExit,
+	go guard("the supervisor", s.emit, func() {
+		s.await(session{
+			cancel:    cancel,
+			done:      done,
+			bridgeErr: bridgeErr,
+			srcdsErr:  srcdsErr,
+			stopRoom:  stopRoom,
+			onExit:    onExit,
+		})
 	})
 	return nil
 }
