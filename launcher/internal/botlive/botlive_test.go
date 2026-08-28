@@ -270,3 +270,31 @@ func TestTeamNamesACustomLoadoutGivenToTheClass(t *testing.T) {
 		t.Fatalf("the seat reads %q, want it to name gas runner", got)
 	}
 }
+
+// The save is applied to a mission already running, so the chat line goes out
+// before the reseat rather than after the bots have come back.
+func TestTheTeamChangeIsAnnouncedFirst(t *testing.T) {
+	before := settings.Settings{
+		SrcdsBotTeamSize:     6,
+		SrcdsBotTeamComp:     []string{"engineer", "medic"},
+		SrcdsBotSeatLoadouts: []string{"ranger", "kritz"},
+	}
+	want := "say " + Announcement
+
+	lineup := clone(before)
+	lineup.SrcdsBotTeamComp = []string{"engineer", "heavyweapons"}
+	if got := Commands(before, lineup); len(got) == 0 || got[0] != want {
+		t.Errorf("first command = %v, want %q", got, want)
+	}
+
+	// The weapons move and the lineup does not, which is still a new team.
+	weapons := clone(before)
+	weapons.SrcdsBotSeatLoadouts = []string{"widowmaker", "kritz"}
+	if got := Commands(before, weapons); len(got) == 0 || got[0] != want {
+		t.Errorf("first command = %v, want %q", got, want)
+	}
+
+	if got := Commands(before, clone(before)); contains(got, want) {
+		t.Errorf("a save that changed no bot setting announced a new team: %v", got)
+	}
+}

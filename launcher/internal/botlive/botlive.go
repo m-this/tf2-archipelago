@@ -19,6 +19,10 @@ import (
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 )
 
+// Announcement is what the game chat says the moment a new team is applied, so
+// the player knows the server took the save before the bots come back.
+const Announcement = "Bot team changed, loading..."
+
 /*
 Commands is what to send, in order, to move a running server from one team to
 another.
@@ -37,16 +41,39 @@ recycles the whole team, which a loadout change needs and a lineup change does
 not, because a weapon is handed out on the way in and never again.
 */
 func Commands(before, after settings.Settings) []string {
-	out := []string{
-		fmt.Sprintf("sm_redbots_manager_defender_team_size %d", after.SrcdsBotTeamSize),
-		fmt.Sprintf("sm_redbots_manager_class_blacklist %q", botloadout.Blacklist(after.SrcdsBotClassBlacklist)),
-		fmt.Sprintf("sm_redbots_manager_team_composition %q", botloadout.Composition(after.SrcdsBotTeamComp, after.SrcdsBotClassBlacklist)),
-		fmt.Sprintf("sm_redbots_manager_use_custom_loadouts %d", customLoadouts(after)),
+	var out []string
+	// First, so the player reads it while the mod is still rebuilding the team.
+	if teamMoved(before, after) {
+		out = append(out, "say "+Announcement)
 	}
+	out = append(out, convars(after)...)
 	if loadoutFile(before) != loadoutFile(after) {
 		out = append(out, "sm_redbots_reseat")
 	}
 	return out
+}
+
+// teamMoved is whether these two settings ask for a different team at all. A
+// save that changed nothing about the bots has nothing to announce.
+func teamMoved(before, after settings.Settings) bool {
+	return !reflect.DeepEqual(teamOf(before), teamOf(after))
+}
+
+// teamOf is the part of the settings Commands sends, so a save that left the
+// bots alone compares equal.
+func teamOf(s settings.Settings) []string {
+	return append(convars(s), loadoutFile(s))
+}
+
+// convars is the lineup as the mod holds it, which is everything Commands has
+// to retype for the team to change.
+func convars(s settings.Settings) []string {
+	return []string{
+		fmt.Sprintf("sm_redbots_manager_defender_team_size %d", s.SrcdsBotTeamSize),
+		fmt.Sprintf("sm_redbots_manager_class_blacklist %q", botloadout.Blacklist(s.SrcdsBotClassBlacklist)),
+		fmt.Sprintf("sm_redbots_manager_team_composition %q", botloadout.Composition(s.SrcdsBotTeamComp, s.SrcdsBotClassBlacklist)),
+		fmt.Sprintf("sm_redbots_manager_use_custom_loadouts %d", customLoadouts(s)),
+	}
 }
 
 // loadoutFile is what the mod would read off disk for these settings, which is
