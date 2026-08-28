@@ -6,6 +6,33 @@ in the release notes, so this file is the only place to write it.
 
 ## Unreleased
 
+### The bots
+
+- Engineers that get stuck now get out. The old recovery only picked a spot
+  inside the area the bot already stood in. For a bot jammed in scenery that is
+  where he is, so it gave up. It looks at the ground around him now.
+- A run says so, because one stuck engineer costs the mission rather than one
+  seat. The team cleared none of six waves with the old recovery and six of nine
+  with the fix. Two later runs agreed.
+- Two other attempts at the same fault went in and came out again. One moved a
+  bot's nest when he kept returning; the other took him out of the game. Forty
+  minutes of the real fault reached neither threshold. Code that cannot run is
+  worse than none, because somebody will trust it.
+- The **Balancing** page keeps the robot health scale alone. Robot damage and
+  robot speed are gone: damage worked, speed did nothing, and one lever with a
+  number behind it beats three that need explaining.
+- Nothing here touches snipers or medics. A sniper on this build lurks and shoots
+  normally on Decoy, 2926 damage over a run. That is worth saying, because the
+  last two reports about him came from older builds.
+
+### Under it
+
+- A panic in the launcher's background work used to close the window and stop
+  the server somebody played on. The launcher now catches it and writes it
+  to the log a debug bundle carries.
+- One test holds the window and the terminal to the same settings. They already
+  matched. Now they cannot drift apart quietly.
+
 ## v1.11.0
 
 The four things the 1.10.0 post promised, and two of them came from a
