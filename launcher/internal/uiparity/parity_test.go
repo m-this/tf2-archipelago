@@ -58,21 +58,22 @@ func TestBothInterfacesWriteTheSameSettings(t *testing.T) {
 	}
 }
 
-// The tabs are the same, and in the same order: somebody who learns one
-// interface should not have to relearn where things are in the other.
-func TestBothInterfacesShowTheSameTabs(t *testing.T) {
-	// The window keeps the loadout builder as a page inside Bots, because it
-	// has room for sub-tabs and the terminal does not. Every other tab lines up.
-	const loadouts = "Loadouts"
+/*
+The tabs are the same in both, name for name.
 
+They differed once: the terminal kept a Loadouts tab that the window nests under
+Bots, and this test carried an exception for it. An exception in a parity test
+is a place the two are allowed to drift, so the tabs were made to match and the
+exception went.
+*/
+func TestBothInterfacesShowTheSameTabs(t *testing.T) {
 	/* The window builds most tabs in one literal and appends Networking after
 	   it, so file order is not tab order. Both lists are sorted and compared as
-	   sets: a tab present in one and missing from the other is the failure
-	   worth catching, and the order is a layout choice each interface makes. */
+	   sets: a tab in one and not the other is the failure worth catching, and
+	   the order is a layout choice each interface makes. */
 	gui := between(t, "../gui/settings_windows.go", regexp.MustCompile(`(?m)^\t+Title: +"([A-Za-z ]+)",\n(?:\t+//.*\n)*\t+Layout:`))
 	tui := between(t, "../tui/settings.go", regexp.MustCompile(`\{title: "([A-Za-z ]+)"`))
 
-	tui = slices.DeleteFunc(tui, func(s string) bool { return s == loadouts })
 	slices.Sort(gui)
 	slices.Sort(tui)
 

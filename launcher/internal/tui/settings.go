@@ -88,8 +88,7 @@ func (f *settingsForm) build() {
 		{title: "Missions", fields: f.missionFields()},
 		{title: "Archipelago room", fields: f.roomFields()},
 		{title: "Game server", fields: f.serverFields()},
-		{title: "Bots", fields: f.botFields()},
-		{title: "Loadouts", fields: f.loadoutFields()},
+		{title: "Bots", fields: append(f.botFields(), f.loadoutFields()...)},
 		{title: "Networking", fields: f.reachFields()},
 	}
 }

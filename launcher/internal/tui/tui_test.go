@@ -125,11 +125,11 @@ func TestTheSettingsScreenEditsTheRun(t *testing.T) {
 	m := screen(t)
 	m.Update(key(","))
 
-	if got := len(m.form.tabs); got != 9 {
-		t.Errorf("the settings have %d tabs, want 9", got)
+	if got := len(m.form.tabs); got != 8 {
+		t.Errorf("the settings have %d tabs, want 8", got)
 	}
 	view := m.form.view(100, 30)
-	for _, want := range []string{"Player options", "Balancing", "Bots", "Loadouts", "Networking", "Easiest tier"} {
+	for _, want := range []string{"Player options", "Rewards", "Balancing", "Bots", "Networking", "Easiest tier"} {
 		if !strings.Contains(view, want) {
 			t.Errorf("the settings do not show %q:\n%s", want, view)
 		}
