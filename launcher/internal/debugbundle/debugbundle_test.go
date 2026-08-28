@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -226,5 +227,34 @@ func TestTheSummaryNamesTheBotsVersion(t *testing.T) {
 	}
 	if held := read(t, path); !strings.Contains(held["summary.txt"], "v2.0.0") {
 		t.Errorf("the summary does not name the bots: %q", held["summary.txt"])
+	}
+}
+
+/*
+An access violation Breakpad does not catch leaves its dump with Windows, not
+beside the binary. k-kaneta's bundle carried two 0xc0000005 and no dump, which
+is why apw-eei is still inference.
+*/
+func TestCrashDumpsComeFromWindowsErrorReportingToo(t *testing.T) {
+	local := t.TempDir()
+	t.Setenv("LOCALAPPDATA", local)
+
+	wer := filepath.Join(local, "CrashDumps")
+	if err := os.MkdirAll(wer, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	dump := filepath.Join(wer, "srcds.exe.1234.dmp")
+	if err := os.WriteFile(dump, []byte("dump"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	game := filepath.Join(t.TempDir(), "tf-dedicated", "tf")
+	if err := os.MkdirAll(game, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	found := newestCrashDumps(game, 3)
+	if !slices.Contains(found, dump) {
+		t.Errorf("the dump Windows wrote was not collected: %v", found)
 	}
 }

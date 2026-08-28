@@ -244,6 +244,17 @@ func newestCrashDumps(gameDir string, limit int) []string {
 		}
 	}
 
+	/* Windows Error Reporting writes somewhere else entirely
+
+	   An access violation that Breakpad does not catch is handled by Windows,
+	   and Windows puts the dump in %LOCALAPPDATA%\CrashDumps, named after the
+	   executable rather than the game. k-kaneta's bundle carried two 0xc0000005
+	   and no dump anywhere near the install, which is apw-eei: every conclusion
+	   on that bead is still inference because this directory was never read. */
+	if local := os.Getenv("LOCALAPPDATA"); local != "" {
+		dirs = append(dirs, filepath.Join(local, "CrashDumps"))
+	}
+
 	seen := map[string]bool{}
 	var found []string
 	for _, dir := range dirs {
