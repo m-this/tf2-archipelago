@@ -2,6 +2,7 @@ package winproc
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"time"
 )
@@ -20,6 +21,15 @@ func ConsoleStdinTimeout(limit time.Duration) (*os.File, error) {
 	}
 	done := make(chan result, 1)
 	go func() {
+		/* This one goroutine outlives the timeout below when the console host
+		   hangs, so a panic in ConsoleStdin would land on nobody. Recovered
+		   into the channel instead, where the caller reads it as the failure
+		   it is. */
+		defer func() {
+			if reason := recover(); reason != nil {
+				done <- result{nil, fmt.Errorf("the console probe panicked: %v", reason)}
+			}
+		}()
 		file, err := ConsoleStdin()
 		done <- result{file, err}
 	}()
