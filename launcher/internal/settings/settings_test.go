@@ -9,8 +9,7 @@ import (
 	"github.com/m-this/tf2-archipelago/gamedata"
 )
 
-// TestSaveLoadRoundTrip writes a config, reads it back, and checks the values
-// survive. Uses a temp HOME so it does not touch the operator's real config.
+// Uses a temp HOME so it does not touch the operator's real config.
 func TestSaveLoadRoundTrip(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
 	t.Setenv("APPDATA", filepath.Join(t.TempDir(), "AppData", "Roaming"))
@@ -44,8 +43,6 @@ func TestSaveLoadRoundTrip(t *testing.T) {
 	}
 }
 
-// TestLoadMissingReturnsDefaults checks that a missing config file yields the
-// defaults rather than an error.
 func TestLoadMissingReturnsDefaults(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
 	t.Setenv("APPDATA", filepath.Join(t.TempDir(), "AppData", "Roaming"))
@@ -63,8 +60,6 @@ func TestLoadMissingReturnsDefaults(t *testing.T) {
 	}
 }
 
-// TestApplyDefaultsFillsZero checks that an old config missing a field gets the
-// default for it.
 func TestApplyDefaultsFillsZero(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
 	t.Setenv("APPDATA", filepath.Join(t.TempDir(), "AppData", "Roaming"))
@@ -83,8 +78,7 @@ func TestApplyDefaultsFillsZero(t *testing.T) {
 	}
 }
 
-// TestConfigFilePermissions checks the config file is 0600: it holds the RCON
-// password.
+// The config file is 0600: it holds the RCON password.
 func TestConfigFilePermissions(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
 	t.Setenv("APPDATA", filepath.Join(t.TempDir(), "AppData", "Roaming"))

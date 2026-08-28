@@ -1,8 +1,7 @@
 // Package assets holds the files the launcher embeds in its own binary: the
 // compiled plugin, the ripext build for this platform, and the config
-// templates. They
-// ship inside tf2ap.exe so a download is the whole install for the parts this
-// project owns.
+// templates. They ship inside tf2ap.exe so a download is the whole install for
+// the parts this project owns.
 //
 // The .smx and the ripext zip are gitignored build artefacts: the Makefile
 // fetches and copies them into embedded/ before `go build`. The cfg and the

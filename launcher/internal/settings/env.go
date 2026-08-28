@@ -226,8 +226,6 @@ func pairs(target *map[string]string, name string) {
 	*target = parsed
 }
 
-// SplitList splits on commas and drops blanks, the way every list in an .env
-// file is written.
 // SplitSeats is SplitList that keeps the empties, because a seat nobody named
 // is still a seat. It drops the trailing empties, which name no seat.
 func SplitSeats(value string) []string {
@@ -242,6 +240,8 @@ func SplitSeats(value string) []string {
 	return out[:last+1]
 }
 
+// SplitList splits on commas and drops blanks, the way every list in an .env
+// file is written.
 func SplitList(value string) []string {
 	var out []string
 	for entry := range strings.SplitSeq(value, ",") {

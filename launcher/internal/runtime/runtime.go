@@ -32,9 +32,6 @@ import (
 // consoleWait bounds the wait for the console the game server reads from.
 const consoleWait = 5 * time.Second
 
-// Run starts the bridge in-process and the game server as a subprocess, and
-// blocks until the context is cancelled or one of them stops. The bridge gets
-// a head start so the plugin can reach /unlocks on first load.
 // closeTestRoom stops the room of one on a context of its own. Run defers it,
 // and by then the context Run was given is the one that ended, so passing it
 // down would ask the room to shut down with no time to do it in.
@@ -44,6 +41,9 @@ func closeTestRoom(room *fakeroom.Room) {
 	_ = room.Close(ctx)
 }
 
+// Run starts the bridge in-process and the game server as a subprocess, and
+// blocks until the context is cancelled or one of them stops. The bridge gets
+// a head start so the plugin can reach /unlocks on first load.
 func Run(ctx context.Context, s settings.Settings, logger *slog.Logger) error {
 	// Console mode has no interface to change a setting from, but it shares
 	// this entry point with anything that does. Rendering here keeps the one

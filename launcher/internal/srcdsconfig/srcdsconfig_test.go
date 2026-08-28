@@ -14,7 +14,6 @@ func gameDir(installRoot string) string {
 	return filepath.Join(installRoot, "tf-dedicated", "tf")
 }
 
-// TestInstallServerCfg checks the template renders the right values.
 func TestInstallServerCfg(t *testing.T) {
 	installRoot := t.TempDir()
 	s := settings.Settings{
@@ -111,7 +110,6 @@ func directive(cfg, name string) string {
 	return ""
 }
 
-// TestSteamIDConversion checks the SteamID64 to STEAM_0:X:Y conversion.
 func TestSteamIDConversion(t *testing.T) {
 	// 76561197960265728 is the base, so the first account is STEAM_0:0:0.
 	got := steamIDForSourcemod("76561197960265728")

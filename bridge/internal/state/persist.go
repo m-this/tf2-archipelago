@@ -249,8 +249,7 @@ func safeSeedName(seed string) string {
 	return safe
 }
 
-// syncDir makes the rename durable: without it the file survives a crash but its name may not.
-// syncDir flushes a directory, so a rename inside it survives a power cut.
+// syncDir flushes a directory, so a rename inside it survives a crash rather than losing its name.
 //
 // That is a Unix idea. Windows has no directory handle to fsync: opening a
 // directory for it fails with "Access denied", and every persist after that

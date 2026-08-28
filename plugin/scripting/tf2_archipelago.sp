@@ -582,8 +582,6 @@ public Action Command_JoinClass(int client, const char[] command, int argc)
     return Plugin_Handled;
 }
 
-// The map rotation belongs to the operator, so the switcher does too. Anyone
-// else asking is told no rather than left wondering why nothing happened.
 /* Who may retype the lineup.
 
 The same flag the mission switch asks for. Both decide what everybody on RED
@@ -599,6 +597,8 @@ static bool BotSwitchAllowed(int client)
     return false;
 }
 
+// The map rotation belongs to the operator, so the switcher does too. Anyone
+// else asking is told no rather than left wondering why nothing happened.
 static bool MissionSwitchAllowed(int client)
 {
     if (CheckCommandAccess(client, "sm_ap_mission", ADMFLAG_CHANGEMAP))
@@ -722,7 +722,6 @@ static char[] Status_SlotList()
     return list;
 }
 
-// Tests the wiring without playing a wave, and sends a check the game failed to fire an event for.
 /* A bundle without a room, for the same reason sm_ap_report exists
  *
  * Credits only ever reach a player through Bridge_PollGrants, which is an HTTP
@@ -760,6 +759,7 @@ public Action Command_Bundle(int client, int argc)
     return Plugin_Handled;
 }
 
+// Tests the wiring without playing a wave, and sends a check the game failed to fire an event for.
 public Action Command_Report(int client, int argc)
 {
     if (argc < 1)

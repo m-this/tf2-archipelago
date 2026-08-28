@@ -275,9 +275,6 @@ func (c *Client) onRoomInfo(ctx context.Context, conn *websocket.Conn, message j
 	})
 }
 
-// onConnected records the seed's shape. The pump wakes on ready and reports;
-// the only thing sent from here is the DeathLink tag, which cannot go on
-// Connect because the slot data that decides it is what Connected carries.
 /* onDataPackage fills in the item and location names.
  *
  * The server sends them keyed by game and named-to-id, which is the wrong way
@@ -350,6 +347,9 @@ func (c *Client) rememberNames(payload connected) []string {
 	return games
 }
 
+// onConnected records the seed's shape. The pump wakes on ready and reports;
+// the only thing sent from here is the DeathLink tag, which cannot go on
+// Connect because the slot data that decides it is what Connected carries.
 func (c *Client) onConnected(
 	ctx context.Context, conn *websocket.Conn, message json.RawMessage, ready chan struct{},
 ) error {

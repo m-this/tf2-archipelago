@@ -246,8 +246,6 @@ func (s *Supervisor) Restart(onExit func(error)) error {
 	return s.Start(onExit)
 }
 
-// startTestRoom serves the multiworld of one and repoints the bridge at it,
-// when the settings ask for test mode. It returns nil otherwise.
 func (s *Supervisor) startTestRoom(ctx context.Context, cfg *config.Config) (*fakeroom.Room, error) {
 	return StartTestRoom(ctx, s.settings, cfg, s.emit)
 }
