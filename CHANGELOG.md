@@ -68,6 +68,12 @@ weapon buffs in place of spare cash. Two of them came from kelly-cs.
 
 ### The bots
 
+- Snipers with the stock rifle no longer stand where they shopped for the whole
+  mission. They were never given the sniper role, so the game never sent them to
+  a perch: a sniper carrying any other rifle worked, which is what made it look
+  like a weapon problem. Only servers with custom loadouts on were affected.
+- A bot hat the class cannot wear is turned down instead of throwing, which used
+  to cost that bot the rest of its cosmetics.
 - Engineers no longer freeze in one spot and build nothing. A bot stuck three
   times in the same place is moved onto ground around him he can walk on. On
   Mannworks that took a run from crashing before the first wave to four clean
