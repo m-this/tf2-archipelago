@@ -157,7 +157,14 @@ func srcdsArgs(s settings.Settings, exeName string) []string {
 	// launcher is having, and a player who hits a bug restarts before asking
 	// about it. The game's file is the one that survives that restart, and it is
 	// what the debug bundle promises.
-	flags := []string{"-game", "tf", "-usercon", "-console", "-condebug"}
+	/* -debug is what makes a crash readable.
+
+	Two access violations arrived in a debug bundle with no dump beside them, so
+	the function the server died in is unknown and the cause with it. Source
+	writes debug.log on a crash when this is set, with a stack, and that file
+	does not depend on Breakpad having started. It costs nothing on a server
+	that never crashes. */
+	flags := []string{"-game", "tf", "-usercon", "-console", "-condebug", "-debug"}
 	// -ip 0.0.0.0 binds every interface. Without it srcds binds to whatever
 	// its hostname resolves to, and on Debian that is 127.0.1.1: the game
 	// answers on every address, the rcon port answers only on that one, and

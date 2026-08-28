@@ -60,6 +60,11 @@ func Write(s settings.Settings, versions map[string]string, stamp time.Time) (st
 	copyIn(archive, "tf2.yaml", filepath.Join(s.InstallRoot, settings.PlayerFileName))
 	copyIn(archive, apruntime.ConsoleLogName, filepath.Join(game, apruntime.ConsoleLogName))
 	copyIn(archive, apruntime.ConsolePreviousName, filepath.Join(game, apruntime.ConsolePreviousName))
+	/* debug.log is what -debug leaves behind when the server dies, and it names
+	   the function it died in. A bundle arrived with two access violations and
+	   nothing that could say where, which is why the flag and this line exist. */
+	copyIn(archive, "debug.log", filepath.Join(game, "debug.log"))
+	copyIn(archive, "debug.log", filepath.Join(filepath.Dir(game), "debug.log"))
 	copyIn(archive, "server.cfg", filepath.Join(game, "cfg", "server.cfg"))
 	// The plugin's own config, which is written once and then belongs to the
 	// server. Two bundles were read without knowing that this file still said
@@ -215,12 +220,6 @@ func redactedSettings(s settings.Settings) string {
 	return body
 }
 
-/* newestCrashDumps finds the newest minidumps srcds left behind.
- *
- * The game writes them beside the executable or under tf/, depending on which
- * part of it crashed, and it never cleans them up. Newest by modification time
- * rather than by name: the names carry a crash id, not a date.
- */
 /* newestCrashDumps looks where srcds actually drops one.
  *
  * A bundle arrived with two access violations in its logs and no crashes/
