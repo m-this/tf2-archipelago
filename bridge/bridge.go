@@ -21,6 +21,7 @@ import (
 	"github.com/m-this/tf2-archipelago/bridge/internal/apclient"
 	"github.com/m-this/tf2-archipelago/bridge/internal/chat"
 	"github.com/m-this/tf2-archipelago/bridge/internal/deathlink"
+	"github.com/m-this/tf2-archipelago/bridge/internal/guard"
 	"github.com/m-this/tf2-archipelago/bridge/internal/httpapi"
 	"github.com/m-this/tf2-archipelago/bridge/internal/state"
 	"github.com/m-this/tf2-archipelago/fakeroom"
@@ -95,13 +96,13 @@ func servers(cfg config.Config, api *httpapi.Server) (plugin, metrics *http.Serv
 func serveAll(listeners ...*http.Server) <-chan error {
 	stopped := make(chan error, len(listeners))
 	for _, listener := range listeners {
-		go func() {
+		go guard.Run("an http listener", nil, func() {
 			err := listener.ListenAndServe()
 			if errors.Is(err, http.ErrServerClosed) {
 				err = nil
 			}
 			stopped <- err
-		}()
+		})
 	}
 	return stopped
 }
@@ -182,7 +183,7 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
 	served := serveAll(listeners...)
 
 	sessionEnded := make(chan error, 1)
-	go func() { sessionEnded <- client.Run(ctx) }()
+	go guard.Run("the Archipelago session", logger, func() { sessionEnded <- client.Run(ctx) })
 
 	var runErr error
 	select {

@@ -70,17 +70,22 @@ func Run(ctx context.Context, s settings.Settings, logger *slog.Logger) error {
 		//nolint:contextcheck // the caller's context is what is being cancelled here
 		defer closeTestRoom(room)
 	}
+	/* Both outlive this call, and the headless path has the same exposure the
+	   supervised one had: a panic on either takes the process down with the
+	   server it is running. */
+	say := func(text string) { logger.ErrorContext(ctx, "contained a panic", "detail", text) }
+
 	bridgeErr := make(chan error, 1)
-	go func() {
+	go Guard("the bridge", say, func() {
 		bridgeErr <- bridge.Run(bridgeCtx, bridgeCfg, logger)
-	}()
+	})
 
 	srcdsErr := make(chan error, 1)
 	srcdsCtx, cancelSrcds := context.WithCancel(ctx)
 	defer cancelSrcds()
-	go func() {
+	go Guard("the game server", say, func() {
 		srcdsErr <- runSrcds(srcdsCtx, s, logger)
-	}()
+	})
 
 	select {
 	case <-ctx.Done():

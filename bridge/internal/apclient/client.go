@@ -21,6 +21,7 @@ import (
 
 	"github.com/m-this/tf2-archipelago/bridge/internal/chat"
 	"github.com/m-this/tf2-archipelago/bridge/internal/deathlink"
+	"github.com/m-this/tf2-archipelago/bridge/internal/guard"
 	"github.com/m-this/tf2-archipelago/bridge/internal/state"
 	"github.com/m-this/tf2-archipelago/gamedata"
 )
@@ -183,7 +184,7 @@ func (c *Client) session(ctx context.Context) error {
 
 	ready := make(chan struct{})
 	pumped := make(chan error, 1)
-	go func() { pumped <- c.pump(ctx, conn, ready) }()
+	go guard.Run("the Archipelago pump", c.opts.Logger, func() { pumped <- c.pump(ctx, conn, ready) })
 
 	err = c.readLoop(ctx, conn, ready)
 	cancel()
