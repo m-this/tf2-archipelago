@@ -204,7 +204,7 @@ func (w *window) build() error {
 				StretchFactor: 1,
 				Pages: []declarative.TabPage{
 					w.session.page(w.switchMission),
-					w.bots.page(func() { w.editSettingsOn("Bots") }, w.applyCurrentBotTeam),
+					w.bots.page(func() { w.editSettingsOn("Bots") }),
 					{
 						Title:  "Log",
 						Layout: declarative.VBox{MarginsZero: true},
@@ -522,12 +522,6 @@ func (w *window) applyBotTeam(before settings.Settings) {
 	for _, command := range botlive.Commands(before, s) {
 		w.runRcon(command)
 	}
-}
-
-// applyCurrentBotTeam is the tab's button: hand the team over as it stands,
-// which is a change to the server and none to the settings.
-func (w *window) applyCurrentBotTeam() {
-	w.applyBotTeam(w.supervisor.Settings())
 }
 
 // joinLine is what the status bar shows under the buttons: every address of

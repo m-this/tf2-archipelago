@@ -25,7 +25,6 @@ the one press that applies it.
 type botsTab struct {
 	table   *walk.TableView
 	drawn   *walk.Label
-	applyBt *walk.PushButton
 	hint    *walk.Label
 	model   *seatsModel
 	running bool
@@ -35,8 +34,9 @@ func newBotsTab() *botsTab {
 	return &botsTab{model: &seatsModel{}}
 }
 
-// page builds the tab. onEdit opens the settings, onApply hands the team over.
-func (t *botsTab) page(onEdit, onApply func()) declarative.TabPage {
+// page builds the tab. onEdit opens the settings, where saving a team hands it
+// to the running server on its own.
+func (t *botsTab) page(onEdit func()) declarative.TabPage {
 	return declarative.TabPage{
 		Title:  "Bot Switcher",
 		Layout: declarative.VBox{},
@@ -69,13 +69,6 @@ func (t *botsTab) page(onEdit, onApply func()) declarative.TabPage {
 						MinSize:     declarative.Size{Width: 150},
 						OnClicked:   onEdit,
 					},
-					declarative.PushButton{
-						AssignTo:    &t.applyBt,
-						Text:        "Apply to the running server",
-						ToolTipText: "Hands this team to the server without ending the mission. The bots keep the money they have earned.",
-						MinSize:     declarative.Size{Width: 190},
-						OnClicked:   onApply,
-					},
 					declarative.HSpacer{},
 				},
 			},
@@ -86,7 +79,9 @@ func (t *botsTab) page(onEdit, onApply func()) declarative.TabPage {
 
 // botsHintIdle is where the same switch lives for somebody who is in the game
 // rather than in front of this window.
-const botsHintIdle = "In the game, !ap bots opens the same team."
+// Saving on the Bots page hands the team over on its own, so nothing here asks
+// for a second press.
+const botsHintIdle = "Change the team, save, and the running server takes it. In the game, !ap bots opens the same team."
 
 // say puts one line under the buttons, where the press was.
 func (t *botsTab) say(text string) { t.hint.SetText(text) }
@@ -101,14 +96,10 @@ func (t *botsTab) show(s settings.Settings) {
 	}
 }
 
-/*
-	A team can only be handed to a server that is running, and a mission that is
-
-not running is a mission the next start reads the same team from anyway.
-*/
+// A team saved while the server is down is one the next start reads anyway, so
+// the line says that rather than offering something to press.
 func (t *botsTab) setRunning(running bool) {
 	t.running = running
-	t.applyBt.SetEnabled(running)
 	if !running {
 		t.say("The server is not running. Press Start, or change the team and it starts with it.")
 		return

@@ -42,9 +42,7 @@ func (m *model) bots() string {
 
 	rows = append(rows, "")
 	rows = append(rows, styleMuted.Render(
-		styleKey.Render(",")+" change the team, on the Bots page of the settings"))
-	rows = append(rows, styleMuted.Render(
-		styleKey.Render("a")+" apply it to the running server, without ending the mission"))
+		styleKey.Render(",")+" change the team, on the Bots page of the settings. Saving hands it to the running server"))
 
 	for len(rows) < height {
 		rows = append(rows, "")

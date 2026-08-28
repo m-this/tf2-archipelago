@@ -150,8 +150,6 @@ func (m *model) key(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "shift+tab":
 		m.view = (m.view - 1 + viewCount) % viewCount
 		return m, nil
-	case "a":
-		return m, m.applyBots()
 	case "i", ":":
 		m.typing = true
 		return m, nil
@@ -237,23 +235,6 @@ func (m *model) scroll(msg tea.KeyMsg) {
 		m.offset = max(m.offset-step, 0)
 		m.follow = m.offset == 0
 	}
-}
-
-// applyBots hands the team the settings hold to the running server, without the
-// restart every other setting costs. The team is edited on the settings screen,
-// where the seats and the weapons already are; the tab shows what the server is
-// about to be told, and a is what tells it.
-func (m *model) applyBots() tea.Cmd {
-	if m.view != viewBots {
-		return nil
-	}
-	if !m.supervisor.Running() {
-		return func() tea.Msg { return noticeMsg("the server is not running") }
-	}
-	/* Nothing moved since the last save, so the before and the after are the
-	 * same settings: the tab is for handing the team over again, not for a
-	 * change it does not hold. */
-	return m.applyTeam(m.settings)
 }
 
 // play loads the selected mission through the plugin's own switcher, which is

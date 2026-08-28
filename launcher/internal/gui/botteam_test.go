@@ -6,7 +6,9 @@ import (
 	"testing"
 
 	"github.com/m-this/tf2-archipelago/gamedata"
+	"github.com/m-this/tf2-archipelago/launcher/internal/botlive"
 	"github.com/m-this/tf2-archipelago/launcher/internal/botloadout"
+	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 )
 
 /* What the window's Bots tab means, without the window. From the 1.9.0
@@ -192,5 +194,29 @@ func TestReselectLoadoutFallsBackToStockWhenRemoved(t *testing.T) {
 	at := reselectLoadout(was, after)
 	if after[at].Key != botloadout.StockKey {
 		t.Fatalf("landed on %q, want stock", after[at].Key)
+	}
+}
+
+/*
+Saving a bot team hands it to the running server on its own.
+
+There was a button for it, and pressing Save and then the button was two steps
+for one intention: nobody changes a lineup and then decides not to use it. The
+button is gone, so this holds the path that replaced it.
+*/
+func TestABotTeamChangeIsAppliedWithoutRestarting(t *testing.T) {
+	before := settings.Settings{SrcdsBotTeamComp: []string{"scout"}}
+	after := settings.Settings{SrcdsBotTeamComp: []string{"engineer"}}
+
+	if !botlive.LiveOnly(before, after) {
+		t.Error("a lineup change is not being treated as live, so saving would restart the server")
+	}
+
+	// And a change to anything else still needs the restart, or saving a port
+	// would quietly leave the server on the old one.
+	ported := before
+	ported.SrcdsPort = 27016
+	if botlive.LiveOnly(before, ported) {
+		t.Error("a port change is being treated as live, so saving would not apply it")
 	}
 }
