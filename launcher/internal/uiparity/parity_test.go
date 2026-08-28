@@ -46,6 +46,11 @@ func TestBothInterfacesWriteTheSameSettings(t *testing.T) {
 	slices.Sort(tui)
 	tui = slices.Compact(tui)
 
+	//Nought fields against nought fields compares equal, and finds nothing
+	if len(gui) < 10 || len(tui) < 10 {
+		t.Fatalf("the written fields stopped being found, so nothing was compared: window %d, terminal %d", len(gui), len(tui))
+	}
+
 	for _, name := range gui {
 		if !slices.Contains(tui, name) {
 			t.Errorf("the window writes %s and the terminal does not", name)
@@ -76,6 +81,16 @@ func TestBothInterfacesShowTheSameTabs(t *testing.T) {
 
 	slices.Sort(gui)
 	slices.Sort(tui)
+
+	/* Two empty lists are equal, and that is how this test dies quietly
+
+	Both sides are found by matching source text, so a reformat that moves a
+	Title onto its own line leaves the regex matching nothing and the comparison
+	passing on nought tabs against nought. The count is the guard, and it only
+	has to be low enough not to need editing whenever a tab is added. */
+	if len(gui) < 5 || len(tui) < 5 {
+		t.Fatalf("the tabs stopped being found, so nothing was compared: window %d, terminal %d", len(gui), len(tui))
+	}
 
 	if !slices.Equal(gui, tui) {
 		t.Errorf("tabs differ\n window:   %v\n terminal: %v", gui, tui)
