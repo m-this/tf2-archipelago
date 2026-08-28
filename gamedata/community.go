@@ -185,6 +185,10 @@ func ValidateCommunitySources(sources ...string) error {
 	for relative, description := range required {
 		return fmt.Errorf("community %s is missing: %s", description, relative)
 	}
+	return validatePopulationFacts(populations)
+}
+
+func validatePopulationFacts(populations map[string][][]byte) error {
 	for _, mission := range communityMissions {
 		relative := filepath.ToSlash(filepath.Join("scripts", "population", mission.PopFile+".pop"))
 		var found []populationFacts
