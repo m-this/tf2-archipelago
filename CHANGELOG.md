@@ -8,8 +8,8 @@ in the release notes, so this file is the only place to write it.
 
 ## v1.11.0
 
-The four things the 1.10.0 post promised, and two of them came from a
-contributor.
+Change the bot team mid-run, build your own loadouts, scale robot health, and
+weapon buffs in place of spare cash. Two of them came from kelly-cs.
 
 ### Change the team without ending the run
 
@@ -34,23 +34,14 @@ contributor.
 
 ### Balancing
 
-- The **Balancing** page holds both halves: weapon buffs make the team
-  stronger, and a robot health scale makes the robots weaker.
-- The old Balancing page is **Rewards** again, and this **Balancing** page holds
-  the robot health scale on its own. What the robots are worth and what the run
-  hands out are different questions.
-- Robot damage and robot speed are gone: damage worked, speed did nothing, and
-  one lever with a number behind it beats three that need explaining.
+- A **Balancing** page with a robot health scale, and the old Balancing page is
+  **Rewards**. What the robots are worth and what the run hands out are
+  different questions.
 - Robot health is what the robots keep with one player on RED, rising back to
   100 at six. A full team plays the mission as Valve wrote it. It starts at 100,
   which changes nothing.
-- At 50 the bots killed 108 robots a wave, against 52 to 64 for the unchanged
-  build, and cleared three waves in eight where twenty four attempts cleared
-  none.
-- Damage and speed scales shipped in a nightly and were taken out again. Both
-  were written against the robot at spawn, where the popfile overwrites them, so
-  neither did anything until that was fixed. Damage then worked and speed still
-  showed nothing, so only health stayed.
+- At 50 the bots killed 108 robots a wave, against 52 to 64 unscaled, and
+  cleared three waves in eight where twenty four attempts cleared none.
 
 ### Weapon buffs, by kelly-cs
 
@@ -77,9 +68,10 @@ contributor.
 
 ### The bots
 
-- Engineers no longer freeze in one spot and build nothing. The mod moves a bot
-  stuck three times in the same place onto ground it can walk on. On Mannworks
-  that took a run from crashing before the first wave to four clean waves.
+- Engineers no longer freeze in one spot and build nothing. A bot stuck three
+  times in the same place is moved onto ground around him he can walk on. On
+  Mannworks that took a run from crashing before the first wave to four clean
+  waves, and a team that cleared none of six waves cleared six of nine.
 - The wave-start stutter on Mannhattan is gone with it. The worst frame in a
   wave fell from 1833 ms to 141 ms, because a bot that cannot move asks the game
   for a route every frame.
@@ -89,43 +81,24 @@ contributor.
 - One press of the build button makes one building. Engineers built a second
   dispenser and a second sentry.
 - A sentry buster blowing itself up is no longer counted as a giant.
-- Engineers that get stuck now get out. The old recovery only picked a spot
-  inside the area the bot already stood in. For a bot jammed in scenery that is
-  where he is, so it gave up. It looks at the ground around him now.
-- A run says so, because one stuck engineer costs the mission rather than one
-  seat. The team cleared none of six waves with the old recovery and six of nine
-  with the fix. Two later runs agreed.
-- Two other attempts at the same fault went in and came out again. One moved a
-  bot's nest when he kept returning; the other took him out of the game. Forty
-  minutes of the real fault reached neither threshold. Code that cannot run is
-  worse than none, because somebody will trust it.
-- Nothing here touches snipers or medics. On a server with no player, a sniper
-  lurks and shoots normally: every sample of one this build was measured on had
-  him walking to a spot and firing from it. The report of stock snipers standing
-  at the upgrade bench is open and unexplained, and three attempts at it were
-  written and taken out again because each cost more than it bought.
-- `sm_redbots_feature_watch_idle_bots` works by its own name now. A drifted name
-  table pointed it at a different switch, so anybody who set it got the ammo
-  failover instead. It is the one to try against a sniper stood doing nothing.
+- `sm_redbots_feature_watch_idle_bots` sets the switch it names. It set a
+  different one before.
+
+Stock snipers standing at the upgrade bench is still open. Nothing in this
+release changes it.
 
 ### Under it
 
-- The settings window opens again. On a settings file written before the
-  Balancing page existed, it refused to open at all. The robot health scale came
-  back as zero, and the window will not take a number below ten.
+- The settings window opens on a settings file written before the Balancing
+  page existed. It refused to open at all, because the robot health scale read
+  back as zero and the window will not take a number below ten.
 - The minus button at the upgrade station gives back credits that came from a
-  cash bundle. It refunds one upgrade rather than respeccing, and only the
-  respec put bundle money back. A player who spent bundle credits and then took
-  one upgrade back ended up with less than he started with.
-- The test-bed no longer rewrites a file the running server holds open. That
-  read as a crash deep inside whichever extension it hit.
-- A crashed run now says whether the engine watchdog killed it or it segfaulted,
-  and prints the command that turns the core into a stack.
-- A panic in the launcher's background work used to close the window and stop
-  the server somebody played on. The launcher now catches it and writes it to
-  the log a debug bundle carries.
-- One test holds the window and the terminal to the same settings. They already
-  matched. Now they cannot drift apart quietly.
+  cash bundle. Taking one upgrade back used to leave you with less than you
+  started with.
+- A crash in the launcher's background work no longer closes the window and
+  stops the server you are playing on. It is caught and written to the log a
+  debug bundle carries.
+- The window and the terminal offer the same tabs and write the same settings.
 
 ## v1.10.0
 
