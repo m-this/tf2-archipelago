@@ -6,6 +6,12 @@ in the release notes, so this file is the only place to write it.
 
 ## Unreleased
 
+### Missions
+
+- Offer every stock-compatible mission found for the 19 supported community
+  maps. Mission source checks now also verify wave, tank, and giant metadata so
+  Archipelago cannot generate an objective the selected mission lacks.
+
 ### The bots
 
 - Engineers that get stuck now get out. The old recovery only picked a spot

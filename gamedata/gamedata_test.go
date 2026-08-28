@@ -223,7 +223,14 @@ func TestMissionsWithoutTanksAreExplicit(t *testing.T) {
 			without = append(without, m.Name)
 		}
 	}
-	want := []string{"Big Apple Barricade", "Empire Escalation", "Metro Malice", "Thriller Terror"}
+	want := []string{
+		"Big Apple Barricade",
+		"Empire Escalation",
+		"Metro Malice",
+		"Thriller Terror",
+		"Unholy Undead",
+		"Gatebot Apocalypse",
+	}
 	if !slices.Equal(without, want) {
 		t.Errorf("missions with no tank: %v, want %v", without, want)
 	}

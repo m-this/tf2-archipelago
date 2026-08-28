@@ -83,6 +83,50 @@ func TestUnsupportedCommunityMissionsAreNotPlayableChoices(t *testing.T) {
 	}
 }
 
+func TestPortableCommunityMissionCountsByMap(t *testing.T) {
+	want := map[string]int{
+		"mvm_area_52_rc3":        8,
+		"mvm_autumnull_rc2":      2,
+		"mvm_condemned_b3":       2,
+		"mvm_downpour_rc3a":      3,
+		"mvm_frostwynd_rc1":      2,
+		"mvm_heatrock_rc6a":      1,
+		"mvm_hideout_b3":         6,
+		"mvm_kelly_rc1b":         1,
+		"mvm_lotus_b6":           2,
+		"mvm_null_b9c":           1,
+		"mvm_oilrig_rc5d":        5,
+		"mvm_oxidize_rc3":        3,
+		"mvm_oxidize_rr18":       3,
+		"mvm_radar_b10":          3,
+		"mvm_redstone_ridge_rc5": 1,
+		"mvm_snowpine_rc4_fix1":  4,
+		"mvm_teien_rc6":          3,
+		"mvm_transmission_rc7a":  2,
+		"mvm_yiresa_rc5a":        1,
+	}
+
+	got := make(map[string]int, len(want))
+	for _, mission := range PlayableMissions() {
+		if !IsCommunityMission(mission.ID) {
+			continue
+		}
+		played, ok := MapByID(mission.Map)
+		if !ok {
+			t.Fatalf("mission %s refers to unknown map %d", mission.PopFile, mission.Map)
+		}
+		got[played.Name]++
+	}
+	if len(got) != len(want) {
+		t.Fatalf("portable community maps = %v, want %v", got, want)
+	}
+	for name, count := range want {
+		if got[name] != count {
+			t.Errorf("%s has %d portable missions, want %d", name, got[name], count)
+		}
+	}
+}
+
 func TestValidateCommunityFilesNamesTheMissingFile(t *testing.T) {
 	if len(communityMaps) != 0 || len(communityMissions) != 0 {
 		t.Skip("the committed manifest contains a real content pack")
@@ -113,5 +157,33 @@ func TestValidateRejectsUnsafeConsoleNames(t *testing.T) {
 	}
 	if !safeConsoleName("mvm_underground_rc3") {
 		t.Error("a normal community map name was rejected")
+	}
+}
+
+func TestInspectPopulationFindsOnlyReachableObjectiveKinds(t *testing.T) {
+	body := []byte(`
+// Wave { Tank { Template T_TFBot_Giant_Commented }
+WaveSchedule
+{
+    Wave
+    {
+        WaveSpawn
+        {
+            TFBot { Template T_TFBot_Giant_Soldier }
+        }
+    }
+    Wave { WaveSpawn { Tank { Health 10000 } } }
+}`)
+	want := populationFacts{Waves: 2, HasTank: true, HasGiant: true}
+	if got := inspectPopulation(body); got != want {
+		t.Fatalf("inspectPopulation() = %v, want %v", got, want)
+	}
+
+	withoutObjectives := []byte(`WaveSchedule {
+        Wave { WaveSpawn { Where SpawnBot_Giant TFBot { Template T_TFBot_SentryBuster } } }
+    }`)
+	want = populationFacts{Waves: 1}
+	if got := inspectPopulation(withoutObjectives); got != want {
+		t.Fatalf("inspectPopulation() = %v, want %v", got, want)
 	}
 }
