@@ -470,7 +470,7 @@ func runSettingsDialog(
 						},
 					},
 					{
-						Title:  "Balancing",
+						Title:  "Rewards",
 						Layout: declarative.Grid{Columns: 2},
 						Children: []declarative.Widget{
 							label("Mission tickets", "Required tickets gate deployment to each mission. Useful tickets leave all missions drawn by the seed available."),
@@ -487,10 +487,21 @@ func runSettingsDialog(
 							declarative.NumberEdit{AssignTo: &buffPct, Value: float64(s.MvmWeaponBuffPct), MinValue: 0, MaxValue: 100, Decimals: 0},
 							label("Buff stack chance", "Chance that another buff reward adds a level to a numeric buff already in the seed. Toggle effects never repeat."),
 							declarative.NumberEdit{AssignTo: &buffStack, Value: float64(s.MvmWeaponBuffStackChance), MinValue: 0, MaxValue: 100, Decimals: 0},
-
-							// The other half of balancing. The buffs above make
-							// the team stronger; these make the robots weaker,
-							// and only for a team that is short of players.
+						},
+					},
+					{
+						/* Balancing is what the robots are worth, and rewards
+						are what the run hands out. They were one page and the
+						page had to be read twice to find either. */
+						Title:  "Balancing",
+						Layout: declarative.Grid{Columns: 2},
+						Children: []declarative.Widget{
+							declarative.TextLabel{
+								Text: "Valve tunes every wave for six defenders. This takes the robots down for a team that is short of them, " +
+									"and fades back to the mission as written as the team fills.",
+								ColumnSpan: 2,
+								MaxSize:    declarative.Size{Width: sentenceWidth},
+							},
 							label("Robot health (%)", "What robot health is worth with one player on RED, as a percentage, rising back to 100 at six. 100 leaves the mission as Valve wrote it."),
 							declarative.NumberEdit{AssignTo: &bluHealth, Value: float64(s.SrcdsBluHealthPct), MinValue: 10, MaxValue: 100, Decimals: 0},
 						},

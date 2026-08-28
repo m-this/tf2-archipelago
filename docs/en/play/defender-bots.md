@@ -78,12 +78,14 @@ Remove one and any seat still naming it plays stock. The team is not lost.
 
 ## Bending a mission for a short team
 
-Valve tunes every wave for six defenders. The **Balancing** page of the settings
-holds the two ways to help a team that is short of them.
+Valve tunes every wave for six defenders. Two settings pages help a team that is
+short of them.
 
-Weapon buffs make the team stronger. They are on by default.
+Weapon buffs make the team stronger and sit on the **Rewards** page. They are on
+by default.
 
-Robot health makes the robots weaker. It is what the robots keep with one player
+Robot health makes the robots weaker and sits on the **Balancing** page. It is
+what the robots keep with one player
 on RED, and it rises back to 100 at six. A full team therefore always plays the
 mission as Valve wrote it. It starts at 100, which changes nothing.
 

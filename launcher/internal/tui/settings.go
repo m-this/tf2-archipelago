@@ -83,7 +83,8 @@ func newSettingsForm(s settings.Settings, deps settingsDeps) *settingsForm {
 func (f *settingsForm) build() {
 	f.tabs = []settingsTab{
 		{title: "Player options", fields: f.playerFields()},
-		{title: "Balancing", fields: f.rewardFields()},
+		{title: "Rewards", fields: f.rewardFields()},
+		{title: "Balancing", fields: f.balanceFields()},
 		{title: "Missions", fields: f.missionFields()},
 		{title: "Archipelago room", fields: f.roomFields()},
 		{title: "Game server", fields: f.serverFields()},
@@ -116,11 +117,18 @@ func (f *settingsForm) rewardFields() []field {
 		&toggleField{label: "Cash rewards", help: "Allow temporary MvM credits in spare checks. Off makes every spare reward a persistent weapon buff.", value: &f.edited.MvmCashRewards, on: "include cash", off: "include cash"},
 		&numberField{label: "Buff share", help: "Percent of spare checks that are buffs when cash rewards are enabled.", value: &f.edited.MvmWeaponBuffPct, low: 0, high: 100},
 		&numberField{label: "Buff stack chance", help: "Chance for another level of an already drawn numeric buff. Toggle buffs never repeat.", value: &f.edited.MvmWeaponBuffStackChance, low: 0, high: 100},
+	}
+}
 
-		/* The other half of balancing: the buffs above make the team stronger,
-		 * these make the robots weaker. Each is what the robots keep when one
-		 * human is on RED, rising back to everything at six, so the help is
-		 * only ever felt by a team that is short. */
+/*
+	balanceFields is what the robots are worth, which is a different question
+
+from what the run hands out.
+
+The two were one page and it had to be read twice to find either.
+*/
+func (f *settingsForm) balanceFields() []field {
+	return []field{
 		&numberField{label: "Robot health (%)", help: "What robot health is worth at one player, as a percentage, rising to 100 at six. 100 leaves the mission as Valve wrote it.", value: &f.edited.SrcdsBluHealthPct, low: 10, high: 100},
 	}
 }

@@ -24,9 +24,11 @@ in the release notes, so this file is the only place to write it.
   bot's nest when he kept returning; the other took him out of the game. Forty
   minutes of the real fault reached neither threshold. Code that cannot run is
   worse than none, because somebody will trust it.
-- The **Balancing** page keeps the robot health scale alone. Robot damage and
-  robot speed are gone: damage worked, speed did nothing, and one lever with a
-  number behind it beats three that need explaining.
+- The old Balancing page is **Rewards** again, and a new **Balancing** page holds
+  the robot health scale on its own. What the robots are worth and what the run
+  hands out are different questions.
+- Robot damage and robot speed are gone: damage worked, speed did nothing, and
+  one lever with a number behind it beats three that need explaining.
 - Nothing here touches snipers or medics. A sniper on this build lurks and shoots
   normally on Decoy, 2926 damage over a run. That is worth saying, because the
   last two reports about him came from older builds.

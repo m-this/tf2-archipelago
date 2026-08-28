@@ -125,8 +125,8 @@ func TestTheSettingsScreenEditsTheRun(t *testing.T) {
 	m := screen(t)
 	m.Update(key(","))
 
-	if got := len(m.form.tabs); got != 8 {
-		t.Errorf("the settings have %d tabs, want 8", got)
+	if got := len(m.form.tabs); got != 9 {
+		t.Errorf("the settings have %d tabs, want 9", got)
 	}
 	view := m.form.view(100, 30)
 	for _, want := range []string{"Player options", "Balancing", "Bots", "Loadouts", "Networking", "Easiest tier"} {
@@ -171,7 +171,7 @@ func TestEveryTabDraws(t *testing.T) {
 func TestTheMissionPoolTakesAllAndNone(t *testing.T) {
 	m := screen(t)
 	m.Update(key(","))
-	m.form.tab = 2
+	m.form.tab = tabNamed(t, m, "Missions")
 
 	find := func(label string) int {
 		for i, row := range m.form.fields() {
@@ -204,7 +204,7 @@ func TestTheMissionPoolTakesAllAndNone(t *testing.T) {
 func TestCommunityMissionsStayHiddenUntilTheirAssetsAreAvailable(t *testing.T) {
 	m := screen(t)
 	m.Update(key(","))
-	m.form.tab = 2
+	m.form.tab = tabNamed(t, m, "Missions")
 	for _, row := range m.form.fields() {
 		if strings.Contains(row.Label(), "Swamp Fever") {
 			t.Fatal("Swamp Fever is visible before its community archive is available")
@@ -294,4 +294,17 @@ func TestTheScreenOpensOnTheRun(t *testing.T) {
 	if m.view != viewSession {
 		t.Errorf("the screen opens on view %d, want the session", m.view)
 	}
+}
+
+// tabNamed finds a tab by its title, because an index moves whenever a tab is
+// added and a test that navigates by number then edits the wrong page.
+func tabNamed(t *testing.T, m *model, title string) int {
+	t.Helper()
+	for i, tab := range m.form.tabs {
+		if tab.title == title {
+			return i
+		}
+	}
+	t.Fatalf("no tab called %q", title)
+	return -1
 }

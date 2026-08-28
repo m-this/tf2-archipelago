@@ -85,10 +85,11 @@ L'équipe n'est pas perdue.
 
 ## Adapter une mission à une équipe incomplète
 
-Valve règle chaque vague pour six défenseurs. La page **Balancing** des réglages
-tient les deux façons d'aider une équipe qui n'en a pas six.
+Valve règle chaque vague pour six défenseurs. Deux pages de réglages aident une
+équipe qui n'en a pas six.
 
-Les buffs d'armes rendent l'équipe plus forte. Ils sont actifs par défaut.
+Les buffs d'armes rendent l'équipe plus forte et vivent sur la page **Rewards**.
+Ils sont actifs par défaut.
 
 La vie des robots les rend plus faibles. C'est ce que les robots gardent avec un
 seul joueur sur RED, et elle remonte à 100 à six. Une équipe complète joue donc
