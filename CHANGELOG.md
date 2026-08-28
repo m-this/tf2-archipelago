@@ -6,41 +6,6 @@ in the release notes, so this file is the only place to write it.
 
 ## Unreleased
 
-### Missions
-
-- Offer every stock-compatible mission found for the 19 supported community
-  maps. Mission source checks now also verify wave, tank, and giant metadata so
-  Archipelago cannot generate an objective the selected mission lacks.
-
-### The bots
-
-- Engineers that get stuck now get out. The old recovery only picked a spot
-  inside the area the bot already stood in. For a bot jammed in scenery that is
-  where he is, so it gave up. It looks at the ground around him now.
-- A run says so, because one stuck engineer costs the mission rather than one
-  seat. The team cleared none of six waves with the old recovery and six of nine
-  with the fix. Two later runs agreed.
-- Two other attempts at the same fault went in and came out again. One moved a
-  bot's nest when he kept returning; the other took him out of the game. Forty
-  minutes of the real fault reached neither threshold. Code that cannot run is
-  worse than none, because somebody will trust it.
-- The old Balancing page is **Rewards** again, and a new **Balancing** page holds
-  the robot health scale on its own. What the robots are worth and what the run
-  hands out are different questions.
-- Robot damage and robot speed are gone: damage worked, speed did nothing, and
-  one lever with a number behind it beats three that need explaining.
-- Nothing here touches snipers or medics. A sniper on this build lurks and shoots
-  normally on Decoy, 2926 damage over a run. That is worth saying, because the
-  last two reports about him came from older builds.
-
-### Under it
-
-- A panic in the launcher's background work used to close the window and stop
-  the server somebody played on. The launcher now catches it and writes it
-  to the log a debug bundle carries.
-- One test holds the window and the terminal to the same settings. They already
-  matched. Now they cannot drift apart quietly.
-
 ## v1.11.0
 
 The four things the 1.10.0 post promised, and two of them came from a
@@ -71,6 +36,11 @@ contributor.
 
 - The **Balancing** page holds both halves: weapon buffs make the team
   stronger, and a robot health scale makes the robots weaker.
+- The old Balancing page is **Rewards** again, and this **Balancing** page holds
+  the robot health scale on its own. What the robots are worth and what the run
+  hands out are different questions.
+- Robot damage and robot speed are gone: damage worked, speed did nothing, and
+  one lever with a number behind it beats three that need explaining.
 - Robot health is what the robots keep with one player on RED, rising back to
   100 at six. A full team plays the mission as Valve wrote it. It starts at 100,
   which changes nothing.
@@ -101,6 +71,9 @@ contributor.
   bots cannot walk it.
 - The launcher checks the missions you picked can satisfy the run before it
   generates anything.
+- Offer every stock-compatible mission found for the 19 supported community
+  maps. Mission source checks now also verify wave, tank, and giant metadata so
+  Archipelago cannot generate an objective the selected mission lacks.
 
 ### The bots
 
@@ -116,6 +89,24 @@ contributor.
 - One press of the build button makes one building. Engineers built a second
   dispenser and a second sentry.
 - A sentry buster blowing itself up is no longer counted as a giant.
+- Engineers that get stuck now get out. The old recovery only picked a spot
+  inside the area the bot already stood in. For a bot jammed in scenery that is
+  where he is, so it gave up. It looks at the ground around him now.
+- A run says so, because one stuck engineer costs the mission rather than one
+  seat. The team cleared none of six waves with the old recovery and six of nine
+  with the fix. Two later runs agreed.
+- Two other attempts at the same fault went in and came out again. One moved a
+  bot's nest when he kept returning; the other took him out of the game. Forty
+  minutes of the real fault reached neither threshold. Code that cannot run is
+  worse than none, because somebody will trust it.
+- Nothing here touches snipers or medics. On a server with no player, a sniper
+  lurks and shoots normally: every sample of one this build was measured on had
+  him walking to a spot and firing from it. The report of stock snipers standing
+  at the upgrade bench is open and unexplained, and three attempts at it were
+  written and taken out again because each cost more than it bought.
+- `sm_redbots_feature_watch_idle_bots` works by its own name now. A drifted name
+  table pointed it at a different switch, so anybody who set it got the ammo
+  failover instead. It is the one to try against a sniper stood doing nothing.
 
 ### Under it
 
@@ -130,6 +121,11 @@ contributor.
   read as a crash deep inside whichever extension it hit.
 - A crashed run now says whether the engine watchdog killed it or it segfaulted,
   and prints the command that turns the core into a stack.
+- A panic in the launcher's background work used to close the window and stop
+  the server somebody played on. The launcher now catches it and writes it to
+  the log a debug bundle carries.
+- One test holds the window and the terminal to the same settings. They already
+  matched. Now they cannot drift apart quietly.
 
 ## v1.10.0
 
