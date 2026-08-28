@@ -50,15 +50,21 @@ The recognized downloads are:
 The `-no-maps.zip` alternatives are deliberately not used: they omit the
 BSP/NAV files required by this catalog.
 
-The mission table has an explicit **Source** column (`Valve` or
-`Potato Archive`), and every start-mission choice has the same source prefix.
-This build installs every asset in the selected archives and offers one
-conservative, stock-syntax mission on each of 19 community maps:
+The mission table has an explicit **Source** column (`Valve`, `Potato Archive`,
+or `Moonlight Archive`), and every start-mission choice has the same source prefix.
+This build installs every asset in the selected archives and offers 53
+stock-syntax missions across 19 community maps. The number of compatible
+missions varies by map because missions that require SigMod are not offered:
 
-| Pack | Portable maps |
-| --- | --- |
-| Potato Archive (15) | Condemned, Downpour, Frostwynd, Heatrock, Hideout, Kelly, Lotus, Null, Oilrig, Oxidize RC3, Radar, Redstone Ridge, Snowpine, Teien, Transmission |
-| Moonlight Archive (4) | Area 52, Autumnull, Oxidize RR18, Yiresa |
+| Map | Portable missions |
+| --- | ---: |
+| Area 52 | 8 |
+| Autumnull, Condemned, Frostwynd, Lotus, Transmission | 2 each |
+| Downpour, Oxidize RC3, Oxidize RR18, Radar, Teien | 3 each |
+| Hideout | 6 |
+| Oilrig | 5 |
+| Snowpine | 4 |
+| Heatrock, Kelly, Null, Redstone Ridge, Yiresa | 1 each |
 
 The catalog enables missions that use stock server features and have the
 required map, population, and navigation files. Entries missing bot navigation

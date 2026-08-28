@@ -82,6 +82,7 @@ func TestHauntedOnlyMatchesTheCurrentApworldCapacityMath(t *testing.T) {
 	report, err := CheckSelection(Selection{
 		Difficulty:   "haunted",
 		MissionCount: 1,
+		Excluded:     excludingAllBut("mvm_ghost_town_666"),
 	})
 	if err != nil {
 		t.Fatal(err)

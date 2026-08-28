@@ -131,6 +131,7 @@ func ValidateCommunityFiles(tfRoot string) error {
 // combining them before reporting anything missing.
 func ValidateCommunitySources(sources ...string) error {
 	required := make(map[string]string)
+	populations := make(map[string][][]byte)
 	for _, m := range communityMaps {
 		required[filepath.ToSlash(filepath.Join("maps", m.Name+".bsp"))] = "map " + m.Name
 	}
@@ -149,8 +150,14 @@ func ValidateCommunitySources(sources ...string) error {
 		}
 		if info.IsDir() {
 			for relative := range required {
-				if file, err := os.Stat(filepath.Join(source, filepath.FromSlash(relative))); err == nil && file.Mode().IsRegular() {
+				path := filepath.Join(source, filepath.FromSlash(relative))
+				if file, err := os.Stat(path); err == nil && file.Mode().IsRegular() {
 					delete(required, relative)
+					if strings.HasSuffix(relative, ".pop") {
+						if body, err := os.ReadFile(path); err == nil {
+							populations[relative] = append(populations[relative], body)
+						}
+					}
 				}
 			}
 			continue
@@ -163,6 +170,14 @@ func ValidateCommunitySources(sources ...string) error {
 			name := filepath.ToSlash(file.Name)
 			name = strings.TrimPrefix(name, "tf/download/")
 			name = strings.TrimPrefix(name, "tf/")
+			if _, wanted := required[name]; wanted && strings.HasSuffix(name, ".pop") {
+				if opened, err := file.Open(); err == nil {
+					if body, err := io.ReadAll(opened); err == nil {
+						populations[name] = append(populations[name], body)
+					}
+					_ = opened.Close()
+				}
+			}
 			delete(required, name)
 		}
 		_ = reader.Close()
@@ -170,7 +185,109 @@ func ValidateCommunitySources(sources ...string) error {
 	for relative, description := range required {
 		return fmt.Errorf("community %s is missing: %s", description, relative)
 	}
+	for _, mission := range communityMissions {
+		relative := filepath.ToSlash(filepath.Join("scripts", "population", mission.PopFile+".pop"))
+		var found []populationFacts
+		matches := false
+		for _, body := range populations[relative] {
+			facts := inspectPopulation(body)
+			found = append(found, facts)
+			if facts.Waves == int(mission.Waves) && facts.HasTank == mission.HasTank && facts.HasGiant == mission.HasGiant {
+				matches = true
+				break
+			}
+		}
+		if !matches {
+			return fmt.Errorf(
+				"community mission %s metadata is waves=%d tank=%t giant=%t, population file reports %v",
+				mission.PopFile, mission.Waves, mission.HasTank, mission.HasGiant, found,
+			)
+		}
+	}
 	return nil
+}
+
+type populationFacts struct {
+	Waves    int
+	HasTank  bool
+	HasGiant bool
+}
+
+func (f populationFacts) String() string {
+	return fmt.Sprintf("waves=%d tank=%t giant=%t", f.Waves, f.HasTank, f.HasGiant)
+}
+
+// inspectPopulation reads only the stock population syntax needed to decide
+// which checks a mission can satisfy. Template names count as giant evidence:
+// community missions commonly put Attributes MiniBoss in a #base file but
+// refer to the active spawner as T_TFBot_Giant_* or another *_Giant_* name.
+func inspectPopulation(body []byte) populationFacts {
+	tokens := populationTokens(body)
+	var facts populationFacts
+	for i, token := range tokens {
+		nextIsBlock := i+1 < len(tokens) && tokens[i+1] == "{"
+		switch {
+		case strings.EqualFold(token, "Wave") && nextIsBlock:
+			facts.Waves++
+		case strings.EqualFold(token, "Tank") && nextIsBlock:
+			facts.HasTank = true
+		case strings.EqualFold(token, "MiniBoss"):
+			facts.HasGiant = true
+		case strings.EqualFold(token, "Template") && i+1 < len(tokens):
+			template := strings.ToLower(tokens[i+1])
+			if strings.Contains(template, "giant") && !strings.Contains(template, "sentrybuster") {
+				facts.HasGiant = true
+			}
+		}
+	}
+	return facts
+}
+
+// populationTokens removes comments and preserves quoted template names. It
+// is intentionally smaller than a full KeyValues parser, since population
+// files also contain event-specific extensions that stock KeyValues rejects.
+func populationTokens(body []byte) []string {
+	tokens := make([]string, 0, len(body)/8)
+	for i := 0; i < len(body); {
+		switch {
+		case body[i] == '/' && i+1 < len(body) && body[i+1] == '/':
+			i += 2
+			for i < len(body) && body[i] != '\n' {
+				i++
+			}
+		case body[i] == '{' || body[i] == '}':
+			tokens = append(tokens, string(body[i]))
+			i++
+		case body[i] == '"':
+			i++
+			start := i
+			for i < len(body) && body[i] != '"' {
+				if body[i] == '\\' && i+1 < len(body) {
+					i += 2
+					continue
+				}
+				i++
+			}
+			tokens = append(tokens, string(body[start:i]))
+			if i < len(body) {
+				i++
+			}
+		case body[i] == ' ' || body[i] == '\t' || body[i] == '\r' || body[i] == '\n':
+			i++
+		default:
+			start := i
+			for i < len(body) && body[i] != ' ' && body[i] != '\t' && body[i] != '\r' && body[i] != '\n' && body[i] != '{' && body[i] != '}' && body[i] != '"' {
+				if body[i] == '/' && i+1 < len(body) && body[i+1] == '/' {
+					break
+				}
+				i++
+			}
+			if start != i {
+				tokens = append(tokens, string(body[start:i]))
+			}
+		}
+	}
+	return tokens
 }
 
 func requireCommunityFile(root, relative, kind, name string) error {

@@ -402,6 +402,278 @@
       "mission_id": 125
     },
     {
+      "id": 7443001126,
+      "name": "Mission Ticket: Unholy Undead",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 126
+    },
+    {
+      "id": 7443001127,
+      "name": "Mission Ticket: Australian Christmas",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 127
+    },
+    {
+      "id": 7443001128,
+      "name": "Mission Ticket: Complex Chaos",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 128
+    },
+    {
+      "id": 7443001129,
+      "name": "Mission Ticket: Extraterrestrial Epidemic",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 129
+    },
+    {
+      "id": 7443001130,
+      "name": "Mission Ticket: Interstellar Intervention",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 130
+    },
+    {
+      "id": 7443001131,
+      "name": "Mission Ticket: Tech Mechs",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 131
+    },
+    {
+      "id": 7443001132,
+      "name": "Mission Ticket: Unusual Onslaught",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 132
+    },
+    {
+      "id": 7443001133,
+      "name": "Mission Ticket: Gatebot Apocalypse",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 133
+    },
+    {
+      "id": 7443001134,
+      "name": "Mission Ticket: Steelblock",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 134
+    },
+    {
+      "id": 7443001135,
+      "name": "Mission Ticket: Storm Surge",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 135
+    },
+    {
+      "id": 7443001136,
+      "name": "Mission Ticket: Alluvion",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 136
+    },
+    {
+      "id": 7443001137,
+      "name": "Mission Ticket: Fiefdom Fiasco",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 137
+    },
+    {
+      "id": 7443001138,
+      "name": "Mission Ticket: Advanced",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 138
+    },
+    {
+      "id": 7443001139,
+      "name": "Mission Ticket: Perilous Paradise",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 139
+    },
+    {
+      "id": 7443001140,
+      "name": "Mission Ticket: Autonomous Annihilation",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 140
+    },
+    {
+      "id": 7443001141,
+      "name": "Mission Ticket: Interloper",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 141
+    },
+    {
+      "id": 7443001142,
+      "name": "Mission Ticket: Intermediate",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 142
+    },
+    {
+      "id": 7443001143,
+      "name": "Mission Ticket: Mechanical Damnation",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 143
+    },
+    {
+      "id": 7443001144,
+      "name": "Mission Ticket: Oilpocalypse",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 144
+    },
+    {
+      "id": 7443001145,
+      "name": "Mission Ticket: Rescindment",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 145
+    },
+    {
+      "id": 7443001146,
+      "name": "Mission Ticket: Oil Overflow",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 146
+    },
+    {
+      "id": 7443001147,
+      "name": "Mission Ticket: Terrorist Simulation",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 147
+    },
+    {
+      "id": 7443001148,
+      "name": "Mission Ticket: Corroding Cadavers",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 148
+    },
+    {
+      "id": 7443001149,
+      "name": "Mission Ticket: Frosted Furnace",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 149
+    },
+    {
+      "id": 7443001150,
+      "name": "Mission Ticket: Grass Run",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 150
+    },
+    {
+      "id": 7443001151,
+      "name": "Mission Ticket: Greenhouse Roughhousing",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 151
+    },
+    {
+      "id": 7443001152,
+      "name": "Mission Ticket: Rocky Ravage",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 152
+    },
+    {
+      "id": 7443001153,
+      "name": "Mission Ticket: Recruits Recognition",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 153
+    },
+    {
+      "id": 7443001154,
+      "name": "Mission Ticket: Permafrost Panic",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 154
+    },
+    {
+      "id": 7443001155,
+      "name": "Mission Ticket: Shattered Iceshard",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 155
+    },
+    {
+      "id": 7443001156,
+      "name": "Mission Ticket: Raid Resort",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 156
+    },
+    {
+      "id": 7443001157,
+      "name": "Mission Ticket: Program Seppuku",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 157
+    },
+    {
+      "id": 7443001158,
+      "name": "Mission Ticket: Disruption",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 158
+    },
+    {
+      "id": 7443001159,
+      "name": "Mission Ticket: Signal Shutdown",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 159
+    },
+    {
       "id": 7443002001,
       "name": "Class: Scout",
       "kind": "class",
