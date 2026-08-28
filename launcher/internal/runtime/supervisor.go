@@ -135,19 +135,19 @@ func (s *Supervisor) Start(onExit func(error)) error {
 	   launcher down with the server it is supervising. guard turns that into a
 	   line in the log a debug bundle carries. */
 	bridgeErr := make(chan error, 1)
-	go guard("the bridge", s.emit, func() {
+	go Guard("the bridge", s.emit, func() {
 		bridgeErr <- bridge.Run(ctx, cfg, s.bridgeLogger())
 	})
 
 	srcdsErr := make(chan error, 1)
-	go guard("the game server", s.emit, func() {
+	go Guard("the game server", s.emit, func() {
 		srcdsErr <- runSrcdsWithSink(ctx, current, s.logger, s.sink)
 	})
-	go guard("the SourceMod error watcher", s.emit, func() {
+	go Guard("the SourceMod error watcher", s.emit, func() {
 		watchSourcemodErrors(ctx, filepath.Join(current.InstallRoot, "tf-dedicated"), s.sink)
 	})
 
-	go guard("the supervisor", s.emit, func() {
+	go Guard("the supervisor", s.emit, func() {
 		s.await(session{
 			cancel:    cancel,
 			done:      done,

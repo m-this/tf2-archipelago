@@ -6,7 +6,7 @@ import (
 )
 
 /*
-guard runs work that nobody is waiting on, and turns a panic in it into a line
+Guard runs work that nobody is waiting on, and turns a panic in it into a line
 rather than a dead launcher.
 
 Every one of these goroutines outlives the call that started it: the bridge, the
@@ -19,7 +19,7 @@ Not a swallow. The panic and its stack go to the sink the caller reads, which is
 the log a debug bundle carries, so it is louder here than it was as a silent
 exit. What it does not do is take the run with it.
 */
-func guard(name string, say func(string), work func()) {
+func Guard(name string, say func(string), work func()) {
 	defer func() {
 		reason := recover()
 		if reason == nil {

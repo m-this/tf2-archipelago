@@ -23,6 +23,7 @@ import (
 	"github.com/m-this/tf2-archipelago/launcher/internal/generate"
 	"github.com/m-this/tf2-archipelago/launcher/internal/installer"
 	"github.com/m-this/tf2-archipelago/launcher/internal/runshape"
+	apruntime "github.com/m-this/tf2-archipelago/launcher/internal/runtime"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 	"github.com/m-this/tf2-archipelago/launcher/internal/winproc"
 )
@@ -1556,7 +1557,7 @@ func downloadSelectedCommunityAssets(
 	status.SetTextColor(colorStarting)
 	_ = status.SetText("Downloading the selected full-with-maps packs; progress is also in the main log.")
 
-	go func() {
+	go apruntime.Guard("a settings task", func(t string) { say("%s", t) }, func() {
 		logf := func(format string, args ...any) {
 			message := fmt.Sprintf(format, args...)
 			say("community assets: %s", message)
@@ -1583,7 +1584,7 @@ func downloadSelectedCommunityAssets(
 			status.SetTextColor(colorRunning)
 			_ = status.SetText("Selected community packs are ready in " + folder)
 		})
-	}()
+	})
 }
 
 func useLocalCommunityAssets(

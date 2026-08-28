@@ -317,10 +317,10 @@ func (w *window) restartForSourcemod() {
 		return
 	}
 	w.say("SourceMod updated its gamedata. Restarting the server to load it.")
-	go func() {
+	go apruntime.Guard("a window task", w.sayLine, func() {
 		w.supervisor.Stop()
 		w.start()
-	}()
+	})
 }
 
 // noteSteamAddress keeps the relayed address the game server printed and
@@ -381,20 +381,20 @@ func (w *window) say(format string, args ...any) {
 
 func (w *window) onStartStop() {
 	if w.supervisor.Running() {
-		go func() {
+		go apruntime.Guard("a window task", w.sayLine, func() {
 			w.supervisor.Stop()
 			w.main.Synchronize(w.refresh)
-		}()
+		})
 		return
 	}
 	go w.start()
 }
 
 func (w *window) onRestart() {
-	go func() {
+	go apruntime.Guard("a window task", w.sayLine, func() {
 		w.supervisor.Stop()
 		w.start()
-	}()
+	})
 }
 
 // start installs whatever is missing, writes the server configs, then brings
@@ -620,7 +620,7 @@ func (w *window) onSend() {
 func (w *window) runRcon(command string) {
 	w.say("> %s", command)
 	s := w.supervisor.Settings()
-	go func() {
+	go apruntime.Guard("a window task", w.sayLine, func() {
 		client, err := dialRcon(s)
 		if err != nil {
 			w.say("rcon: %v", err)
@@ -637,7 +637,7 @@ func (w *window) runRcon(command string) {
 				w.append(apruntime.Line{At: time.Now(), Source: "rcon", Text: line})
 			}
 		}
-	}()
+	})
 }
 
 // switchMission is what the Session tab's button does: the plugin's own
@@ -741,10 +741,10 @@ func (w *window) editSettingsOn(tab string) {
 	// the server runs used to change nothing until the player pressed Restart
 	// themselves, and the log line saying so was easy to miss.
 	w.say("settings saved. Restarting the server to apply them.")
-	go func() {
+	go apruntime.Guard("a window task", w.sayLine, func() {
 		w.supervisor.Stop()
 		w.start()
-	}()
+	})
 }
 
 // repair is what the dialog's Repair button calls. Everything the launcher
@@ -807,3 +807,7 @@ func (w *window) writePlayerFile(s settings.Settings) {
 
 // Available reports whether this build has a window.
 func Available() bool { return true }
+
+// sayLine is say with no formatting, which is the shape Guard wants: it hands
+// over one finished line rather than a format and its arguments.
+func (w *window) sayLine(text string) { w.say("%s", text) }

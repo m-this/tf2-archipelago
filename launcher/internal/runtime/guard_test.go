@@ -25,7 +25,7 @@ func TestGuardContainsAPanicAndSaysSo(t *testing.T) {
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
-		guard("the bridge", say, func() { panic("a nil map in the log watcher") })
+		Guard("the bridge", say, func() { panic("a nil map in the log watcher") })
 	}()
 	<-done
 
@@ -47,7 +47,7 @@ func TestGuardIsSilentWhenNothingPanics(t *testing.T) {
 	var said []string
 	ran := false
 
-	guard("the bridge", func(text string) { said = append(said, text) }, func() { ran = true })
+	Guard("the bridge", func(text string) { said = append(said, text) }, func() { ran = true })
 
 	if !ran {
 		t.Error("the work did not run")
