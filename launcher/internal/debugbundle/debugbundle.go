@@ -244,21 +244,15 @@ func newestCrashDumps(gameDir, systemDir string, limit int) []string {
 		}
 	}
 
-	/* Windows Error Reporting writes somewhere else entirely. The platform
-	   boundary resolves that directory once; discovery only receives a path. */
-	if systemDir != "" {
-		dirs = append(dirs, systemDir)
-	}
-
 	seen := map[string]bool{}
 	var found []string
-	for _, dir := range dirs {
+	collect := func(dir string, wanted func(string) bool) {
 		entries, err := os.ReadDir(dir)
 		if err != nil {
-			continue
+			return
 		}
 		for _, entry := range entries {
-			if entry.IsDir() || !isCrashDump(entry.Name()) {
+			if entry.IsDir() || !wanted(entry.Name()) {
 				continue
 			}
 			path := filepath.Join(dir, entry.Name())
@@ -268,6 +262,18 @@ func newestCrashDumps(gameDir, systemDir string, limit int) []string {
 			seen[path] = true
 			found = append(found, path)
 		}
+	}
+	for _, dir := range dirs {
+		collect(dir, isCrashDump)
+	}
+	/* Windows Error Reporting writes somewhere else entirely, and for every
+	   program on the machine. Two bundles carried GameBar, Refunct and THPS12
+	   dumps under crashes/ with the note saying to read them first, while the
+	   server's own crash had left nothing. Only the game server's dumps count
+	   there. Breakpad names the ones beside the binary by a GUID, so the game
+	   directories above keep every dump they hold. */
+	if systemDir != "" {
+		collect(systemDir, isGameServerDump)
 	}
 	sort.Slice(found, func(i, j int) bool {
 		return modTime(found[i]).Before(modTime(found[j]))
@@ -282,6 +288,21 @@ func newestCrashDumps(gameDir, systemDir string, limit int) []string {
 func isCrashDump(name string) bool {
 	lower := strings.ToLower(name)
 	return strings.HasSuffix(lower, ".mdmp") || strings.HasSuffix(lower, ".dmp")
+}
+
+// isGameServerDump is a Windows Error Reporting dump of the game server or the
+// launcher, which WER names after the process: srcds.exe.1234.dmp.
+func isGameServerDump(name string) bool {
+	if !isCrashDump(name) {
+		return false
+	}
+	lower := strings.ToLower(name)
+	for _, process := range []string{"srcds", "hl2", "tf2ap"} {
+		if strings.HasPrefix(lower, process) {
+			return true
+		}
+	}
+	return false
 }
 
 func modTime(path string) time.Time {

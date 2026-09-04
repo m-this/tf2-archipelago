@@ -257,3 +257,45 @@ func TestCrashDumpsComeFromWindowsErrorReportingToo(t *testing.T) {
 		t.Errorf("the dump Windows wrote was not collected: %v", found)
 	}
 }
+
+/*
+Windows Error Reporting keeps a dump for every program on the machine. Two
+bundles carried GameBar, Refunct and THPS12 dumps under crashes/, and the summary
+told the reader to open them first, while the server's own crash had left none.
+Only the game server's dumps come out of that directory.
+*/
+func TestOtherProgramsDumpsStayOutOfTheBundle(t *testing.T) {
+	wer := filepath.Join(t.TempDir(), "CrashDumps")
+	if err := os.MkdirAll(wer, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"GameBar.exe.14908-tail.dmp", "Refunct-Win32-Shipping.exe.14640-tail.dmp", "srcds.exe.1234.dmp", "tf2ap.exe.77.dmp"} {
+		if err := os.WriteFile(filepath.Join(wer, name), []byte("dump"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	game := filepath.Join(t.TempDir(), "tf-dedicated", "tf")
+	if err := os.MkdirAll(game, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	found := newestCrashDumps(game, wer, 5)
+	if len(found) != 2 {
+		t.Fatalf("collected %v, want only the game server's and the launcher's", found)
+	}
+	for _, path := range found {
+		if strings.Contains(path, "GameBar") || strings.Contains(path, "Refunct") {
+			t.Errorf("another program's dump was collected: %s", path)
+		}
+	}
+
+	// Breakpad names its dumps beside the binary by a GUID, so the game
+	// directories keep whatever they hold.
+	guid := filepath.Join(game, "a1b2c3d4-0000-1111-2222-333344445555.mdmp")
+	if err := os.WriteFile(guid, []byte("dump"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if found := newestCrashDumps(game, wer, 5); !slices.Contains(found, guid) {
+		t.Errorf("Breakpad's dump was dropped: %v", found)
+	}
+}
