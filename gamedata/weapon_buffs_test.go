@@ -110,7 +110,7 @@ func TestMechanicSpecificEffectsStayOnTheirWeapons(t *testing.T) {
 	}{
 		{[]string{"airblast-power", "airblast-rate", "charged-airblast", "airblast-cost"}, airblastWeapons},
 		{[]string{"building-health", "sentry-fire-rate", "disposable-sentry", "metal-regen", "max-metal", "construction-rate", "repair-rate"}, engineerWeapons},
-		{[]string{"healing", "healing-received", "uber-rate", "uber-on-hit", "uber-duration"}, mediguns},
+		{[]string{"healing", "healing-received", "uber-rate", "uber-duration"}, mediguns},
 		{[]string{"banner-duration"}, banners},
 		{[]string{"cloak-duration", "cloak-regen"}, watches},
 		{[]string{"cloak-on-hit", "cloak-on-kill"}, spyAttackWeapons},
@@ -450,6 +450,42 @@ func TestArmorPiercingIsAKnifeBuff(t *testing.T) {
 	} {
 		if got := buffNamed(t, name, "armor-piercing").Eligible; got != want {
 			t.Errorf("%s armor piercing eligible = %t, want %t", name, got, want)
+		}
+	}
+}
+
+// Every pair the sheet cuts names a weapon and an effect the tables know, and
+// the cut only ever removes: a pair the rules already refuse is redundant here
+// and worth a line less.
+func TestSheetCutsNameRealWeaponsAndEffects(t *testing.T) {
+	effects := map[string]bool{}
+	for _, effect := range WeaponEffects {
+		effects[effect.Key] = true
+	}
+	for name, keys := range sheetCuts {
+		weaponNamed(t, name)
+		for key := range keys {
+			if !effects[key] {
+				t.Errorf("%s cuts %q, which is not an effect", name, key)
+			}
+			if buffNamed(t, name, key).Eligible {
+				t.Errorf("%s/%s is still eligible", name, key)
+			}
+		}
+	}
+	for name, want := range map[string]bool{"Rocket Launcher": false, "Scattergun": true} {
+		if got := buffNamed(t, name, "accuracy").Eligible; got != want {
+			t.Errorf("%s accuracy eligible = %t, want %t", name, got, want)
+		}
+	}
+}
+
+// Über on hit needs a hit, and a medigun heals: the sheet marks it N on all
+// four, so the effect is offered nowhere and keeps its ID.
+func TestUberOnHitIsOfferedNowhere(t *testing.T) {
+	for _, buff := range WeaponBuffs {
+		if buff.EffectID == 40 && buff.Eligible {
+			t.Errorf("%s still offers über on hit", buff.Weapon)
 		}
 	}
 }

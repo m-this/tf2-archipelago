@@ -14,8 +14,18 @@ in the release notes, so this file is the only place to write it.
   big to read, so nothing you checked ever reached the room.
 - A debug bundle only carries the game server's own crash dumps, not every
   program's on the machine.
+- A run that crossed the 1.10 upgrade had every mission it had cleared read as
+  "collected", and a missionsanity goal counted none of them. The old state
+  file could not say which checks were yours, and they all were.
+- Robot health scaling holds. The maximum the game reported was read off the
+  wrong cell after the number was written, and the bots' own reading of a
+  teammate's maximum health, their wave credit totals and the sapper's
+  buildable list were reading the same wrong cell.
 - Explode on ignite is gone from the buff pool: on a minigun it ended a wave
-  on its own.
+  on its own. Über on hit goes with it: a medigun never hits.
+- Ninety-six buff and weapon pairs that did nothing are out of the pool, from
+  Cowser's sheet: accuracy on weapons with no spread, reload and clip buffs on
+  weapons with no clip, kill buffs on the two jumpers, and the like.
 - Projectile penetration is no longer offered on explosives. Bleed lands one
   stack per enemy instead of one per hit. Armor piercing is a knife buff only,
   since the game reads it on backstabs and nowhere else. Melee fire rate buffs

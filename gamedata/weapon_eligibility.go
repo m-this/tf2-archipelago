@@ -202,6 +202,9 @@ var cliplessWeapons = names(
 
 func weaponEffectEligible(weapon BuffWeapon, effect WeaponEffect) bool {
 	name, key := weapon.Name, effect.Key
+	if cutBySheet(name, key) {
+		return false
+	}
 	if decided, eligible := eligibilityByShape(name, key); decided {
 		return eligible
 	}
