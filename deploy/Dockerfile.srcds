@@ -65,6 +65,11 @@ COPY --from=bots /repo/deploy/bots/build/package/addons \
 	/opt/tf2-archipelago/addons
 COPY --from=build /plugin/build/tf2_archipelago.smx \
 	/opt/tf2-archipelago/addons/sourcemod/plugins/tf2_archipelago.smx
+# The plugin refuses to load without its gamedata, and a server without the
+# plugin is stock Mann vs Machine with nothing saying so. The launcher embeds
+# this file; the image has to carry it the same way.
+COPY plugin/gamedata/tf2_archipelago.txt \
+	/opt/tf2-archipelago/addons/sourcemod/gamedata/tf2_archipelago.txt
 COPY deploy/srcds/tf2_archipelago.cfg \
 	/opt/tf2-archipelago/cfg/sourcemod/tf2_archipelago.cfg
 COPY deploy/srcds-entrypoint.sh /usr/local/bin/entrypoint.sh
