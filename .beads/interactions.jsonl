@@ -77,3 +77,5 @@
 {"id":"int-38aec20bc639999ec668f45be77ea2b4","kind":"field_change","created_at":"2026-08-29T07:17:20.375182496Z","actor":"m-this","issue_id":"apw-eei","extra":{"field":"status","new_value":"open","old_value":"in_progress"}}
 {"id":"int-645a40cdeea48efffb295626e8433896","kind":"field_change","created_at":"2026-08-29T07:17:20.928856204Z","actor":"m-this","issue_id":"apw-onf","extra":{"field":"priority","new_value":"1","old_value":"0"}}
 {"id":"int-55de8294da18cdcfe145871c422ae29e","kind":"field_change","created_at":"2026-08-29T07:17:21.544083289Z","actor":"m-this","issue_id":"apw-onf","extra":{"field":"status","new_value":"open","old_value":"in_progress"}}
+{"id":"int-ca4d09c20591a62bf03c20958db13b9b","kind":"field_change","created_at":"2026-09-04T22:26:07.374027628Z","actor":"m-this","issue_id":"apw-2cp","extra":{"field":"status","new_value":"in_progress","old_value":"open"}}
+{"id":"int-44fb344089de10ebb7f96f7185ce7472","kind":"field_change","created_at":"2026-09-04T22:26:17.214797158Z","actor":"m-this","issue_id":"apw-nwt","extra":{"field":"status","new_value":"in_progress","old_value":"open"}}
