@@ -267,6 +267,7 @@ class TF2MvMWorld(World):
             "goal_mission": self.goal_mission.pop_file,
             "missionsanity_target": self.missionsanity_target,
             "death_link": bool(self.options.death_link.value),
+            "server_mods": sorted(self.options.server_mods.value),
             "mission_ticket_importance": self.options.mission_ticket_importance.current_key,
         }
 
@@ -274,10 +275,13 @@ class TF2MvMWorld(World):
         floor = data.DIFFICULTIES.index(self.options.difficulty_pool.current_key)
         allowed = data.DIFFICULTIES[floor:]
         excluded = self.options.excluded_missions.value
+        mods = self.options.server_mods.value
         return [
             mission
             for mission in data.MISSIONS
-            if mission.playable and mission.difficulty in allowed and mission.name not in excluded
+            if mission.seedable_with(mods)
+            and mission.difficulty in allowed
+            and mission.name not in excluded
         ]
 
     @staticmethod

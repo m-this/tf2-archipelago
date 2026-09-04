@@ -30,7 +30,7 @@ class MissionCount(Range):
 
     display_name = "Mission Count"
     range_start = 1
-    range_end = sum(mission.playable for mission in data.MISSIONS)
+    range_end = len(data.MISSION_NAMES)
     default = 8
 
 
@@ -60,7 +60,20 @@ class ExcludedMissions(OptionSet):
     """
 
     display_name = "Excluded Missions"
-    valid_keys = frozenset(mission.name for mission in data.MISSIONS if mission.playable)
+    valid_keys = data.MISSION_NAMES
+
+
+class ServerMods(OptionSet):
+    """Server-side mods the game server loads, by key.
+
+    Some community missions need a mod the stock server does not have. The
+    run draws those only when the mod is named here, so a seed never asks a
+    server for a mission it cannot run. sigsegv-mvm is SigMod, which upstream
+    ships for Linux servers only.
+    """
+
+    display_name = "Server Mods"
+    valid_keys = data.SERVER_MOD_KEYS
 
 
 # FreeText and not Choice: a Choice needs one class attribute per value, and
@@ -225,6 +238,7 @@ class TF2MvMOptions(PerGameCommonOptions):
     mission_count: MissionCount
     difficulty_pool: DifficultyPool
     excluded_missions: ExcludedMissions
+    server_mods: ServerMods
     start_mission: StartMission
     start_class: StartClass
     goal: Goal
@@ -241,7 +255,8 @@ class TF2MvMOptions(PerGameCommonOptions):
 
 option_groups = [
     OptionGroup(
-        "Run shape", [MissionCount, DifficultyPool, ExcludedMissions, StartMission, StartClass]
+        "Run shape",
+        [MissionCount, DifficultyPool, ExcludedMissions, ServerMods, StartMission, StartClass],
     ),
     OptionGroup("Goal", [Goal, MissionsanityPercentage]),
     OptionGroup(

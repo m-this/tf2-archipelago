@@ -41,6 +41,10 @@ in the release notes, so this file is the only place to write it.
   health the mission gives them, and setting it below moved nothing either:
   the server wrote the number somewhere the game recomputes a moment later.
   The server log now says what each scaled robot ended up worth.
+- Community missions can now name a server mod they need. The Docker image
+  carries SigMod and loads it when `SRCDS_MODS=sigsegv-mvm`, and the seed's
+  new `server_mods` option draws those missions only for a server that has
+  it. The Windows launcher shows them locked: SigMod has no Windows build.
 - Archipelago weapon buffs now stay active when players refund upgrades at an
   MvM station. They no longer appear as purchased, infinitely refundable MvM
   upgrade levels or stack again after repeated refunds.

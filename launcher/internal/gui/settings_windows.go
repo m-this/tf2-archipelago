@@ -1489,15 +1489,12 @@ func (m *poolModel) Value(row, col int) any {
 	case 4:
 		return int(mission.Waves)
 	default:
-		if gamedata.MissionRequirement(mission.ID) == "no_nav" {
-			return "Missing bot .nav"
-		}
-		return "Ready"
+		return gamedata.RequirementLabel(gamedata.MissionRequirement(mission.ID))
 	}
 }
 
 func (m *poolModel) StyleCell(style *walk.CellStyle) {
-	if gamedata.MissionRequirement(m.missions[style.Row()].ID) == "no_nav" {
+	if !gamedata.IsPlayableMission(m.missions[style.Row()].ID) {
 		style.TextColor = colorStopped
 	}
 }

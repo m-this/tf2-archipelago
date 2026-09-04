@@ -18,6 +18,9 @@ from . import TF2MvMTestBase
 
 PLAYABLE_MISSIONS = tuple(mission for mission in data.MISSIONS if mission.playable)
 PLAYABLE_MISSION_COUNT = len(PLAYABLE_MISSIONS)
+MODDED_MISSIONS = tuple(
+    mission for mission in data.MISSIONS if mission.requires in data.SERVER_MOD_KEYS
+)
 
 
 class TestDefaults(TF2MvMTestBase):
@@ -177,6 +180,32 @@ class TestExcludedMissions(TF2MvMTestBase):
         self.assertNotIn("Caliginous Caper", drawn)
         self.assertNotIn("Doe's Drill", drawn)
         self.assertEqual(PLAYABLE_MISSION_COUNT - 2, len(drawn))
+
+
+class TestStockServerDrawsNoModdedMission(TF2MvMTestBase):
+    options: ClassVar[dict[str, Any]] = {
+        "mission_count": len(data.MISSION_NAMES),
+        "difficulty_pool": "normal",
+    }
+
+    def test_a_mission_that_needs_a_mod_stays_out(self) -> None:
+        drawn = {mission.name for mission in self.world.missions}
+        for mission in MODDED_MISSIONS:
+            self.assertNotIn(mission.name, drawn)
+        self.assertEqual(PLAYABLE_MISSION_COUNT, len(drawn))
+
+
+class TestModdedServerDrawsItsMissions(TF2MvMTestBase):
+    options: ClassVar[dict[str, Any]] = {
+        "mission_count": len(data.MISSION_NAMES),
+        "difficulty_pool": "normal",
+        "server_mods": set(data.SERVER_MOD_KEYS),
+    }
+
+    def test_every_seedable_mission_is_drawn(self) -> None:
+        drawn = {mission.name for mission in self.world.missions}
+        self.assertEqual(data.MISSION_NAMES, drawn)
+        self.assertEqual(sorted(data.SERVER_MOD_KEYS), self.world.fill_slot_data()["server_mods"])
 
 
 class TestMissionsanity(TF2MvMTestBase):

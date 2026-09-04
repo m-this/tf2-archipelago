@@ -151,3 +151,22 @@ func TestPlayerYAMLNamesTheExcludedMissions(t *testing.T) {
 		t.Error("an empty exclusion list is not written as an empty list")
 	}
 }
+
+// The player file names the mods the server loads, in catalog order, and
+// nothing the catalog does not know: the apworld refuses a key it has never
+// heard of, and a refused file is a seed nobody gets.
+func TestPlayerYAMLNamesTheServerMods(t *testing.T) {
+	s := Defaults()
+	s.SrcdsMods = []string{"rafmod", "sigsegv-mvm"}
+	got := PlayerYAML(s, "")
+	if !strings.Contains(got, "  server_mods:\n    - \"sigsegv-mvm\"\n") {
+		t.Errorf("server_mods missing or wrong:\n%s", got)
+	}
+	if strings.Contains(got, "rafmod") {
+		t.Errorf("an unknown mod reached the player file:\n%s", got)
+	}
+	s.SrcdsMods = nil
+	if got := PlayerYAML(s, ""); !strings.Contains(got, "  server_mods: []\n") {
+		t.Errorf("no mods should write an empty list:\n%s", got)
+	}
+}

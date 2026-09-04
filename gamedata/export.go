@@ -26,6 +26,12 @@ type metaFile struct {
 	Maps          []mapJSON        `json:"maps"`
 	Classes       []classJSON      `json:"classes"`
 	WeaponSlots   []weaponSlotJSON `json:"weapon_slots"`
+	ServerMods    []serverModJSON  `json:"server_mods"`
+}
+
+type serverModJSON struct {
+	Key  string `json:"key"`
+	Name string `json:"name"`
 }
 
 type difficultyJSON struct {
@@ -68,6 +74,7 @@ type missionJSON struct {
 	HasGiant   bool           `json:"has_giant"`
 	Community  bool           `json:"community"`
 	Playable   bool           `json:"playable"`
+	Requires   string         `json:"requires,omitempty"`
 	Locations  []locationJSON `json:"locations"`
 }
 
@@ -146,6 +153,9 @@ func buildMetaFile() metaFile {
 	for _, s := range WeaponSlots {
 		meta.WeaponSlots = append(meta.WeaponSlots, weaponSlotJSON(s))
 	}
+	for _, mod := range ServerMods {
+		meta.ServerMods = append(meta.ServerMods, serverModJSON{mod.Key, mod.Name})
+	}
 	return meta
 }
 
@@ -170,6 +180,7 @@ func buildMissionsFile() missionsFile {
 			HasGiant:   m.HasGiant,
 			Community:  IsCommunityMission(m.ID),
 			Playable:   IsPlayableMission(m.ID),
+			Requires:   MissionRequirement(m.ID),
 			Locations:  byMission[m.ID],
 		})
 	}

@@ -234,5 +234,11 @@
       "key": "melee",
       "name": "Melee"
     }
+  ],
+  "server_mods": [
+    {
+      "key": "sigsegv-mvm",
+      "name": "SigMod"
+    }
   ]
 }

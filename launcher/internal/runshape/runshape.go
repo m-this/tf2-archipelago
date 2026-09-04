@@ -109,9 +109,10 @@ func MissionChoices() []MissionChoice {
 }
 
 // VisibleMissions is the mission table a launcher may populate from the packs
-// that exist locally. Valve missions are always present. Portable community
-// missions and the locked no-NAV rows appear only after their owning archive
-// has been downloaded or supplied locally; RafMod-only missions stay hidden.
+// that exist locally. Valve missions are always present. Community missions
+// appear only after their owning archive has been downloaded or supplied
+// locally, the locked ones included: a row that says why it is locked beats a
+// mission that is not there.
 func VisibleMissions(availablePacks []string) []gamedata.Mission {
 	var visible []gamedata.Mission
 	for _, mission := range gamedata.Missions {
@@ -119,8 +120,7 @@ func VisibleMissions(availablePacks []string) []gamedata.Mission {
 		switch {
 		case pack == "" && gamedata.IsPlayableMission(mission.ID):
 			visible = append(visible, mission)
-		case pack != "" && slices.Contains(availablePacks, pack) &&
-			(gamedata.IsPlayableMission(mission.ID) || gamedata.MissionRequirement(mission.ID) == "no_nav"):
+		case pack != "" && slices.Contains(availablePacks, pack):
 			visible = append(visible, mission)
 		}
 	}

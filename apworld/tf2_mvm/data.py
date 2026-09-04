@@ -56,7 +56,12 @@ class Mission:
     has_giant: bool
     community: bool
     playable: bool
+    requires: str
     locations: tuple[Location, ...]
+
+    def seedable_with(self, server_mods: set[str] | frozenset[str]) -> bool:
+        """Whether a server loading these mods can play the mission."""
+        return self.playable or (self.requires in SERVER_MOD_KEYS and self.requires in server_mods)
 
 
 @dataclass(frozen=True, slots=True)
@@ -87,6 +92,7 @@ def _read_missions() -> tuple[Mission, ...]:
             has_giant=entry["has_giant"],
             community=entry["community"],
             playable=entry["playable"],
+            requires=entry.get("requires", ""),
             locations=tuple(
                 Location(
                     id=location["id"],
@@ -128,6 +134,7 @@ BASE_ID: int = _meta["base_id"]
 # Easiest tier first: the order is the ladder difficulty_pool walks.
 DIFFICULTIES: tuple[str, ...] = tuple(tier["key"] for tier in _meta["difficulties"])
 MAP_NAMES: dict[int, str] = {entry["id"]: entry["name"] for entry in _meta["maps"]}
+SERVER_MOD_KEYS: frozenset[str] = frozenset(mod["key"] for mod in _meta["server_mods"])
 
 MISSIONS: tuple[Mission, ...] = _read_missions()
 ITEMS: tuple[Item, ...] = _read_items()
@@ -152,7 +159,12 @@ CLASS_ITEM_BY_MERC: dict[str, str] = {
 if len(CLASS_ITEM_BY_MERC) != len(CLASS_NAMES):
     raise DataFormatError("a class item names a class the meta export does not have")
 
-MISSION_NAMES: frozenset[str] = frozenset(mission.name for mission in MISSIONS if mission.playable)
+# Every mission some server can play: the stock ones and those a cataloged
+# mod unlocks. A YAML may name any of them; the server_mods option decides
+# which are drawn.
+MISSION_NAMES: frozenset[str] = frozenset(
+    mission.name for mission in MISSIONS if mission.seedable_with(SERVER_MOD_KEYS)
+)
 FILLER_NAMES: tuple[str, ...] = tuple(
     item.name for item in ITEMS if item.classification == "filler"
 )

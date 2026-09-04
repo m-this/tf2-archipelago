@@ -44,6 +44,8 @@ RUN sh deploy/bots/build.sh
 FROM cm2network/tf2:sourcemod
 
 ARG RIPEXT_VERSION
+ARG SIGSEGV_MVM_VERSION
+ARG SIGSEGV_MVM_SHA256
 
 USER root
 
@@ -57,6 +59,12 @@ RUN apt-get update \
 	&& cp -r /tmp/ripext/addons /opt/tf2-archipelago/ \
 	&& rm -rf /opt/tf2-archipelago/addons/sourcemod/scripting \
 	&& rm -rf /tmp/ripext.zip /tmp/ripext \
+	&& mkdir -p /opt/tf2-mods/sigsegv-mvm \
+	&& curl -fsSL -o /tmp/sigsegv.zip \
+		"https://github.com/rafradek/sigsegv-mvm/releases/download/${SIGSEGV_MVM_VERSION}/package-linux.zip" \
+	&& echo "${SIGSEGV_MVM_SHA256}  /tmp/sigsegv.zip" | sha256sum -c - \
+	&& unzip -oq /tmp/sigsegv.zip -d /opt/tf2-mods/sigsegv-mvm \
+	&& rm -f /tmp/sigsegv.zip \
 	&& apt-get purge --yes unzip curl \
 	&& apt-get autoremove --yes \
 	&& rm -rf /var/lib/apt/lists/*
@@ -74,7 +82,7 @@ COPY deploy/srcds/tf2_archipelago.cfg \
 	/opt/tf2-archipelago/cfg/sourcemod/tf2_archipelago.cfg
 COPY deploy/srcds-entrypoint.sh /usr/local/bin/entrypoint.sh
 
-RUN chown -R steam:steam /opt/tf2-archipelago \
+RUN chown -R steam:steam /opt/tf2-archipelago /opt/tf2-mods \
 	&& chmod +x /usr/local/bin/entrypoint.sh
 
 USER steam
