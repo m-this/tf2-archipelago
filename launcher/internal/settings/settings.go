@@ -60,11 +60,19 @@ type Settings struct {
 	// seed and the server agree. The Windows launcher installs none of them
 	// yet: it only carries the choice through for a server that has one.
 	SrcdsMods []string `json:"srcds_mods"`
-	// FastDLPort is where the launcher serves the game's maps and other
-	// content over HTTP, on this machine, so a joining client downloads a
-	// community map from here rather than through the game server. 0 turns
-	// the server off. SrcdsDownloadURL names another host instead, for an
-	// operator who already has one.
+	/*
+		FastDLPort is where the launcher serves the game's maps and other
+		content over HTTP, on this machine, so a joining client downloads
+		a community map from here rather than through the game server. 0
+		turns the server off.
+
+		SrcdsDownloadURL is the whole sv_downloadurl value, for an
+		operator who knows an address this machine cannot work out. The
+		two are separate on purpose: this one says where a client is told
+		to look, the port above says whether this machine answers. A
+		server reached over a forwarded port needs both, because the
+		address friends use is the router's and nothing here can see it.
+	*/
 	FastDLPort       int    `json:"fastdl_port"`
 	SrcdsDownloadURL string `json:"srcds_download_url,omitempty"`
 

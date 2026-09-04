@@ -50,7 +50,10 @@ in the release notes, so this file is the only place to write it.
 
 - The server hands out maps over HTTP from the machine it runs on, so a friend
   joining without a community map downloads it instead of watching Transmission
-  reach the end and start over. Nothing to forward beyond the game port itself.
+  reach the end and start over. On the local network there is nothing to set up
+  and nothing to forward. A friend joining from outside needs the download port
+  forwarded and your public address in SRCDS_DOWNLOADURL; without it they fall
+  back to the old transfer, the way they do today.
 - Archipelago weapon buffs now stay active when players refund upgrades at an
   MvM station. They no longer appear as purchased, infinitely refundable MvM
   upgrade levels or stack again after repeated refunds.

@@ -69,8 +69,12 @@ setpause 0
 
 {{if .DownloadURL}}// Maps and other content come from this address over HTTP. The game server's
 // own transfer can reach the end of a large packed BSP without the client
-// accepting it, which restarts the download forever. By default the launcher
-// serves the game's content tree itself, reachable wherever the game port is.
+// accepting it, which restarts the download forever.
+//
+// The launcher serves the tree itself and writes the address it prints in the
+// connect lines, which is this machine on the local network. A friend joining
+// from outside cannot reach that: give them a public address in
+// SRCDS_DOWNLOADURL and forward the port, or leave them on the transfer below.
 sv_downloadurl "{{.DownloadURL}}"
 {{end}}// A stock server refuses direct downloads larger than 16 MB. Potato maps such
 // as Autumnull are larger, but fit under Source's 64 MB direct-download cap.
