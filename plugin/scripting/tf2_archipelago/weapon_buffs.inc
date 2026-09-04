@@ -2,6 +2,8 @@
 
 #define ProjectileCountEffect 5
 #define FireRateEffect 1
+// The multiplier a melee weapon's fire rate never goes below: +50% and no more.
+#define MeleeFireRateFloor 0.5
 #define BleedEffect 8
 #define IgniteEffect 9
 #define MadMilkEffect 14
@@ -390,7 +392,9 @@ static void WeaponBuffs_ApplyHitEffects(int victim, int attacker, int weapon)
     int gas = g_WeaponEffectLevels[weapon][GasolineEffect];
     int marked = g_WeaponEffectLevels[weapon][MarkForDeathEffect];
     int jarate = g_WeaponEffectLevels[weapon][JarateEffect];
-    if (bleed > 0)
+    // One stack per enemy. TF2_MakeBleed adds a stack on every call, and a
+    // syringe gun landed one per syringe on the same target.
+    if (bleed > 0 && !TF2_IsPlayerInCondition(victim, TFCond_Bleeding))
     {
         TF2_MakeBleed(victim, attacker, 3.0 * float(bleed));
     }
@@ -1369,6 +1373,17 @@ void WeaponBuffs_Disconnect(int client)
     }
 }
 
+// A weapon in its owner's melee slot. An entity with no owner is not capped.
+static bool WeaponBuffs_IsMelee(int entity)
+{
+    int owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
+    if (owner <= 0 || owner > MaxClients || !IsClientInGame(owner))
+    {
+        return false;
+    }
+    return GetPlayerWeaponSlot(owner, TFWeaponSlot_Melee) == entity;
+}
+
 static void Frame_ApplyWeaponBuffs(any userid)
 {
     int client = GetClientOfUserId(userid);
@@ -1450,8 +1465,13 @@ void WeaponBuffs_Apply(int client)
                 + g_WeaponEffectIncrements[effect] * float(levels);
             // Inverted percentages such as fire/reload speed must never reach
             // zero: the engine can then generate attacks and snapshots faster
-            // than the client channel can carry them.
+            // than the client channel can carry them. A melee swing past +50%
+            // is faster than its own animation and lands nothing at all.
             float minimum = effect == FireRateEffect ? 0.2 : 0.05;
+            if (effect == FireRateEffect && WeaponBuffs_IsMelee(entity))
+            {
+                minimum = MeleeFireRateFloor;
+            }
             if (combined < minimum)
             {
                 combined = minimum;
