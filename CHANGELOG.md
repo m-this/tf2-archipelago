@@ -6,6 +6,10 @@ in the release notes, so this file is the only place to write it.
 
 ## Unreleased
 
+- Robot health scaling works. Setting it above 100% left the robots at the
+  health the mission gives them, and setting it below moved nothing either:
+  the server wrote the number somewhere the game recomputes a moment later.
+  The server log now says what each scaled robot ended up worth.
 - Archipelago weapon buffs now stay active when players refund upgrades at an
   MvM station. They no longer appear as purchased, infinitely refundable MvM
   upgrade levels or stack again after repeated refunds.

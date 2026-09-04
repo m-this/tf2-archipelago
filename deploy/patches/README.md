@@ -4,17 +4,24 @@
 compiles. A patch that no longer applies fails the build. That is the signal
 to rebase it on the new upstream, or to drop it because upstream fixed it.
 
-The defender mod is not here. It is `m-this/tf2-mvm-bots-go`, a Go module this
-repository depends on, so its changes are made there and released as a tag.
-`go get github.com/m-this/tf2-mvm-bots-go@vX.Y.Z` is how this build takes a new
-one: the go.mod requirement is the only pin, and there is nothing in
-`versions.env` to move with it. Small test fixes may live here temporarily when
-a launcher build needs to carry them before the module has a release; the build
-applies and compiles them exactly like dependency patches.
+Every tree patched here is a clone of somebody else's repository. That is the
+rule and not an accident: `git apply` resolves a patch's paths from the
+repository root rather than from the directory it is given, so a tree with no
+`.git` of its own is patched against this repository, where those paths do not
+exist, and the patch is skipped without a word. A checkout brings its own
+`.git`; a directory copied out of the module cache does not.
+
+Which is why the defender mod is not here, and cannot be. It is
+`m-this/tf2-mvm-bots-go`, a Go module this repository depends on, so its changes
+are made there and released as a tag. `go get
+github.com/m-this/tf2-mvm-bots-go@vX.Y.Z` is how this build takes a new one: the
+go.mod requirement is the only pin, and there is nothing in `versions.env` to
+move with it. A fix carried here instead was carried nowhere: the patch never
+applied, and when a cached build tree happened to hold its output anyway, the
+generated-code check failed on it.
 
 | Patch | Why |
 | --- | --- |
-| `defenderbots/0001-apply-robot-health-after-template.patch` | Wait for the robot template to settle, scale TF2's authoritative player-resource maximum rather than the raw class field, invalidate TF2's attribute cache, and log any observed mismatch. |
 | `tf2attributes/0001-drop-pragma-unused-before-declaration.patch` | `#pragma unused` sits above the function it names, and spcomp 1.12 resolves it before the declaration exists. Nothing compiles without this. |
 | `actions/0001-drop-libudis86-and-asm-sources.patch` | Only for a from-source build of the extension. SourceMod removed `public/libudis86` and `public/asm` in commit `e07c120c`; the AMBuilder still lists them. |
 | `actions/0002-do-not-treat-sdk-warnings-as-errors.patch` | Only for a from-source build. `-Werror` against the current hl2sdk fails on `#pragma warning` blocks in `vstdlib/random.h`. |
