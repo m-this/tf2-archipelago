@@ -11,6 +11,10 @@
 #define MarkForDeathEffect 16
 #define JarateEffect 60
 #define ActiveHealthRegenEffect 66
+#define NoSelfBlastEffect 62
+#define RocketJumpProtectionEffect 72
+// What one level of rocket-jump protection takes off self-inflicted blast damage.
+#define RocketJumpProtectionPerLevel 0.25
 
 #define BuffMode_Add 1
 #define BuffMode_Percentage 2
@@ -250,6 +254,8 @@ void WeaponBuffs_HookClient(int client)
     g_WeaponBuffLastButtons[client] = 0;
     g_WeaponBuffLastSubstanceWeapon[client] = -1;
     g_WeaponBuffLastSubstanceTime[client] = 0.0;
+    SDKUnhook(client, SDKHook_OnTakeDamage, WeaponBuffs_OnTakeDamage);
+    SDKHook(client, SDKHook_OnTakeDamage, WeaponBuffs_OnTakeDamage);
     SDKUnhook(client, SDKHook_OnTakeDamagePost, WeaponBuffs_OnTakeDamagePost);
     SDKHook(client, SDKHook_OnTakeDamagePost, WeaponBuffs_OnTakeDamagePost);
     SDKUnhook(client, SDKHook_WeaponSwitchPost, WeaponBuffs_WeaponSwitchPost);
@@ -1121,6 +1127,59 @@ static void WeaponBuffs_FireExtraProjectiles(any reference)
     }
 }
 
+// The weapon a hit came from: the launcher of the projectile that landed,
+// else what the attacker is holding.
+static int WeaponBuffs_WeaponOfHit(int attacker, int inflictor, int weapon)
+{
+    if ((weapon <= MaxClients || !IsValidEntity(weapon)) && inflictor > MaxClients
+        && IsValidEntity(inflictor) && HasEntProp(inflictor, Prop_Send, "m_hLauncher"))
+    {
+        weapon = GetEntPropEnt(inflictor, Prop_Send, "m_hLauncher");
+    }
+    if ((weapon <= MaxClients || !IsValidEntity(weapon)) && IsPlayerAlive(attacker))
+    {
+        weapon = GetEntPropEnt(attacker, Prop_Send, "m_hActiveWeapon");
+    }
+    return weapon;
+}
+
+// Self-inflicted blast damage, scaled or dropped by the run's buffs. The two
+// attributes are read by the game on the player, not on the weapon, so the
+// private provider on the weapon never reached them (gh-15). The push force
+// stays: a rocket jump with no damage is still a rocket jump.
+public Action WeaponBuffs_OnTakeDamage(int victim, int &attacker, int &inflictor,
+    float &damage, int &damagetype, int &weapon, float damageForce[3],
+    float damagePosition[3], int damagecustom)
+{
+    if (victim != attacker || victim < 1 || victim > MaxClients || !(damagetype & DMG_BLAST)
+        || !IsClientInGame(victim) || !WeaponBuffs_CanUseRunBuffs(victim))
+    {
+        return Plugin_Continue;
+    }
+    int catalog = WeaponBuffs_ForEntity(WeaponBuffs_WeaponOfHit(attacker, inflictor, weapon));
+    if (catalog < 0)
+    {
+        return Plugin_Continue;
+    }
+    if (g_WeaponEffectLevels[catalog][NoSelfBlastEffect] > 0)
+    {
+        damage = 0.0;
+        return Plugin_Changed;
+    }
+    int levels = g_WeaponEffectLevels[catalog][RocketJumpProtectionEffect];
+    if (levels <= 0)
+    {
+        return Plugin_Continue;
+    }
+    float kept = 1.0 - RocketJumpProtectionPerLevel * float(levels);
+    if (kept < 0.0)
+    {
+        kept = 0.0;
+    }
+    damage *= kept;
+    return Plugin_Changed;
+}
+
 public void WeaponBuffs_OnTakeDamagePost(int victim, int attacker, int inflictor,
     float damage, int damagetype, int weapon, const float damageForce[3],
     const float damagePosition[3], int damagecustom)
@@ -1151,16 +1210,7 @@ public void WeaponBuffs_OnTakeDamagePost(int victim, int attacker, int inflictor
             return;
         }
     }
-    if ((weapon <= MaxClients || !IsValidEntity(weapon)) && inflictor > MaxClients
-        && IsValidEntity(inflictor) && HasEntProp(inflictor, Prop_Send, "m_hLauncher"))
-    {
-        weapon = GetEntPropEnt(inflictor, Prop_Send, "m_hLauncher");
-    }
-    if ((weapon <= MaxClients || !IsValidEntity(weapon)) && IsPlayerAlive(attacker))
-    {
-        weapon = GetEntPropEnt(attacker, Prop_Send, "m_hActiveWeapon");
-    }
-    int catalog = WeaponBuffs_ForEntity(weapon);
+    int catalog = WeaponBuffs_ForEntity(WeaponBuffs_WeaponOfHit(attacker, inflictor, weapon));
     if (catalog >= 0)
     {
         WeaponBuffs_ApplyHitEffects(victim, attacker, catalog);

@@ -26,6 +26,9 @@ in the release notes, so this file is the only place to write it.
 - Ninety-six buff and weapon pairs that did nothing are out of the pool, from
   Cowser's sheet: accuracy on weapons with no spread, reload and clip buffs on
   weapons with no clip, kill buffs on the two jumpers, and the like.
+- The "no self-inflicted blast damage" and rocket-jump protection buffs work
+  on rocket launchers and the Loose Cannon. The game reads them on the player,
+  not the weapon, so the buff never reached them; the push is untouched.
 - Projectile penetration is no longer offered on explosives. Bleed lands one
   stack per enemy instead of one per hit. Armor piercing is a knife buff only,
   since the game reads it on backstabs and nowhere else. Melee fire rate buffs
