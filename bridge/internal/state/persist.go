@@ -13,7 +13,10 @@ import (
 
 const (
 	// FormatVersion is the shape of the state file this binary writes.
-	FormatVersion = 3
+	// 4 says Played is written. A version 3 file can be from either side of
+	// the day Played arrived, and the goal cannot tell a run that played
+	// nothing from one written before the list existed.
+	FormatVersion = 4
 
 	// FormatVersionMin is the oldest shape it can still read. A file older than
 	// that is an error rather than a guess: it holds the only record of what a
@@ -107,11 +110,17 @@ func readSnapshot(path string) (snapshot, int, error) {
 	// since is zero, which is what an older file means by leaving it out.
 	wasVersion := loaded.FormatVersion
 	loaded.FormatVersion = FormatVersion
-	// A file written before Played existed cannot say which of its checks the
-	// server made, and the run in it was played by somebody. Taking them all is
-	// the reading that does not ask a team to replay an evening; the distinction
-	// starts holding from here on.
-	if wasVersion < 3 && loaded.Played == nil {
+	/* A file written before Played existed cannot say which of its checks the
+	   server made, and the run in it was played by somebody. Taking them all is
+	   the reading that does not ask a team to replay an evening; the distinction
+	   starts holding from here on.
+
+	   Version 3 files exist on both sides of that day, because the list arrived
+	   without a bump. One from before has no played key at all; one from after
+	   always writes it, empty or not. kelly-cs's run crossed the upgrade with
+	   every mission cleared reading as collected and the goal counting none of
+	   them (gh-16). */
+	if wasVersion < 4 && loaded.Played == nil {
 		loaded.Played = slices.Clone(loaded.Checks)
 	}
 	return loaded, wasVersion, nil

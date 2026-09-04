@@ -703,3 +703,47 @@ func TestPlayedSurvivesAReopen(t *testing.T) {
 		t.Fatalf("played %v after a reopen, want the clear", played)
 	}
 }
+
+/*
+Played arrived without a format bump, so a version 3 file can be from either
+side of that day. kelly-cs's run crossed it: every mission the team had cleared
+read as collected afterwards and the missionsanity goal counted none of them
+(gh-16). A version 3 file with no played key is from before, and everything it
+checked was played here.
+*/
+func TestAVersionThreeFileWithoutPlayedTakesItsChecksAsPlayed(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "bridge.json")
+	mission := firstMission(t)
+	before := fmt.Sprintf(
+		`{"format_version":3,"seed":"first","checks":[%d,%d],"items":[],"goal_sent":false}`,
+		mission.WaveLocationID(1), mission.ClearLocationID(),
+	)
+	if err := os.WriteFile(path, []byte(before), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	store, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := store.Played(); len(got) != 2 {
+		t.Fatalf("played = %v, want both checks the file held", got)
+	}
+
+	// A version 3 file that wrote the key is from after, and an empty list
+	// there means nothing was played, whatever the room had adopted.
+	after := fmt.Sprintf(
+		`{"format_version":3,"seed":"first","checks":[%d],"played":[],"items":[],"goal_sent":false}`,
+		mission.WaveLocationID(1),
+	)
+	other := filepath.Join(t.TempDir(), "bridge.json")
+	if err := os.WriteFile(other, []byte(after), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	store, err = Open(other)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := store.Played(); len(got) != 0 {
+		t.Errorf("played = %v, want none: the file said so", got)
+	}
+}
