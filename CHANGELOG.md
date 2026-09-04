@@ -6,6 +6,20 @@ in the release notes, so this file is the only place to write it.
 
 ## Unreleased
 
+- The Docker server plays the randomiser again. The image shipped without the
+  plugin's gamedata, so the plugin refused to load and the server came up as
+  plain Mann vs Machine with nothing saying so.
+- The bridge no longer drops the room every second in a multiworld with many
+  games. It asked for every game's item names at once and the reply was too
+  big to read, so nothing you checked ever reached the room.
+- A debug bundle only carries the game server's own crash dumps, not every
+  program's on the machine.
+- Explode on ignite is gone from the buff pool: on a minigun it ended a wave
+  on its own.
+- Projectile penetration is no longer offered on explosives. Bleed lands one
+  stack per enemy instead of one per hit. Armor piercing is a knife buff only,
+  since the game reads it on backstabs and nowhere else. Melee fire rate buffs
+  stop at +50%, past which the swing outran its own animation and hit nothing.
 - Robot health scaling works. Setting it above 100% left the robots at the
   health the mission gives them, and setting it below moved nothing either:
   the server wrote the number somewhere the game recomputes a moment later.

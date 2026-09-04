@@ -160,7 +160,7 @@ func TestJarateAndMadMilkOnlyDrawProjectileRechargeAndSubstanceBuffs(t *testing.
 				t.Errorf("%s/%s eligible = %t, want %t", name, effect.Key, got, want)
 			}
 		}
-		for _, effect := range []string{"bleed", "mad-milk", "gasoline", "mark-for-death", "jarate"} {
+		for _, effect := range []string{"bleed", "mad-milk", "mark-for-death", "jarate"} {
 			if !buffNamed(t, name, effect).Eligible {
 				t.Errorf("%s lost substance effect %s", name, effect)
 			}
@@ -170,7 +170,7 @@ func TestJarateAndMadMilkOnlyDrawProjectileRechargeAndSubstanceBuffs(t *testing.
 
 func TestDirectHitWeaponsDrawSubstanceBuffs(t *testing.T) {
 	for _, name := range []string{"Minigun", "Pistol", "Scattergun"} {
-		for _, effect := range []string{"bleed", "ignite", "mad-milk", "gasoline", "mark-for-death"} {
+		for _, effect := range []string{"bleed", "ignite", "mad-milk", "mark-for-death"} {
 			if !buffNamed(t, name, effect).Eligible {
 				t.Errorf("%s lost direct-hit substance effect %s", name, effect)
 			}
@@ -413,6 +413,43 @@ func TestItemExportMarksOnlyNumericBuffsStackable(t *testing.T) {
 		if item.Stackable != want {
 			t.Errorf("%s stackable = %t, want %t for mode %d",
 				buff.Key, item.Stackable, want, buff.Mode)
+		}
+	}
+}
+
+// Explode on ignite ended waves on its own once substances landed on direct
+// hits (gh-17). It is out of the pool everywhere and keeps its ID.
+func TestExplodeOnIgniteIsOfferedNowhere(t *testing.T) {
+	for _, buff := range WeaponBuffs {
+		if buff.EffectID == 16 && buff.Eligible {
+			t.Errorf("%s still offers explode on ignite", buff.Weapon)
+		}
+	}
+	if _, ok := WeaponBuffByID(buffNamed(t, "Minigun", "gasoline").ID); !ok {
+		t.Error("the effect lost its ID, which seeds hold")
+	}
+}
+
+// A rocket that penetrates does not explode where it was aimed (gh-21).
+func TestProjectilePenetrationStaysOffExplosives(t *testing.T) {
+	for name, want := range map[string]bool{
+		"Rocket Launcher": false, "Grenade Launcher": false, "Loose Cannon": false, "Scorch Shot": false,
+		"Huntsman": true, "Crusader's Crossbow": true, "Syringe Gun": true, "Flare Gun": true,
+	} {
+		if got := buffNamed(t, name, "projectile-penetration").Eligible; got != want {
+			t.Errorf("%s penetration eligible = %t, want %t", name, got, want)
+		}
+	}
+}
+
+// The game reads armor piercing on a backstab and nowhere else (gh-25).
+func TestArmorPiercingIsAKnifeBuff(t *testing.T) {
+	for name, want := range map[string]bool{
+		"Knife": true, "Your Eternal Reward": true, "Conniver's Kunai": true, "Big Earner": true, "Spy-Cicle": true,
+		"Revolver": false, "Minigun": false, "Rocket Launcher": false, "Kukri": false,
+	} {
+		if got := buffNamed(t, name, "armor-piercing").Eligible; got != want {
+			t.Errorf("%s armor piercing eligible = %t, want %t", name, got, want)
 		}
 	}
 }
