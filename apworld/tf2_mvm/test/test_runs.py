@@ -182,6 +182,20 @@ class TestExcludedMissions(TF2MvMTestBase):
         self.assertEqual(PLAYABLE_MISSION_COUNT - 2, len(drawn))
 
 
+class TestCommunityMissionsCanBeKeptOut(TF2MvMTestBase):
+    options: ClassVar[dict[str, Any]] = {
+        "mission_count": len(data.MISSION_NAMES),
+        "difficulty_pool": "normal",
+        "community_missions": False,
+    }
+
+    def test_only_valve_missions_are_drawn(self) -> None:
+        for mission in self.world.missions:
+            self.assertFalse(mission.community, mission.name)
+        valve = [m for m in PLAYABLE_MISSIONS if not m.community]
+        self.assertEqual(len(valve), len(self.world.missions))
+
+
 class TestStockServerDrawsNoModdedMission(TF2MvMTestBase):
     options: ClassVar[dict[str, Any]] = {
         "mission_count": len(data.MISSION_NAMES),

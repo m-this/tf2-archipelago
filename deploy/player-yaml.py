@@ -93,6 +93,7 @@ def build(data: pathlib.Path, archipelago_version: str) -> str:
         lines += [f"    - {yaml_string(name)}" for name in excluded]
     else:
         lines.append("  excluded_missions: []")
+    lines.append(f"  community_missions: {read('MVM_COMMUNITY_MISSIONS', 'true')}")
     if server_mods:
         lines.append("  server_mods:")
         lines += [f"    - {yaml_string(key)}" for key in server_mods]

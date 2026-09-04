@@ -63,6 +63,18 @@ class ExcludedMissions(OptionSet):
     valid_keys = data.MISSION_NAMES
 
 
+class CommunityMissions(Toggle):
+    """Whether the run draws community missions at all.
+
+    Every community mission the server can play is in the pool by default, and
+    the Options Creator ticks them all. Off keeps the run to Valve's missions
+    without naming each community one in excluded_missions.
+    """
+
+    display_name = "Community Missions"
+    default = 1
+
+
 class ServerMods(OptionSet):
     """Server-side mods the game server loads, by key.
 
@@ -238,6 +250,7 @@ class TF2MvMOptions(PerGameCommonOptions):
     mission_count: MissionCount
     difficulty_pool: DifficultyPool
     excluded_missions: ExcludedMissions
+    community_missions: CommunityMissions
     server_mods: ServerMods
     start_mission: StartMission
     start_class: StartClass
@@ -256,7 +269,15 @@ class TF2MvMOptions(PerGameCommonOptions):
 option_groups = [
     OptionGroup(
         "Run shape",
-        [MissionCount, DifficultyPool, ExcludedMissions, ServerMods, StartMission, StartClass],
+        [
+            MissionCount,
+            DifficultyPool,
+            ExcludedMissions,
+            CommunityMissions,
+            ServerMods,
+            StartMission,
+            StartClass,
+        ],
     ),
     OptionGroup("Goal", [Goal, MissionsanityPercentage]),
     OptionGroup(

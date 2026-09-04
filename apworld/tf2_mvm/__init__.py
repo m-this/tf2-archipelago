@@ -276,12 +276,14 @@ class TF2MvMWorld(World):
         allowed = data.DIFFICULTIES[floor:]
         excluded = self.options.excluded_missions.value
         mods = self.options.server_mods.value
+        community = bool(self.options.community_missions.value)
         return [
             mission
             for mission in data.MISSIONS
             if mission.seedable_with(mods)
             and mission.difficulty in allowed
             and mission.name not in excluded
+            and (community or not mission.community)
         ]
 
     @staticmethod

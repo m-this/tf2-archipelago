@@ -26,6 +26,8 @@ in the release notes, so this file is the only place to write it.
 - Ninety-six buff and weapon pairs that did nothing are out of the pool, from
   Cowser's sheet: accuracy on weapons with no spread, reload and clip buffs on
   weapons with no clip, kill buffs on the two jumpers, and the like.
+- A `community_missions` option keeps every community mission out of a run
+  in one line, instead of naming each in `excluded_missions`.
 - A locked weapon slot now takes the wearable in it too: a Demoman with a
   locked secondary no longer charges with a shield, and one with a locked
   primary no longer keeps the boots and holds nothing. Gunboats, Mantreads,
