@@ -1,5 +1,12 @@
 # Créer la session
 
+La pile joue une room qui existe déjà. Si vous en avez une, cette page ne vous
+sert pas : mettez son adresse dans `AP_HOST`, `AP_PORT` et `AP_SLOT_NAME`, puis
+passez à [Démarrer le serveur](../operate/start-a-new-run.md). `make seed` est
+une façon d'obtenir une room quand on n'en a pas, rien de plus. Générer la
+session à la manière habituelle d'Archipelago, avec l'apworld de la release, et
+pointer la pile vers la room que donne le site revient au même.
+
 La session randomisée tourne sur `archipelago.gg`. Votre machine fabrique la
 session et l'écrit dans un fichier. Le site prend ce fichier, l'héberge, et
 vous donne une adresse.

@@ -8,6 +8,11 @@ Run everything from the root of the repository. [Without the
 repository](#without-the-repository), at the end of this page, does the same
 with two downloaded files.
 
+The stack plays an Archipelago room. It needs the room's address and a slot,
+which is `AP_HOST`, `AP_PORT` and `AP_SLOT_NAME` in `.env`, and nothing else
+from Archipelago. `make seed` further down is for people who have no room yet;
+skip it if you already generate your own multiworlds.
+
 ## 1. Write the configuration file
 
 ```sh

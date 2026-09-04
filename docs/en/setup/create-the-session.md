@@ -1,5 +1,12 @@
 # Create the session
 
+The stack plays a room that already exists. If you have one, you do not need
+this page: put its address in `AP_HOST`, `AP_PORT` and `AP_SLOT_NAME` and go to
+[Start the server](../operate/start-a-new-run.md). `make seed` is one way to
+get a room when you have none, and nothing more. Generating the session the
+usual Archipelago way, with the apworld from the release, and pointing the
+stack at the room the website gives you is the same thing.
+
 The randomized session runs on `archipelago.gg`. Your machine makes the session
 and writes it to a file. The website takes that file, hosts it, and gives you an
 address.

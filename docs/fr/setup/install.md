@@ -11,6 +11,11 @@ cp deploy/.env.example .env
 
 `.env` est le seul fichier que vous modifiez. Git l'ignore.
 
+La pile joue une room Archipelago. Il lui faut l'adresse de la room et un slot,
+c'est-à-dire `AP_HOST`, `AP_PORT` et `AP_SLOT_NAME` dans `.env`, et rien d'autre
+du côté d'Archipelago. Le `make seed` plus bas sert à ceux qui n'ont pas encore
+de room ; sautez-le si vous générez déjà vos propres multiworlds.
+
 ## 2. Régler le mot de passe de la console
 
 Ouvrez `.env` et réglez `SRCDS_RCONPW` avec un mot de passe de votre choix :

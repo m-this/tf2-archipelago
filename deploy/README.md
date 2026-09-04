@@ -10,7 +10,8 @@ Compose stack. Two services by default, and two more that run on demand.
 | `compose.seed.yml` | `seed` | The same image, run once to generate a seed into `./seed`. |
 | `compose.release.yml` | — | An overlay, not a stack. Names a `ghcr.io` image for each service above. |
 
-The multiworld runs on archipelago.gg by default: `make seed` writes the file,
+The stack plays a room that already exists, and needs only its address and a
+slot. The multiworld runs on archipelago.gg by default: `make seed` writes the file,
 the operator uploads it there and opens a room, and the bridge dials that room.
 `COMPOSE_PROFILES=selfhost` in `.env` hosts it here instead.
 
