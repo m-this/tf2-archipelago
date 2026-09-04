@@ -120,6 +120,15 @@ status=$(curl -fsS -o /dev/null -w '%{http_code}' -X POST "$bridge/objective" \
 
 waitfor "the check reached Archipelago" "$check_timeout" archipelago_logged "Wave 1)"
 
+# A server that comes back from a crash asks where the team was, and the answer
+# is the mission of the last wave cleared and that wave. apw-onf.
+log "the bridge remembers where the team is"
+resume_pop=$(curl -fsS "$bridge/unlocks" | json "json.load(sys.stdin)['resume']['popfile']")
+resume_wave=$(curl -fsS "$bridge/unlocks" | json "json.load(sys.stdin)['resume']['wave']")
+[ "${resume_pop:-x}" = "$mission" ] && [ "${resume_wave:-0}" = "1" ] \
+	&& pass "resume says $resume_pop after wave $resume_wave" \
+	|| fail "resume says ${resume_pop:-unset} wave ${resume_wave:-unset}, wanted $mission wave 1"
+
 sent=$($compose logs archipelago 2>/dev/null | grep -cF "Wave 1)" || true)
 [ "$sent" = "1" ] && pass "Archipelago saw the check once, not twice" \
 	|| fail "Archipelago logged the check $sent time(s)"
@@ -209,6 +218,9 @@ kept=$(curl -fsS "$bridge/healthz" | json "json.load(sys.stdin)['acked_seq']")
 	|| fail "the acknowledgement came back as ${kept:-unset}, was $acked"
 [ "${after:-0}" -ge "${items:-0}" ] && pass "the run survived with $after item(s)" \
 	|| fail "the run came back with ${after:-unset} item(s), had $items"
+resume_back=$(curl -fsS "$bridge/unlocks" | json "json.load(sys.stdin)['resume']['wave']")
+[ "${resume_back:-0}" = "1" ] && pass "where the team was survived the restart" \
+	|| fail "the resume came back as wave ${resume_back:-unset}"
 
 if [ "$failures" -eq 0 ]; then
 	log "all checks passed"
