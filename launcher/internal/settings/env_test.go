@@ -113,6 +113,8 @@ func TestEveryFieldHasAnEnvVar(t *testing.T) {
 		"MetricsPort":                "BRIDGE_METRICS_PORT",
 		"SrcdsBluHealthPct":          "SRCDS_BLU_HEALTH_PCT",
 		"SrcdsMods":                  "SRCDS_MODS",
+		"FastDLPort":                 "FASTDL_PORT",
+		"SrcdsDownloadURL":           "SRCDS_DOWNLOADURL",
 	}
 	// Fields kept only to read a config file written by an older build. They
 	// are never saved and never asked for, so there is nothing to set.

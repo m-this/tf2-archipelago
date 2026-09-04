@@ -23,6 +23,7 @@ import (
 	"github.com/m-this/tf2-archipelago/bridge/config"
 	"github.com/m-this/tf2-archipelago/fakeroom"
 	"github.com/m-this/tf2-archipelago/gamedata"
+	"github.com/m-this/tf2-archipelago/launcher/internal/fastdl"
 	"github.com/m-this/tf2-archipelago/launcher/internal/installer"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 	"github.com/m-this/tf2-archipelago/launcher/internal/srcdsconfig"
@@ -86,6 +87,9 @@ func Run(ctx context.Context, s settings.Settings, logger *slog.Logger) error {
 	go Guard("the game server", say, func() {
 		srcdsErr <- runSrcds(srcdsCtx, s, logger)
 	})
+	go Guard("the download server", say, func() {
+		serveFastDL(srcdsCtx, s, func(text string) { logger.InfoContext(ctx, "download server", "detail", text) })
+	})
 
 	select {
 	case <-ctx.Done():
@@ -98,6 +102,20 @@ func Run(ctx context.Context, s settings.Settings, logger *slog.Logger) error {
 	case err := <-srcdsErr:
 		logger.ErrorContext(ctx, "game server stopped", "error", err)
 		return fmt.Errorf("game server stopped: %w", err)
+	}
+}
+
+// serveFastDL runs the content file server for the life of ctx. A port that
+// is taken costs the players their HTTP download and nothing else: the game
+// server's own transfer is still on, so it is a line in the log, not a stop.
+func serveFastDL(ctx context.Context, s settings.Settings, say func(string)) {
+	if s.FastDLPort <= 0 || s.SrcdsDownloadURL != "" {
+		return
+	}
+	gameDir := filepath.Join(s.InstallRoot, "tf-dedicated", "tf")
+	listen := ":" + strconv.Itoa(s.FastDLPort)
+	if err := fastdl.Serve(ctx, gameDir, listen); err != nil {
+		say("the download server did not start, so maps come from the game server itself: " + err.Error())
 	}
 }
 

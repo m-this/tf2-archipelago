@@ -84,6 +84,9 @@ services:
       SRCDS_BOT_TEAM_COMP: ${SRCDS_BOT_TEAM_COMP:-}
       SRCDS_BOT_HATS: ${SRCDS_BOT_HATS:-1}
       SRCDS_BOT_HAT_EFFECTS: ${SRCDS_BOT_HAT_EFFECTS:-0}
+      FASTDL_HOST: ${FASTDL_HOST:-}
+      FASTDL_PORT: ${FASTDL_PORT:-27080}
+      SRCDS_DOWNLOADURL: ${SRCDS_DOWNLOADURL:-}
     ports:
       # The only public port in the stack, and it is the game's.
       - "${SRCDS_PORT:-27015}:${SRCDS_PORT:-27015}/udp"
@@ -98,6 +101,20 @@ services:
       # materials/, models/, sound/ and scripts/vscripts/ all keep their native
       # paths. Restarting srcds installs files changed on the host.
       - ./community-content:/opt/tf2-community-pack:ro
+
+  # The game's content over HTTP, for clients joining without a community
+  # map. Read-only on the game volume, and it answers only under maps/,
+  # materials/, models/, sound/, particles/ and resource/: cfg/ holds the rcon
+  # password. Reachable wherever the game port is, and nowhere else: no
+  # forwarding here beyond what the game already needs.
+  fastdl:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "${FASTDL_PORT:-27080}:80/tcp"
+    volumes:
+      - tf2game:/srv/tf-dedicated:ro
+      - ./deploy/fastdl/Caddyfile:/etc/caddy/Caddyfile:ro
 
   bridge:
     build:

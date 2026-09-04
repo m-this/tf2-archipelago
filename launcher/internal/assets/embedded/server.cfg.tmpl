@@ -67,9 +67,15 @@ sv_pure 0
 sv_pausable 0
 setpause 0
 
-// A stock server refuses direct downloads larger than 16 MB. Potato maps such
+{{if .DownloadURL}}// Maps and other content come from this address over HTTP. The game server's
+// own transfer can reach the end of a large packed BSP without the client
+// accepting it, which restarts the download forever. By default the launcher
+// serves the game's content tree itself, reachable wherever the game port is.
+sv_downloadurl "{{.DownloadURL}}"
+{{end}}// A stock server refuses direct downloads larger than 16 MB. Potato maps such
 // as Autumnull are larger, but fit under Source's 64 MB direct-download cap.
-// Keep downloads enabled so friends without the pack receive the active map.
+// Keep downloads enabled so friends without the pack receive the active map,
+// and so a client that cannot reach sv_downloadurl still gets it from here.
 sv_allowdownload 1
 // Client uploads carry sprays and other player customization.
 sv_allowupload 1

@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/m-this/tf2-archipelago/launcher/internal/lanaddr"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 )
 
@@ -219,7 +220,7 @@ retries", a stall at two bars, while the LAN tab of the server browser found
 the same server first try.
 */
 func TestTheRoutableAddressComesFirst(t *testing.T) {
-	preferred := preferredOutboundAddress()
+	preferred := lanaddr.Preferred()
 	if preferred == "" {
 		t.Skip("no route out of this machine, so there is no preference to check")
 	}
@@ -238,7 +239,7 @@ func TestTheRoutableAddressComesFirst(t *testing.T) {
 // The dial must not actually talk to anything: 192.0.2.1 is the documentation
 // range and nothing routes there, which is the point.
 func TestThePreferredAddressIsNotLoopback(t *testing.T) {
-	if got := preferredOutboundAddress(); got != "" && strings.HasPrefix(got, "127.") {
+	if got := lanaddr.Preferred(); got != "" && strings.HasPrefix(got, "127.") {
 		t.Errorf("preferred address = %q, which is loopback", got)
 	}
 }

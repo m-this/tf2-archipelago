@@ -60,6 +60,13 @@ type Settings struct {
 	// seed and the server agree. The Windows launcher installs none of them
 	// yet: it only carries the choice through for a server that has one.
 	SrcdsMods []string `json:"srcds_mods"`
+	// FastDLPort is where the launcher serves the game's maps and other
+	// content over HTTP, on this machine, so a joining client downloads a
+	// community map from here rather than through the game server. 0 turns
+	// the server off. SrcdsDownloadURL names another host instead, for an
+	// operator who already has one.
+	FastDLPort       int    `json:"fastdl_port"`
+	SrcdsDownloadURL string `json:"srcds_download_url,omitempty"`
 
 	// SrcdsStartMission is the popfile the server loads first. The map comes
 	// with it: gamedata knows which map a mission runs on.
@@ -172,6 +179,10 @@ type Settings struct {
 	MetricsPort int `json:"metrics_port"`
 }
 
+// FastDLPortDefault matches FASTDL_PORT in deploy/.env.example. Off the game
+// port, whose TCP side srcds already holds for rcon.
+const FastDLPortDefault = 27080
+
 // Defaults returns the factory settings, matching deploy/.env.example.
 func Defaults() Settings {
 	return Settings{
@@ -190,6 +201,7 @@ func Defaults() Settings {
 		// combination that cannot work: the server never logs in to Steam, so
 		// it answers the query and then refuses the join.
 		SrcdsReach:                 ReachLan,
+		FastDLPort:                 FastDLPortDefault,
 		SrcdsBots:                  true,
 		SrcdsBotTeamSize:           6,
 		SrcdsBotHats:               true,
@@ -457,8 +469,16 @@ func (s Settings) withDefaults() Settings {
 	if s.MvmWeaponBuffImportance == "" {
 		s.MvmWeaponBuffImportance = d.MvmWeaponBuffImportance
 	}
+	return withListenerDefaults(s, d)
+}
+
+// withListenerDefaults fills the two ports the launcher itself listens on.
+func withListenerDefaults(s, d Settings) Settings {
 	if s.MetricsPort == 0 {
 		s.MetricsPort = d.MetricsPort
+	}
+	if s.FastDLPort == 0 {
+		s.FastDLPort = d.FastDLPort
 	}
 	return s
 }
