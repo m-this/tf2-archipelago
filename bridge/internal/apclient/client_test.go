@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -33,6 +34,13 @@ type fakeRoom struct {
 	// dropFirst hangs up right after the first handshake, the way a server restarting mid-run does.
 	dropFirst bool
 
+	// games is what the other slots in the room play, one slot per entry.
+	// The room answers a GetDataPackage for any of them with an empty table
+	// for that game, and hangs up after the first session's last answer when
+	// dropAfterPackages is set.
+	games             []string
+	dropAfterPackages bool
+
 	// stallOutboundFirst keeps sending room traffic after the first handshake
 	// but never reads again, so the client's ping cannot receive a pong.
 	stallOutboundFirst bool
@@ -44,6 +52,7 @@ type fakeRoom struct {
 
 	mu       sync.Mutex
 	sessions int
+	answered int
 }
 
 func (f *fakeRoom) accept() int {
@@ -89,6 +98,19 @@ func (f *fakeRoom) serve(ctx context.Context, conn *websocket.Conn) {
 				return
 			}
 			f.heard <- message
+			if cmd == "GetDataPackage" {
+				var ask getDataPackage
+				if err := json.Unmarshal(message["games"], &ask.Games); err != nil {
+					return
+				}
+				if err := f.answerPackage(ctx, conn, ask.Games); err != nil {
+					return
+				}
+				if f.dropAfterPackages && session == 1 && f.packagesAnswered() == len(f.games) {
+					return
+				}
+				continue
+			}
 			if cmd != "Connect" {
 				continue
 			}
@@ -133,6 +155,10 @@ func (f *fakeRoom) acknowledge(ctx context.Context, conn *websocket.Conn) error 
 	for i, id := range f.items {
 		items[i] = map[string]any{"item": id, "location": 1, "player": 1, "flags": 1}
 	}
+	slotInfo := map[string]any{}
+	for i, game := range f.games {
+		slotInfo[strconv.Itoa(i+2)] = map[string]any{"name": "other" + strconv.Itoa(i), "game": game}
+	}
 	return writeAll(ctx, conn,
 		map[string]any{
 			"cmd":               "Connected",
@@ -140,9 +166,28 @@ func (f *fakeRoom) acknowledge(ctx context.Context, conn *websocket.Conn) error 
 			"slot":              1,
 			"checked_locations": f.checkedLocations,
 			"slot_data":         f.slotData,
+			"slot_info":         slotInfo,
 		},
 		map[string]any{"cmd": "ReceivedItems", "index": 0, "items": items},
 	)
+}
+
+// answerPackage is the room's DataPackage for the games asked, tables empty.
+func (f *fakeRoom) answerPackage(ctx context.Context, conn *websocket.Conn, games []string) error {
+	tables := map[string]any{}
+	for _, game := range games {
+		tables[game] = map[string]any{"item_name_to_id": map[string]int64{}, "location_name_to_id": map[string]int64{}}
+	}
+	f.mu.Lock()
+	f.answered += len(games)
+	f.mu.Unlock()
+	return writeAll(ctx, conn, map[string]any{"cmd": "DataPackage", "data": map[string]any{"games": tables}})
+}
+
+func (f *fakeRoom) packagesAnswered() int {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.answered
 }
 
 func (f *fakeRoom) pushBounces(ctx context.Context, conn *websocket.Conn) {
@@ -563,4 +608,52 @@ reported:
 		t.Fatalf("status = %d, want %d", status, statusGoal)
 	}
 	waitFor(t, "the win to be recorded", store.GoalSent)
+}
+
+/*
+A public room holds many games, and one data package for all of them went past
+the read limit: EMann's bundle showed the session dropping a second after every
+connect, fifty-nine times, with nothing reaching the room. The names are asked
+for one game at a time now, and a reconnect asks only for what is missing.
+*/
+func TestNamesAreAskedForOneGameAtATimeAndOnlyOnce(t *testing.T) {
+	room := &fakeRoom{
+		seed:              "seed-1",
+		slotData:          slotDataFor("final_boss", "mvm_decoy", "mvm_decoy"),
+		games:             []string{"A Link to the Past", "Hollow Knight", "Pokemon Emerald"},
+		dropAfterPackages: true,
+	}
+	client, _ := runClient(t, room)
+
+	waitFor(t, "a second session after the server hung up", func() bool {
+		return room.sessionCount() >= 2 && client.Health().Connected
+	})
+	// Give the second session time to ask again if it were going to.
+	time.Sleep(100 * time.Millisecond)
+
+	var asked [][]string
+	for {
+		select {
+		case message := <-room.heard:
+			var cmd string
+			_ = json.Unmarshal(message["cmd"], &cmd)
+			if cmd != "GetDataPackage" {
+				continue
+			}
+			var games []string
+			_ = json.Unmarshal(message["games"], &games)
+			asked = append(asked, games)
+			continue
+		default:
+		}
+		break
+	}
+	if len(asked) != 3 {
+		t.Fatalf("asked %d times, want once per game and nothing on the reconnect: %v", len(asked), asked)
+	}
+	for _, games := range asked {
+		if len(games) != 1 {
+			t.Errorf("one request carried %v, want one game", games)
+		}
+	}
 }

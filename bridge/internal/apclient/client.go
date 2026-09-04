@@ -27,8 +27,12 @@ import (
 )
 
 const (
-	// readLimitBytes: RoomInfo carries a checksum per game, past the 32 KiB default.
-	readLimitBytes = 4 << 20
+	// readLimitBytes is a guard against a runaway reply, not a size the normal
+	// path reaches: the names are asked for one game at a time, and one
+	// game's tables are well under this. A public room's package for every
+	// game at once went past the old 4 MiB and dropped the session on every
+	// connect, forever.
+	readLimitBytes = 32 << 20
 
 	dialTimeout  = 30 * time.Second
 	writeTimeout = 10 * time.Second
@@ -84,6 +88,10 @@ type Client struct {
 	connected bool
 	slot      SlotData
 	names     *nameBook
+	// fetched is every game whose names have arrived. A reconnect asks only
+	// for the ones missing, so a room that hands out one oversized package
+	// cannot cost the session on every connect.
+	fetched   map[string]bool
 	lastError string
 }
 
@@ -318,7 +326,11 @@ func (c *Client) onDataPackage(message json.RawMessage) error {
 	if c.names == nil {
 		c.names = newNameBook()
 	}
+	if c.fetched == nil {
+		c.fetched = map[string]bool{}
+	}
 	for game, names := range payload.Data.Games {
+		c.fetched[game] = true
 		items := make(map[int64]string, len(names.ItemNameToID))
 		for name, id := range names.ItemNameToID {
 			items[id] = name
@@ -374,6 +386,19 @@ func (c *Client) rememberNames(payload connected) []string {
 	return games
 }
 
+// namesMissing is the games in the room whose names have not arrived yet.
+func (c *Client) namesMissing(games []string) []string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	var missing []string
+	for _, game := range games {
+		if !c.fetched[game] {
+			missing = append(missing, game)
+		}
+	}
+	return missing
+}
+
 // onConnected records the seed's shape. The pump wakes on ready and reports;
 // the only thing sent from here is the DeathLink tag, which cannot go on
 // Connect because the slot data that decides it is what Connected carries.
@@ -398,9 +423,12 @@ func (c *Client) onConnected(
 	 * failure to play: the chat falls back to printing ids, which is what it
 	 * did before it asked at all.
 	 */
-	if games := c.rememberNames(payload); len(games) > 0 {
-		if err := c.send(ctx, conn, getDataPackage{Cmd: "GetDataPackage", Games: games}); err != nil {
-			c.opts.Logger.WarnContext(ctx, "cannot ask for the item names, chat will show ids", "error", err)
+	for _, game := range c.namesMissing(c.rememberNames(payload)) {
+		/* One game per request. A room holds many games and one package for
+		   all of them is what went past the read limit and dropped the
+		   session on every connect; a game's own tables never come near it. */
+		if err := c.send(ctx, conn, getDataPackage{Cmd: "GetDataPackage", Games: []string{game}}); err != nil {
+			c.opts.Logger.WarnContext(ctx, "cannot ask for the item names, chat will show ids", "game", game, "error", err)
 		}
 	}
 	// The server holds the same check list for this slot, and the seed is
