@@ -281,6 +281,26 @@ func TestWeaponBuffSubstancesUseTheSharedHitPath(t *testing.T) {
 	}
 }
 
+func TestPluginImplementsActiveHealthRegenInsteadOfBrokenSchemaHealing(t *testing.T) {
+	body, err := os.ReadFile("../plugin/scripting/tf2_archipelago/weapon_buffs.inc")
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := string(body)
+	for _, required := range []string{
+		"#define ActiveHealthRegenEffect 66",
+		"CreateTimer(1.0, Timer_WeaponBuffHealthRegen",
+		"g_WeaponEffectLevels[weapon][ActiveHealthRegenEffect]",
+		"GetEntProp(resource, Prop_Send, \"m_iMaxHealth\", 4, client)",
+		"SetEntityHealth(client, health + healed)",
+		"if (effect == ActiveHealthRegenEffect)",
+	} {
+		if !strings.Contains(text, required) {
+			t.Errorf("active health regeneration implementation has no %q", required)
+		}
+	}
+}
+
 func TestEveryRequestedSillyEffectKeepsItsStackingMode(t *testing.T) {
 	wanted := map[string]BuffMode{
 		"projectile-count": BuffPercentage,
