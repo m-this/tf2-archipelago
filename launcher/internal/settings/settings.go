@@ -54,6 +54,13 @@ type Settings struct {
 	SrcdsReach         Reach  `json:"srcds_reach"`
 	SrcdsAdminSteamIDs string `json:"srcds_admin_steamids,omitempty"`
 
+	// SrcdsMods are the server mods the game server loads, by the keys
+	// gamedata catalogs. A community mission that needs one is offered only
+	// when the mod is here, and the player file names the same mods so the
+	// seed and the server agree. The Windows launcher installs none of them
+	// yet: it only carries the choice through for a server that has one.
+	SrcdsMods []string `json:"srcds_mods"`
+
 	// SrcdsStartMission is the popfile the server loads first. The map comes
 	// with it: gamedata knows which map a mission runs on.
 	SrcdsStartMission string `json:"srcds_start_mission"`

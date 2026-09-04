@@ -41,6 +41,7 @@ services:
       MVM_EXCLUDED_MISSIONS: ${MVM_EXCLUDED_MISSIONS:-}
       MVM_START_MISSION: ${MVM_START_MISSION:-}
       MVM_START_CLASS: ${MVM_START_CLASS:-}
+      SRCDS_MODS: ${SRCDS_MODS:-}
       AP_PORT: ${AP_PORT:?set AP_PORT in .env}
       AP_SLOT_NAME: ${AP_SLOT_NAME:-tf2}
       AP_PASSWORD: ${AP_PASSWORD:-}
@@ -57,6 +58,8 @@ services:
       dockerfile: deploy/Dockerfile.srcds
       args:
         RIPEXT_VERSION: ${RIPEXT_VERSION:?set it in deploy/env/versions.env}
+        SIGSEGV_MVM_VERSION: ${SIGSEGV_MVM_VERSION:?set it in deploy/env/versions.env}
+        SIGSEGV_MVM_SHA256: ${SIGSEGV_MVM_SHA256:?set it in deploy/env/versions.env}
     restart: unless-stopped
     environment:
       SRCDS_HOSTNAME: ${SRCDS_HOSTNAME:-Mann vs Archipelago}
@@ -70,6 +73,7 @@ services:
       TF2AP_BOT_UPGRADES_CHAT: ${TF2AP_BOT_UPGRADES_CHAT:-0}
       SRCDS_TOKEN: ${SRCDS_TOKEN:-0}
       SRCDS_ADMIN_STEAMIDS: ${SRCDS_ADMIN_STEAMIDS:-}
+      SRCDS_MODS: ${SRCDS_MODS:-}
       SRCDS_LAN: ${SRCDS_LAN:-1}
       SRCDS_REACH: ${SRCDS_REACH:-}
       SRCDS_BOTS: ${SRCDS_BOTS:-1}

@@ -95,7 +95,7 @@ func loadCommunity(body []byte) (loadedCommunity, error) {
 		if !known {
 			return loadedCommunity{}, fmt.Errorf("community mission %q: unknown difficulty %q", entry.PopFile, entry.Difficulty)
 		}
-		if entry.Requires != "" && entry.Requires != "no_nav" {
+		if !knownRequirement(entry.Requires) {
 			return loadedCommunity{}, fmt.Errorf("community mission %q: unknown requirement %q", entry.PopFile, entry.Requires)
 		}
 		if entry.Pack != "" && entry.Pack != "mlarchive-assets.zip" {
@@ -339,9 +339,10 @@ func IsCommunityMission(id MissionID) bool {
 	return ok
 }
 
-// IsPlayableMission reports whether this build can safely put a mission in a
-// seed. Community entries with a known compatibility requirement remain
-// visible to launchers but are never offered or drawn.
+// IsPlayableMission reports whether a stock server can safely put a mission
+// in a seed. Community entries with a requirement remain visible to launchers
+// but are never offered or drawn; IsMissionPlayableWith is the question for a
+// server that loads mods.
 func IsPlayableMission(id MissionID) bool {
 	if !IsCommunityMission(id) {
 		return true

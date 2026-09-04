@@ -64,6 +64,15 @@ def build(data: pathlib.Path, archipelago_version: str) -> str:
             f"Name one of {', '.join(sorted(merc_names))}."
         )
 
+    known_mods = {mod["key"] for mod in meta["server_mods"]}
+    server_mods = [key.strip() for key in read("SRCDS_MODS", "").split(",") if key.strip()]
+    for key in server_mods:
+        if key not in known_mods:
+            raise ConfigError(
+                f"SRCDS_MODS: {key!r} is not a server mod of this game. "
+                f"Name one of {', '.join(sorted(known_mods))}."
+            )
+
     game = meta["game"]
     lines = [
         f"name: {yaml_string(read('AP_SLOT_NAME', 'tf2'))}",
@@ -84,6 +93,11 @@ def build(data: pathlib.Path, archipelago_version: str) -> str:
         lines += [f"    - {yaml_string(name)}" for name in excluded]
     else:
         lines.append("  excluded_missions: []")
+    if server_mods:
+        lines.append("  server_mods:")
+        lines += [f"    - {yaml_string(key)}" for key in server_mods]
+    else:
+        lines.append("  server_mods: []")
     return "\n".join(lines) + "\n"
 
 

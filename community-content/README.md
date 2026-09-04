@@ -226,5 +226,12 @@ docker compose --project-directory . \
 
 - Vanilla `.bsp`, `.nav`, `.pop`, packed VScript, and normal TF2 assets work
   with the layout above. Selectable missions use Valve's upgrade table.
-- Missions that require additional server extensions are not included in the
-  supported catalog.
+- A mission that needs a server mod names it in `requires`, with a key from
+  `gamedata/server_mods.go`. Today that is `sigsegv-mvm` (SigMod). The
+  Docker image stages the pinned release from `deploy/env/versions.env` and
+  installs it when `SRCDS_MODS` names it; `make seed` passes the same list as
+  the apworld's `server_mods` option, so the seed draws those missions only
+  for a server that has the mod. The Windows launcher lists them locked:
+  upstream ships no Windows build of SigMod.
+- A mission that needs a mod the catalog does not know is not accepted by
+  `community.json`. Add the mod to the catalog and pin it first.

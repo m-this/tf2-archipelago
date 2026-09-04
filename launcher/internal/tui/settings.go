@@ -301,7 +301,7 @@ func (f *settingsForm) missionFields() []field {
 	for _, mission := range runshape.VisibleMissions(f.communityAvailable) {
 		if gamedata.IsPlayableMission(mission.ID) {
 			fields = append(fields, f.poolField(mission))
-		} else if gamedata.MissionRequirement(mission.ID) == "no_nav" {
+		} else {
 			fields = append(fields, unavailableMissionField(mission))
 		}
 	}
@@ -494,22 +494,29 @@ type poolToggle struct {
 }
 
 type unavailablePoolField struct {
-	label string
-	help  string
+	label  string
+	help   string
+	reason string
 }
 
 func unavailableMissionField(mission gamedata.Mission) field {
 	played, _ := gamedata.MapByID(mission.Map)
+	requirement := gamedata.MissionRequirement(mission.ID)
+	help := "The asset pack has this map's BSP but no bot navigation mesh. It cannot be enabled in a seed."
+	if gamedata.MissionServerMod(mission.ID) != "" {
+		help = "This mission needs a server mod this launcher does not install. It cannot be enabled in a seed here."
+	}
 	return &unavailablePoolField{
-		label: fmt.Sprintf("[Potato Archive] %s (%s)", mission.Name, played.Name),
-		help:  "The asset pack has this map's BSP but no bot navigation mesh. It cannot be enabled in a seed.",
+		label:  fmt.Sprintf("[Potato Archive] %s (%s)", mission.Name, played.Name),
+		help:   help,
+		reason: strings.ToLower(gamedata.RequirementLabel(requirement)),
 	}
 }
 
 func (f *unavailablePoolField) Label() string { return f.label }
 func (f *unavailablePoolField) Help() string  { return f.help }
 func (f *unavailablePoolField) Value() string {
-	return styleStopped.Render("missing bot .nav — unavailable")
+	return styleStopped.Render(f.reason + " — unavailable")
 }
 func (f *unavailablePoolField) Handle(tea.KeyMsg) bool { return false }
 

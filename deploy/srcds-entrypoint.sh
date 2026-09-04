@@ -9,6 +9,7 @@
 set -eu
 
 STAGE=/opt/tf2-archipelago
+MODS=/opt/tf2-mods
 COMMUNITY=/opt/tf2-community-pack/tf
 GAME="${STEAMAPPDIR}/${STEAMAPP}"
 INTERVAL=30
@@ -65,6 +66,21 @@ install_admin() {
 	mv "$staged" "$target"
 	chmod 0644 "$target"
 	echo "[AP] installed $(grep -c '^"' "$target") admin(s)"
+}
+
+# Server mods a community mission can require, by the keys community.json
+# uses, from SRCDS_MODS. Each one the image stages is a tree shaped like tf/
+# under $MODS/<key>. A key nothing was staged for is a line in the log, and
+# the seed generated with server_mods naming it will not find its missions.
+install_mods() {
+	[ -n "${SRCDS_MODS:-}" ] || return 0
+	for key in $(printf '%s' "${SRCDS_MODS}" | tr ',' ' '); do
+		if [ ! -d "$MODS/$key" ]; then
+			echo "[AP] SRCDS_MODS names $key, which this image does not carry"
+			continue
+		fi
+		cp -ru "$MODS/$key/." "$GAME/"
+	done
 }
 
 # The game ships a sample server.cfg that sets "rcon_password changeme", and
@@ -208,6 +224,7 @@ install_plugin() {
 			if [ -d "$COMMUNITY" ]; then
 				cp -ru "$COMMUNITY/." "$GAME/"
 			fi
+			install_mods
 			install_server_cfg
 			install_admin
 			if [ "$installed" -eq 0 ]; then
