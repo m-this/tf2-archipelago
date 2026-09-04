@@ -28,6 +28,10 @@ github.com/lxn/win v0.0.0-20210218163916-a377121e959e h1:H+t6A/QJMbhCSEH5rAuRxh+
 github.com/lxn/win v0.0.0-20210218163916-a377121e959e/go.mod h1:KxxjdtRkfNoYDCUP5ryK7XJJNTnpC8atvtmTheChOtk=
 github.com/m-this/tf2-mvm-bots-go v0.11.0 h1:JyxzlbWTD9SY4kSiOz3KiFztRGEoEO/XLH6jaAuDihg=
 github.com/m-this/tf2-mvm-bots-go v0.11.0/go.mod h1:kraNER13OJVmebYw+zrzegbvbNnoSjiRFnDiHoVGFiI=
+github.com/m-this/tf2-mvm-bots-go v0.11.1-0.20260904120719-621b07257500 h1:dS8SAIZuPhXtCaDTKSZ80iqy67y2U9+lKz6j+hg7uZM=
+github.com/m-this/tf2-mvm-bots-go v0.11.1-0.20260904120719-621b07257500/go.mod h1:kraNER13OJVmebYw+zrzegbvbNnoSjiRFnDiHoVGFiI=
+github.com/m-this/tf2-mvm-bots-go v0.12.0 h1:G9x+IPMwS/ZhDxJY3SiCL5WR4RQoaIYvCVk/pKENGUw=
+github.com/m-this/tf2-mvm-bots-go v0.12.0/go.mod h1:kraNER13OJVmebYw+zrzegbvbNnoSjiRFnDiHoVGFiI=
 github.com/mattn/go-isatty v0.0.24 h1:tGZZoVgT/KiqK1c8ocVLeDS8BSWMRd47J3Lbz7vsReI=
 github.com/mattn/go-isatty v0.0.24/go.mod h1:nMCL3Zebbrt45jsMDgnfIwz6ydEQApk5oEI3HqDio6A=
 github.com/mattn/go-localereader v0.0.1 h1:ygSAOl7ZXTx4RdPYinUpg6W99U8jWvWi9Ye2JC/oIi4=

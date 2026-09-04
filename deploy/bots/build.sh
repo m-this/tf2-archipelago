@@ -77,6 +77,13 @@ fetch() {
 # Already applied is not that failure. The checkouts survive between runs, here
 # and in CI's cache, so a second run finds its own work: --reverse --check asks
 # whether this exact patch is already in the tree and moves on if it is.
+#
+# Every tree this patches is a clone with a .git of its own, and that is load
+# bearing: git apply resolves the patch's paths from the repository root rather
+# than from the directory it was given, so the same call in a tree with no .git
+# looks for them under this repository, finds nothing and skips the patch
+# without a word. The defender mod was such a tree, and its patch had never
+# applied here.
 apply_patches() {
 	dir="$src/$1"
 	for patch in "$patches/$1"/*.patch; do
@@ -135,13 +142,18 @@ fi
 # own build is a shell script and a compiler. Here we have Go, so the files are
 # regenerated and compared. A mismatch means the copy in the mod's tree is not
 # what its generator writes, which is the drift the copies exist to risk.
+#
+# Against the module cache rather than the staged copy, so the question stays
+# the one worth asking: does the pinned module agree with its own generator.
+# Nothing here patches the staged tree any more, and a patch on a generated
+# file is exactly what made this check fail on a build that reused its cache.
 generate_from_module() {
 	gen=$(mktemp -d)
 	# go tool, not go run: the version comes from the tool directive in
 	# go.mod, so `go get -tool` moves the mod and nothing else has to be
 	# edited to agree with it.
 	( cd "$root" && go tool github.com/m-this/tf2-mvm-bots-go/cmd/gen \
-		-upstream "$src/defenderbots/plugin" -out "$gen" ) || {
+		-upstream "$defenderbots_dir/plugin" -out "$gen" ) || {
 		echo "the mod's generator failed" >&2
 		rm -rf "$gen"
 		return 1
@@ -150,8 +162,8 @@ generate_from_module() {
 	drift=0
 	for file in "$gen"/sourcepawn/*.sp; do
 		name=$(basename "$file")
-		for committed in "$src/defenderbots/plugin/source/redbots3/generated/$name" \
-			"$src/defenderbots/plugin/testbed/stats/generated/$name"; do
+		for committed in "$defenderbots_dir/plugin/source/redbots3/generated/$name" \
+			"$defenderbots_dir/plugin/testbed/stats/generated/$name"; do
 			[ -f "$committed" ] || continue
 			cmp -s "$file" "$committed" || {
 				echo "drift: $committed is not what the generator writes" >&2
@@ -173,7 +185,6 @@ generate_from_module
 fetch TF2-DMB/CBaseNPC "$CBASENPC_VERSION" cbasenpc
 fetch Vinillia/actions.ext "$ACTIONS_VERSION" actions
 
-apply_patches defenderbots
 apply_patches tf2attributes
 
 # --- The compiler ---
