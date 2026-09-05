@@ -134,11 +134,11 @@ func (s *Supervisor) Start(onExit func(error)) error {
 		s.emit("no login token, so the server stays on the local network: " +
 			string(current.SrcdsReach) + " needs one from steamcommunity.com/dev/managegameservers")
 	}
-	s.launchProcesses(current, cfg, ctx, cancel, done, stopRoom, onExit)
+	s.launchProcesses(ctx, current, cfg, cancel, done, stopRoom, onExit)
 	return nil
 }
 
-func (s *Supervisor) launchProcesses(current settings.Settings, cfg config.Config, ctx context.Context,
+func (s *Supervisor) launchProcesses(ctx context.Context, current settings.Settings, cfg config.Config,
 	cancel context.CancelFunc, done chan struct{}, stopRoom func(), onExit func(error),
 ) {
 	/* Each of these outlives this call, so a panic on any of them takes the
