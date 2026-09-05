@@ -41,6 +41,11 @@ Then the interface opens on it.
 service or a `screen` session wants: an interface that draws over the whole
 screen writes nothing useful into a file. Stop that one with Ctrl+C.
 
+For public community-map downloads without forwarding another router port,
+see [Fast map downloads with Tailscale](tailscale-fastdl.md). Linux has the
+same Networking settings as the Windows launcher. A headless host can use
+`-setup-funnel`, `-configure`, and `-console` without a desktop.
+
 ## What you need
 
 | Thing | What you need |
@@ -102,6 +107,7 @@ environment already sets.
 | `tf2ap-linux-amd64` | Install whatever the server needs, then run it |
 | `tf2ap-linux-amd64 -room <host:port>` | Set the room address, then run |
 | `tf2ap-linux-amd64 -configure` | Edit every setting, then exit |
+| `tf2ap-linux-amd64 -setup-funnel` | Check Funnel authorization and print any approval URL |
 | `tf2ap-linux-amd64 -install` | Install or repair the server, then exit |
 | `tf2ap-linux-amd64 -status` | Show the settings and the install state |
 | `tf2ap-linux-amd64 -yaml <path>` | Write the Archipelago player file, then exit |

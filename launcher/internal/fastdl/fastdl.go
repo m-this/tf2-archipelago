@@ -3,19 +3,19 @@
 // game server's in-band transfer. That transfer can reach the end of a large
 // packed BSP without the client accepting it, and the map restarts forever.
 //
-// Everything is on the same machine as the game server and reachable exactly
-// where the game port is: a player who can join can download, and nobody
-// else can. There is no port forwarding here and no relay.
+// Everything is on the same machine as the game server. The caller chooses
+// whether the listener is available on the LAN or only on loopback behind a
+// public tunnel; this package owns only the HTTP paths and files.
 package fastdl
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"net"
 	"net/http"
 	"os"
-	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -46,6 +46,7 @@ const (
 	readHeaderTimeout = 10 * time.Second
 	writeTimeout      = 15 * time.Minute
 	idleTimeout       = 2 * time.Minute
+	statusText        = "TF2 Archipelago FastDL is ready.\n"
 )
 
 // URL is the sv_downloadurl value for a server on host, serving on port.
@@ -63,34 +64,64 @@ func Handler(gameDir string) http.Handler {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
-		relative, ok := contentPath(r.URL.Path)
+		// This is a health check, not a directory listing. It makes the URL
+		// shown by the launcher useful to an operator without exposing names.
+		if r.URL.Path == strings.TrimSuffix(urlPrefix, "/") || r.URL.Path == urlPrefix {
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			_, _ = w.Write([]byte(statusText))
+			return
+		}
+		dir, relative, ok := contentPath(r.URL.Path)
 		if !ok {
 			http.NotFound(w, r)
 			return
 		}
-		target := filepath.Join(gameDir, filepath.FromSlash(relative))
-		info, err := os.Stat(target)
+		// Root confines resolution even through symlinks and Windows junctions.
+		// Rooting again at the allowlisted directory also prevents a link in
+		// maps/ from reaching a sensitive sibling such as cfg/ or addons/.
+		gameRoot, err := os.OpenRoot(gameDir)
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+		defer func() { _ = gameRoot.Close() }()
+		assetRoot, err := gameRoot.OpenRoot(dir)
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+		defer func() { _ = assetRoot.Close() }()
+		file, err := assetRoot.Open(filepath.FromSlash(relative))
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+		defer func() { _ = file.Close() }()
+		info, err := file.Stat()
 		if err != nil || !info.Mode().IsRegular() {
 			http.NotFound(w, r)
 			return
 		}
-		http.ServeFile(w, r, target)
+		http.ServeContent(w, r, filepath.Base(relative), info.ModTime(), file)
 	})
 }
 
-// contentPath turns a request path into a game-relative file path, or
-// reports that the request names nothing this server hands out.
-func contentPath(requestPath string) (string, bool) {
+// contentPath separates a request into an allowlisted asset directory and a
+// path within it. Backslashes are rejected before filepath can interpret them
+// as separators on Windows.
+func contentPath(requestPath string) (dir, relative string, ok bool) {
 	if !strings.HasPrefix(requestPath, urlPrefix) {
-		return "", false
+		return "", "", false
 	}
-	cleaned := path.Clean("/" + strings.TrimPrefix(requestPath, urlPrefix))
-	relative := strings.TrimPrefix(cleaned, "/")
-	dir, _, found := strings.Cut(relative, "/")
-	if !found || !contentDirs[dir] {
-		return "", false
+	untrusted := strings.TrimPrefix(requestPath, urlPrefix)
+	if strings.ContainsRune(untrusted, '\\') || !fs.ValidPath(untrusted) {
+		return "", "", false
 	}
-	return relative, true
+	dir, relative, found := strings.Cut(untrusted, "/")
+	if !found || relative == "" || !contentDirs[dir] {
+		return "", "", false
+	}
+	return dir, relative, true
 }
 
 // Serve listens on listen until ctx ends. It returns nil on a clean stop and

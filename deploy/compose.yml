@@ -16,6 +16,61 @@
 # mistake worth being able to make.
 name: tf2-archipelago
 
+# Inline configs keep the released compose.yaml self-contained. Tailscale's
+# TS_CERT_DOMAIN is expanded inside its container, so the doubled dollar sign
+# deliberately survives Compose interpolation.
+configs:
+  fastdl_caddy:
+    content: |
+      :80 {
+        @health path /tf /tf/
+        respond @health "TF2 Archipelago FastDL is ready." 200
+        handle_path /tf/* {
+          @content path /maps/* /materials/* /models/* /sound/* /particles/* /resource/*
+          handle @content {
+            root * /srv/tf-dedicated/tf
+            file_server
+          }
+          respond 404
+        }
+        respond 404
+      }
+  tailscale_fastdl_serve:
+    content: |
+      {
+        "TCP": {"443": {"HTTPS": true}},
+        "Web": {
+          "$${TS_CERT_DOMAIN}:443": {
+            "Handlers": {"/tf": {"Proxy": "http://127.0.0.1:80/tf"}}
+          }
+        },
+        "AllowFunnel": {"$${TS_CERT_DOMAIN}:443": true}
+      }
+  tailscale_fastdl_ready:
+    content: |
+      #!/bin/sh
+      set -eu
+      status="$$(tailscale status --json)"
+      dns_name="$$(
+        printf '%s\n' "$$status" |
+          sed -n 's/^[[:space:]]*"DNSName":[[:space:]]*"\([^"]*\)".*/\1/p' |
+          head -n 1
+      )"
+      dns_name="$${dns_name%.}"
+      case "$$dns_name" in
+        *.ts.net) ;;
+        *) exit 1 ;;
+      esac
+      case "$$dns_name" in
+        *[!A-Za-z0-9.-]*) exit 1 ;;
+      esac
+      funnel="$$(tailscale funnel status --json)"
+      case "$$funnel" in *'"/tf"'*) ;; *) exit 1 ;; esac
+      case "$$funnel" in *'"AllowFunnel"'*true*) ;; *) exit 1 ;; esac
+      temporary=/run/tf2ap-fastdl/url.new
+      printf 'https://%s/tf\n' "$$dns_name" >"$$temporary"
+      mv "$$temporary" /run/tf2ap-fastdl/url
+
 services:
   # The multiworld, hosted here rather than on archipelago.gg. Off unless
   # COMPOSE_PROFILES=selfhost, and it wants AP_HOST=archipelago with
@@ -87,6 +142,7 @@ services:
       FASTDL_HOST: ${FASTDL_HOST:-}
       FASTDL_PORT: ${FASTDL_PORT:-27080}
       SRCDS_DOWNLOADURL: ${SRCDS_DOWNLOADURL:-}
+      TAILSCALE_FASTDL: ${TAILSCALE_FASTDL:-0}
     ports:
       # The only public port in the stack, and it is the game's.
       - "${SRCDS_PORT:-27015}:${SRCDS_PORT:-27015}/udp"
@@ -101,6 +157,14 @@ services:
       # materials/, models/, sound/ and scripts/vscripts/ all keep their native
       # paths. Restarting srcds installs files changed on the host.
       - ./community-content:/opt/tf2-community-pack:ro
+      - tailscale_fastdl_runtime:/run/tf2ap-fastdl:ro
+    depends_on:
+      # Optional means the ordinary stack has no Tailscale dependency. When
+      # its profile is enabled, Compose waits for a verified Funnel URL before
+      # starting SRCDS.
+      tailscale-fastdl:
+        condition: service_healthy
+        required: false
 
   # The game's content over HTTP, for clients joining without a community
   # map. Read-only on the game volume, and it answers only under maps/,
@@ -111,10 +175,48 @@ services:
     image: caddy:2-alpine
     restart: unless-stopped
     ports:
-      - "${FASTDL_PORT:-27080}:80/tcp"
+      - "${FASTDL_BIND:-0.0.0.0}:${FASTDL_PORT:-27080}:80/tcp"
     volumes:
       - tf2game:/srv/tf-dedicated:ro
-      - ./deploy/fastdl/Caddyfile:/etc/caddy/Caddyfile:ro
+    configs:
+      - source: fastdl_caddy
+        target: /etc/caddy/Caddyfile
+
+  # Public HTTPS for FastDL without a forwarded router port. It shares
+  # Caddy's network namespace because Tailscale intentionally proxies only to
+  # loopback HTTP backends. The official image owns login, certificates and
+  # Funnel; Caddy remains the only process allowed to read the game volume.
+  tailscale-fastdl:
+    profiles: ["tailscale-fastdl"]
+    image: tailscale/tailscale:stable
+    restart: unless-stopped
+    network_mode: "service:fastdl"
+    environment:
+      TS_AUTHKEY: ${TAILSCALE_AUTHKEY:-}
+      TS_AUTH_ONCE: "true"
+      TS_HOSTNAME: ${TAILSCALE_HOSTNAME:-tf2-fastdl}
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_SERVE_CONFIG: /config/serve.json
+      TS_USERSPACE: "true"
+    volumes:
+      - tailscale_fastdl_state:/var/lib/tailscale
+      - tailscale_fastdl_runtime:/run/tf2ap-fastdl
+    configs:
+      - source: tailscale_fastdl_serve
+        target: /config/serve.json
+      - source: tailscale_fastdl_ready
+        target: /config/ready.sh
+        mode: 0555
+    healthcheck:
+      test: ["CMD", "/config/ready.sh"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+    depends_on:
+      fastdl:
+        condition: service_started
+        restart: true
 
   bridge:
     build:
@@ -162,3 +264,8 @@ volumes:
   apoutput:
   # The bridge's check queue and unlock set.
   bridgestate:
+  # The Tailscale node identity survives image and machine restarts. The auth
+  # key is needed only for the first successful login.
+  tailscale_fastdl_state:
+  # A generated URL shared with srcds. It holds no Tailscale credentials.
+  tailscale_fastdl_runtime:

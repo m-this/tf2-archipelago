@@ -496,7 +496,7 @@ compose-release:
 		echo '#'; \
 		echo '# TF2AP_VERSION picks the release the images come from.'; \
 		echo '# https://github.com/m-this/tf2-archipelago'; \
-		$(COMPOSE_RELEASE) --profile selfhost --profile seed config --no-interpolate \
+		$(COMPOSE_RELEASE) --profile selfhost --profile seed --profile tailscale-fastdl config --no-interpolate \
 			| awk '$$0 == "    build:" { skip = 1; next } skip { if (match($$0, /^      /)) next; skip = 0 } { print }' \
 			| sed 's|$(CURDIR)/|./|g'; \
 	} > $(DIST)/compose.yaml

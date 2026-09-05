@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -12,6 +13,7 @@ import (
 	"github.com/m-this/tf2-archipelago/bridge/config"
 	"github.com/m-this/tf2-archipelago/gamedata"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
+	"github.com/m-this/tf2-archipelago/launcher/internal/tailscalefastdl"
 )
 
 func TestTestModeRejectsAnInvalidRunBeforeOpeningARoom(t *testing.T) {
@@ -119,6 +121,112 @@ func TestSupervisorRefusesAnIncompleteConfiguration(t *testing.T) {
 	s.InstallRoot = t.TempDir()
 	if err := NewSupervisor(s, nil, nil).Start(nil); err == nil {
 		t.Fatal("Start with no room address and no RCON password succeeded")
+	}
+}
+
+func TestSupervisorDoesNotHoldItsMutexWhileTailscaleStarts(t *testing.T) {
+	s := settings.Defaults()
+	s.TailscaleFastDL = true
+	sup := NewSupervisor(s, nil, nil)
+	entered := make(chan struct{})
+	release := make(chan struct{})
+	sup.configureTailscale = func(context.Context, int) (tailscalefastdl.Result, error) {
+		close(entered)
+		<-release
+		return tailscalefastdl.Result{}, errors.New("setup stopped for the test")
+	}
+
+	startErr := make(chan error, 1)
+	go func() { startErr <- sup.Start(nil) }()
+	select {
+	case <-entered:
+	case <-time.After(time.Second):
+		t.Fatal("Tailscale setup did not start")
+	}
+
+	status := make(chan bool, 1)
+	go func() { status <- sup.Running() }()
+	select {
+	case running := <-status:
+		if !running {
+			t.Fatal("Running is false while setup is in progress")
+		}
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("Running blocked on Tailscale setup")
+	}
+
+	close(release)
+	if err := <-startErr; err == nil {
+		t.Fatal("failed Tailscale setup was accepted")
+	}
+}
+
+func TestSupervisorStopCancelsAndWaitsForTailscaleSetup(t *testing.T) {
+	s := settings.Defaults()
+	s.TailscaleFastDL = true
+	sup := NewSupervisor(s, nil, nil)
+	entered := make(chan struct{})
+	sup.configureTailscale = func(ctx context.Context, _ int) (tailscalefastdl.Result, error) {
+		close(entered)
+		<-ctx.Done()
+		return tailscalefastdl.Result{}, ctx.Err()
+	}
+
+	startErr := make(chan error, 1)
+	go func() { startErr <- sup.Start(nil) }()
+	<-entered
+	sup.Stop()
+	if err := <-startErr; err != nil {
+		t.Fatalf("operator-cancelled Start returned %v", err)
+	}
+	if sup.Running() {
+		t.Fatal("Running is true after cancelling setup")
+	}
+}
+
+func TestSupervisorStopRemovesTheFastDLFunnelRoute(t *testing.T) {
+	s := fakeServer(t, t.TempDir())
+	s.TailscaleFastDL = true
+	sup := NewSupervisor(s, nil, nil)
+	sup.configureTailscale = func(context.Context, int) (tailscalefastdl.Result, error) {
+		return tailscalefastdl.Result{URL: "https://host.example.ts.net/tf"}, nil
+	}
+	disabled := make(chan struct{}, 1)
+	sup.disableTailscale = func(context.Context) error {
+		disabled <- struct{}{}
+		return nil
+	}
+
+	if err := sup.Start(nil); err != nil {
+		t.Fatal(err)
+	}
+	sup.Stop()
+	select {
+	case <-disabled:
+	default:
+		t.Fatal("Stop did not remove the FastDL Funnel route")
+	}
+}
+
+func TestSupervisorStartupFailureRemovesAConfiguredFunnelRoute(t *testing.T) {
+	s := settings.Defaults()
+	s.TailscaleFastDL = true
+	// No RCON password makes bridgeConfig fail after Funnel was configured.
+	sup := NewSupervisor(s, nil, nil)
+	sup.configureTailscale = func(context.Context, int) (tailscalefastdl.Result, error) {
+		return tailscalefastdl.Result{URL: "https://host.example.ts.net/tf"}, nil
+	}
+	disabled := false
+	sup.disableTailscale = func(context.Context) error {
+		disabled = true
+		return nil
+	}
+
+	if err := sup.Start(nil); err == nil {
+		t.Fatal("incomplete configuration was accepted")
+	}
+	if !disabled {
+		t.Fatal("startup failure left the configured Funnel route behind")
 	}
 }
 

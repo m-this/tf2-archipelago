@@ -75,6 +75,10 @@ type Settings struct {
 	*/
 	FastDLPort       int    `json:"fastdl_port"`
 	SrcdsDownloadURL string `json:"srcds_download_url,omitempty"`
+	// TailscaleFastDL asks Tailscale Funnel to publish only the downloadable
+	// content directories and gives its public HTTPS URL to SRCDS. It changes
+	// no game-server address or reach setting. Only the server runs Tailscale.
+	TailscaleFastDL bool `json:"tailscale_fastdl,omitempty"`
 
 	// SrcdsStartMission is the popfile the server loads first. The map comes
 	// with it: gamedata knows which map a mission runs on.

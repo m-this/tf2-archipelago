@@ -16,6 +16,7 @@
 * [The shape of the run](setup/shape-of-the-run.md)
 * [Create the session](setup/create-the-session.md)
 * [Invite your friends](setup/invite-your-friends.md)
+* [Fast map downloads with Tailscale](setup/tailscale-fastdl.md)
 
 ## Play
 
