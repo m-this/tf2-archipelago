@@ -67,7 +67,8 @@ func TestInstallServerCfg(t *testing.T) {
 // say why. A reach with no token behind it is the other way round: sv_lan 0
 // there is a server that refuses everybody, local players included.
 func TestServerCfgFollowsTheReach(t *testing.T) {
-	const token = "C7A1B2E3D4F5A6B7C8D9E0F1A2B3C4D5"
+	// Obviously not a token, so a secret scanner has nothing to flag.
+	const token = "NOT-A-REAL-TOKEN-0000000000000000"
 	for _, c := range []struct {
 		name  string
 		reach settings.Reach
@@ -363,7 +364,8 @@ func TestTheDebugLevelSomebodyChoseIsLeftAlone(t *testing.T) {
 // A relayed server hands out no address of its own, so nothing is written and
 // the game server's transfer stays the way in.
 func TestDownloadURL(t *testing.T) {
-	const token = "C7A1B2E3D4F5A6B7C8D9E0F1A2B3C4D5"
+	// Obviously not a token, so a secret scanner has nothing to flag.
+	const token = "NOT-A-REAL-TOKEN-0000000000000000"
 	for _, c := range []struct {
 		name string
 		s    settings.Settings

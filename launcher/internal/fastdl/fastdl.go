@@ -38,12 +38,14 @@ var contentDirs = map[string]bool{
 	"particles": true, "resource": true,
 }
 
-// Timeouts bound one slow client. A BSP is tens of megabytes on a LAN, so a
-// minute per request is generous and still finite.
+// Timeouts bound one slow client without cutting off a slow one. A packed BSP
+// is tens of megabytes, and a friend on a poor line can spend longer than five
+// minutes on it, so the write gets a quarter of an hour; the idle timeout is
+// what a blip mid-download has to fit in before the client asks again.
 const (
 	readHeaderTimeout = 10 * time.Second
-	writeTimeout      = 5 * time.Minute
-	idleTimeout       = 30 * time.Second
+	writeTimeout      = 15 * time.Minute
+	idleTimeout       = 2 * time.Minute
 )
 
 // URL is the sv_downloadurl value for a server on host, serving on port.
