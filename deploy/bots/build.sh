@@ -153,7 +153,7 @@ generate_from_module() {
 	# go.mod, so `go get -tool` moves the mod and nothing else has to be
 	# edited to agree with it.
 	( cd "$root" && go tool github.com/m-this/tf2-mvm-bots-go/cmd/gen \
-		-upstream "$defenderbots_dir/plugin" -out "$gen" ) || {
+		-plugin "$defenderbots_dir/plugin" -out "$gen" ) || {
 		echo "the mod's generator failed" >&2
 		rm -rf "$gen"
 		return 1
