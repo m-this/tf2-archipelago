@@ -58,8 +58,7 @@ func prepareTailscaleFastDLWith(parent context.Context, s settings.Settings, say
 	result, err := configure(ctx, s.FastDLPort)
 	if err != nil {
 		startErr := &TailscaleFastDLStartError{Err: err}
-		var approval *tailscalefastdl.ApprovalRequiredError
-		if errors.As(err, &approval) {
+		if approval, ok := errors.AsType[*tailscalefastdl.ApprovalRequiredError](err); ok {
 			startErr.ApprovalURL = approval.URL
 		}
 		return s, startErr

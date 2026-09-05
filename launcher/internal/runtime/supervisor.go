@@ -134,7 +134,13 @@ func (s *Supervisor) Start(onExit func(error)) error {
 		s.emit("no login token, so the server stays on the local network: " +
 			string(current.SrcdsReach) + " needs one from steamcommunity.com/dev/managegameservers")
 	}
+	s.launchProcesses(current, cfg, ctx, cancel, done, stopRoom, onExit)
+	return nil
+}
 
+func (s *Supervisor) launchProcesses(current settings.Settings, cfg config.Config, ctx context.Context,
+	cancel context.CancelFunc, done chan struct{}, stopRoom func(), onExit func(error),
+) {
 	/* Each of these outlives this call, so a panic on any of them takes the
 	   launcher down with the server it is supervising. guard turns that into a
 	   line in the log a debug bundle carries. */
@@ -164,7 +170,6 @@ func (s *Supervisor) Start(onExit func(error)) error {
 			onExit:    onExit,
 		})
 	})
-	return nil
 }
 
 // exitGrace bounds the wait for the second half to exit. Longer than the delay
