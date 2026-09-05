@@ -340,6 +340,34 @@ func TestAnAcknowledgedEffectIsNotSentAgain(t *testing.T) {
 	}
 }
 
+// A trap is an effect, so it reaches the plugin by key and never joins the
+// unlock set. A trap in the unlock set would fire again on every map change.
+func TestATrapIsAnEffectAndNotAnUnlock(t *testing.T) {
+	store := openTemp(t)
+	trap := gamedata.Traps[0]
+
+	if err := store.ApplyItems(0, []int64{trap.ItemID()}); err != nil {
+		t.Fatal(err)
+	}
+	grants, _ := store.GrantsSince(0)
+	if len(grants) != 1 {
+		t.Fatalf("grants = %+v", grants)
+	}
+	if grants[0].Kind != gamedata.ItemTrap.Key() || grants[0].Key != trap.Key {
+		t.Fatalf("the plugin was told %q/%q, wanted trap/%s", grants[0].Kind, grants[0].Key, trap.Key)
+	}
+	if held := store.Unlocks().Of(gamedata.ItemTrap); len(held) != 0 {
+		t.Fatalf("the unlock set holds %v", held)
+	}
+
+	if err := store.Ack(1); err != nil {
+		t.Fatal(err)
+	}
+	if after, _ := store.GrantsSince(0); len(after) != 0 {
+		t.Fatalf("the trap was sent again after the acknowledgement: %+v", after)
+	}
+}
+
 func TestAnAcknowledgementSurvivesARestartAndOnlyMovesForward(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "bridge.json")
 	store, err := Open(path)

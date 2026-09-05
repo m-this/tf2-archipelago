@@ -55,6 +55,10 @@ func currentIDs() map[string]int64 {
 			if ok {
 				ids[frozenKey(it.Kind.Key(), buff.Key, 0)] = it.ID
 			}
+		case ItemTrap:
+			if trap, ok := TrapByID(it.Trap); ok {
+				ids[frozenKey(it.Kind.Key(), trap.Key, 0)] = it.ID
+			}
 		}
 	}
 	return ids
@@ -135,6 +139,9 @@ func TestFrozenKeysHoldOnlyStableIdentifiers(t *testing.T) {
 	}
 	for _, buff := range WeaponBuffs {
 		stable[buff.Key] = true
+	}
+	for _, trap := range Traps {
+		stable[trap.Key] = true
 	}
 
 	for key := range currentIDs() {
@@ -323,6 +330,8 @@ func TestItemPoolCoversEveryGate(t *testing.T) {
 			// Filler, counted by the pool builder rather than here.
 		case ItemWeaponBuff:
 			// Useful rewards, sampled and sometimes stacked by the pool builder.
+		case ItemTrap:
+			// Negative filler, counted by the pool builder rather than here.
 		}
 		if it.Classification == Progression && it.Count == 0 {
 			t.Errorf("%q is progression with no copies in the pool", it.Name)

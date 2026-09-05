@@ -10,6 +10,7 @@ const (
 	ItemWeaponSlot
 	ItemCredits
 	ItemWeaponBuff
+	ItemTrap
 )
 
 var itemKindKeys = [...]string{
@@ -18,11 +19,12 @@ var itemKindKeys = [...]string{
 	ItemWeaponSlot:    "weapon_slot",
 	ItemCredits:       "credits",
 	ItemWeaponBuff:    "weapon_buff",
+	ItemTrap:          "trap",
 }
 
 // ItemKinds is every kind that exists, in id order. The bridge walks it to
 // build the unlock set, so a kind added here needs no second list anywhere.
-var ItemKinds = []ItemKind{ItemMissionTicket, ItemClass, ItemWeaponSlot, ItemCredits, ItemWeaponBuff}
+var ItemKinds = []ItemKind{ItemMissionTicket, ItemClass, ItemWeaponSlot, ItemCredits, ItemWeaponBuff, ItemTrap}
 
 // Key is the string on the wire between the bridge and the plugin.
 func (k ItemKind) Key() string { return itemKindKeys[k] }
@@ -34,9 +36,9 @@ func (k ItemKind) Key() string { return itemKindKeys[k] }
 //
 // The distinction is what decides how the bridge delivers an item. State goes
 // in the unlock set and is resent freely; an effect is sent once and is not
-// sent again until the plugin says it applied it. Traps are effects too, the
-// day they exist.
-func (k ItemKind) OneShot() bool { return k == ItemCredits }
+// sent again until the plugin says it applied it. A trap is an effect for the
+// same reason: firing it twice soaks a team that only earned it once.
+func (k ItemKind) OneShot() bool { return k == ItemCredits || k == ItemTrap }
 
 // Item is one entry in the multiworld's item pool. Mission, Class and Credits
 // are the payload of the kind that uses them and zero elsewhere; Count is zero
@@ -51,6 +53,7 @@ type Item struct {
 	Class          ClassID
 	Credits        uint16
 	WeaponBuff     uint16
+	Trap           TrapID
 }
 
 // ProgressiveWeaponSlotName is the one item that unlocks loadout slots: copy n
@@ -68,7 +71,7 @@ var cashBundleID = BaseID + itemSpaceOffset + itemBlockCredits + 1
 // Items is the whole item pool template: a ticket per mission, a class item
 // per class, the progressive weapon slot, and the filler that pads the rest.
 //
-// Weapon ownership, canteens, robot templates and traps remain out of scope.
+// Weapon ownership, canteens and robot templates remain out of scope.
 var Items = buildItems()
 
 var itemsByID = indexItems()
@@ -89,7 +92,7 @@ func ItemByID(id int64) (Item, bool) {
 }
 
 func buildItems() []Item {
-	all := make([]Item, 0, len(Missions)+len(Classes)+len(WeaponBuffs)+2)
+	all := make([]Item, 0, len(Missions)+len(Classes)+len(WeaponBuffs)+len(Traps)+2)
 	for _, m := range Missions {
 		all = append(all, Item{
 			ID:             m.TicketItemID(),
@@ -131,6 +134,15 @@ func buildItems() []Item {
 			Kind:           ItemWeaponBuff,
 			Classification: Useful,
 			WeaponBuff:     buff.ID,
+		})
+	}
+	for _, trap := range Traps {
+		all = append(all, Item{
+			ID:             trap.ItemID(),
+			Name:           trap.ItemName(),
+			Kind:           ItemTrap,
+			Classification: TrapClassification,
+			Trap:           trap.ID,
 		})
 	}
 	return all

@@ -208,12 +208,21 @@ directions:
 The seed decides. A slot with `death_link` off never claims the tag, never
 hears a death, and drops what the plugin reports.
 
-Traps from the thread, all plugin-side:
+`trap_percentage` is how much of the run's spare space holds traps rather
+than rewards. Zero, the default, puts none in the pool.
+
+Built: **Jarate on the whole team**, ten seconds, bots included.
+
+A trap fires during a wave or not at all. The plugin holds one that arrives
+between waves until the next `wave_start`. It is the mirror of the credits
+hold: a Cash Bundle waits for the upgrade station and a trap waits for the
+robots. The hold is the same cursor, so effects stay ordered behind it.
+
+The rest, from the thread and not built:
 
 - Forced bad canteen or upgrade (Return to Spawn, Heavy Rage)
 - Spawned Sentry Buster, Engineer, Sniper or Spy
 - Map event triggers (Rottenburg's barrier, Mannhattan's capture points)
-- Jarate on the whole team
 - Stunned allied bots
 - An extra Giant or boss
 

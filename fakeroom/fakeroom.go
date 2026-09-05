@@ -487,7 +487,22 @@ func unlockOrder(held []int64) []int64 {
 			}
 		}
 	}
-	return append(append(classes, slots...), promoteBuffs(rest)...)
+	return append(append(classes, slots...), promoteTraps(promoteBuffs(rest))...)
+}
+
+// promoteTraps brings the traps to the very front of the tail, for the reason
+// promoteBuffs exists: a trap sits behind fifty mission tickets otherwise and
+// nobody testing the feature ever receives one. Test mode only.
+func promoteTraps(rest []int64) []int64 {
+	var traps, others []int64
+	for _, id := range rest {
+		if item, known := gamedata.ItemByID(id); known && item.Kind == gamedata.ItemTrap {
+			traps = append(traps, id)
+			continue
+		}
+		others = append(others, id)
+	}
+	return append(traps, others...)
 }
 
 /*

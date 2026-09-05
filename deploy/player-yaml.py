@@ -85,6 +85,7 @@ def build(data: pathlib.Path, archipelago_version: str) -> str:
         f"  goal: {read('MVM_GOAL', 'final_boss')}",
         f"  missionsanity_percentage: {read('MVM_MISSIONSANITY_PERCENTAGE', '80')}",
         f"  death_link: {read('MVM_DEATH_LINK', 'false')}",
+        f"  trap_percentage: {read('MVM_TRAP_PERCENTAGE', '0')}",
         f"  start_mission: {yaml_string(start_mission)}",
         f"  start_class: {yaml_string(start_class)}",
     ]

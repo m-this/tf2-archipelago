@@ -79,6 +79,7 @@ func runSettingsDialog(
 		cashRewards      *walk.CheckBox
 		buffPct          *walk.NumberEdit
 		buffStack        *walk.NumberEdit
+		trapPct          *walk.NumberEdit
 		bluHealth        *walk.NumberEdit
 
 		startBox      *walk.ComboBox
@@ -244,6 +245,7 @@ func runSettingsDialog(
 		next.MvmCashRewards = cashRewards.Checked()
 		next.MvmWeaponBuffPct = int(buffPct.Value())
 		next.MvmWeaponBuffStackChance = int(buffStack.Value())
+		next.MvmTrapPct = int(trapPct.Value())
 		next.SrcdsBluHealthPct = int(bluHealth.Value())
 		next.MvmExcludedMissions = pool.excludedMissions()
 		next.ArchipelagoDir = strings.TrimSpace(appEdit.Text())
@@ -488,6 +490,8 @@ func runSettingsDialog(
 							declarative.NumberEdit{AssignTo: &buffPct, Value: float64(s.MvmWeaponBuffPct), MinValue: 0, MaxValue: 100, Decimals: 0},
 							label("Buff stack chance", "Chance that another buff reward adds a level to a numeric buff already in the seed. Toggle effects never repeat."),
 							declarative.NumberEdit{AssignTo: &buffStack, Value: float64(s.MvmWeaponBuffStackChance), MinValue: 0, MaxValue: 100, Decimals: 0},
+							label("Traps", "Percent of spare checks that hold a trap instead of a reward. A trap is an item another player finds and your team pays for, such as Jarate on everyone. Zero leaves them out of the seed."),
+							declarative.NumberEdit{AssignTo: &trapPct, Value: float64(s.MvmTrapPct), MinValue: 0, MaxValue: 100, Decimals: 0},
 						},
 					},
 					{
@@ -762,7 +766,7 @@ func runSettingsDialog(
 	selectTab(tabs, openOn)
 
 	// Numbers read from the left, like every other field in the dialog.
-	leftAlign(missions, sanityPct, buffPct, buffStack, bluHealth, portEdit)
+	leftAlign(missions, sanityPct, buffPct, buffStack, trapPct, bluHealth, portEdit)
 
 	// The help under the buttons, and the complaint about a missing token. Both
 	// follow the selection, because a reach the player cannot use yet has to

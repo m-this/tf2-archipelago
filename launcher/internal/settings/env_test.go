@@ -110,6 +110,7 @@ func TestEveryFieldHasAnEnvVar(t *testing.T) {
 		"MvmCashRewards":             "MVM_CASH_REWARDS",
 		"MvmWeaponBuffPct":           "MVM_WEAPON_BUFF_PERCENTAGE",
 		"MvmWeaponBuffStackChance":   "MVM_WEAPON_BUFF_STACK_CHANCE",
+		"MvmTrapPct":                 "MVM_TRAP_PERCENTAGE",
 		"MetricsPort":                "BRIDGE_METRICS_PORT",
 		"SrcdsBluHealthPct":          "SRCDS_BLU_HEALTH_PCT",
 		"SrcdsMods":                  "SRCDS_MODS",

@@ -175,6 +175,25 @@ apply them again after any restart.
 A bundle is paid once. The money then belongs to the mission the way any other
 credits do. The end of a mission clears it, the same as in normal MvM.
 
+## Traps arrive from other players
+
+A trap is an item with a negative effect, and it belongs to the multiworld like
+every other item. Somebody in another world opens a chest, and your team pays
+for it.
+
+`trap_percentage` decides how much of the run's spare space holds one. It is
+zero by default, so a seed that did not ask gets none.
+
+There is one trap so far. `Trap: Team Jarate` soaks everyone on RED, bots
+included: ten seconds of taking 35% more damage and dealing no crits.
+
+A trap fires during a wave. One that arrives between waves waits for the next
+one, and the chat says so. Jarate on a team standing at the upgrade station is
+not a trap.
+
+A trap can cost the team a wave. No trap takes back an unlock the run has
+already found.
+
 ## Everybody shares the unlocks
 
 There is one set of unlocks for the whole server. A weapon slot that the run
@@ -197,4 +216,4 @@ The run belongs to the server. It is not stored on anybody's Steam account.
 The upgrade station, the credits that robots drop, the canteens, the wave
 layouts and the robots themselves are stock MvM. This version randomizes the
 classes, the weapon slots, the missions and the money. The individual weapons,
-the upgrade lines, the canteens and the traps are not in it.
+the upgrade lines and the canteens are not in it.

@@ -6,6 +6,12 @@ in the release notes, so this file is the only place to write it.
 
 ## Unreleased
 
+- Traps. A `trap_percentage` option puts traps in the pool. The one that
+  exists soaks the whole team in Jarate: ten seconds of 35% more damage taken
+  and no crits. The item belongs to the multiworld like any other, so it is
+  another player opening a chest that does it to you. Traps are off by
+  default, and one that arrives between waves waits for the next one. Jarate
+  on a team standing at the upgrade station is no trap at all.
 - The Docker server plays the randomiser again. The image shipped without the
   plugin's gamedata, so the plugin refused to load and the server came up as
   plain Mann vs Machine with nothing saying so.

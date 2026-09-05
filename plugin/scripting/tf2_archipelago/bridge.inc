@@ -787,6 +787,13 @@ static void ApplyGrant(JSONObject grant)
             return;
         }
     }
+    else if (StrEqual(kind, "trap"))
+    {
+        if (!ApplyTrap(seq, key, name))
+        {
+            return;
+        }
+    }
     else if (Bridge_ApplyKind(kind, key))
     {
         // A held effect stops the cursor, so every grant behind it arrives
@@ -833,6 +840,38 @@ static bool ApplyCredits(int seq, int amount)
             AP_Announce("%d credits are waiting for the upgrade station.", amount);
         }
         return false;
+    }
+    g_HeldSeq = 0;
+    return true;
+}
+
+// Fires a trap, or holds it until there is a wave to ruin. False when it held,
+// exactly like a Cash Bundle. The caller leaves the cursor where it is, and the
+// bridge sends this grant again on the next poll.
+//
+// Credits wait for the upgrade station and traps wait for the robots. It is the
+// same wait: a trap that lands between waves soaks a team standing at the shop.
+//
+// This plugin announces a key it cannot read once, then counts it as fired.
+// Holding an effect that can never apply blocks every effect behind it.
+static bool ApplyTrap(int seq, const char[] key, const char[] name)
+{
+    if (g_HeldSeq != 0 && seq != g_HeldSeq)
+    {
+        return false;
+    }
+    if (!MvM_WaveInProgress())
+    {
+        if (g_HeldSeq != seq)
+        {
+            g_HeldSeq = seq;
+            AP_Announce("%s is waiting for the next wave.", name);
+        }
+        return false;
+    }
+    if (!Traps_Apply(key))
+    {
+        AP_Error("The bridge sent a trap named %s. This plugin does not know it.", key);
     }
     g_HeldSeq = 0;
     return true;

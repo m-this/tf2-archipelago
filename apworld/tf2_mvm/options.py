@@ -245,6 +245,23 @@ class CashRewards(Toggle):
     default = 0
 
 
+class TrapPercentage(Range):
+    """How much of the run's spare space is traps, in percent.
+
+    A trap is an item with a negative effect: another player opens a chest and
+    your team gets Jarate. They come out of the same space as the weapon buffs
+    and the cash, so raising this lowers those rather than adding checks.
+
+    Off by default. A trap can cost the team a wave and never costs the run an
+    unlock it already holds.
+    """
+
+    display_name = "Trap Percentage"
+    range_start = 0
+    range_end = 100
+    default = 0
+
+
 @dataclass
 class TF2MvMOptions(PerGameCommonOptions):
     mission_count: MissionCount
@@ -263,6 +280,7 @@ class TF2MvMOptions(PerGameCommonOptions):
     cash_rewards: CashRewards
     weapon_buff_percentage: WeaponBuffPercentage
     weapon_buff_stack_chance: WeaponBuffStackChance
+    trap_percentage: TrapPercentage
     death_link: DeathLink
 
 
@@ -290,6 +308,7 @@ option_groups = [
             CashRewards,
             WeaponBuffPercentage,
             WeaponBuffStackChance,
+            TrapPercentage,
         ],
     ),
 ]

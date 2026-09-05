@@ -32,6 +32,7 @@ var EnvNames = []string{
 	"MVM_MISSION_TICKET_IMPORTANCE", "MVM_CLASS_UNLOCK_IMPORTANCE",
 	"MVM_WEAPON_SLOT_IMPORTANCE", "MVM_WEAPON_BUFF_IMPORTANCE",
 	"MVM_CASH_REWARDS", "MVM_WEAPON_BUFF_PERCENTAGE", "MVM_WEAPON_BUFF_STACK_CHANCE",
+	"MVM_TRAP_PERCENTAGE",
 	"BRIDGE_METRICS_PORT",
 }
 
@@ -133,6 +134,7 @@ func applyRewardEnv(s *Settings) {
 	boolean(&s.MvmCashRewards, "MVM_CASH_REWARDS")
 	num(&s.MvmWeaponBuffPct, "MVM_WEAPON_BUFF_PERCENTAGE")
 	num(&s.MvmWeaponBuffStackChance, "MVM_WEAPON_BUFF_STACK_CHANCE")
+	num(&s.MvmTrapPct, "MVM_TRAP_PERCENTAGE")
 }
 
 // FromEnv reports whether name is set, so the UI can skip a prompt whose
