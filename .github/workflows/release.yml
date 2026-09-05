@@ -63,6 +63,8 @@ jobs:
           . deploy/env/versions.env
           docker build -f deploy/Dockerfile.srcds \
             --build-arg "RIPEXT_VERSION=$RIPEXT_VERSION" \
+            --build-arg "SIGSEGV_MVM_VERSION=$SIGSEGV_MVM_VERSION" \
+            --build-arg "SIGSEGV_MVM_SHA256=$SIGSEGV_MVM_SHA256" \
             -t "$IMAGE/srcds:$GITHUB_REF_NAME" -t "$IMAGE/srcds:latest" .
           deploy/push-image.sh --all-tags "$IMAGE/srcds"
 
