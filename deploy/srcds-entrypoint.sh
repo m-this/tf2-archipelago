@@ -14,6 +14,32 @@ COMMUNITY=/opt/tf2-community-pack/tf
 GAME="${STEAMAPPDIR}/${STEAMAPP}"
 INTERVAL=30
 
+tailscale_fastdl_url() {
+	url_file=/run/tf2ap-fastdl/url
+	if [ ! -s "$url_file" ]; then
+		echo "[AP] TAILSCALE_FASTDL=1 but its verified Funnel URL is unavailable" >&2
+		return 1
+	fi
+	url="$(sed -n '1p' "$url_file")"
+	case "$url" in
+	https://*.ts.net/tf)
+		host="${url#https://}"
+		host="${host%/tf}"
+		;;
+	*)
+		echo "[AP] refusing the invalid Tailscale FastDL URL in $url_file" >&2
+		return 1
+		;;
+	esac
+	case "$host" in
+	"" | *[!A-Za-z0-9.-]*)
+		echo "[AP] refusing the invalid Tailscale FastDL hostname in $url_file" >&2
+		return 1
+		;;
+	esac
+	printf 'https://%s/tf\n' "$host"
+}
+
 # SourceMod wants STEAM_0:X:Y. What a player actually has to hand is the 17
 # digit id from their profile URL or steamid.io, so both are accepted and the
 # long one is converted here rather than in the operator's head.
@@ -222,6 +248,9 @@ install_server_cfg() {
 	mv "$staged" "$target"
 	chmod 0644 "$target"
 	echo "[AP] wrote server.cfg, rcon password from the environment"
+	if [ "${TAILSCALE_FASTDL:-0}" = 1 ]; then
+		echo "[AP] public Tailscale Funnel FastDL ready at $download_url"
+	fi
 }
 
 install_plugin() {
@@ -297,6 +326,15 @@ case "${SRCDS_TOKEN:-0}" in
 	;;
 esac
 export SRCDS_LAN SRCDS_SDR_FAKEIP
+
+# With the profile enabled, Compose holds this container until the Tailscale
+# sidecar is healthy. Validate the handoff once more here so starting this
+# container by itself cannot silently lose an explicitly selected FastDL.
+if [ "${TAILSCALE_FASTDL:-0}" = 1 ]; then
+	SRCDS_DOWNLOADURL="$(tailscale_fastdl_url)"
+	export SRCDS_DOWNLOADURL
+	echo "[AP] using Tailscale Funnel FastDL at $SRCDS_DOWNLOADURL"
+fi
 
 install_plugin &
 

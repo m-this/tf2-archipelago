@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/m-this/tf2-archipelago/launcher/internal/assets"
 	"github.com/m-this/tf2-archipelago/launcher/internal/generate"
@@ -30,6 +31,7 @@ import (
 	"github.com/m-this/tf2-archipelago/launcher/internal/runtime"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 	"github.com/m-this/tf2-archipelago/launcher/internal/srcdsconfig"
+	"github.com/m-this/tf2-archipelago/launcher/internal/tailscalefastdl"
 	"github.com/m-this/tf2-archipelago/launcher/internal/tui"
 	"github.com/m-this/tf2-archipelago/launcher/internal/ui"
 )
@@ -63,6 +65,7 @@ func run(logger *slog.Logger) error {
 	envFlag := flag.Bool("env", false, "list the environment variables that override the configuration, then exit")
 	consoleFlag := flag.Bool("console", false, "print the log and nothing else, with no interface over it")
 	tuiFlag := flag.Bool("tui", false, "the terminal interface, on a platform whose default is the window")
+	setupFunnelFlag := flag.Bool("setup-funnel", false, "check Tailscale Funnel authorization, then exit")
 	showVersion := flag.Bool("version", false, "print the version and exit")
 	flag.Parse()
 
@@ -83,6 +86,9 @@ func run(logger *slog.Logger) error {
 	// The environment wins over the file, and is never written back: an
 	// override for one run must not become the saved answer.
 	s := settings.ApplyEnv(saved)
+	if *setupFunnelFlag {
+		return setupFunnel()
+	}
 
 	if *roomFlag != "" {
 		room, err := settings.ParseRoom(*roomFlag)
@@ -118,10 +124,14 @@ func run(logger *slog.Logger) error {
 		return nil
 	}
 
-	if gui.Available() && !*consoleFlag && !*tuiFlag {
+	return launchInterface(logger, s, *consoleFlag, *tuiFlag)
+}
+
+func launchInterface(logger *slog.Logger, s settings.Settings, console, terminal bool) error {
+	if gui.Available() && !console && !terminal {
 		return gui.Run(s, nil)
 	}
-	return guided(logger, s, !*consoleFlag)
+	return guided(logger, s, !console)
 }
 
 func printVersion() {
@@ -130,6 +140,24 @@ func printVersion() {
 	for _, name := range []string{"metamod", "sourcemod", "ripext", "archipelago"} {
 		fmt.Printf("  %-12s %s\n", name+":", v[name])
 	}
+}
+
+func setupFunnel() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	result, err := tailscalefastdl.Authorize(ctx)
+	if err != nil {
+		return err
+	}
+	if result.ApprovalURL != "" {
+		fmt.Println("Approve Tailscale Funnel in a browser, then run -setup-funnel again:")
+		fmt.Println(result.ApprovalURL)
+		return nil
+	}
+	if result.Ready {
+		fmt.Println("Tailscale Funnel is ready for this tailnet.")
+	}
+	return nil
 }
 
 /*
@@ -329,6 +357,10 @@ func configureServer(p *ui.Prompt, s settings.Settings) settings.Settings {
 		fmt.Printf("  %-6s %s\n", reach, reach.Help())
 	}
 	s = askReach(p, s)
+	s.TailscaleFastDL = p.Bool("Publish map downloads with Tailscale Funnel", s.TailscaleFastDL)
+	if s.TailscaleFastDL {
+		fmt.Println("  Run tf2ap -setup-funnel once if this tailnet has not approved Funnel yet.")
+	}
 	return s
 }
 
@@ -446,10 +478,24 @@ func showStatus(s settings.Settings) {
 	fmt.Printf("Room:          %s (tls=%v)\n", settings.Room{Host: s.APHost, Port: s.APPort}, s.APTls)
 	fmt.Printf("Slot:          %s\n", s.APSlotName)
 	fmt.Printf("Server:        %s on port %d (reach=%s)\n", s.SrcdsHostname, s.SrcdsPort, reachStatus(s))
+	fmt.Printf("FastDL:        %s\n", fastDLStatus(s))
 	fmt.Printf("Start mission: %s\n", runshape.MissionLabel(s.SrcdsStartMission))
 	fmt.Printf("Run:           %d missions, %s, goal=%s\n", s.MvmMissionCount, s.MvmDifficulty, s.MvmGoal)
 	fmt.Printf("Bots:          %s\n", botsStatus(s))
 	fmt.Printf("RCON password: %s\n", masked(s.SrcdsRconPw))
+}
+
+func fastDLStatus(s settings.Settings) string {
+	if s.FastDLPort <= 0 {
+		return "off"
+	}
+	if s.TailscaleFastDL {
+		return fmt.Sprintf("Tailscale Funnel on local port %d", s.FastDLPort)
+	}
+	if s.SrcdsDownloadURL != "" {
+		return s.SrcdsDownloadURL
+	}
+	return fmt.Sprintf("launcher HTTP server on port %d", s.FastDLPort)
 }
 
 // appDirStatus says where the Archipelago app is, or that it was not found and

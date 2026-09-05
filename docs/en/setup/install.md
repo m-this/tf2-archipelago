@@ -90,8 +90,9 @@ Every later start takes seconds. The stack downloads nothing again.
 
 | Service | What it does | Ports |
 | --- | --- | --- |
-| `srcds` | Runs the Team Fortress 2 dedicated server and the plugin | `27015/udp` and `27015/tcp`, the only public ports |
+| `srcds` | Runs the Team Fortress 2 dedicated server and the plugin | `27015/udp` and `27015/tcp` |
 | `bridge` | Holds the session with the room and answers the plugin | none, loopback inside the network namespace of the game server |
+| `fastdl` | Serves the allowlisted TF2 asset directories with Caddy | `27080/tcp`, configurable or loopback-only |
 
 A third service, `archipelago`, hosts the session on this machine instead of on
 `archipelago.gg`. It starts only with `COMPOSE_PROFILES=selfhost` in `.env`. See
@@ -101,6 +102,10 @@ The bridge shares the network namespace of the game server. That is how the
 plugin reaches it at `127.0.0.1` and nothing outside the machine can.
 Restarting the game server restarts the bridge with it. That costs seconds, not
 progress: the bridge writes every check to disk.
+
+The optional `tailscale-fastdl` service publishes Caddy through public HTTPS
+without forwarding the HTTP port. It runs only when that Compose profile is
+enabled. See [Fast map downloads with Tailscale](tailscale-fastdl.md#docker-compose).
 
 ## The commands
 
@@ -127,6 +132,7 @@ progress: the bridge writes every check to disk.
 | `tf2-archipelago_tf2game` | The 14 GB of game files, SourceMod and the plugin | Download everything again |
 | `tf2-archipelago_bridgestate` | The checks and the unlocks of the current run | Nothing useful. The bridge rebuilds the checks from the room. |
 | `tf2-archipelago_apoutput` | The session, with `COMPOSE_PROFILES=selfhost` only | [Start a new run](../operate/start-a-new-run.md) |
+| `tf2-archipelago_tailscale_fastdl_state` | The optional Funnel node identity | Make Docker authenticate it as a new Tailscale device |
 
 The sessions themselves are files in `seed/`, in the repository. Git ignores
 that directory, and nothing deletes it for you.

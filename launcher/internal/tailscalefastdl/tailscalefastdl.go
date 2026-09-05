@@ -103,7 +103,7 @@ func configure(ctx context.Context, executable string, localPort int, command ru
 		return Result{}, fmt.Errorf("cannot read Tailscale status: %w", err)
 	}
 	if state.BackendState != "Running" {
-		return Result{}, fmt.Errorf("tailscale is not connected (state %q); sign in from its tray icon", state.BackendState)
+		return Result{}, fmt.Errorf("tailscale is not connected (state %q); start Tailscale and sign in on this machine", state.BackendState)
 	}
 	dnsName := strings.TrimSuffix(strings.TrimSpace(state.Self.DNSName), ".")
 	if dnsName == "" {

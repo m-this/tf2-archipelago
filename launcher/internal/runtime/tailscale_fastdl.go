@@ -22,7 +22,7 @@ type TailscaleFastDLStartError struct {
 }
 
 func (e *TailscaleFastDLStartError) Error() string {
-	action := "open Settings > Networking, check Tailscale, and try Start again"
+	action := "restore Tailscale or run -setup-funnel, then try Start again"
 	if e.ApprovalURL != "" {
 		action = "approve Funnel in the browser, then try Start again"
 	}
