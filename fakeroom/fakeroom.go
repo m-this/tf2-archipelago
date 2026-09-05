@@ -7,7 +7,7 @@
 // serves the handful of messages the bridge needs, makes up a seed from the
 // game data, and hands back an unlock every time a wave is cleared.
 //
-// It is not Archipelago. Nothing here is random, no other game is in the room,
+// It is not Archipelago. Only the draw is random, no other game is in the room,
 // and no progress leaves the machine.
 package fakeroom
 
@@ -548,13 +548,15 @@ func promoteBuffs(rest []int64) []int64 {
 // feature on several weapons, few enough that a test run still unlocks missions.
 const buffsUpFront = 8
 
-// defaultMissions picks the first missions the game data lists, which is the
-// normal tier first: the gentlest thing to test against. Excluded popfiles
-// are skipped, and the count is bounded by what is left.
 // defaultMissions is the pool a test run draws, shaped by the same three
 // options the real generator takes: the easiest tier, the exclusions, and how
 // many. The run starts on the first of them, so a named start mission goes to
 // the front.
+//
+// Drawn at random from the pool, the way a seed is. It used to take the first
+// of the table, which read from a player's chair as a randomiser that does not
+// randomise: eight missions in the order of the settings list, and the next
+// eight when those were unticked.
 //
 // The floor is a floor, not a filter: picking intermediate draws intermediate
 // and everything harder, which is what difficulty_pool means.
@@ -577,6 +579,7 @@ func defaultMissions(count int, excluded []string, difficulty, startMission stri
 	if len(pool) == 0 {
 		pool = append(pool, playable[0].PopFile)
 	}
+	rand.Shuffle(len(pool), func(i, j int) { pool[i], pool[j] = pool[j], pool[i] })
 
 	// The run begins on the first mission drawn, so this is how a start
 	// mission is honoured. One outside the pool is put back into it: the

@@ -172,12 +172,33 @@ func TestTheUnlockOrderDropsWhatTheRunAlreadyHolds(t *testing.T) {
 }
 
 func TestDefaultMissionsSkipTheExcluded(t *testing.T) {
-	got := defaultMissions(2, []string{"mvm_decoy"}, "", "")
-	if len(got) != 2 || got[0] != "mvm_decoy_intermediate" {
-		t.Errorf("missions = %v", got)
+	for range 20 {
+		got := defaultMissions(2, []string{"mvm_decoy"}, "", "")
+		if len(got) != 2 || slices.Contains(got, "mvm_decoy") {
+			t.Errorf("missions = %v", got)
+		}
 	}
-	if got := defaultMissions(1, []string{"mvm_decoy"}, "", ""); len(got) != 1 || got[0] == "mvm_decoy" {
-		t.Errorf("missions = %v", got)
+}
+
+// Eight missions in the order of the settings list, and the next eight once
+// those were unticked, read from a player's chair as a randomiser that does
+// not randomise. The draw is a draw.
+func TestDefaultMissionsAreDrawnAtRandom(t *testing.T) {
+	first := defaultMissions(8, nil, "", "")
+	for range 30 {
+		if !slices.Equal(defaultMissions(8, nil, "", ""), first) {
+			return
+		}
+	}
+	t.Errorf("thirty draws of eight all came out as %v", first)
+}
+
+// The start mission is honoured whatever the draw did.
+func TestDefaultMissionsPutTheStartMissionFirst(t *testing.T) {
+	for range 20 {
+		if got := defaultMissions(3, nil, "", "mvm_decoy_advanced"); got[0] != "mvm_decoy_advanced" {
+			t.Errorf("missions = %v", got)
+		}
 	}
 }
 

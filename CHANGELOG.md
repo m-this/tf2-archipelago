@@ -57,6 +57,9 @@ in the release notes, so this file is the only place to write it.
 - Archipelago weapon buffs now stay active when players refund upgrades at an
   MvM station. They no longer appear as purchased, infinitely refundable MvM
   upgrade levels or stack again after repeated refunds.
+- Test mode draws its missions at random from the pool, the way a real seed
+  does. It took the first ones in the settings list, which looked like a
+  randomizer that does not randomize.
 - An Unlocks tab in the launcher, window and terminal, lists what the
   multiworld has handed the run: classes, weapon slots, missions and weapon
   buffs, with the level a repeated buff reached.
