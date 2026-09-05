@@ -88,7 +88,11 @@ func (s *Supervisor) Start(onExit func(error)) error {
 		s.mu.Unlock()
 		return errors.New("the server is already running")
 	}
-	current := prepareTailscaleFastDL(context.Background(), s.settings, s.emit)
+	current, err := prepareTailscaleFastDL(context.Background(), s.settings, s.emit)
+	if err != nil {
+		s.mu.Unlock()
+		return err
+	}
 	cfg, err := bridgeConfig(current)
 	if err != nil {
 		s.mu.Unlock()

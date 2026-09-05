@@ -394,7 +394,7 @@ func runSettingsDialog(
 				declarative.TextLabel{
 					Text: "Only this server PC needs Tailscale; players download from its public HTTPS address. " +
 						"Anyone who knows that address can read the allowed map assets. Start runs the file server on loopback and configures Funnel automatically. " +
-						"A setup failure is only a warning: TF2 falls back to downloading from the game server.",
+						"If Tailscale is unavailable, Start stops and tells you how to restore it instead of silently starting without FastDL.",
 					ColumnSpan: 2,
 					MinSize:    declarative.Size{Width: 470},
 				},
@@ -405,7 +405,7 @@ func runSettingsDialog(
 						checkTailscaleFunnel(owner, dialog, tailscaleTest, tailscaleStatus, say)
 					},
 				},
-				declarative.TextLabel{AssignTo: &tailscaleStatus, Text: "Run this check before the first Start.", TextColor: colorMuted, MaxSize: declarative.Size{Width: 470}},
+				declarative.TextLabel{AssignTo: &tailscaleStatus, Text: "Optional first-time check. Once approved, Start keeps Funnel configured automatically.", TextColor: colorMuted, MaxSize: declarative.Size{Width: 470}},
 				declarative.LinkLabel{
 					ColumnSpan: 2,
 					MaxSize:    declarative.Size{Width: 470},

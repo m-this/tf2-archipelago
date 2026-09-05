@@ -46,9 +46,13 @@ func closeTestRoom(room *fakeroom.Room) {
 // blocks until the context is cancelled or one of them stops. The bridge gets
 // a head start so the plugin can reach /unlocks on first load.
 func Run(ctx context.Context, s settings.Settings, logger *slog.Logger) error {
-	s = prepareTailscaleFastDL(ctx, s, func(text string) {
+	prepared, err := prepareTailscaleFastDL(ctx, s, func(text string) {
 		logger.InfoContext(ctx, "download server", "detail", text)
 	})
+	if err != nil {
+		return err
+	}
+	s = prepared
 	// Console mode has no interface to change a setting from, but it shares
 	// this entry point with anything that does. Rendering here keeps the one
 	// rule: a server that starts, starts from the settings it was given.

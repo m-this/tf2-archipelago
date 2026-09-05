@@ -57,6 +57,20 @@ func TestConfigureCarriesFunnelInstructions(t *testing.T) {
 	}
 }
 
+func TestConfigureReturnsTypedBrowserApproval(t *testing.T) {
+	run := func(_ context.Context, _ string, args ...string) ([]byte, error) {
+		if reflect.DeepEqual(args, []string{"status", "--json"}) {
+			return []byte(`{"BackendState":"Running","Self":{"DNSName":"host.example.ts.net"}}`), nil
+		}
+		return nil, errors.New("Funnel is disabled; visit https://login.tailscale.com/f/funnel?node=abc123")
+	}
+	_, err := configure(context.Background(), "tailscale", 27080, run)
+	var approval *ApprovalRequiredError
+	if !errors.As(err, &approval) || approval.URL != "https://login.tailscale.com/f/funnel?node=abc123" {
+		t.Fatalf("error = %#v", err)
+	}
+}
+
 func TestAuthorizeReturnsTheBrowserApproval(t *testing.T) {
 	run := func(context.Context, string, ...string) ([]byte, error) {
 		return nil, errors.New("Funnel is disabled; visit https://login.tailscale.com/f/funnel?node=abc123")

@@ -8,6 +8,7 @@ package gui
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -447,8 +448,32 @@ func (w *window) start() {
 		}
 		w.main.Synchronize(w.refresh)
 	}); err != nil {
-		w.say("%v", err)
+		w.showStartError(err)
 	}
+}
+
+// showStartError makes an enabled-but-unavailable Funnel impossible to miss.
+// The server is still stopped when this runs. First-time approval gets the
+// browser; sign-in and service failures leave the operator with the exact fix.
+func (w *window) showStartError(err error) {
+	w.say("%v", err)
+	var fastDL *apruntime.TailscaleFastDLStartError
+	if !errors.As(err, &fastDL) {
+		return
+	}
+	w.main.Synchronize(func() {
+		message := err.Error()
+		if fastDL.ApprovalURL != "" {
+			message += "\n\nThe Tailscale approval page will open after you dismiss this message."
+		}
+		walk.MsgBox(w.main, "Tailscale FastDL needs attention", message, walk.MsgBoxIconWarning)
+		if fastDL.ApprovalURL == "" {
+			return
+		}
+		if openErr := winproc.OpenURL(fastDL.ApprovalURL); openErr != nil {
+			walk.MsgBox(w.main, "Enable Tailscale Funnel", fastDL.ApprovalURL+"\n\n"+openErr.Error(), walk.MsgBoxIconWarning)
+		}
+	})
 }
 
 func (w *window) installLog(format string, args ...any) {

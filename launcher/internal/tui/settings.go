@@ -927,14 +927,14 @@ func (f *settingsForm) reachFields() []field {
 		},
 		&toggleField{
 			label: "Tailscale FastDL",
-			help:  "Publish maps through Tailscale Funnel. Only the server needs Tailscale; players use its public HTTPS URL. This does not change the game address. Failure falls back to the game server download.",
+			help:  "Publish maps through Tailscale Funnel. Only the server needs Tailscale; players use its public HTTPS URL. This does not change the game address. Start stops with instructions if the saved Funnel cannot be restored.",
 			value: &f.edited.TailscaleFastDL,
 			on:    "use Funnel",
 			off:   "use launcher",
 		},
 		&actionField{
 			label: "Set up / check Funnel",
-			help:  "Check Tailscale now. If Funnel needs tailnet approval, this opens the approval page in your browser; approve it, then run this check again.",
+			help:  "Optional first-time check. If Funnel needs tailnet approval, this opens the approval page. Once approved, Start keeps the route configured automatically.",
 			hint:  "enter",
 			run:   f.checkTailscaleFunnel,
 		},

@@ -16,6 +16,7 @@ package tui
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -177,6 +178,14 @@ func (m *model) start() tea.Cmd {
 	return func() tea.Msg {
 		if err := m.supervisor.Start(func(error) {}); err != nil {
 			m.take(apruntime.Line{At: time.Now(), Source: "launcher", Text: err.Error()})
+			var fastDL *apruntime.TailscaleFastDLStartError
+			if errors.As(err, &fastDL) && fastDL.ApprovalURL != "" {
+				if openErr := winproc.OpenURL(fastDL.ApprovalURL); openErr != nil {
+					m.take(apruntime.Line{At: time.Now(), Source: "launcher", Text: "approve Tailscale Funnel at " + fastDL.ApprovalURL})
+				} else {
+					m.take(apruntime.Line{At: time.Now(), Source: "launcher", Text: "the Tailscale approval page opened; approve Funnel, then press Start again"})
+				}
+			}
 		}
 		return nil
 	}

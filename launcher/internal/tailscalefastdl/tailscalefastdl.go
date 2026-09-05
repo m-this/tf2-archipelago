@@ -33,6 +33,16 @@ type Authorization struct {
 	ApprovalURL string
 }
 
+// ApprovalRequiredError means the tailnet owner has not yet authorized this
+// node to use Funnel. URL is safe to open in the operator's browser.
+type ApprovalRequiredError struct {
+	URL string
+}
+
+func (e *ApprovalRequiredError) Error() string {
+	return "tailscale Funnel needs approval at " + e.URL
+}
+
 type status struct {
 	BackendState string `json:"BackendState"`
 	Self         struct {
@@ -105,6 +115,9 @@ func configure(ctx context.Context, executable string, localPort int, command ru
 	target := "http://" + net.JoinHostPort("127.0.0.1", strconv.Itoa(localPort)) + urlPath
 	if _, err := command(ctx, executable, "funnel", "--yes", "--bg", "--https="+httpsPort,
 		"--set-path="+urlPath, target); err != nil {
+		if approvalURL := funnelApprovalURL.FindString(err.Error()); approvalURL != "" {
+			return Result{}, &ApprovalRequiredError{URL: approvalURL}
+		}
 		return Result{}, fmt.Errorf("cannot publish the download server: %w", err)
 	}
 
