@@ -137,13 +137,27 @@ func MissionChoicesForPacks(availablePacks []string) []MissionChoice {
 			continue
 		}
 		played, _ := gamedata.MapByID(mission.Map)
+		loadout := MissionLoadoutLabel(mission)
+		if loadout != "" {
+			loadout = ", " + loadout
+		}
 		choices = append(choices, MissionChoice{
 			PopFile: mission.PopFile,
-			Label: fmt.Sprintf("[%s] %s - %s (%s, %d waves)",
-				missionSource(mission), played.Name, mission.Name, mission.Difficulty.Key(), mission.Waves),
+			Label: fmt.Sprintf("[%s] %s - %s (%s, %d waves%s)",
+				missionSource(mission), played.Name, mission.Name, mission.Difficulty.Key(), mission.Waves, loadout),
 		})
 	}
 	return choices
+}
+
+// MissionLoadoutLabel is the player-facing name of a mission's special
+// loadout. It deliberately says "loadout" rather than "mode": the catalog
+// describes how these missions are designed, not an engine-level map setting.
+func MissionLoadoutLabel(mission gamedata.Mission) string {
+	if gamedata.MissionLoadout(mission.ID) == "medieval" {
+		return "Medieval loadout"
+	}
+	return ""
 }
 
 func missionSource(mission gamedata.Mission) string {

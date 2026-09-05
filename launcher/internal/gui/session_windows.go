@@ -56,6 +56,7 @@ func (t *sessionTab) page(onSwitch func(popFile string)) declarative.TabPage {
 					{Title: "Map", Width: 130},
 					{Title: "Source", Width: 110},
 					{Title: "Waves", Width: 50},
+					{Title: "Loadout", Width: 120},
 					{Title: "State", Width: 120},
 				},
 				StyleCell: func(style *walk.CellStyle) {
@@ -229,6 +230,11 @@ func (m *missionsModel) Value(row, col int) any {
 		return mission.Source
 	case 4:
 		return mission.Waves
+	case 5:
+		if mission.Loadout == "medieval" {
+			return "Medieval loadout"
+		}
+		return "Standard"
 	default:
 		return missionState(mission)
 	}

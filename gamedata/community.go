@@ -49,6 +49,7 @@ type communityMission struct {
 	HasGiant   bool      `json:"has_giant"`
 	Requires   string    `json:"requires,omitempty"`
 	Pack       string    `json:"pack,omitempty"`
+	Loadout    string    `json:"loadout,omitempty"`
 }
 
 type loadedCommunity struct {
@@ -56,6 +57,7 @@ type loadedCommunity struct {
 	Missions     []Mission
 	Requirements map[MissionID]string
 	Packs        map[MissionID]string
+	Loadouts     map[MissionID]string
 }
 
 func loadCommunity(body []byte) (loadedCommunity, error) {
@@ -80,6 +82,7 @@ func loadCommunity(body []byte) (loadedCommunity, error) {
 		Missions:     make([]Mission, 0, len(file.Missions)),
 		Requirements: make(map[MissionID]string, len(file.Missions)),
 		Packs:        make(map[MissionID]string, len(file.Missions)),
+		Loadouts:     make(map[MissionID]string, len(file.Missions)),
 	}
 	for _, entry := range file.Maps {
 		if entry.ID < CommunityIDMin {
@@ -101,6 +104,9 @@ func loadCommunity(body []byte) (loadedCommunity, error) {
 		if entry.Pack != "" && entry.Pack != "mlarchive-assets.zip" {
 			return loadedCommunity{}, fmt.Errorf("community mission %q: unknown pack %q", entry.PopFile, entry.Pack)
 		}
+		if entry.Loadout != "" && entry.Loadout != "medieval" {
+			return loadedCommunity{}, fmt.Errorf("community mission %q: unknown loadout %q", entry.PopFile, entry.Loadout)
+		}
 		content.Missions = append(content.Missions, Mission{
 			ID:         entry.ID,
 			PopFile:    entry.PopFile,
@@ -112,6 +118,7 @@ func loadCommunity(body []byte) (loadedCommunity, error) {
 			HasGiant:   entry.HasGiant,
 		})
 		content.Requirements[entry.ID] = entry.Requires
+		content.Loadouts[entry.ID] = entry.Loadout
 		if entry.Pack == "" {
 			entry.Pack = "archive-assets.zip"
 		}
@@ -373,4 +380,12 @@ func MissionPack(id MissionID) string {
 // Launchers use this to show unavailable content without making it seedable.
 func MissionRequirement(id MissionID) string {
 	return communityContent.Requirements[id]
+}
+
+// MissionLoadout reports a special loadout the mission is designed around.
+// Blank means the usual unrestricted MvM loadout. "medieval" describes the
+// mission's weapon roster and player-facing recommendation; it does not assert
+// that the map enables TF2's engine-level Medieval Mode.
+func MissionLoadout(id MissionID) string {
+	return communityContent.Loadouts[id]
 }

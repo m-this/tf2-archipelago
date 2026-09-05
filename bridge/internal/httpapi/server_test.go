@@ -187,6 +187,17 @@ func TestMissionsSkipWhatTheTablesDoNotKnow(t *testing.T) {
 	}
 }
 
+func TestMissionsExposeTheSpecialLoadout(t *testing.T) {
+	popFile := "mvm_frostwynd_rc1_int_wicked_wizardry"
+	missions, unknown := missionsFor([]string{popFile}, []string{popFile}, nil, nil, false)
+	if len(unknown) != 0 || len(missions) != 1 {
+		t.Fatalf("missions = %+v, unknown = %v", missions, unknown)
+	}
+	if got := missions[0].Loadout; got != "medieval" {
+		t.Fatalf("loadout = %q, want medieval", got)
+	}
+}
+
 func TestUsefulTicketsLeaveEveryDrawnMissionUnlocked(t *testing.T) {
 	drawn := []string{"mvm_coaltown", "mvm_coaltown_intermediate"}
 	missions, unknown := missionsFor(drawn, nil, nil, nil, true)

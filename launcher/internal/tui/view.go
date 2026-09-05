@@ -260,8 +260,12 @@ func (m *model) missionRows(height int) []string {
 		if i == m.selected {
 			marker = "> "
 		}
-		row := fmt.Sprintf("%s%2d  %-28s %-14s %2d waves  %s",
-			marker, i+1, mission.Name, mission.Map, mission.Waves, missionState(mission))
+		loadout := ""
+		if mission.Loadout == "medieval" {
+			loadout = "  Medieval loadout"
+		}
+		row := fmt.Sprintf("%s%2d  %-28s %-14s %2d waves%s  %s",
+			marker, i+1, mission.Name, mission.Map, mission.Waves, loadout, missionState(mission))
 		rows = append(rows, style(mission).Render(truncate(row, m.width)))
 	}
 	return rows

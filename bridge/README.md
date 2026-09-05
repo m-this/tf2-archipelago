@@ -76,7 +76,7 @@ the HTTP API and nowhere else.
 | `POST` | `/objective` | `{"kind":"wave_cleared","popfile":"mvm_coaltown","wave":3,"waves_total":6}` | `204` once the check is on disk |
 | `POST` | `/objective` | `{"kind":"mission_cleared","popfile":"mvm_coaltown"}` | `204` |
 | `GET` | `/unlocks` | | `{"resume_from":6,"unlocks":{"class":[…],"weapon_slot":[…],"mission_ticket":[…]}}` |
-| `GET` | `/missions` | | the run's missions in the order the seed drew them, each with the map its popfile runs on, whether its ticket is held and whether its clear check is on disk |
+| `GET` | `/missions` | | the run's missions in the order the seed drew them, each with its map, optional special `loadout`, ticket state, and clear state |
 | `GET` | `/grants?since=6` | | `{"seq":8,"grants":[…]}`, held open until there is something past that sequence |
 | `POST` | `/grants/ack` | `{"seq":8}` | `204`. Everything through that sequence is applied, so no effect below it is sent again |
 | `GET` | `/messages?since=-1` | | the multiworld's chat, long-polled. A negative sequence means "start from now" |
@@ -103,7 +103,9 @@ too old to know it skips it instead of failing to parse.
 `mvm_ghost_town_666` runs on `mvm_ghost_town`, so trimming the name is a guess
 that fails. `gamedata` already holds the pairing, and the plugin needs it to
 change mission. The unlock set answers "may we play this"; this answers "what is
-there and how is it loaded".
+there and how is it loaded". A `loadout` of `"medieval"` is catalog metadata for
+a mission designed around medieval weapons; it does not assert that TF2's
+engine-level Medieval Mode is enabled.
 
 `resume_from` is the acknowledged sequence, not how far the item list reaches,
 and the difference is a lost effect. The unlock set carries state only, so a

@@ -44,6 +44,7 @@ type Mission struct {
 	Map      string `json:"map"`
 	Waves    int    `json:"waves"`
 	Source   string `json:"source"`
+	Loadout  string `json:"loadout"`
 	Unlocked bool   `json:"unlocked"`
 	Cleared  bool   `json:"cleared"`
 

@@ -2,6 +2,7 @@ package runshape
 
 import (
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/m-this/tf2-archipelago/gamedata"
@@ -24,6 +25,19 @@ func TestCommunityMissionsStayHiddenUntilTheirArchiveExists(t *testing.T) {
 	if slices.ContainsFunc(visible, func(m gamedata.Mission) bool { return m.PopFile == "mvm_area_52_rc3_int_anomalous_materials" }) {
 		t.Fatal("a Moonlight mission appeared without the Moonlight archive")
 	}
+}
+
+func TestMedievalLoadoutAppearsInStartMissionChoices(t *testing.T) {
+	choices := StartMissionChoicesForPacks([]string{"archive-assets.zip"})
+	for _, choice := range choices {
+		if choice.PopFile == "mvm_frostwynd_rc1_int_wicked_wizardry" {
+			if !strings.Contains(choice.Label, "Medieval loadout") {
+				t.Fatalf("Wicked Wizardry label = %q", choice.Label)
+			}
+			return
+		}
+	}
+	t.Fatal("Wicked Wizardry is missing from the start mission choices")
 }
 
 func TestLockedCommunityMissionsNeverEnterStartChoices(t *testing.T) {

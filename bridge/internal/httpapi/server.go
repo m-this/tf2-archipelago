@@ -108,6 +108,7 @@ type mission struct {
 	Name     string `json:"name"`
 	Map      string `json:"map"`
 	Waves    int    `json:"waves"`
+	Loadout  string `json:"loadout,omitempty"`
 	Unlocked bool   `json:"unlocked"`
 
 	// Cleared is the mission clear check being on the bridge's disk. The plugin
@@ -454,6 +455,7 @@ func missionsFor(drawn, unlocked []string, checks, own []int64, unlockAll bool) 
 			Name:     known.Name,
 			Map:      played.Name,
 			Waves:    int(known.Waves),
+			Loadout:  gamedata.MissionLoadout(known.ID),
 			Unlocked: unlockAll || slices.Contains(unlocked, known.PopFile),
 			Cleared:  slices.Contains(checks, known.ClearLocationID()),
 			Played:   slices.Contains(own, known.ClearLocationID()),

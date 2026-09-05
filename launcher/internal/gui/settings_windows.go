@@ -592,6 +592,7 @@ func runSettingsDialog(
 									{Title: "Source", Width: 110},
 									{Title: "Tier", Width: 90},
 									{Title: "Waves", Width: 50},
+									{Title: "Loadout", Width: 120},
 									{Title: "Compatibility", Width: 130},
 								},
 							},
@@ -1488,6 +1489,11 @@ func (m *poolModel) Value(row, col int) any {
 		return mission.Difficulty.String()
 	case 4:
 		return int(mission.Waves)
+	case 5:
+		if loadout := runshape.MissionLoadoutLabel(mission); loadout != "" {
+			return loadout
+		}
+		return "Standard"
 	default:
 		return gamedata.RequirementLabel(gamedata.MissionRequirement(mission.ID))
 	}

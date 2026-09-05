@@ -11,6 +11,7 @@ import (
 	"github.com/m-this/tf2-archipelago/gamedata"
 	"github.com/m-this/tf2-archipelago/launcher/internal/runshape"
 	apruntime "github.com/m-this/tf2-archipelago/launcher/internal/runtime"
+	"github.com/m-this/tf2-archipelago/launcher/internal/session"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 )
 
@@ -213,7 +214,14 @@ func TestCommunityMissionsStayHiddenUntilTheirAssetsAreAvailable(t *testing.T) {
 
 	m.form.communityAvailable = []string{settings.CommunityPackPotato}
 	m.form.build()
+	foundMedieval, foundUnavailable := false, false
 	for _, row := range m.form.fields() {
+		if strings.Contains(row.Label(), "Wicked Wizardry") {
+			foundMedieval = true
+			if !strings.Contains(row.Label()+row.Help(), "Medieval loadout") {
+				t.Fatalf("Wicked Wizardry does not name its special loadout: %q / %q", row.Label(), row.Help())
+			}
+		}
 		if !strings.Contains(row.Label(), "Swamp Fever") {
 			continue
 		}
@@ -223,9 +231,27 @@ func TestCommunityMissionsStayHiddenUntilTheirAssetsAreAvailable(t *testing.T) {
 		if row.Handle(key(" ")) {
 			t.Fatal("the unavailable mission accepted a toggle")
 		}
-		return
+		foundUnavailable = true
 	}
-	t.Fatal("Swamp Fever is not visible in the mission list")
+	if !foundUnavailable {
+		t.Fatal("Swamp Fever is not visible in the mission list")
+	}
+	if !foundMedieval {
+		t.Fatal("Wicked Wizardry is not visible in the mission list")
+	}
+}
+
+func TestSessionMissionsNameTheSpecialLoadout(t *testing.T) {
+	m := screen(t)
+	m.snapshot.Missions = []session.Mission{{
+		Name: "Wicked Wizardry", Map: "Frostwynd", Waves: 7,
+		Loadout: "medieval", Unlocked: true,
+	}}
+
+	rows := m.missionRows(1)
+	if len(rows) != 1 || !strings.Contains(rows[0], "Medieval loadout") {
+		t.Fatalf("session mission row = %q, want Medieval loadout", rows)
+	}
 }
 
 // Repair and Reset ask twice, because there is no taking either one back.

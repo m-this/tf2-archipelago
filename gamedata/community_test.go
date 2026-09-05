@@ -20,7 +20,8 @@ func TestCommunityManifestLoadsMapsAndMissions(t *testing.T) {
 			"waves": 6,
 			"has_tank": true,
 			"has_giant": true,
-			"requires": "no_nav"
+			"requires": "no_nav",
+			"loadout": "medieval"
 		}]
 	}`))
 	if err != nil {
@@ -38,6 +39,9 @@ func TestCommunityManifestLoadsMapsAndMissions(t *testing.T) {
 	if got := content.Packs[101]; got != "archive-assets.zip" {
 		t.Fatalf("pack = %q", got)
 	}
+	if got := content.Loadouts[101]; got != "medieval" {
+		t.Fatalf("loadout = %q", got)
+	}
 }
 
 func TestCommunityManifestRejectsAnUnknownVersion(t *testing.T) {
@@ -54,12 +58,34 @@ func TestCommunityManifestRejectsTyposAndReservedIDs(t *testing.T) {
 		"unknown difficulty":  `{"format_version":1,"missions":[{"id":100,"pop_file":"mvm_example_test","name":"Test","map_id":1,"difficulty":"impossible","waves":1,"has_tank":false,"has_giant":true}]}`,
 		"unknown requirement": `{"format_version":1,"missions":[{"id":100,"pop_file":"mvm_example_test","name":"Test","map_id":1,"difficulty":"normal","waves":1,"has_tank":false,"has_giant":true,"requires":"magic"}]}`,
 		"unknown pack":        `{"format_version":1,"missions":[{"id":100,"pop_file":"mvm_example_test","name":"Test","map_id":1,"difficulty":"normal","waves":1,"has_tank":false,"has_giant":true,"pack":"mystery.zip"}]}`,
+		"unknown loadout":     `{"format_version":1,"missions":[{"id":100,"pop_file":"mvm_example_test","name":"Test","map_id":1,"difficulty":"normal","waves":1,"has_tank":false,"has_giant":true,"loadout":"magic"}]}`,
 	} {
 		t.Run(name, func(t *testing.T) {
 			if _, err := loadCommunity([]byte(body)); err == nil {
 				t.Fatal("invalid manifest loaded")
 			}
 		})
+	}
+}
+
+func TestFrostwyndMissionsNameTheirMedievalLoadout(t *testing.T) {
+	want := map[string]bool{
+		"mvm_frostwynd_rc1_int_wicked_wizardry": true,
+		"mvm_frostwynd_rc1_adv_fiefdom_fiasco":  true,
+	}
+	for _, mission := range communityMissions {
+		got := MissionLoadout(mission.ID)
+		if want[mission.PopFile] {
+			if got != "medieval" {
+				t.Errorf("%s loadout = %q, want medieval", mission.PopFile, got)
+			}
+			delete(want, mission.PopFile)
+		} else if got != "" {
+			t.Errorf("%s unexpectedly has loadout %q", mission.PopFile, got)
+		}
+	}
+	if len(want) != 0 {
+		t.Fatalf("catalog is missing medieval missions: %v", want)
 	}
 }
 
