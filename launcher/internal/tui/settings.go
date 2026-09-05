@@ -116,6 +116,7 @@ func (f *settingsForm) rewardFields() []field {
 		&toggleField{label: "Cash rewards", help: "Allow temporary MvM credits in spare checks. Off makes every spare reward a persistent weapon buff.", value: &f.edited.MvmCashRewards, on: "include cash", off: "include cash"},
 		&numberField{label: "Buff share", help: "Percent of spare checks that are buffs when cash rewards are enabled.", value: &f.edited.MvmWeaponBuffPct, low: 0, high: 100},
 		&numberField{label: "Buff stack chance", help: "Chance for another level of an already drawn numeric buff. Toggle buffs never repeat.", value: &f.edited.MvmWeaponBuffStackChance, low: 0, high: 100},
+		&numberField{label: "Traps", help: "Percent of spare checks that hold a trap rather than a reward. A trap is an item another player finds and this team pays for. Zero leaves them out.", value: &f.edited.MvmTrapPct, low: 0, high: 100},
 	}
 }
 

@@ -174,6 +174,9 @@ WEAPON_BUFF_NAMES: tuple[str, ...] = tuple(
 STACKABLE_WEAPON_BUFF_NAMES: frozenset[str] = frozenset(
     item.name for item in ITEMS if item.kind == "weapon_buff" and item.eligible and item.stackable
 )
+TRAP_NAMES: tuple[str, ...] = tuple(item.name for item in ITEMS if item.kind == "trap")
+if not TRAP_NAMES:
+    raise DataFormatError("the export has no trap items")
 
 _weapon_slot_items = [item for item in ITEMS if item.kind == "weapon_slot"]
 if len(_weapon_slot_items) != 1:
@@ -187,4 +190,5 @@ ITEM_NAME_GROUPS: dict[str, set[str]] = {
     "Classes": set(CLASS_NAMES),
     "Mission Tickets": set(TICKET_NAMES.values()),
     "Weapon Buffs": set(WEAPON_BUFF_NAMES),
+    "Traps": set(TRAP_NAMES),
 }

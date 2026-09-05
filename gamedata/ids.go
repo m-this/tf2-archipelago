@@ -32,6 +32,7 @@ const (
 	itemBlockWeaponSlot int64 = 3_000
 	itemBlockCredits    int64 = 4_000
 	itemBlockWeaponBuff int64 = 5_000
+	itemBlockTrap       int64 = 6_000
 )
 
 // Location ids: base + mission*100 + wave, or + 99 for the mission clear.
@@ -102,4 +103,9 @@ func (c Class) ItemID() int64 {
 // ItemName is what the multiworld calls that item.
 func (c Class) ItemName() string {
 	return "Class: " + c.Name
+}
+
+// ItemID is the id of the item that fires this trap.
+func (t Trap) ItemID() int64 {
+	return BaseID + itemSpaceOffset + itemBlockTrap + int64(t.ID)
 }

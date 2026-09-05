@@ -150,6 +150,27 @@ Un bundle est payé une fois. L'argent appartient ensuite à la mission comme
 n'importe quels crédits, et la fin d'une mission l'efface, comme dans MvM
 normal.
 
+## Les pièges arrivent des autres joueurs
+
+Un piège est un item à effet négatif, et il appartient au multiworld comme
+n'importe quel autre item. Quelqu'un dans un autre monde ouvre un coffre, et
+votre équipe le paie.
+
+`trap_percentage` décide de la part de l'espace libre de la partie qui en
+contient un. Il vaut zéro par défaut, donc une seed qui n'en demande pas n'en
+reçoit aucun.
+
+Il y a un piège pour l'instant. `Trap: Team Jarate` arrose tout RED, bots
+compris : dix secondes à prendre 35 % de dégâts en plus et à n'infliger aucun
+crit.
+
+Un piège se déclenche pendant une vague. Celui qui arrive entre deux vagues
+attend la suivante, et le chat le dit. Du Jarate sur une équipe plantée devant
+l'upgrade station n'est pas un piège.
+
+Un piège peut coûter une vague à l'équipe. Aucun piège ne reprend un déblocage
+que la partie a déjà trouvé.
+
 ## Tout le monde partage les déblocages
 
 Il y a un seul ensemble de déblocages pour tout le serveur. Un emplacement
@@ -174,5 +195,5 @@ personne.
 L'upgrade station, les crédits lâchés par les robots, les canteens, la
 structure des vagues et les robots eux-mêmes sont du MvM standard. Cette
 version randomise les classes, les emplacements d'arme, les missions et
-l'argent. Les armes individuelles, les lignes d'amélioration, les canteens
-et les pièges n'en font pas partie.
+l'argent. Les armes individuelles, les lignes d'amélioration et les canteens
+n'en font pas partie.

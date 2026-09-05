@@ -227,13 +227,24 @@ une mort est une vague perdue, dans les deux sens :
 La seed décide. Un slot avec `death_link` désactivé ne réclame jamais le
 tag, n'entend aucune mort, et ignore ce que le plugin rapporte.
 
-Pièges venant du fil, tous côté plugin :
+`trap_percentage` fixe la part de l'espace libre de la partie qui contient
+des pièges plutôt que des récompenses. Zéro, la valeur par défaut, n'en met
+aucun dans le pool.
+
+Construit : **Jarate sur toute l'équipe**, dix secondes, bots compris.
+
+Un piège se déclenche pendant une vague, ou pas du tout. Celui qui arrive
+entre deux vagues attend le prochain `wave_start`. C'est l'inverse exact de
+l'attente des crédits : un Cash Bundle attend la station d'amélioration, un
+piège attend les robots. L'attente utilise le même curseur, donc les effets
+restent ordonnés derrière lui.
+
+Le reste, venant du fil et non construit :
 
 - Canteen ou amélioration forcée mauvaise (Return to Spawn, Heavy Rage)
 - Sentry Buster, Engineer, Sniper ou Spy généré
 - Déclencheurs d'événement de carte (la barrière de Rottenburg, les points
   de capture de Mannhattan)
-- Jarate sur toute l'équipe
 - Bots alliés étourdis
 - Un Giant ou un boss supplémentaire
 

@@ -377,6 +377,7 @@ func configureRun(p *ui.Prompt, s settings.Settings) settings.Settings {
 		s.MvmWeaponBuffPct = p.IntRange("Percent of spare checks that award buffs", s.MvmWeaponBuffPct, 0, 100)
 	}
 	s.MvmWeaponBuffStackChance = p.IntRange("Chance to stack an existing numeric buff", s.MvmWeaponBuffStackChance, 0, 100)
+	s.MvmTrapPct = p.IntRange("Percent of spare checks that hold a trap instead of a reward", s.MvmTrapPct, 0, 100)
 	s.MvmExcludedMissions = settings.SplitList(p.Text(
 		"Missions the run never draws (comma-separated popfiles, e.g. mvm_ghost_town_666)",
 		strings.Join(s.MvmExcludedMissions, ",")))

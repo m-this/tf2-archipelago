@@ -82,14 +82,15 @@ const (
 	Progression Classification = iota + 1
 	Useful
 	Filler
-	Trap
+	// Spelled long because Trap is the trap itself, in traps.go.
+	TrapClassification
 )
 
 var classificationKeys = [...]string{
-	Progression: "progression",
-	Useful:      "useful",
-	Filler:      "filler",
-	Trap:        "trap",
+	Progression:        "progression",
+	Useful:             "useful",
+	Filler:             "filler",
+	TrapClassification: "trap",
 }
 
 func (c Classification) Key() string { return classificationKeys[c] }

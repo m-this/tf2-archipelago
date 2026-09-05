@@ -154023,6 +154023,13 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 30692
+    },
+    {
+      "id": 7443006001,
+      "name": "Trap: Team Jarate",
+      "kind": "trap",
+      "classification": "trap",
+      "count": 0
     }
   ]
 }

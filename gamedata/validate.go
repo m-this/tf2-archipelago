@@ -45,7 +45,27 @@ func validateEntities() error {
 	if err := unique("weapon slot id", len(WeaponSlots), func(i int) any { return WeaponSlots[i].ID }); err != nil {
 		return err
 	}
-	return unique("weapon slot key", len(WeaponSlots), func(i int) any { return WeaponSlots[i].Key })
+	if err := unique("weapon slot key", len(WeaponSlots), func(i int) any { return WeaponSlots[i].Key }); err != nil {
+		return err
+	}
+	return validateTraps()
+}
+
+// The plugin matches on a trap key and a seed records a trap id. A duplicate of
+// either fires the wrong effect rather than none.
+func validateTraps() error {
+	if err := unique("trap id", len(Traps), func(i int) any { return Traps[i].ID }); err != nil {
+		return err
+	}
+	if err := unique("trap key", len(Traps), func(i int) any { return Traps[i].Key }); err != nil {
+		return err
+	}
+	for _, trap := range Traps {
+		if trap.ID < 1 || trap.Key == "" || trap.Name == "" {
+			return fmt.Errorf("trap id %d has an empty or invalid identity", trap.ID)
+		}
+	}
+	return nil
 }
 
 // A slot missing from an order is a slot the progressive item can never open,

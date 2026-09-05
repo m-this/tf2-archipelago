@@ -84,6 +84,29 @@ class TestCashRewards(TF2MvMTestBase):
         self.assertEqual(math.ceil((len(buffs) + len(cash)) * 0.75), len(buffs))
 
 
+class TestNoTrapsByDefault(TF2MvMTestBase):
+    options: ClassVar[dict[str, Any]] = {}
+
+    def test_a_run_that_did_not_ask_gets_none(self) -> None:
+        self.assertFalse(any(item.name in data.TRAP_NAMES for item in self.multiworld.itempool))
+
+
+class TestTraps(TF2MvMTestBase):
+    options: ClassVar[dict[str, Any]] = {
+        "trap_percentage": 50,
+    }
+
+    def test_traps_take_half_the_spare_checks(self) -> None:
+        traps = [item for item in self.multiworld.itempool if item.name in data.TRAP_NAMES]
+        buffs = [item for item in self.multiworld.itempool if item.name in data.WEAPON_BUFF_NAMES]
+        self.assertGreater(len(traps), 0)
+        self.assertEqual((len(traps) + len(buffs)) // 2, len(traps))
+
+    def test_traps_are_classified_as_traps(self) -> None:
+        traps = [item for item in self.multiworld.itempool if item.name in data.TRAP_NAMES]
+        self.assertTrue(all(item.classification == ItemClassification.trap for item in traps))
+
+
 class TestUsefulUnlockModes(TF2MvMTestBase):
     options: ClassVar[dict[str, Any]] = {
         "mission_ticket_importance": "useful",

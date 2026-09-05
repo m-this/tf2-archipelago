@@ -176,6 +176,11 @@ type Settings struct {
 	MvmWeaponBuffPct           int    `json:"mvm_weapon_buff_percentage"`
 	MvmWeaponBuffStackChance   int    `json:"mvm_weapon_buff_stack_chance"`
 
+	// MvmTrapPct is how much of the run's spare space is traps. Zero is off and
+	// zero is the default, so it needs no entry in withDefaults. A config file
+	// that predates it reads back as a run that asked for no traps.
+	MvmTrapPct int `json:"mvm_trap_percentage"`
+
 	/* A direct multiplier for every robot. 100 percent is neutral.
 	 *
 	 * Percentages rather than the mod's floats, because a settings page with

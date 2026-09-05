@@ -212,9 +212,14 @@ class TF2MvMWorld(World):
             for _ in range(data.WEAPON_SLOT_COUNT - slots_held)
         ]
 
-        # Buffs and cash share the non-progression space. Numeric permutations
-        # may repeat as levels; toggle permutations remain unique.
+        # Traps, buffs and cash share the non-progression space. A trap takes a
+        # check from a reward rather than adding one.
         open_slots = self._check_count(self.missions) - len(pool)
+        trap_count = open_slots * self.options.trap_percentage.value // 100
+        pool += [self.create_item(self.random.choice(data.TRAP_NAMES)) for _ in range(trap_count)]
+        open_slots -= trap_count
+
+        # Numeric buff permutations may repeat as levels; toggles remain unique.
         buff_count = open_slots
         if self.options.cash_rewards.value:
             buff_count = math.ceil(open_slots * self.options.weapon_buff_percentage.value / 100)
