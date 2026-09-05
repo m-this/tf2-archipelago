@@ -116,6 +116,7 @@ func TestEveryFieldHasAnEnvVar(t *testing.T) {
 		"SrcdsMods":                  "SRCDS_MODS",
 		"FastDLPort":                 "FASTDL_PORT",
 		"SrcdsDownloadURL":           "SRCDS_DOWNLOADURL",
+		"TailscaleFastDL":            "TAILSCALE_FASTDL",
 	}
 	// Fields kept only to read a config file written by an older build. They
 	// are never saved and never asked for, so there is nothing to set.

@@ -43,11 +43,14 @@ func TestHandlerServesContentAndNothingElse(t *testing.T) {
 		{"/tf/maps/missing.bsp", http.StatusNotFound, ""},
 		{"/tf/maps/", http.StatusNotFound, ""},
 		{"/tf/maps", http.StatusNotFound, ""},
-		{"/tf/", http.StatusNotFound, ""},
+		{"/tf", http.StatusOK, statusText},
+		{"/tf/", http.StatusOK, statusText},
 		{"/tf/cfg/server.cfg", http.StatusNotFound, ""},
 		{"/tf/addons/sourcemod/plugins/ap.smx", http.StatusNotFound, ""},
 		{"/tf/maps/../cfg/server.cfg", http.StatusNotFound, ""},
 		{"/tf/maps/%2e%2e/cfg/server.cfg", http.StatusNotFound, ""},
+		{"/tf/maps%5c..%5ccfg%5cserver.cfg", http.StatusNotFound, ""},
+		{"/tf/maps/dir%5c..%5c..%5ccfg%5cserver.cfg", http.StatusNotFound, ""},
 		{"/maps/mvm_test.bsp", http.StatusNotFound, ""},
 		{"/", http.StatusNotFound, ""},
 	} {
@@ -63,6 +66,57 @@ func TestHandlerServesContentAndNothingElse(t *testing.T) {
 		}
 		if c.body != "" && string(body[:n]) != c.body {
 			t.Errorf("%s: body %q, want %q", c.path, body[:n], c.body)
+		}
+	}
+}
+
+func TestHandlerDoesNotFollowLinksOutOfAssetDirectory(t *testing.T) {
+	game := gameTree(t)
+	outside := filepath.Join(t.TempDir(), "outside.txt")
+	if err := os.WriteFile(outside, []byte("outside secret"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	for link, target := range map[string]string{
+		filepath.Join(game, "maps", "outside.bsp"): outside,
+		filepath.Join(game, "maps", "server.cfg"):  filepath.Join(game, "cfg", "server.cfg"),
+	} {
+		if err := os.Symlink(target, link); err != nil {
+			t.Skipf("symlinks are unavailable: %v", err)
+		}
+	}
+
+	server := httptest.NewServer(Handler(game))
+	defer server.Close()
+	for _, name := range []string{"outside.bsp", "server.cfg"} {
+		resp, err := http.Get(server.URL + "/tf/maps/" + name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = resp.Body.Close()
+		if resp.StatusCode != http.StatusNotFound {
+			t.Errorf("%s: status %d, want %d", name, resp.StatusCode, http.StatusNotFound)
+		}
+	}
+}
+
+func TestContentPathRequiresCanonicalAssetPath(t *testing.T) {
+	for _, test := range []struct {
+		path     string
+		wantDir  string
+		wantFile string
+	}{
+		{"/tf/maps/mvm_test.bsp", "maps", "mvm_test.bsp"},
+		{"/tf/materials/models/x.vtf", "materials", "models/x.vtf"},
+		{"/tf/maps/../cfg/server.cfg", "", ""},
+		{"/tf/maps/./mvm_test.bsp", "", ""},
+		{"/tf/maps//mvm_test.bsp", "", ""},
+		{`/tf/maps\..\cfg\server.cfg`, "", ""},
+		{"/tf/cfg/server.cfg", "", ""},
+		{"/tf/maps/", "", ""},
+	} {
+		dir, file, ok := contentPath(test.path)
+		if ok != (test.wantDir != "") || dir != test.wantDir || file != test.wantFile {
+			t.Errorf("contentPath(%q) = (%q, %q, %t), want (%q, %q)", test.path, dir, file, ok, test.wantDir, test.wantFile)
 		}
 	}
 }

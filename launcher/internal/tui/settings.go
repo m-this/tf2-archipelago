@@ -27,6 +27,7 @@ import (
 	"github.com/m-this/tf2-archipelago/launcher/internal/installer"
 	"github.com/m-this/tf2-archipelago/launcher/internal/runshape"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
+	"github.com/m-this/tf2-archipelago/launcher/internal/tailscalefastdl"
 	"github.com/m-this/tf2-archipelago/launcher/internal/winproc"
 )
 
@@ -924,6 +925,37 @@ func (f *settingsForm) reachFields() []field {
 			value:       &f.edited.SrcdsToken,
 			placeholder: "0",
 		},
+		&toggleField{
+			label: "Tailscale FastDL",
+			help:  "Publish maps through Tailscale Funnel. Only the server needs Tailscale; players use its public HTTPS URL. This does not change the game address. Failure falls back to the game server download.",
+			value: &f.edited.TailscaleFastDL,
+			on:    "use Funnel",
+			off:   "use launcher",
+		},
+		&actionField{
+			label: "Set up / check Funnel",
+			help:  "Check Tailscale now. If Funnel needs tailnet approval, this opens the approval page in your browser; approve it, then run this check again.",
+			hint:  "enter",
+			run:   f.checkTailscaleFunnel,
+		},
+	}
+}
+
+func (f *settingsForm) checkTailscaleFunnel() tea.Cmd {
+	return func() tea.Msg {
+		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
+		defer cancel()
+		result, err := tailscalefastdl.Authorize(ctx)
+		if err != nil {
+			return noticeMsg("Tailscale Funnel: " + err.Error())
+		}
+		if result.ApprovalURL != "" {
+			if err := winproc.OpenURL(result.ApprovalURL); err != nil {
+				return noticeMsg("approve Funnel at " + result.ApprovalURL)
+			}
+			return noticeMsg("approve Funnel in the browser, then run Set up / check Funnel again")
+		}
+		return noticeMsg("Tailscale Funnel is ready for this tailnet")
 	}
 }
 

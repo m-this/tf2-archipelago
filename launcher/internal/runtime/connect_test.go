@@ -70,6 +70,15 @@ func TestConnectLinesSayWhatEachReachNeeds(t *testing.T) {
 	}
 }
 
+func TestTailscaleFastDLDoesNotChangeGameConnectLines(t *testing.T) {
+	s := settings.Settings{SrcdsPort: 27015, SrcdsReach: settings.ReachSteam}
+	want := ConnectLines(s)
+	s.TailscaleFastDL = true
+	if got := ConnectLines(s); !slices.Equal(got, want) {
+		t.Fatalf("connect lines changed with Tailscale FastDL: got %q, want %q", got, want)
+	}
+}
+
 // The Join button hands this to Steam, which starts the game and connects.
 // The password rides in the URL, so one that holds a space or a slash has to
 // survive the trip.
@@ -263,6 +272,7 @@ func TestTheDownloadURLDoesNotDecideWhetherWeServe(t *testing.T) {
 		{"default", settings.Settings{FastDLPort: 27080}, ":27080"},
 		{"public address named", settings.Settings{FastDLPort: 27080, SrcdsDownloadURL: "http://198.51.100.7:27080/tf"}, ":27080"},
 		{"somebody else's host", settings.Settings{FastDLPort: 27080, SrcdsDownloadURL: "https://example.test/tf"}, ":27080"},
+		{"Tailscale Funnel", settings.Settings{FastDLPort: 27080, TailscaleFastDL: true}, "127.0.0.1:27080"},
 		{"turned off", settings.Settings{FastDLPort: 0, SrcdsDownloadURL: "https://example.test/tf"}, ""},
 		{"turned off, nothing named", settings.Settings{FastDLPort: 0}, ""},
 	} {

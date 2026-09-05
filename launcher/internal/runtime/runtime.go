@@ -46,6 +46,9 @@ func closeTestRoom(room *fakeroom.Room) {
 // blocks until the context is cancelled or one of them stops. The bridge gets
 // a head start so the plugin can reach /unlocks on first load.
 func Run(ctx context.Context, s settings.Settings, logger *slog.Logger) error {
+	s = prepareTailscaleFastDL(ctx, s, func(text string) {
+		logger.InfoContext(ctx, "download server", "detail", text)
+	})
 	// Console mode has no interface to change a setting from, but it shares
 	// this entry point with anything that does. Rendering here keeps the one
 	// rule: a server that starts, starts from the settings it was given.
@@ -117,6 +120,9 @@ off the server they were addressing.
 func FastDLListen(s settings.Settings) string {
 	if s.FastDLPort <= 0 {
 		return ""
+	}
+	if s.TailscaleFastDL {
+		return "127.0.0.1:" + strconv.Itoa(s.FastDLPort)
 	}
 
 	return ":" + strconv.Itoa(s.FastDLPort)

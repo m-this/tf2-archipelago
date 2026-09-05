@@ -88,7 +88,8 @@ func (s *Supervisor) Start(onExit func(error)) error {
 		s.mu.Unlock()
 		return errors.New("the server is already running")
 	}
-	cfg, err := bridgeConfig(s.settings)
+	current := prepareTailscaleFastDL(context.Background(), s.settings, s.emit)
+	cfg, err := bridgeConfig(current)
 	if err != nil {
 		s.mu.Unlock()
 		return err
@@ -97,7 +98,7 @@ func (s *Supervisor) Start(onExit func(error)) error {
 	// has to hold the settings this start is using. Rendering it here rather
 	// than once per launcher run is what makes a class unticked in the
 	// interface reach the server it is unticked for.
-	if err := srcdsconfig.Install(s.settings); err != nil {
+	if err := srcdsconfig.Install(current); err != nil {
 		s.mu.Unlock()
 		return err
 	}
@@ -119,7 +120,6 @@ func (s *Supervisor) Start(onExit func(error)) error {
 		}
 	}
 	s.cancel, s.done, s.running, s.stopped = cancel, done, true, false
-	current := s.settings
 	s.mu.Unlock()
 
 	s.emit("starting the bridge and the game server")

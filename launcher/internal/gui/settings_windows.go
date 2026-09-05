@@ -25,6 +25,7 @@ import (
 	"github.com/m-this/tf2-archipelago/launcher/internal/runshape"
 	apruntime "github.com/m-this/tf2-archipelago/launcher/internal/runtime"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
+	"github.com/m-this/tf2-archipelago/launcher/internal/tailscalefastdl"
 	"github.com/m-this/tf2-archipelago/launcher/internal/winproc"
 )
 
@@ -42,6 +43,9 @@ const sentenceWidth = 980
 
 // tokenPageURL issues the Game Server Login Token the server logs in with.
 const tokenPageURL = "https://steamcommunity.com/dev/managegameservers"
+
+// tailscaleInstallURL is the beginner setup page linked beside FastDL.
+const tailscaleInstallURL = "https://tailscale.com/download/windows"
 
 // runSettingsDialog asks for the values worth changing between evenings, in
 // six tabs: what the run is, which missions it may draw, where the room is,
@@ -127,13 +131,16 @@ func runSettingsDialog(
 	// rather than at the next open of the dialog.
 	botLoadout.changed = botTeam.refreshLoadouts
 	var (
-		reachLan   *walk.RadioButton
-		reachSteam *walk.RadioButton
-		reachPort  *walk.RadioButton
-		reachHelp  *walk.TextLabel
-		tokenEdit  *walk.LineEdit
-		tokenWarn  *walk.Label
-		tokenLink  *walk.LinkLabel
+		reachLan        *walk.RadioButton
+		reachSteam      *walk.RadioButton
+		reachPort       *walk.RadioButton
+		reachHelp       *walk.TextLabel
+		tokenEdit       *walk.LineEdit
+		tokenWarn       *walk.Label
+		tokenLink       *walk.LinkLabel
+		tailscaleBox    *walk.CheckBox
+		tailscaleTest   *walk.PushButton
+		tailscaleStatus *walk.TextLabel
 	)
 
 	tiers := runshape.Tiers()
@@ -287,6 +294,7 @@ func runSettingsDialog(
 		next.SrcdsAdminSteamIDs = strings.TrimSpace(adminEdit.Text())
 		next.SrcdsReach = checkedReach(reachSteam, reachPort)
 		next.SrcdsToken = strings.TrimSpace(tokenEdit.Text())
+		next.TailscaleFastDL = tailscaleBox.Checked()
 		// The Bots tab is built when somebody opens it, so on a visit that
 		// never did there is nothing to read: next keeps what the settings
 		// came in with, which is what those fields still say.
@@ -376,6 +384,37 @@ func runSettingsDialog(
 						"the line from the log rather than one you wrote down.",
 					ColumnSpan: 2,
 					MinSize:    declarative.Size{Width: 470},
+				},
+				label("Fast map downloads", "Tailscale Funnel publicly hosts maps and other downloadable files. It does not change how anybody connects to the game server."),
+				declarative.CheckBox{
+					AssignTo: &tailscaleBox,
+					Text:     "Publish downloads with Tailscale Funnel",
+					Checked:  s.TailscaleFastDL,
+				},
+				declarative.TextLabel{
+					Text: "Only this server PC needs Tailscale; players download from its public HTTPS address. " +
+						"Anyone who knows that address can read the allowed map assets. Start runs the file server on loopback and configures Funnel automatically. " +
+						"A setup failure is only a warning: TF2 falls back to downloading from the game server.",
+					ColumnSpan: 2,
+					MinSize:    declarative.Size{Width: 470},
+				},
+				declarative.PushButton{
+					AssignTo: &tailscaleTest,
+					Text:     "Set up / check Tailscale Funnel",
+					OnClicked: func() {
+						checkTailscaleFunnel(owner, dialog, tailscaleTest, tailscaleStatus, say)
+					},
+				},
+				declarative.TextLabel{AssignTo: &tailscaleStatus, Text: "Run this check before the first Start.", TextColor: colorMuted, MaxSize: declarative.Size{Width: 470}},
+				declarative.LinkLabel{
+					ColumnSpan: 2,
+					MaxSize:    declarative.Size{Width: 470},
+					Text:       `<a href="` + tailscaleInstallURL + `">Install Tailscale on the server PC</a>, then sign in from its tray icon. Players do not install it.`,
+					OnLinkActivated: func(link *walk.LinkLabelLink) {
+						if err := winproc.OpenURL(link.URL()); err != nil {
+							walk.MsgBox(dialog, "Tailscale", err.Error(), walk.MsgBoxIconWarning)
+						}
+					},
 				},
 			},
 		},
@@ -825,6 +864,38 @@ func runSettingsDialog(
 		return s, false, nil
 	}
 	return edited, true, nil
+}
+
+func checkTailscaleFunnel(sync walk.Form, dialog *walk.Dialog, button *walk.PushButton, status *walk.TextLabel, say func(string, ...any)) {
+	button.SetEnabled(false)
+	status.SetTextColor(colorStarting)
+	_ = status.SetText("Checking Tailscale and Funnel permission...")
+
+	go apruntime.Guard("a settings task", func(text string) { say("%s", text) }, func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
+		defer cancel()
+		result, err := tailscalefastdl.Authorize(ctx)
+		sync.Synchronize(func() {
+			if dialog.IsDisposed() {
+				return
+			}
+			button.SetEnabled(true)
+			switch {
+			case err != nil:
+				status.SetTextColor(colorStopped)
+				_ = status.SetText(err.Error())
+			case result.ApprovalURL != "":
+				status.SetTextColor(colorStarting)
+				_ = status.SetText("Approve Funnel in the browser, then click this check again.")
+				if err := winproc.OpenURL(result.ApprovalURL); err != nil {
+					walk.MsgBox(dialog, "Enable Tailscale Funnel", result.ApprovalURL+"\n\n"+err.Error(), walk.MsgBoxIconWarning)
+				}
+			case result.Ready:
+				status.SetTextColor(colorRunning)
+				_ = status.SetText("Ready. Funnel is enabled for this tailnet.")
+			}
+		})
+	})
 }
 
 /* Put a number field's text against its left edge.
