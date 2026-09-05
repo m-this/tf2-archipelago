@@ -108,3 +108,23 @@ func TestTheCrashFlagFollowsTheCrash(t *testing.T) {
 		t.Error("an access violation did not set the crash flag")
 	}
 }
+
+/*
+Cowser's bundle: eighty-eight console lines, every tf2ap_ and sm_redbots_
+convar in server.cfg answering "Unknown command", and a summary that said
+nothing matched. Metamod and SourceMod had not loaded and the server was stock
+Mann vs Machine. The line is the diagnosis, and the summary says so.
+*/
+func TestAServerWithoutThePluginIsNamed(t *testing.T) {
+	got, _ := scanLogs(writeLog(t,
+		`21:19:01  srcds    Executing dedicated server config file server.cfg`,
+		`21:19:01  srcds    Unknown command "sm_redbots_manager_mode"`,
+		`21:19:01  srcds    Unknown command "tf2ap_start_mission"`,
+	))
+	if !strings.Contains(got, pluginMissingRule) {
+		t.Fatalf("the missing plugin was not reported:\n%s", got)
+	}
+	if !strings.Contains(got, "stock Mann vs") {
+		t.Errorf("the summary does not say what the lines mean:\n%s", got)
+	}
+}

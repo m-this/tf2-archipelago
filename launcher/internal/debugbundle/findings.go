@@ -61,7 +61,14 @@ func shapeOf(line string) string {
 type rule struct {
 	name  string
 	match func(string) bool
+	// hint says what a hit means, for the rules where the line alone does
+	// not: it is printed once under the samples.
+	hint string
 }
+
+// pluginMissingRule is the name of the rule whose hits mean the server is
+// playing without the plugin.
+const pluginMissingRule = "the plugin is not loaded"
 
 // rules are ordered by how much a hit matters, because that is the order the
 // summary prints them in.
@@ -74,14 +81,21 @@ var rules = []rule{
 			strings.Contains(l, "exit status 0xc0") ||
 			strings.Contains(l, "signal: segmentation fault") ||
 			strings.Contains(l, "signal: abort")
-	}},
-	{"a plugin threw", func(l string) bool { return strings.Contains(l, "[SM] Exception reported:") }},
-	{"the plugin reported an error", func(l string) bool { return strings.Contains(l, "[AP] error:") }},
-	{"a bot got stuck", func(l string) bool { return strings.Contains(l, "[defenderbots] stuck:") }},
+	}, ""},
+	{pluginMissingRule, func(l string) bool {
+		return strings.Contains(l, `Unknown command "tf2ap_`) ||
+			strings.Contains(l, `Unknown command "sm_redbots_manager`)
+	}, "Metamod or SourceMod did not load, so the server is playing stock Mann vs\n" +
+		"      Machine: nothing locked, no checks sent, the settings above ignored.\n" +
+		"      Look under tf-dedicated/tf/addons for metamod.vdf, metamod/bin and\n" +
+		"      sourcemod/bin. The launcher reinstalls whichever is missing on the next start."},
+	{"a plugin threw", func(l string) bool { return strings.Contains(l, "[SM] Exception reported:") }, ""},
+	{"the plugin reported an error", func(l string) bool { return strings.Contains(l, "[AP] error:") }, ""},
+	{"a bot got stuck", func(l string) bool { return strings.Contains(l, "[defenderbots] stuck:") }, ""},
 	{"the bridge lost the room", func(l string) bool {
 		return strings.Contains(l, "archipelago session ended")
-	}},
-	{"RED went over its team size", func(l string) bool { return strings.Contains(l, "leaves.") }},
+	}, ""},
+	{"RED went over its team size", func(l string) bool { return strings.Contains(l, "leaves.") }, ""},
 }
 
 type hit struct {
@@ -168,6 +182,9 @@ func render(found map[string]*hit, repeats map[string]int, shape map[string]stri
 		fmt.Fprintf(&b, "  %s (%d)\n", r.name, got.count)
 		for _, sample := range got.samples {
 			fmt.Fprintf(&b, "      %s\n", sample)
+		}
+		if r.hint != "" {
+			fmt.Fprintf(&b, "      %s\n", r.hint)
 		}
 	}
 	if quiet {

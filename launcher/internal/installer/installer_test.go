@@ -342,3 +342,34 @@ func TestCleanOnAnEmptyRoot(t *testing.T) {
 		t.Errorf("removed %v from an empty root", removed)
 	}
 }
+
+// A directory is not a mod that loads. The launcher looks for the files the
+// engine reads, and names the one that is gone.
+func TestTheLoaderFilesDecideWhetherToReinstall(t *testing.T) {
+	for _, goos := range []string{"linux", "windows"} {
+		modDir := t.TempDir()
+		files := append(metamodFiles(goos), sourcemodFiles(goos)...)
+		if got := firstMissing(modDir, metamodFiles(goos)); got != "addons/metamod.vdf" {
+			t.Errorf("%s: empty tree reports %q", goos, got)
+		}
+		for _, relative := range files {
+			path := filepath.Join(modDir, filepath.FromSlash(relative))
+			if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(path, []byte("x"), 0o644); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if got := firstMissing(modDir, metamodFiles(goos)); got != "" {
+			t.Errorf("%s: full tree reports %q", goos, got)
+		}
+		loader := filepath.Join(modDir, filepath.FromSlash(sourcemodFiles(goos)[0]))
+		if err := os.Remove(loader); err != nil {
+			t.Fatal(err)
+		}
+		if got := firstMissing(modDir, sourcemodFiles(goos)); got != sourcemodFiles(goos)[0] {
+			t.Errorf("%s: a missing loader reports %q", goos, got)
+		}
+	}
+}

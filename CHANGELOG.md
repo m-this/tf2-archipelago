@@ -57,6 +57,9 @@ in the release notes, so this file is the only place to write it.
 - Archipelago weapon buffs now stay active when players refund upgrades at an
   MvM station. They no longer appear as purchased, infinitely refundable MvM
   upgrade levels or stack again after repeated refunds.
+- A server whose Metamod or SourceMod went missing is repaired on the next
+  start instead of playing stock Mann vs Machine with every setting ignored,
+  and a debug bundle says so when it happened.
 - Test mode draws its missions at random from the pool, the way a real seed
   does. It took the first ones in the settings list, which looked like a
   randomizer that does not randomize.

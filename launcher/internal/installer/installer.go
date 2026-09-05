@@ -19,6 +19,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -440,8 +441,8 @@ func removeUnsupportedCommunityPopfiles(modDir string) (int, error) {
 // The first two are skipped when they are already there; the rest are written
 // every time, because they are ours and a stale copy is our bug to have.
 func installMods(ctx context.Context, modDir string, logf func(string, ...any)) error {
-	if !exists(filepath.Join(modDir, "addons", "metamod")) {
-		logf("installing Metamod:Source %s", assets.MetamodVersion)
+	if missing := firstMissing(modDir, metamodFiles(runtime.GOOS)); missing != "" {
+		logf("installing Metamod:Source %s: %s is missing", assets.MetamodVersion, missing)
 		if err := installMetamod(ctx, modDir); err != nil {
 			return err
 		}
@@ -450,8 +451,8 @@ func installMods(ctx context.Context, modDir string, logf func(string, ...any)) 
 		return err
 	}
 
-	if !exists(filepath.Join(modDir, "addons", "sourcemod")) {
-		logf("installing SourceMod %s", assets.SourcemodVersion)
+	if missing := firstMissing(modDir, sourcemodFiles(runtime.GOOS)); missing != "" {
+		logf("installing SourceMod %s: %s is missing", assets.SourcemodVersion, missing)
 		if err := installSourcemod(ctx, modDir, logf); err != nil {
 			return err
 		}
@@ -465,6 +466,41 @@ func installMods(ctx context.Context, modDir string, logf func(string, ...any)) 
 		return fmt.Errorf("cannot install the defender bots: %w", err)
 	}
 	return nil
+}
+
+/*
+The files the engine reads to load Metamod, and Metamod reads to load
+SourceMod, relative to the mod directory.
+
+A directory that exists is not a mod that loads. Cowser's server had an
+addons/ tree and started as stock Mann vs Machine, every tf2ap_ convar unknown,
+and the launcher looked at the directory, found it, and installed nothing. It
+looks for these now, and reinstalls when one is gone.
+*/
+func metamodFiles(goos string) []string {
+	if goos == "windows" {
+		return []string{"addons/metamod.vdf", "addons/metamod/bin/server.dll", "addons/metamod/bin/metamod.2.tf2.dll"}
+	}
+	return []string{"addons/metamod.vdf", "addons/metamod/bin/server.so", "addons/metamod/bin/metamod.2.tf2.so"}
+}
+
+func sourcemodFiles(goos string) []string {
+	if goos == "windows" {
+		return []string{"addons/sourcemod/bin/sourcemod_mm.dll", "addons/sourcemod/bin/sourcemod.2.tf2.dll", "addons/sourcemod/bin/sourcemod.logic.dll"}
+	}
+	return []string{"addons/sourcemod/bin/sourcemod_mm_i486.so", "addons/sourcemod/bin/sourcemod.2.tf2.so", "addons/sourcemod/bin/sourcemod.logic.so"}
+}
+
+// firstMissing is the first of the files that is not a regular file under
+// modDir, or empty when every one is there.
+func firstMissing(modDir string, files []string) string {
+	for _, relative := range files {
+		info, err := os.Stat(filepath.Join(modDir, filepath.FromSlash(relative)))
+		if err != nil || !info.Mode().IsRegular() {
+			return relative
+		}
+	}
+	return ""
 }
 
 // installSteamcmd downloads and unpacks Valve's SteamCMD bootstrap: a zip on
