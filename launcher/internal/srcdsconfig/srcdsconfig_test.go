@@ -67,7 +67,8 @@ func TestInstallServerCfg(t *testing.T) {
 // say why. A reach with no token behind it is the other way round: sv_lan 0
 // there is a server that refuses everybody, local players included.
 func TestServerCfgFollowsTheReach(t *testing.T) {
-	const token = "C7A1B2E3D4F5A6B7C8D9E0F1A2B3C4D5"
+	// Obviously not a token, so a secret scanner has nothing to flag.
+	const token = "NOT-A-REAL-TOKEN-0000000000000000"
 	for _, c := range []struct {
 		name  string
 		reach settings.Reach
@@ -355,5 +356,54 @@ func TestTheDebugLevelSomebodyChoseIsLeftAlone(t *testing.T) {
 	body, _ := os.ReadFile(target)
 	if !strings.Contains(string(body), `tf2ap_debug "2"`) {
 		t.Errorf("a chosen level was overwritten:\n%s", body)
+	}
+}
+
+// sv_downloadurl names the launcher's own file server on the address friends
+// reach this machine at. The operator's own host wins when they named one.
+// A relayed server hands out no address of its own, so nothing is written and
+// the game server's transfer stays the way in.
+func TestDownloadURL(t *testing.T) {
+	// Obviously not a token, so a secret scanner has nothing to flag.
+	const token = "NOT-A-REAL-TOKEN-0000000000000000"
+	for _, c := range []struct {
+		name string
+		s    settings.Settings
+		host string
+		want string
+	}{
+		{"lan", settings.Settings{SrcdsReach: settings.ReachLan, FastDLPort: 27080}, "192.168.1.10", "http://192.168.1.10:27080/tf"},
+		{"port", settings.Settings{SrcdsReach: settings.ReachPort, SrcdsToken: token, FastDLPort: 27080}, "192.168.1.10", "http://192.168.1.10:27080/tf"},
+		{"steam", settings.Settings{SrcdsReach: settings.ReachSteam, SrcdsToken: token, FastDLPort: 27080}, "192.168.1.10", ""},
+		{"no route", settings.Settings{SrcdsReach: settings.ReachLan, FastDLPort: 27080}, "", ""},
+		{"off", settings.Settings{SrcdsReach: settings.ReachLan, FastDLPort: 0}, "192.168.1.10", ""},
+		{"own host", settings.Settings{SrcdsReach: settings.ReachSteam, SrcdsToken: token, SrcdsDownloadURL: "https://example.test/tf"}, "", "https://example.test/tf"},
+	} {
+		if got := DownloadURL(c.s, c.host); got != c.want {
+			t.Errorf("%s: DownloadURL = %q, want %q", c.name, got, c.want)
+		}
+	}
+}
+
+func TestServerCfgCarriesTheDownloadURL(t *testing.T) {
+	s := settings.Settings{
+		InstallRoot:      t.TempDir(),
+		SrcdsReach:       settings.ReachLan,
+		SrcdsDownloadURL: "https://example.test/tf",
+	}
+	body, err := RenderServerCfg(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := directive(body, "sv_downloadurl"); got != `"https://example.test/tf"` {
+		t.Errorf("sv_downloadurl = %q:\n%s", got, body)
+	}
+	s.SrcdsDownloadURL, s.FastDLPort = "", 0
+	body, err = RenderServerCfg(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := directive(body, "sv_downloadurl"); got != "" {
+		t.Errorf("sv_downloadurl = %q with nothing to point it at:\n%s", got, body)
 	}
 }

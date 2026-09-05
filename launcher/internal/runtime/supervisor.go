@@ -146,6 +146,9 @@ func (s *Supervisor) Start(onExit func(error)) error {
 	go Guard("the SourceMod error watcher", s.emit, func() {
 		watchSourcemodErrors(ctx, filepath.Join(current.InstallRoot, "tf-dedicated"), s.sink)
 	})
+	go Guard("the download server", s.emit, func() {
+		serveFastDL(ctx, current, s.emit)
+	})
 
 	go Guard("the supervisor", s.emit, func() {
 		s.await(session{

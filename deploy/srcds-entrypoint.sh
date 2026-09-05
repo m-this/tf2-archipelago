@@ -101,6 +101,15 @@ install_server_cfg() {
 		bots_mode=2
 	fi
 
+	download_url="${SRCDS_DOWNLOADURL:-}"
+	if [ -z "$download_url" ] && [ -n "${FASTDL_HOST:-}" ]; then
+		download_url="http://${FASTDL_HOST}:${FASTDL_PORT:-27080}/tf"
+	fi
+	download_cfg=""
+	if [ -n "$download_url" ]; then
+		download_cfg="sv_downloadurl \"${download_url}\""
+	fi
+
 	staged=$(mktemp)
 	cat >"$staged" <<-CFG
 	// Managed by the tf2-archipelago image. Edits here are replaced the next
@@ -182,8 +191,15 @@ install_server_cfg() {
 	sv_pausable 0
 	setpause 0
 
+	// Maps and other content come from this address over HTTP, when the
+	// stack has one to give: the fastdl service at FASTDL_HOST, or the
+	// operator's own SRCDS_DOWNLOADURL. The game server's own transfer can
+	// reach the end of a large packed BSP without the client accepting it,
+	// which restarts the download forever.
+	${download_cfg}
 	// A stock server refuses direct downloads larger than 16 MB. Potato maps
-	// such as Autumnull fit under Source's 64 MB direct-download cap.
+	// such as Autumnull fit under Source's 64 MB direct-download cap. Kept on
+	// so a client that cannot reach sv_downloadurl still gets the map here.
 	sv_allowdownload 1
 	// Client uploads carry sprays and other player customization.
 	sv_allowupload 1

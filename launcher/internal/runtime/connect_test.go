@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/m-this/tf2-archipelago/launcher/internal/lanaddr"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 )
 
@@ -219,7 +220,7 @@ retries", a stall at two bars, while the LAN tab of the server browser found
 the same server first try.
 */
 func TestTheRoutableAddressComesFirst(t *testing.T) {
-	preferred := preferredOutboundAddress()
+	preferred := lanaddr.Preferred()
 	if preferred == "" {
 		t.Skip("no route out of this machine, so there is no preference to check")
 	}
@@ -238,7 +239,35 @@ func TestTheRoutableAddressComesFirst(t *testing.T) {
 // The dial must not actually talk to anything: 192.0.2.1 is the documentation
 // range and nothing routes there, which is the point.
 func TestThePreferredAddressIsNotLoopback(t *testing.T) {
-	if got := preferredOutboundAddress(); got != "" && strings.HasPrefix(got, "127.") {
+	if got := lanaddr.Preferred(); got != "" && strings.HasPrefix(got, "127.") {
 		t.Errorf("preferred address = %q, which is loopback", got)
+	}
+}
+
+/*
+An address a client is told to look at is not the same question as whether this
+machine answers, and the settings that hold them are separate.
+
+A server reached over a forwarded port needs both: the launcher writes the
+address it prints in the connect lines, which is this machine on the local
+network, and a friend outside cannot reach that. Filling in the public address
+used to turn off the server it was addressing, so the fix stopped the file
+server and pointed the players at nothing.
+*/
+func TestTheDownloadURLDoesNotDecideWhetherWeServe(t *testing.T) {
+	for _, c := range []struct {
+		name string
+		s    settings.Settings
+		want string
+	}{
+		{"default", settings.Settings{FastDLPort: 27080}, ":27080"},
+		{"public address named", settings.Settings{FastDLPort: 27080, SrcdsDownloadURL: "http://198.51.100.7:27080/tf"}, ":27080"},
+		{"somebody else's host", settings.Settings{FastDLPort: 27080, SrcdsDownloadURL: "https://example.test/tf"}, ":27080"},
+		{"turned off", settings.Settings{FastDLPort: 0, SrcdsDownloadURL: "https://example.test/tf"}, ""},
+		{"turned off, nothing named", settings.Settings{FastDLPort: 0}, ""},
+	} {
+		if got := FastDLListen(c.s); got != c.want {
+			t.Errorf("%s: FastDLListen = %q, want %q", c.name, got, c.want)
+		}
 	}
 }
