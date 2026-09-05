@@ -1156,7 +1156,8 @@ public Action WeaponBuffs_OnTakeDamage(int victim, int &attacker, int &inflictor
     {
         return Plugin_Continue;
     }
-    int catalog = WeaponBuffs_ForEntity(WeaponBuffs_WeaponOfHit(attacker, inflictor, weapon));
+    weapon = WeaponBuffs_WeaponOfHit(attacker, inflictor, weapon);
+    int catalog = WeaponBuffs_ForEntity(weapon);
     if (catalog < 0)
     {
         return Plugin_Continue;
@@ -1210,7 +1211,8 @@ public void WeaponBuffs_OnTakeDamagePost(int victim, int attacker, int inflictor
             return;
         }
     }
-    int catalog = WeaponBuffs_ForEntity(WeaponBuffs_WeaponOfHit(attacker, inflictor, weapon));
+    weapon = WeaponBuffs_WeaponOfHit(attacker, inflictor, weapon);
+    int catalog = WeaponBuffs_ForEntity(weapon);
     if (catalog >= 0)
     {
         WeaponBuffs_ApplyHitEffects(victim, attacker, catalog);
