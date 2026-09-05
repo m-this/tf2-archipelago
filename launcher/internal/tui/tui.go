@@ -70,12 +70,13 @@ type view int
  * during a mission that is going fine. */
 const (
 	viewSession view = iota
+	viewUnlocks
 	viewBots
 	viewLog
 )
 
 // viewCount is how many there are, so tab rings round them.
-const viewCount = 3
+const viewCount = 4
 
 type model struct {
 	settings   settings.Settings

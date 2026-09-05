@@ -55,6 +55,8 @@ func (m *model) View() string {
 		out.WriteString(m.log())
 	case viewSession:
 		out.WriteString(m.session())
+	case viewUnlocks:
+		out.WriteString(m.unlocks())
 	}
 
 	out.WriteString("\n")
@@ -124,7 +126,7 @@ func (m *model) joinAddresses() []string {
 }
 
 func (m *model) tabs() string {
-	names := []string{"Session", "Bot Switcher", "Log"}
+	names := []string{"Session", "Unlocks", "Bot Switcher", "Log"}
 	rendered := make([]string, 0, len(names))
 	for i, name := range names {
 		if view(i) == m.view {
@@ -184,6 +186,38 @@ func (m *model) session() string {
 		}
 		rows = append(rows, "")
 		rows = append(rows, m.missionRows(height-len(rows))...)
+	}
+
+	for len(rows) < height {
+		rows = append(rows, "")
+	}
+	return strings.Join(rows[:height], "\n")
+}
+
+// unlocks is everything the multiworld has handed this run, named for a person:
+// the classes, the weapon slots, the missions and the weapon buffs with the
+// level a repeated buff reached.
+func (m *model) unlocks() string {
+	height := m.bodyHeight()
+	rows := make([]string, 0, height)
+
+	switch {
+	case !m.supervisor.Running():
+		rows = append(rows, styleMuted.Render("The server is not running."))
+	case m.fetchErr != nil:
+		rows = append(rows, styleMuted.Render("Bridge: "+m.fetchErr.Error()))
+	case len(m.snapshot.Unlocks) == 0:
+		rows = append(rows, styleMuted.Render("Nothing unlocked yet."))
+	default:
+		rows = append(rows, styleMuted.Render("In the game, !ap buffs shows the buffs on the loadout you hold."))
+		rows = append(rows, "")
+		for _, unlock := range m.snapshot.Unlocks {
+			level := ""
+			if unlock.Level > 1 {
+				level = fmt.Sprintf("  x%d", unlock.Level)
+			}
+			rows = append(rows, truncate(fmt.Sprintf("  %-12s %s%s", unlock.Kind, unlock.Name, level), m.width))
+		}
 	}
 
 	for len(rows) < height {
@@ -290,6 +324,8 @@ func (m *model) keys() string {
 	switch m.view {
 	case viewSession:
 		pairs = append(pairs, [2]string{"p", "play mission"})
+	case viewUnlocks:
+		// Read-only: the list is the whole of it.
 	case viewBots:
 		pairs = append(pairs, [2]string{"a", "apply team"})
 	case viewLog:

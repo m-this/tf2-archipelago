@@ -50,6 +50,9 @@ in the release notes, so this file is the only place to write it.
 - Archipelago weapon buffs now stay active when players refund upgrades at an
   MvM station. They no longer appear as purchased, infinitely refundable MvM
   upgrade levels or stack again after repeated refunds.
+- An Unlocks tab in the launcher, window and terminal, lists what the
+  multiworld has handed the run: classes, weapon slots, missions and weapon
+  buffs, with the level a repeated buff reached.
 
 ## v1.11.0
 

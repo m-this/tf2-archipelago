@@ -71,6 +71,7 @@ type window struct {
 	joinBt     *walk.PushButton
 	settingsBt *walk.PushButton
 	session    *sessionTab
+	unlocks    *unlocksTab
 	bots       *botsTab
 
 	supervisor *apruntime.Supervisor
@@ -109,7 +110,7 @@ func Run(s settings.Settings, logger *slog.Logger) error {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
 
-	w := &window{logger: logger, session: newSessionTab(), bots: newBotsTab()}
+	w := &window{logger: logger, session: newSessionTab(), unlocks: newUnlocksTab(), bots: newBotsTab()}
 	w.supervisor = apruntime.NewSupervisor(s, nil, w.append)
 	w.openLogFile(s.InstallRoot)
 	defer func() {
@@ -204,6 +205,7 @@ func (w *window) build() error {
 				StretchFactor: 1,
 				Pages: []declarative.TabPage{
 					w.session.page(w.switchMission),
+					w.unlocks.page(),
 					w.bots.page(func() { w.editSettingsOn("Bots") }),
 					{
 						Title:  "Log",
@@ -500,6 +502,7 @@ func (w *window) refresh() {
 	w.joinBt.SetEnabled(running)
 	w.command.SetEnabled(running)
 	w.session.setRunning(running)
+	w.unlocks.setRunning(running)
 	w.bots.show(s)
 	w.bots.setRunning(running)
 }
@@ -664,7 +667,10 @@ func (w *window) watchSession() {
 			continue
 		}
 		snapshot, err := session.Fetch(context.Background(), session.BridgeURL)
-		w.main.Synchronize(func() { w.session.update(snapshot, err) })
+		w.main.Synchronize(func() {
+			w.session.update(snapshot, err)
+			w.unlocks.update(snapshot, err)
+		})
 	}
 }
 

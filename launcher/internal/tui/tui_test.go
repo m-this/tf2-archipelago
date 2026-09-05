@@ -79,7 +79,7 @@ func TestTheKeysDoWhatTheFooterSays(t *testing.T) {
 
 	// Round the three tabs and back, which is what the footer's one entry says
 	// tab does. shift+tab is the same ring the other way.
-	for _, want := range []view{viewBots, viewLog, viewSession} {
+	for _, want := range []view{viewUnlocks, viewBots, viewLog, viewSession} {
 		if _, _ = m.Update(key("tab")); m.view != want {
 			t.Errorf("tab reached view %d, want %d", m.view, want)
 		}

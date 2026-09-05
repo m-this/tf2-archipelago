@@ -9,7 +9,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"time"
+
+	"github.com/m-this/tf2-archipelago/gamedata"
 )
 
 // BridgeURL is where the launcher's own bridge listens.
@@ -50,10 +53,26 @@ type Mission struct {
 	Played bool `json:"played"`
 }
 
+/*
+	Unlock is one thing the run has handed this slot, named for a person.
+
+The bridge serves the unlock set by kind and key, the way the plugin wants it:
+"class" holds "scout", "weapon_buff" holds "weapon-001-damage", and a buff
+held twice is its key twice. A player reading the tab wants the Scout, the
+Scattergun's damage bonus and a level, so the keys are turned into names here,
+once, from the same tables the bridge named them from.
+*/
+type Unlock struct {
+	Kind  string
+	Name  string
+	Level int
+}
+
 // Snapshot is one reading of the run.
 type Snapshot struct {
 	Health   Health
 	Missions []Mission
+	Unlocks  []Unlock
 }
 
 // Fetch reads the run off the bridge at baseURL.
@@ -69,7 +88,83 @@ func Fetch(ctx context.Context, baseURL string) (Snapshot, error) {
 		return Snapshot{}, err
 	}
 	snapshot.Missions = missions.Missions
+	var unlocks struct {
+		ByKind map[string][]string `json:"unlocks"`
+	}
+	if err := get(ctx, baseURL+"/unlocks", &unlocks); err != nil {
+		return Snapshot{}, err
+	}
+	snapshot.Unlocks = Describe(unlocks.ByKind)
 	return snapshot, nil
+}
+
+// kindOrder is the order the tab lists kinds in: what you can play, then what
+// you can hold, then where you can go, then what your weapons gained.
+var kindOrder = []string{"class", "weapon_slot", "mission_ticket", "weapon_buff"}
+
+// kindLabels is what each kind reads as on the tab.
+var kindLabels = map[string]string{
+	"class": "Class", "weapon_slot": "Weapon slot", "mission_ticket": "Mission", "weapon_buff": "Weapon buff",
+}
+
+// Describe turns the bridge's unlock set into rows: one per distinct key, in a
+// fixed order of kinds and then by name, with the level counting how many
+// times the key was handed over.
+func Describe(byKind map[string][]string) []Unlock {
+	names := buffNames()
+	var out []Unlock
+	for _, kind := range kindOrder {
+		counts := map[string]int{}
+		var order []string
+		for _, key := range byKind[kind] {
+			if counts[key] == 0 {
+				order = append(order, key)
+			}
+			counts[key]++
+		}
+		rows := make([]Unlock, 0, len(order))
+		for _, key := range order {
+			rows = append(rows, Unlock{Kind: kindLabels[kind], Name: nameOf(kind, key, names), Level: counts[key]})
+		}
+		sort.SliceStable(rows, func(i, j int) bool { return rows[i].Name < rows[j].Name })
+		out = append(out, rows...)
+	}
+	return out
+}
+
+func nameOf(kind, key string, buffs map[string]string) string {
+	switch kind {
+	case "class":
+		for _, class := range gamedata.Classes {
+			if class.Key == key {
+				return class.Name
+			}
+		}
+	case "weapon_slot":
+		for _, slot := range gamedata.WeaponSlots {
+			if slot.Key == key {
+				return slot.Name
+			}
+		}
+	case "mission_ticket":
+		if mission, ok := gamedata.MissionByPopFile(key); ok {
+			return mission.Name
+		}
+	case "weapon_buff":
+		if name, ok := buffs[key]; ok {
+			return name
+		}
+	}
+	return key
+}
+
+// buffNames is every weapon buff by key, as "Weapon: what it does".
+func buffNames() map[string]string {
+	names := make(map[string]string, len(gamedata.WeaponBuffs))
+	for _, buff := range gamedata.WeaponBuffs {
+		names[buff.Key] = buff.Weapon + ": " + buff.Description
+	}
+	return names
 }
 
 func get(ctx context.Context, url string, into any) error {

@@ -151,6 +151,8 @@ func TestWriteCarriesTheBridgeState(t *testing.T) {
 			_, _ = io.WriteString(w, `{"connected":true,"slot":"tf2","checks":7}`)
 		case "/missions":
 			_, _ = io.WriteString(w, `{"missions":[{"popfile":"mvm_decoy","cleared":true}]}`)
+		case "/unlocks":
+			_, _ = io.WriteString(w, `{"resume_from":0,"unlocks":{"class":["scout"]}}`)
 		default:
 			w.WriteHeader(http.StatusNotFound)
 		}
