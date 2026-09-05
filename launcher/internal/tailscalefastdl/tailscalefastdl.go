@@ -93,6 +93,24 @@ func Configure(ctx context.Context, localPort int) (Result, error) {
 	return configure(ctx, executable, localPort, run)
 }
 
+// Disable removes only the FastDL mount. Other Funnel and Serve paths on the
+// same node belong to their own applications and remain configured.
+func Disable(ctx context.Context) error {
+	executable, err := executablePath()
+	if err != nil {
+		return err
+	}
+	return disable(ctx, executable, run)
+}
+
+func disable(ctx context.Context, executable string, command runner) error {
+	if _, err := command(ctx, executable, "funnel", "--https="+httpsPort,
+		"--set-path="+urlPath, "off"); err != nil {
+		return fmt.Errorf("cannot remove the FastDL Funnel route: %w", err)
+	}
+	return nil
+}
+
 func configure(ctx context.Context, executable string, localPort int, command runner) (Result, error) {
 	raw, err := command(ctx, executable, "status", "--json")
 	if err != nil {

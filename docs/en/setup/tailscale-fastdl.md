@@ -25,8 +25,10 @@ test the largest map before relying on it for an event.
    **Start**.
 5. Look for `public Tailscale Funnel FastDL ready` in the launcher log.
 
-The check is a one-time setup. The launcher remembers the setting and verifies
-the persistent background route on every later start.
+The check is a one-time authorization step. The launcher remembers the setting
+and recreates the `/tf` route automatically on every later start. Stop removes
+that route, without signing the server out of Tailscale or changing any other
+Funnel and Serve routes on the machine.
 
 ## Native Linux
 
@@ -58,7 +60,7 @@ service environment if that is how the launcher starts. `-status` reports
 whether the saved or overridden FastDL uses Funnel.
 
 On every start the launcher checks that Tailscale is connected, discovers its
-MagicDNS name and reapplies this background route:
+MagicDNS name and applies this route for the lifetime of the server:
 
 ```text
 https://server-name.example-tailnet.ts.net/tf
@@ -67,7 +69,8 @@ https://server-name.example-tailnet.ts.net/tf
 
 The local HTTP listener is loopback-only. If login or Funnel authorization has
 expired, startup stops before SRCDS starts and prints the repair or approval
-instructions.
+instructions. When the server stops, the launcher removes only `/tf`; the
+saved setting and Tailscale login remain ready for the next start.
 
 ## Docker Compose
 

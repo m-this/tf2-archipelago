@@ -70,3 +70,41 @@ func TestTailscaleFastDLApprovalIsCarriedToTheInterface(t *testing.T) {
 		t.Fatalf("error = %#v", err)
 	}
 }
+
+func TestStoppingTailscaleFastDLRemovesItsRoute(t *testing.T) {
+	s := settings.Settings{TailscaleFastDL: true}
+	called := false
+	var said string
+	stopTailscaleFastDLWith(context.Background(), s, func(_ context.Context, message string) { said = message }, func(context.Context) error {
+		called = true
+		return nil
+	})
+	if !called {
+		t.Fatal("Disable was not called")
+	}
+	if !strings.Contains(said, "removed") {
+		t.Fatalf("message = %q", said)
+	}
+}
+
+func TestStoppingTailscaleFastDLOffDoesNothing(t *testing.T) {
+	stopTailscaleFastDLWith(context.Background(), settings.Settings{}, func(context.Context, string) {
+		t.Fatal("cleanup spoke while FastDL was off")
+	}, func(context.Context) error {
+		t.Fatal("Disable was called while FastDL was off")
+		return nil
+	})
+}
+
+func TestStoppingTailscaleFastDLReportsCleanupFailure(t *testing.T) {
+	want := errors.New("permission denied")
+	var said string
+	stopTailscaleFastDLWith(context.Background(), settings.Settings{TailscaleFastDL: true}, func(_ context.Context, message string) {
+		said = message
+	}, func(context.Context) error {
+		return want
+	})
+	if !strings.Contains(said, want.Error()) {
+		t.Fatalf("message = %q", said)
+	}
+}

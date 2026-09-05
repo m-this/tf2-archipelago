@@ -53,6 +53,11 @@ func Run(ctx context.Context, s settings.Settings, logger *slog.Logger) error {
 		return err
 	}
 	s = prepared
+	if s.TailscaleFastDL {
+		defer stopTailscaleFastDL(ctx, s, func(cleanupCtx context.Context, text string) {
+			logger.InfoContext(cleanupCtx, "download server", "detail", text)
+		})
+	}
 	// Console mode has no interface to change a setting from, but it shares
 	// this entry point with anything that does. Rendering here keeps the one
 	// rule: a server that starts, starts from the settings it was given.

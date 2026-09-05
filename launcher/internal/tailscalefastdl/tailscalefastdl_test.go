@@ -101,3 +101,27 @@ func TestAuthorizeRemovesItsPublicSetupPath(t *testing.T) {
 		t.Fatalf("calls = %#v", calls)
 	}
 }
+
+func TestDisableRemovesOnlyTheFastDLPath(t *testing.T) {
+	var calls [][]string
+	run := func(_ context.Context, _ string, args ...string) ([]byte, error) {
+		calls = append(calls, args)
+		return nil, nil
+	}
+	if err := disable(context.Background(), "tailscale", run); err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"funnel", "--https=443", "--set-path=/tf", "off"}
+	if len(calls) != 1 || !reflect.DeepEqual(calls[0], want) {
+		t.Fatalf("calls = %#v, want %#v", calls, want)
+	}
+}
+
+func TestDisableExplainsFailure(t *testing.T) {
+	want := errors.New("permission denied")
+	run := func(context.Context, string, ...string) ([]byte, error) { return nil, want }
+	err := disable(context.Background(), "tailscale", run)
+	if !errors.Is(err, want) || !strings.Contains(err.Error(), "FastDL Funnel route") {
+		t.Fatalf("error = %v", err)
+	}
+}
