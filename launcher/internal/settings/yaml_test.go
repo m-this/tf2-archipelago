@@ -3,6 +3,7 @@ package settings
 import (
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -179,5 +180,42 @@ func TestPlayerYAMLNamesTheServerMods(t *testing.T) {
 	s.SrcdsMods = nil
 	if got := PlayerYAML(s, ""); !strings.Contains(got, "  server_mods: []\n") {
 		t.Errorf("no mods should write an empty list:\n%s", got)
+	}
+}
+
+/*
+TestPlayerYAMLWritesEveryOptionTheApworldDeclares walks the apworld rather than
+a list written here.
+
+TF2MvMOptions is the contract: a field on it is an option the seed is generated
+from, and a key the launcher does not write is an option nobody who uses the
+launcher can reach. server_settings was exactly that for a release. The
+Grappling Hook was in the pool code, in the item tables and in the plugin, and
+the only way to turn it on was to hand-edit a file the launcher then rewrote.
+
+Reading the Python is the same trade gamedata/manifest_test.go makes with the
+plugin source: the two languages cannot share a declaration, so the test reads
+one and checks the other against it.
+*/
+func TestPlayerYAMLWritesEveryOptionTheApworldDeclares(t *testing.T) {
+	source, err := os.ReadFile(filepath.Join("..", "..", "..", "apworld", "tf2_mvm", "options.py"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := regexp.MustCompile(`(?s)class TF2MvMOptions\(PerGameCommonOptions\):\n(.*?)\n\n`).FindSubmatch(source)
+	if body == nil {
+		t.Fatal("options.py declares no TF2MvMOptions dataclass")
+	}
+	fields := regexp.MustCompile(`(?m)^\s+(\w+):`).FindAllSubmatch(body[1], -1)
+	if len(fields) < 15 {
+		t.Fatalf("found %d options, which is too few to be the whole dataclass", len(fields))
+	}
+
+	yaml := PlayerYAML(Defaults(), "")
+	for _, field := range fields {
+		option := string(field[1])
+		if !strings.Contains(yaml, "\n  "+option+":") {
+			t.Errorf("the apworld declares %s and the player file never writes it", option)
+		}
 	}
 }

@@ -186,6 +186,12 @@ func rewardSpecs() []Spec {
 			0, 100,
 			func(s State) int { return s.Settings.MvmTrapPct },
 			func(s State, v int) State { s.Settings.MvmTrapPct = v; return s }),
+
+		toggle("rewards.server_settings", "Rewards", "Server levers",
+			"Put the Grappling Hook in the pool. Whoever finds it turns Mannpower's hook on for everybody for the rest of the run, which is the largest change to how a map plays that this world hands out. It costs a check, like a trap.",
+			"in the pool",
+			func(s State) bool { return s.Settings.MvmServerSettings },
+			func(s State, v bool) State { s.Settings.MvmServerSettings = v; return s }),
 	}
 }
 

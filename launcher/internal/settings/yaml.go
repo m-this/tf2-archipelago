@@ -45,6 +45,7 @@ func PlayerYAML(s Settings, archipelagoVersion string) string {
 	fmt.Fprintf(&b, "  weapon_buff_percentage: %d\n", s.MvmWeaponBuffPct)
 	fmt.Fprintf(&b, "  weapon_buff_stack_chance: %d\n", s.MvmWeaponBuffStackChance)
 	fmt.Fprintf(&b, "  trap_percentage: %d\n", s.MvmTrapPct)
+	fmt.Fprintf(&b, "  server_settings: %t\n", s.MvmServerSettings)
 	fmt.Fprintf(&b, "  start_mission: %s\n", yamlString(StartMissionName(s)))
 	fmt.Fprintf(&b, "  start_class: %s\n", yamlString(startClassName(s)))
 	writeYAMLList(&b, "excluded_missions", ExcludedMissionNames(s))

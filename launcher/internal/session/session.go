@@ -99,13 +99,23 @@ func Fetch(ctx context.Context, baseURL string) (Snapshot, error) {
 	return snapshot, nil
 }
 
-// kindOrder is the order the tab lists kinds in: what you can play, then what
-// you can hold, then where you can go, then what your weapons gained.
-var kindOrder = []string{"class", "weapon_slot", "mission_ticket", "weapon_buff"}
+/*
+kindOrder is the order the tab lists kinds in: what you can play, then what you
+can hold, then where you can go, what your weapons gained, and last the levers
+that change the map for everybody.
+
+Every kind the bridge puts in the unlock set has to be here, because Describe
+reads the set through this list and a kind missing from it is a row that never
+exists. The Grappling Hook was missing exactly that way: it arrived, the plugin
+turned it on, and the screen never mentioned it. TestEveryUnlockKindIsListed
+walks gamedata and fails when the two disagree.
+*/
+var kindOrder = []string{"class", "weapon_slot", "mission_ticket", "weapon_buff", "server_setting"}
 
 // kindLabels is what each kind reads as on the tab.
 var kindLabels = map[string]string{
-	"class": "Class", "weapon_slot": "Weapon slot", "mission_ticket": "Mission", "weapon_buff": "Weapon buff",
+	"class": "Class", "weapon_slot": "Weapon slot", "mission_ticket": "Mission",
+	"weapon_buff": "Weapon buff", "server_setting": "Server lever",
 }
 
 // Describe turns the bridge's unlock set into rows: one per distinct key, in a
@@ -154,6 +164,12 @@ func nameOf(kind, key string, buffs map[string]string) string {
 	case "weapon_buff":
 		if name, ok := buffs[key]; ok {
 			return name
+		}
+	case "server_setting":
+		for _, setting := range gamedata.ServerSettings {
+			if setting.Key == key {
+				return setting.Name
+			}
 		}
 	}
 	return key

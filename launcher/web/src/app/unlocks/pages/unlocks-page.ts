@@ -19,6 +19,7 @@ const kinds = [
   { key: 'Weapon slot', label: 'Weapon slots' },
   { key: 'Mission', label: 'Missions' },
   { key: 'Weapon buff', label: 'Weapon buffs' },
+  { key: 'Server lever', label: 'Server levers' },
 ] as const;
 
 /**

@@ -4,6 +4,18 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
+## Unreleased
+
+### Fixed
+
+- The Grappling Hook can be turned on. The launcher wrote every option the
+  apworld takes except that one, so a run generated from its tf2.yaml never
+  had the hook in it and hand-editing the file was the only way in. It is a
+  row on the Rewards page now, under Server levers.
+- A held Grappling Hook shows on the Unlocks screen. The screen listed four
+  kinds of unlock and the hook is a fifth, so it arrived, the plugin turned
+  it on, and nothing said so.
+
 ## v1.13.0
 
 The launcher has one screen now, and it opens in your browser.

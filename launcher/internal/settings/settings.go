@@ -164,7 +164,11 @@ type Settings struct {
 	MvmMissionsanityPct int    `json:"mvm_missionsanity_percentage"`
 	// MvmMedalOnClear locks a medal onto every mission clear and makes the
 	// goal read the medals held. It costs the multiworld one check a mission.
-	MvmMedalOnClear     bool     `json:"mvm_medal_on_clear"`
+	MvmMedalOnClear bool `json:"mvm_medal_on_clear"`
+	// MvmServerSettings puts the server-setting items in the pool. One exists,
+	// the Grappling Hook, and it turns Mannpower's hook on for everybody for
+	// the rest of the run.
+	MvmServerSettings   bool     `json:"mvm_server_settings"`
 	MvmDeathLink        bool     `json:"mvm_death_link"`
 	MvmExcludedMissions []string `json:"mvm_excluded_missions,omitempty"`
 

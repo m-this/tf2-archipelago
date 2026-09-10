@@ -20,9 +20,16 @@ test.describe('the Unlocks screen', () => {
   // The kinds are a closed set the bridge names. A chip that appeared only once
   // something of that kind arrived would move the other chips under the
   // player's finger.
-  test('offers the same five filters whatever has arrived', async ({ page }) => {
+  test('offers the same filters whatever has arrived', async ({ page }) => {
     const filters = page.getByRole('group', { name: 'Filter by kind' });
-    for (const name of ['All', 'Classes', 'Weapon slots', 'Missions', 'Weapon buffs']) {
+    for (const name of [
+      'All',
+      'Classes',
+      'Weapon slots',
+      'Missions',
+      'Weapon buffs',
+      'Server levers',
+    ]) {
       await expect(filters.getByRole('button', { name, exact: true })).toBeVisible();
     }
 
