@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"slices"
+	"testing"
 
 	"github.com/m-this/tf2-archipelago/gamedata"
-	"testing"
 )
 
 func TestFetchReadsTheBridge(t *testing.T) {
