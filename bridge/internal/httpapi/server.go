@@ -37,11 +37,13 @@ const APIVersion = 3
 // byte holds is a bad read rather than a long mission.
 const wavesObservedMax = 255
 
-// objectiveRequest is what the plugin posts. Wave is ignored for a mission clear.
+// objectiveRequest is what the plugin posts. Wave is ignored for a mission
+// clear. Credits is what the team held as the wave was won, for the restore.
 type objectiveRequest struct {
 	Kind    string `json:"kind"`
 	PopFile string `json:"popfile"`
 	Wave    uint8  `json:"wave"`
+	Credits int32  `json:"credits"`
 
 	// WavesTotal is how many waves the game says the mission has, zero when it
 	// would not say. Every wave count in gamedata comes from the wiki and none
@@ -149,6 +151,7 @@ type missionsResponse struct {
 type resumeAt struct {
 	PopFile string `json:"popfile"`
 	Wave    int    `json:"wave"`
+	Credits int    `json:"credits"`
 }
 
 // waveDrift is a mission whose wave count in the tables is not the one the game
@@ -290,7 +293,7 @@ func (s *Server) postObjective(w http.ResponseWriter, r *http.Request) {
 	if fresh {
 		s.logger.InfoContext(r.Context(), "check recorded", "location", location.Name)
 	}
-	s.noteProgress(r.Context(), kind, request.PopFile, int(request.Wave))
+	s.noteProgress(r.Context(), kind, request.PopFile, int(request.Wave), int(request.Credits))
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -304,11 +307,11 @@ The record is written and never read here: putting a restarted server back is
 the plugin's job, and it asks. Recording it costs one write per wave and buys
 the difference between a crash costing minutes and costing an evening.
 */
-func (s *Server) noteProgress(ctx context.Context, kind gamedata.ObjectiveKind, popFile string, wave int) {
+func (s *Server) noteProgress(ctx context.Context, kind gamedata.ObjectiveKind, popFile string, wave, credits int) {
 	var err error
 	switch kind {
 	case gamedata.ObjectiveWaveCleared:
-		err = s.store.NoteProgress(popFile, wave)
+		err = s.store.NoteProgress(popFile, wave, credits)
 	case gamedata.ObjectiveMissionCleared:
 		err = s.store.ClearProgress()
 	case gamedata.ObjectiveTankDestroyed, gamedata.ObjectiveGiantKilled:
@@ -431,7 +434,7 @@ func (s *Server) getMissions(w http.ResponseWriter, r *http.Request) {
 	}
 	response := missionsResponse{Missions: missions}
 	if held := s.store.Progress(); held.PopFile != "" && held.Wave > 0 {
-		response.Resume = &resumeAt{PopFile: held.PopFile, Wave: held.Wave}
+		response.Resume = &resumeAt{PopFile: held.PopFile, Wave: held.Wave, Credits: held.Credits}
 	}
 	writeJSON(w, s.logger, response)
 }

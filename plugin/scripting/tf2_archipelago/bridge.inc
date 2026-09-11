@@ -56,6 +56,11 @@ enum struct Objective
     // The wave counts in the tables come from the wiki and none of them has
     // been checked against a running server.
     int wavesTotal;
+
+    // What the team had when the wave was won, for a restore to pay back.
+    // Zero for every kind but a wave clear, which is the only one the bridge
+    // records money from.
+    int credits;
 }
 
 ConVar g_CvarBridgeURL;
@@ -195,7 +200,7 @@ static void OnVersionChecked(HTTPResponse response, any value, const char[] erro
 }
 
 // Queued before it is sent, so a failed send leaves it where the retry timer will find it.
-void Bridge_ReportObjective(const char[] kind, const char[] popFile, int wave, int wavesTotal)
+void Bridge_ReportObjective(const char[] kind, const char[] popFile, int wave, int wavesTotal, int credits = 0)
 {
     if (g_Pending.Length >= PendingMax)
     {
@@ -217,6 +222,7 @@ void Bridge_ReportObjective(const char[] kind, const char[] popFile, int wave, i
     strcopy(objective.popFile, sizeof(objective.popFile), popFile);
     objective.wave = wave;
     objective.wavesTotal = wavesTotal;
+    objective.credits = credits;
     g_Pending.PushArray(objective);
 
     AP_Debug("The plugin queued %s %s wave %d.", kind, popFile, wave);
@@ -230,6 +236,7 @@ static void Bridge_SendObjective(Objective objective)
     body.SetString("popfile", objective.popFile);
     body.SetInt("wave", objective.wave);
     body.SetInt("waves_total", objective.wavesTotal);
+    body.SetInt("credits", objective.credits);
 
     HTTPRequest request = BridgeRequest("/objective");
     request.Timeout = 10;
@@ -459,7 +466,7 @@ static void OnMissions(HTTPResponse response, any value, const char[] error)
         JSONObject resume = view_as<JSONObject>(payload.Get("resume"));
         char popFile[64];
         resume.GetString("popfile", popFile, sizeof(popFile));
-        Missions_NoteResume(popFile, resume.GetInt("wave"));
+        Missions_NoteResume(popFile, resume.GetInt("wave"), resume.GetInt("credits"));
         delete resume;
     }
 

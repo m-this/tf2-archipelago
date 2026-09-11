@@ -653,11 +653,11 @@ func TestTheMissionsAnswerCarriesWhereTheRunWas(t *testing.T) {
 		t.Errorf("a fresh run offered somewhere to resume:\n%s", body)
 	}
 
-	if err := store.NoteProgress("mvm_decoy_advanced", 3); err != nil {
+	if err := store.NoteProgress("mvm_decoy_advanced", 3, 900); err != nil {
 		t.Fatal(err)
 	}
 	body = get(t, handler, "/missions").Body.String()
-	for _, want := range []string{`"resume"`, `"mvm_decoy_advanced"`, `"wave":3`} {
+	for _, want := range []string{`"resume"`, `"mvm_decoy_advanced"`, `"wave":3`, `"credits":900`} {
 		if !strings.Contains(body, want) {
 			t.Errorf("missing %q in:\n%s", want, body)
 		}
@@ -668,5 +668,34 @@ func TestTheMissionsAnswerCarriesWhereTheRunWas(t *testing.T) {
 	}
 	if body = get(t, handler, "/missions").Body.String(); strings.Contains(body, "resume") {
 		t.Errorf("a finished mission still offered a resume:\n%s", body)
+	}
+}
+
+/*
+	The wallet the plugin reports rides all the way to the restore.
+
+The wave alone was not the mission. A team put back on wave five of six with a
+fresh wallet has to beat the hardest wave with the upgrades of somebody who has
+played none of it, so what they had when they won the wave is recorded with it
+and served back on the answer the plugin already asks for.
+*/
+func TestAClearedWaveRecordsTheMoneyItWasWonWith(t *testing.T) {
+	_, handler := newTestServer(t, time.Second)
+
+	post(t, handler, `{"kind":"wave_cleared","popfile":"mvm_decoy_advanced","wave":2,"waves_total":6,"credits":1450}`)
+
+	body := get(t, handler, "/missions").Body.String()
+	for _, want := range []string{`"wave":2`, `"credits":1450`} {
+		if !strings.Contains(body, want) {
+			t.Errorf("missing %q in:\n%s", want, body)
+		}
+	}
+
+	// A wave that does not move the record does not move the money either: the
+	// plugin reports the wave it is on more than once, and the second report
+	// carries a wallet the team has already started spending.
+	post(t, handler, `{"kind":"wave_cleared","popfile":"mvm_decoy_advanced","wave":2,"waves_total":6,"credits":50}`)
+	if body = get(t, handler, "/missions").Body.String(); !strings.Contains(body, `"credits":1450`) {
+		t.Errorf("a repeated wave overwrote the money:\n%s", body)
 	}
 }

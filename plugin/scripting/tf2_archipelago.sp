@@ -499,8 +499,11 @@ static void ReportWaveCleared(int wave)
 
     int maxWaves = g_MaxWaves > 0 ? g_MaxWaves : MvM_MaxWavesFromGame();
 
+    /* The wallet as the wave is won, which is the moment worth recording: the
+     * team is between waves, nothing has been spent yet, and a restore that
+     * pays this back puts them where the crash found them. */
     AP_Announce("Wave %d cleared.", wave);
-    Bridge_ReportObjective("wave_cleared", popFile, wave, maxWaves);
+    Bridge_ReportObjective("wave_cleared", popFile, wave, maxWaves, MvM_TeamCredits());
 
     if (maxWaves > 0 && wave >= maxWaves)
     {

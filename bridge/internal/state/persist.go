@@ -76,11 +76,23 @@ type snapshot struct {
 	Resume Resume `json:"resume,omitzero"`
 }
 
-// Resume is the mission the team was playing and the last wave they cleared in
-// it. Wave zero means they had cleared none, so there is nothing to skip.
+/*
+Resume is the mission the team was playing, the last wave they cleared in it,
+and the money they had when they cleared it.
+
+Wave zero means they had cleared none, so there is nothing to skip. Credits
+zero means the same thing it means in the game: the team is broke, and a
+restore has nothing to pay back.
+
+The money is here because the wave alone was not the mission. A team put back
+on wave five of six with a fresh wallet has to beat the hardest wave of the
+mission with the upgrades of somebody who has played none of it, which is a
+harder game than the one the crash interrupted.
+*/
 type Resume struct {
 	PopFile string `json:"popfile,omitempty"`
 	Wave    int    `json:"wave,omitempty"`
+	Credits int    `json:"credits,omitempty"`
 }
 
 // readSnapshot loads the state file and reports the format version it was

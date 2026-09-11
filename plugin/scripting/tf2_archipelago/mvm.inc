@@ -264,6 +264,69 @@ stock bool MvM_WaveInProgress()
  * anyway. m_bDistributed stays off: that flag means the team has already been
  * paid, and a pack carrying it pays nobody.
  */
+/* What the team has, as one number.
+ *
+ * The highest balance among the defenders, not the sum and not an average. In
+ * MvM a cash pack pays whoever walks over it, so the balances drift apart, and
+ * the number that says what the team could afford is the best of them. A sum
+ * would say six defenders with 200 each have 1200 to spend, which no one of
+ * them does.
+ *
+ * Zero when nobody is on RED, which is the answer a restore wants anyway:
+ * nothing to record and nobody to pay.
+ */
+stock int MvM_TeamCredits()
+{
+    int most = 0;
+    for (int client = 1; client <= MaxClients; client++)
+    {
+        if (!MvM_IsDefender(client) || !HasProp(client, "m_nCurrency"))
+        {
+            continue;
+        }
+        int held = GetEntProp(client, Prop_Send, "m_nCurrency");
+        if (held > most)
+        {
+            most = held;
+        }
+    }
+    return most;
+}
+
+/* Put the team back to the balance the record holds.
+ *
+ * Up to, never down to. What the game hands a team after a wave jump is the
+ * game's business and it has never been measured here; if it is generous, the
+ * team keeps the difference, and if it is not, this makes up the rest. Taking
+ * money away would mean writing m_nCurrency down, and the long comment above
+ * MvM_GrantCredits is about why writing that property is how the refund button
+ * eats bundles.
+ *
+ * Returns how many defenders were paid, zero when the team was already at or
+ * above the record.
+ */
+stock int MvM_RestoreCredits(int recorded)
+{
+    if (recorded <= 0 || !MvM_IsActive())
+    {
+        return 0;
+    }
+    int paid = 0;
+    for (int client = 1; client <= MaxClients; client++)
+    {
+        if (!MvM_IsDefender(client) || !IsPlayerAlive(client) || !HasProp(client, "m_nCurrency"))
+        {
+            continue;
+        }
+        int owed = recorded - GetEntProp(client, Prop_Send, "m_nCurrency");
+        if (owed > 0 && MvM_DropCredits(client, owed))
+        {
+            paid++;
+        }
+    }
+    return paid;
+}
+
 stock int MvM_GrantCredits(int amount)
 {
     if (amount <= 0 || !MvM_IsActive())

@@ -365,10 +365,18 @@ worse than none at all.
 
 Called on every wave the plugin reports, which is often, so it writes only when
 the record actually moves.
+
+The money moves with the wave rather than on its own. A balance written between
+waves would be the balance mid-spending-spree, and putting a team back with
+money they had already spent on upgrades they no longer hold pays them twice.
+What a wave clear records is what they had when the wave was won.
 */
-func (s *Store) NoteProgress(popFile string, wave int) error {
+func (s *Store) NoteProgress(popFile string, wave, credits int) error {
 	if popFile == "" || wave <= 0 {
 		return nil
+	}
+	if credits < 0 {
+		credits = 0
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -377,7 +385,7 @@ func (s *Store) NoteProgress(popFile string, wave int) error {
 	if held.PopFile == popFile && wave <= held.Wave {
 		return nil
 	}
-	s.data.Resume = Resume{PopFile: popFile, Wave: wave}
+	s.data.Resume = Resume{PopFile: popFile, Wave: wave, Credits: credits}
 	return s.persist()
 }
 

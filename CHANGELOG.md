@@ -6,6 +6,19 @@ in the release notes, so this file is the only place to write it.
 
 ## Unreleased
 
+### Added
+
+- A server that comes back puts the team back with their money, not just on
+  their wave. It records what the team had when they won the wave and pays
+  that back once the mission is up and everybody has respawned. Being put on
+  wave five of six with an empty wallet was a harder game than the one the
+  crash interrupted.
+- The wave restore now waits for the game to agree before it says it worked.
+  It used to announce the wave it had asked for, which is why a player could
+  read "Restored: Quarry at wave 3 of 6" and be standing in wave one. If the
+  jump never takes, the log says so and names the wave the game is actually
+  on.
+
 ### Fixed
 
 - The Grappling Hook can be turned on. The launcher wrote every option the

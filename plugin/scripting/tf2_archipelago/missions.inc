@@ -452,8 +452,21 @@ void Missions_Summary(char[] buffer, int maxlength)
  */
 char g_ResumePopFile[64];
 int g_ResumeWave;
+int g_ResumeCredits;
 bool g_ResumeConsulted;
 int g_ResumeTicks;
+
+/* The wave the jump asked for, and how long to keep watching for it.
+ *
+ * The jump used to be told and never checked. It said "Restored: Quarry at
+ * wave 3 of 6" and a player answered "im in the first wave again", and nothing
+ * in the log could tell the two apart. Now the announcement waits until the
+ * game agrees, and says so when it never does.
+ */
+int g_ResumeTarget;
+int g_ResumeSettleTicks;
+#define ResumeSettleTick 1.0
+#define ResumeSettleTicksMax 30
 
 // How long to keep waiting for the mission to come up before giving the
 // restore up. A changelevel plus the popfile behind it is a few seconds; past
@@ -468,13 +481,14 @@ int g_ResumeTicks;
  * the guard leaves the restore alone instead of moving the server elsewhere
  * first.
  */
-void Missions_NoteResume(const char[] popFile, int wave)
+void Missions_NoteResume(const char[] popFile, int wave, int credits)
 {
     if (g_ResumeConsulted || popFile[0] == '\0' || wave <= 0)
     {
         return;
     }
     g_ResumeConsulted = true;
+    g_ResumeCredits = credits > 0 ? credits : 0;
 
     Mission mission;
     if (!Missions_Find(popFile, mission) || !Missions_Playable(mission))
@@ -568,9 +582,66 @@ static void Missions_Resume(Mission mission, int cleared)
             mission.popFile, playing, target);
         return;
     }
-    AP_Announce("Restored: %s at wave %d of %d. The team had cleared %d before the server stopped.",
-        mission.name, target, mission.waves, cleared);
+    AP_Debug("Putting %s back to wave %d of %d, from a record of %d cleared and %d credits.",
+        mission.popFile, target, mission.waves, cleared, g_ResumeCredits);
     Missions_JumpToWave(target);
+
+    // The jump is asked for, not confirmed. What follows watches until the
+    // game agrees, pays the money back once it does, and says so either way.
+    g_ResumeTarget = target;
+    g_ResumeSettleTicks = 0;
+    CreateTimer(ResumeSettleTick, Timer_ResumeSettled, _, TIMER_REPEAT);
+}
+
+/* Did the jump land, and pay the team back once it has.
+ *
+ * A wave jump is a round restart, so nothing is true immediately: the wave
+ * number moves a moment later, and there is no live defender to hand money to
+ * until the respawn. Both are waited for here rather than assumed, and the
+ * announcement is held until the wave is real so the team is never told they
+ * were restored to somewhere they are not.
+ *
+ * The money is paid up to the recorded balance and never down to it. What the
+ * game hands a team after a jump has never been measured, so if it is generous
+ * the team keeps the difference.
+ */
+static Action Timer_ResumeSettled(Handle timer)
+{
+    if (g_ResumeTarget <= 0)
+    {
+        return Plugin_Stop;
+    }
+    if (++g_ResumeSettleTicks > ResumeSettleTicksMax)
+    {
+        AP_Error("The wave jump to %d never took: the game is on wave %d. The team keeps what they have.",
+            g_ResumeTarget, MvM_WaveFromGame());
+        g_ResumeTarget = 0;
+        return Plugin_Stop;
+    }
+    if (!MvM_IsActive() || MvM_WaveFromGame() < g_ResumeTarget)
+    {
+        return Plugin_Continue;
+    }
+
+    // The wave is real. The money needs a live defender to hand a pack to,
+    // which is the moment after the respawn rather than this one.
+    if (g_ResumeCredits > 0 && !MvM_CanPayCredits())
+    {
+        return Plugin_Continue;
+    }
+    int paid = g_ResumeCredits > 0 ? MvM_RestoreCredits(g_ResumeCredits) : 0;
+    if (paid > 0)
+    {
+        AP_Announce("Restored: wave %d, and the %d credits the team had when the server stopped.",
+            g_ResumeTarget, g_ResumeCredits);
+    }
+    else
+    {
+        AP_Announce("Restored: wave %d.", g_ResumeTarget);
+    }
+    g_ResumeTarget = 0;
+    g_ResumeCredits = 0;
+    return Plugin_Stop;
 }
 
 // tf_mvm_jump_to_wave is a cheat, and a server left with cheats on is worse
