@@ -34,7 +34,7 @@
 #include "tf2_archipelago/bots.inc"
 #include "tf2_archipelago/botswitch.inc"
 
-#define PLUGIN_VERSION "1.12.0"
+#define PLUGIN_VERSION "1.13.0"
 
 // Only used when the wave events turn out not to exist.
 #define WavePollInterval 1.0
