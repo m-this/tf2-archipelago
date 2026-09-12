@@ -452,7 +452,6 @@ void Missions_Summary(char[] buffer, int maxlength)
  */
 char g_ResumePopFile[64];
 int g_ResumeWave;
-int g_ResumeCredits;
 bool g_ResumeConsulted;
 int g_ResumeTicks;
 
@@ -481,14 +480,13 @@ int g_ResumeSettleTicks;
  * the guard leaves the restore alone instead of moving the server elsewhere
  * first.
  */
-void Missions_NoteResume(const char[] popFile, int wave, int credits)
+void Missions_NoteResume(const char[] popFile, int wave)
 {
     if (g_ResumeConsulted || popFile[0] == '\0' || wave <= 0)
     {
         return;
     }
     g_ResumeConsulted = true;
-    g_ResumeCredits = credits > 0 ? credits : 0;
 
     Mission mission;
     if (!Missions_Find(popFile, mission) || !Missions_Playable(mission))
@@ -518,6 +516,52 @@ void Missions_NoteResume(const char[] popFile, int wave, int credits)
     g_StartMissionApplied = true;
     g_PlannedPopFile[0] = '\0';
     AP_Announce("The server came back. %s loads again, at the wave the team had reached.", mission.name);
+    Missions_Load(mission);
+}
+
+/* Load a mission and start it at a wave.
+ *
+ * The wave is the player's, clamped to one the mission has: a number past the
+ * end would jump nowhere and a number below one is the start. Wave one needs
+ * no jump at all, which is the ordinary load.
+ *
+ * Everything else is the load-time restore's machinery, reused: the same timer
+ * waits for the mission to come up and the same watch checks the jump landed.
+ */
+void Missions_ResumeMission(int client, const char[] choice, int wave)
+{
+    Mission mission;
+    if (!Missions_Find(choice, mission))
+    {
+        AP_PrintToClient(client, "No mission %s in this run. Type !mission for the list.", choice);
+        return;
+    }
+    if (!Missions_Playable(mission))
+    {
+        AP_PrintToClient(client, "The run did not unlock %s yet. Its ticket is somewhere in the multiworld.", mission.name);
+        return;
+    }
+    if (wave < 1)
+    {
+        wave = 1;
+    }
+    if (mission.waves > 0 && wave > mission.waves)
+    {
+        AP_PrintToClient(client, "%s has %d waves, so wave %d is not one of them.", mission.name, mission.waves, wave);
+        return;
+    }
+
+    strcopy(g_ResumePopFile, sizeof(g_ResumePopFile), mission.popFile);
+    // The machinery below counts in waves cleared, and the player picked the
+    // wave they want to play: the wave before it is the one they are past.
+    g_ResumeWave = wave - 1;
+    g_ResumeTicks = 0;
+    // A player asking is not the load-time restore, so the once-only guard
+    // that stops the bridge's record dragging the team around does not apply.
+    g_ResumeConsulted = true;
+    CreateTimer(ResumeTick, Timer_Resume, _, TIMER_REPEAT);
+
+    g_PlannedPopFile[0] = '\0';
     Missions_Load(mission);
 }
 
@@ -582,8 +626,8 @@ static void Missions_Resume(Mission mission, int cleared)
             mission.popFile, playing, target);
         return;
     }
-    AP_Debug("Putting %s back to wave %d of %d, from a record of %d cleared and %d credits.",
-        mission.popFile, target, mission.waves, cleared, g_ResumeCredits);
+    AP_Debug("Putting %s back to wave %d of %d, from a record of %d cleared.",
+        mission.popFile, target, mission.waves, cleared);
     Missions_JumpToWave(target);
 
     // The jump is asked for, not confirmed. What follows watches until the
@@ -601,9 +645,8 @@ static void Missions_Resume(Mission mission, int cleared)
  * announcement is held until the wave is real so the team is never told they
  * were restored to somewhere they are not.
  *
- * The money is paid up to the recorded balance and never down to it. What the
- * game hands a team after a jump has never been measured, so if it is generous
- * the team keeps the difference.
+ * The money is the game's own: the jump is asked for full currency, which is
+ * what the team would hold having won every wave before this one perfectly.
  */
 static Action Timer_ResumeSettled(Handle timer)
 {
@@ -623,24 +666,8 @@ static Action Timer_ResumeSettled(Handle timer)
         return Plugin_Continue;
     }
 
-    // The wave is real. The money needs a live defender to hand a pack to,
-    // which is the moment after the respawn rather than this one.
-    if (g_ResumeCredits > 0 && !MvM_CanPayCredits())
-    {
-        return Plugin_Continue;
-    }
-    int paid = g_ResumeCredits > 0 ? MvM_RestoreCredits(g_ResumeCredits) : 0;
-    if (paid > 0)
-    {
-        AP_Announce("Restored: wave %d, and the %d credits the team had when the server stopped.",
-            g_ResumeTarget, g_ResumeCredits);
-    }
-    else
-    {
-        AP_Announce("Restored: wave %d.", g_ResumeTarget);
-    }
+    AP_Announce("Restored: wave %d, with the money for the waves before it.", g_ResumeTarget);
     g_ResumeTarget = 0;
-    g_ResumeCredits = 0;
     return Plugin_Stop;
 }
 
@@ -660,6 +687,10 @@ static void Missions_JumpToWave(int wave)
     char previous[8];
     cheats.GetString(previous, sizeof(previous));
     ServerCommand("sv_cheats 1");
-    ServerCommand("tf_mvm_jump_to_wave %d", wave);
+    // The second argument is the share of the skipped waves' money to hand
+    // over, and 1 is all of it: the team comes back with what perfect play
+    // would have left them holding, which is the only honest answer when the
+    // waves they are skipping are ones they had already won.
+    ServerCommand("tf_mvm_jump_to_wave %d 1", wave);
     ServerCommand("sv_cheats %s", previous);
 }

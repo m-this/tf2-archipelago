@@ -19,6 +19,7 @@ service LauncherService {
   rpc Quit(QuitRequest) returns (QuitResponse);
   rpc SendRcon(SendRconRequest) returns (SendRconResponse);
   rpc SetMission(SetMissionRequest) returns (SetMissionResponse);
+  rpc ResumeMission(ResumeMissionRequest) returns (ResumeMissionResponse);
   rpc ApproveFunnel(ApproveFunnelRequest) returns (ApproveFunnelResponse);
 }
 
@@ -66,6 +67,11 @@ message SessionMission {
   // launcher reads it out of gamedata by pop file: the browser should not have
   // to know which missions are Advanced.
   string tier = 10;
+
+  // The highest wave the team has cleared here. Zero for a mission nobody has
+  // won a wave in, and for one they have beaten: both mean the Resume button
+  // has nowhere to go.
+  int32 wave_reached = 11;
 
   // This server having cleared it, where cleared is only the room holding the
   // check. Another world's !collect sends every check it still has, so the two
@@ -186,6 +192,24 @@ message SetMissionRequest {
     pattern: "^[A-Za-z0-9_.-]+$"
   }];
 }
+
+// ResumeMission loads a mission and starts it at a wave, with the money the
+// game gives for having won every wave before it. Wave 1 is the start, which
+// is what Play already does; anything above it is the way back into a mission
+// the team left part way through.
+message ResumeMissionRequest {
+  string pop_file = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 128
+    pattern: "^[A-Za-z0-9_.-]+$"
+  }];
+  int32 wave = 2 [(buf.validate.field).int32 = {
+    gte: 1
+    lte: 255
+  }];
+}
+
+message ResumeMissionResponse {}
 
 message SetMissionResponse {}
 

@@ -144,6 +144,8 @@ public void OnPluginStart()
         "Fire a trap by hand, the way a grant from the room would: sm_ap_trap <key>");
     RegAdminCmd("sm_ap_resync", Command_Resync, ADMFLAG_GENERIC,
         "Ask the bridge for the unlock set again");
+    RegAdminCmd("sm_ap_resume", Command_Resume, ADMFLAG_CHANGEMAP,
+        "sm_ap_resume <popfile> [wave] - load a mission and start it at a wave");
     RegAdminCmd("sm_ap_mission", Command_Mission, ADMFLAG_CHANGEMAP,
         "List the run's missions, or switch to one: sm_ap_mission [number|popfile]");
     RegConsoleCmd("sm_ap_buffs", Command_WeaponBuffs,
@@ -499,11 +501,8 @@ static void ReportWaveCleared(int wave)
 
     int maxWaves = g_MaxWaves > 0 ? g_MaxWaves : MvM_MaxWavesFromGame();
 
-    /* The wallet as the wave is won, which is the moment worth recording: the
-     * team is between waves, nothing has been spent yet, and a restore that
-     * pays this back puts them where the crash found them. */
     AP_Announce("Wave %d cleared.", wave);
-    Bridge_ReportObjective("wave_cleared", popFile, wave, maxWaves, MvM_TeamCredits());
+    Bridge_ReportObjective("wave_cleared", popFile, wave, maxWaves);
 
     if (maxWaves > 0 && wave >= maxWaves)
     {
@@ -660,6 +659,32 @@ public Action Command_Mission(int client, int argc)
     char choice[64];
     GetCmdArg(1, choice, sizeof(choice));
     Missions_Switch(client, choice);
+    return Plugin_Handled;
+}
+
+/* Load a mission and start it at a wave.
+ *
+ * The wave picker beside Play on the mission list, and the console's way in.
+ * Same shape as sm_ap_mission, because it is the same act with one more thing
+ * asked of it. No wave, or wave one, is the start, which is what sm_ap_mission
+ * already does; the argument is what makes it a way back in.
+ */
+public Action Command_Resume(int client, int argc)
+{
+    if (argc < 1)
+    {
+        ReplyToCommand(client, "[AP] sm_ap_resume <popfile> [wave]");
+        return Plugin_Handled;
+    }
+    char choice[64], asked[8];
+    GetCmdArg(1, choice, sizeof(choice));
+    int wave = 1;
+    if (argc >= 2)
+    {
+        GetCmdArg(2, asked, sizeof(asked));
+        wave = StringToInt(asked);
+    }
+    Missions_ResumeMission(client, choice, wave);
     return Plugin_Handled;
 }
 

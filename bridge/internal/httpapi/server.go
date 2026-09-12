@@ -37,13 +37,11 @@ const APIVersion = 3
 // byte holds is a bad read rather than a long mission.
 const wavesObservedMax = 255
 
-// objectiveRequest is what the plugin posts. Wave is ignored for a mission
-// clear. Credits is what the team held as the wave was won, for the restore.
+// objectiveRequest is what the plugin posts. Wave is ignored for a mission clear.
 type objectiveRequest struct {
 	Kind    string `json:"kind"`
 	PopFile string `json:"popfile"`
 	Wave    uint8  `json:"wave"`
-	Credits int32  `json:"credits"`
 
 	// WavesTotal is how many waves the game says the mission has, zero when it
 	// would not say. Every wave count in gamedata comes from the wiki and none
@@ -118,6 +116,11 @@ type mission struct {
 	// it has to know both.
 	Cleared bool `json:"cleared"`
 
+	// WaveReached is the highest wave the team has ever cleared here, and what
+	// the Resume button offers to go back to. Absent for a mission nobody has
+	// won a wave in, and for one the team has beaten.
+	WaveReached int `json:"wave_reached,omitempty"`
+
 	/* Played is this server having actually cleared it.
 	 *
 	 * A check reaches the disk when anybody in the room sends it, and another
@@ -151,7 +154,6 @@ type missionsResponse struct {
 type resumeAt struct {
 	PopFile string `json:"popfile"`
 	Wave    int    `json:"wave"`
-	Credits int    `json:"credits"`
 }
 
 // waveDrift is a mission whose wave count in the tables is not the one the game
@@ -293,7 +295,7 @@ func (s *Server) postObjective(w http.ResponseWriter, r *http.Request) {
 	if fresh {
 		s.logger.InfoContext(r.Context(), "check recorded", "location", location.Name)
 	}
-	s.noteProgress(r.Context(), kind, request.PopFile, int(request.Wave), int(request.Credits))
+	s.noteProgress(r.Context(), kind, request.PopFile, int(request.Wave))
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -307,13 +309,13 @@ The record is written and never read here: putting a restarted server back is
 the plugin's job, and it asks. Recording it costs one write per wave and buys
 the difference between a crash costing minutes and costing an evening.
 */
-func (s *Server) noteProgress(ctx context.Context, kind gamedata.ObjectiveKind, popFile string, wave, credits int) {
+func (s *Server) noteProgress(ctx context.Context, kind gamedata.ObjectiveKind, popFile string, wave int) {
 	var err error
 	switch kind {
 	case gamedata.ObjectiveWaveCleared:
-		err = s.store.NoteProgress(popFile, wave, credits)
+		err = s.store.NoteProgress(popFile, wave)
 	case gamedata.ObjectiveMissionCleared:
-		err = s.store.ClearProgress()
+		err = s.store.ClearProgress(popFile)
 	case gamedata.ObjectiveTankDestroyed, gamedata.ObjectiveGiantKilled:
 		// Neither says a wave was won, so neither moves the record.
 		return
@@ -427,6 +429,7 @@ func (s *Server) getMissions(w http.ResponseWriter, r *http.Request) {
 		s.store.Checks(),
 		s.store.Played(),
 		health.MissionTicketImportance == "useful",
+		s.store.Reached(),
 	)
 	for _, popFile := range unknown {
 		s.logger.WarnContext(r.Context(), "the seed holds a mission the tables do not",
@@ -434,7 +437,7 @@ func (s *Server) getMissions(w http.ResponseWriter, r *http.Request) {
 	}
 	response := missionsResponse{Missions: missions}
 	if held := s.store.Progress(); held.PopFile != "" && held.Wave > 0 {
-		response.Resume = &resumeAt{PopFile: held.PopFile, Wave: held.Wave, Credits: held.Credits}
+		response.Resume = &resumeAt{PopFile: held.PopFile, Wave: held.Wave}
 	}
 	writeJSON(w, s.logger, response)
 }
@@ -443,7 +446,7 @@ func (s *Server) getMissions(w http.ResponseWriter, r *http.Request) {
 // and reports the ones the tables do not know. A seed from a newer gamedata is
 // the only way that happens, and skipping such a mission beats serving a name
 // and a map this binary would be guessing at.
-func missionsFor(drawn, unlocked []string, checks, own []int64, unlockAll bool) ([]mission, []string) {
+func missionsFor(drawn, unlocked []string, checks, own []int64, unlockAll bool, reached map[string]int) ([]mission, []string) {
 	missions := make([]mission, 0, len(drawn))
 	var unknown []string
 	for _, popFile := range drawn {
@@ -454,14 +457,15 @@ func missionsFor(drawn, unlocked []string, checks, own []int64, unlockAll bool) 
 		}
 		played, _ := gamedata.MapByID(known.Map)
 		missions = append(missions, mission{
-			PopFile:  known.PopFile,
-			Name:     known.Name,
-			Map:      played.Name,
-			Waves:    int(known.Waves),
-			Loadout:  gamedata.MissionLoadout(known.ID),
-			Unlocked: unlockAll || slices.Contains(unlocked, known.PopFile),
-			Cleared:  slices.Contains(checks, known.ClearLocationID()),
-			Played:   slices.Contains(own, known.ClearLocationID()),
+			PopFile:     known.PopFile,
+			Name:        known.Name,
+			Map:         played.Name,
+			Waves:       int(known.Waves),
+			Loadout:     gamedata.MissionLoadout(known.ID),
+			Unlocked:    unlockAll || slices.Contains(unlocked, known.PopFile),
+			Cleared:     slices.Contains(checks, known.ClearLocationID()),
+			Played:      slices.Contains(own, known.ClearLocationID()),
+			WaveReached: reached[known.PopFile],
 		})
 	}
 	return missions, unknown

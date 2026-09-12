@@ -10,6 +10,7 @@ package state
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -366,39 +367,62 @@ worse than none at all.
 Called on every wave the plugin reports, which is often, so it writes only when
 the record actually moves.
 
-The money moves with the wave rather than on its own. A balance written between
-waves would be the balance mid-spending-spree, and putting a team back with
-money they had already spent on upgrades they no longer hold pays them twice.
-What a wave clear records is what they had when the wave was won.
+Two records, and they answer different questions. Resume is where the team is
+now, which is what a server coming back from a crash asks. Reached is the best
+each mission has ever seen, which is what the Resume button on the mission list
+offers: a team who left Coal Town at wave three to look at Decoy should find
+Coal Town still at wave three.
 */
-func (s *Store) NoteProgress(popFile string, wave, credits int) error {
+func (s *Store) NoteProgress(popFile string, wave int) error {
 	if popFile == "" || wave <= 0 {
 		return nil
-	}
-	if credits < 0 {
-		credits = 0
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	held := s.data.Resume
-	if held.PopFile == popFile && wave <= held.Wave {
+	moved := false
+	if held := s.data.Resume; held.PopFile != popFile || wave > held.Wave {
+		s.data.Resume = Resume{PopFile: popFile, Wave: wave}
+		moved = true
+	}
+	if wave > s.data.Reached[popFile] {
+		if s.data.Reached == nil {
+			s.data.Reached = map[string]int{}
+		}
+		s.data.Reached[popFile] = wave
+		moved = true
+	}
+	if !moved {
 		return nil
 	}
-	s.data.Resume = Resume{PopFile: popFile, Wave: wave, Credits: credits}
 	return s.persist()
+}
+
+// Reached is the highest wave the team has cleared in each mission. The copy is
+// so a caller cannot write the record while holding no lock.
+func (s *Store) Reached() map[string]int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return maps.Clone(s.data.Reached)
 }
 
 // ClearProgress forgets the record, for a mission that is finished. Without it
 // the next start drops the team into the end of a mission they already beat.
-func (s *Store) ClearProgress() error {
+func (s *Store) ClearProgress(popFile string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if s.data.Resume == (Resume{}) {
+	_, reached := s.data.Reached[popFile]
+	if s.data.Resume == (Resume{}) && !reached {
 		return nil
 	}
 	s.data.Resume = Resume{}
+	// The high-water mark goes too, for this mission only. Offering to resume
+	// a mission the team has beaten would drop them at the end of it.
+	delete(s.data.Reached, popFile)
+	if len(s.data.Reached) == 0 {
+		s.data.Reached = nil
+	}
 	return s.persist()
 }
 

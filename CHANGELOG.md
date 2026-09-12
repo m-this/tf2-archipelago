@@ -8,11 +8,13 @@ in the release notes, so this file is the only place to write it.
 
 ### Added
 
-- A server that comes back puts the team back with their money, not just on
-  their wave. It records what the team had when they won the wave and pays
-  that back once the mission is up and everybody has respawned. Being put on
-  wave five of six with an empty wallet was a harder game than the one the
-  crash interrupted.
+- A wave picker beside Play on the mission list. Pick a wave and the mission
+  starts there, with the money the game gives for having won every wave
+  before it. It opens on the wave your team got to, so the mission you left
+  part way through is one click from where you left it.
+- The run remembers the highest wave you reached in every mission, not only
+  the one you were on. Going to look at another mission no longer throws the
+  first one's progress away.
 - The wave restore now waits for the game to agree before it says it worked.
   It used to announce the wave it had asked for, which is why a player could
   read "Restored: Quarry at wave 3 of 6" and be standing in wave one. If the

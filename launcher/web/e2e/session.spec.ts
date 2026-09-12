@@ -71,6 +71,26 @@ test.describe('the Play screen', () => {
     await expect(page.getByText('next mission is mvm_coaltown')).toBeVisible();
   });
 
+  /* A wave picker beside Play, so a team can go straight to the wave they
+     want rather than replaying a mission to reach it. It starts on the wave
+     the team got to, which is the one they came back for. */
+  test('offers a wave to start at, beside Play', async ({ page }) => {
+    await page.goto('/session');
+    const started = page.getByRole('row', { name: /Ctrl\+Alt\+Destruction/ });
+    const picker = started.getByLabel('Start Ctrl+Alt+Destruction at a wave');
+
+    // Nothing to load a mission into until the server is up.
+    await expect(picker).toHaveCount(0);
+    await page.getByRole('button', { name: 'Start server' }).click();
+
+    await expect(picker).toBeVisible();
+    await expect(picker).toHaveValue('4');
+    await expect(started.getByRole('button', { name: 'Play' })).toBeVisible();
+
+    await picker.selectOption('6');
+    await expect(page.getByText(/resuming mvm_coaltown_advanced at wave 6/)).toBeVisible();
+  });
+
   test('sorts on any column', async ({ page }) => {
     await page.goto('/session');
     const names = page.locator('td.name');

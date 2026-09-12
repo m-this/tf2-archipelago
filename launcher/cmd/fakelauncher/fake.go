@@ -243,7 +243,7 @@ func fakeSession(running bool) session.Snapshot {
 		// draws a blank column and proves nothing.
 		Missions: []session.Mission{
 			{PopFile: "mvm_decoy_advanced", Name: "Disk Deletion", Map: "Decoy", Waves: 7, Source: "Valve", Unlocked: true, Played: true},
-			{PopFile: "mvm_coaltown_advanced", Name: "Ctrl+Alt+Destruction", Map: "Coal Town", Waves: 6, Source: "Valve", Unlocked: true},
+			{PopFile: "mvm_coaltown_advanced", Name: "Ctrl+Alt+Destruction", Map: "Coal Town", Waves: 6, Source: "Valve", Unlocked: true, WaveReached: 3},
 			{PopFile: "mvm_mannworks_intermediate", Name: "Mean Machines", Map: "Mannworks", Waves: 7, Source: "Valve", Cleared: true},
 			{PopFile: "mvm_coaltown", Name: "Crash Course", Map: "Coal Town", Waves: 4, Source: "Valve", Unlocked: true},
 			{PopFile: "mvm_decoy_expert1", Name: "Desperation", Map: "Decoy", Waves: 6, Source: "Valve"},

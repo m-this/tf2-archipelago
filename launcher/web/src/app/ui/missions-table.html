@@ -57,6 +57,20 @@
           }
           @if (playable()) {
             <td class="play">
+              @if (row.waveChoices.length > 0) {
+                <select
+                  class="wave"
+                  [attr.aria-label]="'Start ' + row.name + ' at a wave'"
+                  [value]="row.waveStart"
+                  (change)="resumed.emit({ key: row.key, wave: +$any($event.target).value })"
+                >
+                  @for (wave of row.waveChoices; track wave) {
+                    <option [value]="wave" [selected]="wave === row.waveStart">
+                      Wave {{ wave }}
+                    </option>
+                  }
+                </select>
+              }
               @if (row.play) {
                 <app-button size="small" tone="primary" (press)="chosen.emit(row.key)">
                   {{ row.play }}

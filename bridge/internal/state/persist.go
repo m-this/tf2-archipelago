@@ -74,25 +74,26 @@ type snapshot struct {
 	 * again.
 	 */
 	Resume Resume `json:"resume,omitzero"`
+
+	/* Reached is the highest wave the team has cleared in each mission, by
+	 * popfile, and it outlives the mission they are on.
+	 *
+	 * Resume above is only ever the current mission, so switching away threw
+	 * the old one's progress out: a team three waves into Coal Town who went
+	 * to look at Decoy came back to Coal Town at wave one. This is what the
+	 * Resume button on the mission list offers, mission by mission.
+	 *
+	 * An entry goes when the mission is cleared. There is nothing to go back
+	 * to in a mission you have beaten.
+	 */
+	Reached map[string]int `json:"reached,omitempty"`
 }
 
-/*
-Resume is the mission the team was playing, the last wave they cleared in it,
-and the money they had when they cleared it.
-
-Wave zero means they had cleared none, so there is nothing to skip. Credits
-zero means the same thing it means in the game: the team is broke, and a
-restore has nothing to pay back.
-
-The money is here because the wave alone was not the mission. A team put back
-on wave five of six with a fresh wallet has to beat the hardest wave of the
-mission with the upgrades of somebody who has played none of it, which is a
-harder game than the one the crash interrupted.
-*/
+// Resume is the mission the team was playing and the last wave they cleared in
+// it. Wave zero means they had cleared none, so there is nothing to skip.
 type Resume struct {
 	PopFile string `json:"popfile,omitempty"`
 	Wave    int    `json:"wave,omitempty"`
-	Credits int    `json:"credits,omitempty"`
 }
 
 // readSnapshot loads the state file and reports the format version it was

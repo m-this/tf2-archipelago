@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -66,6 +67,18 @@ func (s launcherRPC) SetMission(_ context.Context, request *connect.Request[laun
 	s.fake.say("next mission is " + request.Msg.GetPopFile())
 	s.fake.redraw()
 	return connect.NewResponse(&launcherv1.SetMissionResponse{}), nil
+}
+
+// ResumeMission loads the mission and says where it went back to, the way the
+// plugin announces it. The fake has no game, so the wave is the record's.
+func (s launcherRPC) ResumeMission(_ context.Context, request *connect.Request[launcherv1.ResumeMissionRequest]) (*connect.Response[launcherv1.ResumeMissionResponse], error) {
+	popFile := request.Msg.GetPopFile()
+	s.fake.mu.Lock()
+	s.fake.mission = popFile
+	s.fake.mu.Unlock()
+	s.fake.say(fmt.Sprintf("resuming %s at wave %d", popFile, request.Msg.GetWave()))
+	s.fake.redraw()
+	return connect.NewResponse(&launcherv1.ResumeMissionResponse{}), nil
 }
 
 func (s launcherRPC) ApproveFunnel(context.Context, *connect.Request[launcherv1.ApproveFunnelRequest]) (*connect.Response[launcherv1.ApproveFunnelResponse], error) {

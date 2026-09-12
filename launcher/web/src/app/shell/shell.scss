@@ -80,7 +80,11 @@ main {
   width: 100%;
   max-width: 1500px;
   margin: 0 auto;
+  /* The footer is sticky, so it sits over the end of the page. Without this
+     the last row of a table is behind it: a Resume button at the bottom of
+     the mission list could be seen and not pressed. */
   padding: var(--gap-xl);
+  padding-bottom: calc(var(--gap-xl) + var(--footer-height));
   box-sizing: border-box;
 }
 

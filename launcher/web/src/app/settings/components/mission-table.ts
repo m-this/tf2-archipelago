@@ -62,6 +62,8 @@ export class MissionTable {
         dim: !on,
         playing: false,
         play: '',
+        waveChoices: [],
+        waveStart: 1,
       })),
   );
 

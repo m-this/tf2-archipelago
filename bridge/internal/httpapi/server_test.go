@@ -145,7 +145,7 @@ func TestMissionsNameTheMapAndWhatIsUnlocked(t *testing.T) {
 	// Checked by the room but not played here, which is the case another
 	// world's !collect produces.
 	missions, unknown := missionsFor(
-		drawn, []string{"mvm_ghost_town_666"}, []int64{coaltown.ClearLocationID()}, nil, false)
+		drawn, []string{"mvm_ghost_town_666"}, []int64{coaltown.ClearLocationID()}, nil, false, nil)
 
 	if len(unknown) != 0 {
 		t.Fatalf("the tables did not know %v", unknown)
@@ -178,7 +178,7 @@ func TestMissionsNameTheMapAndWhatIsUnlocked(t *testing.T) {
 }
 
 func TestMissionsSkipWhatTheTablesDoNotKnow(t *testing.T) {
-	missions, unknown := missionsFor([]string{"mvm_potato", "mvm_coaltown"}, nil, nil, nil, false)
+	missions, unknown := missionsFor([]string{"mvm_potato", "mvm_coaltown"}, nil, nil, nil, false, nil)
 	if len(missions) != 1 || missions[0].PopFile != "mvm_coaltown" {
 		t.Fatalf("missions = %+v", missions)
 	}
@@ -189,7 +189,7 @@ func TestMissionsSkipWhatTheTablesDoNotKnow(t *testing.T) {
 
 func TestMissionsExposeTheSpecialLoadout(t *testing.T) {
 	popFile := "mvm_frostwynd_rc1_int_wicked_wizardry"
-	missions, unknown := missionsFor([]string{popFile}, []string{popFile}, nil, nil, false)
+	missions, unknown := missionsFor([]string{popFile}, []string{popFile}, nil, nil, false, nil)
 	if len(unknown) != 0 || len(missions) != 1 {
 		t.Fatalf("missions = %+v, unknown = %v", missions, unknown)
 	}
@@ -200,7 +200,7 @@ func TestMissionsExposeTheSpecialLoadout(t *testing.T) {
 
 func TestUsefulTicketsLeaveEveryDrawnMissionUnlocked(t *testing.T) {
 	drawn := []string{"mvm_coaltown", "mvm_coaltown_intermediate"}
-	missions, unknown := missionsFor(drawn, nil, nil, nil, true)
+	missions, unknown := missionsFor(drawn, nil, nil, nil, true, nil)
 	if len(unknown) != 0 || len(missions) != 2 {
 		t.Fatalf("missions = %+v, unknown = %v", missions, unknown)
 	}
@@ -621,7 +621,7 @@ func TestAMissionCheckedByTheRoomIsNotPlayedHere(t *testing.T) {
 
 	missions, _ := missionsFor(drawn, drawn,
 		[]int64{coaltown.ClearLocationID(), ghost.ClearLocationID()},
-		[]int64{ghost.ClearLocationID()}, false)
+		[]int64{ghost.ClearLocationID()}, false, nil)
 
 	if len(missions) != 2 {
 		t.Fatalf("missions = %+v", missions)
@@ -653,17 +653,17 @@ func TestTheMissionsAnswerCarriesWhereTheRunWas(t *testing.T) {
 		t.Errorf("a fresh run offered somewhere to resume:\n%s", body)
 	}
 
-	if err := store.NoteProgress("mvm_decoy_advanced", 3, 900); err != nil {
+	if err := store.NoteProgress("mvm_decoy_advanced", 3); err != nil {
 		t.Fatal(err)
 	}
 	body = get(t, handler, "/missions").Body.String()
-	for _, want := range []string{`"resume"`, `"mvm_decoy_advanced"`, `"wave":3`, `"credits":900`} {
+	for _, want := range []string{`"resume"`, `"mvm_decoy_advanced"`, `"wave":3`} {
 		if !strings.Contains(body, want) {
 			t.Errorf("missing %q in:\n%s", want, body)
 		}
 	}
 
-	if err := store.ClearProgress(); err != nil {
+	if err := store.ClearProgress("mvm_decoy_advanced"); err != nil {
 		t.Fatal(err)
 	}
 	if body = get(t, handler, "/missions").Body.String(); strings.Contains(body, "resume") {
@@ -672,30 +672,24 @@ func TestTheMissionsAnswerCarriesWhereTheRunWas(t *testing.T) {
 }
 
 /*
-	The wallet the plugin reports rides all the way to the restore.
+	The mission list says where each mission can be resumed from.
 
-The wave alone was not the mission. A team put back on wave five of six with a
-fresh wallet has to beat the hardest wave with the upgrades of somebody who has
-played none of it, so what they had when they won the wave is recorded with it
-and served back on the answer the plugin already asks for.
+The Resume button reads this. It is per mission and it outlives the switch, so
+a team who left Coal Town at wave three and went to look at Decoy is still
+offered Coal Town at wave three.
 */
-func TestAClearedWaveRecordsTheMoneyItWasWonWith(t *testing.T) {
-	_, handler := newTestServer(t, time.Second)
+func TestTheMissionListSaysWhereEachMissionCanBeResumed(t *testing.T) {
+	drawn := []string{"mvm_coaltown_intermediate", "mvm_decoy_advanced"}
+	missions, _ := missionsFor(drawn, drawn, nil, nil, true,
+		map[string]int{"mvm_coaltown_intermediate": 3})
 
-	post(t, handler, `{"kind":"wave_cleared","popfile":"mvm_decoy_advanced","wave":2,"waves_total":6,"credits":1450}`)
-
-	body := get(t, handler, "/missions").Body.String()
-	for _, want := range []string{`"wave":2`, `"credits":1450`} {
-		if !strings.Contains(body, want) {
-			t.Errorf("missing %q in:\n%s", want, body)
+	for _, got := range missions {
+		want := 0
+		if got.PopFile == "mvm_coaltown_intermediate" {
+			want = 3
 		}
-	}
-
-	// A wave that does not move the record does not move the money either: the
-	// plugin reports the wave it is on more than once, and the second report
-	// carries a wallet the team has already started spending.
-	post(t, handler, `{"kind":"wave_cleared","popfile":"mvm_decoy_advanced","wave":2,"waves_total":6,"credits":50}`)
-	if body = get(t, handler, "/missions").Body.String(); !strings.Contains(body, `"credits":1450`) {
-		t.Errorf("a repeated wave overwrote the money:\n%s", body)
+		if got.WaveReached != want {
+			t.Errorf("%s offers wave %d, want %d", got.PopFile, got.WaveReached, want)
+		}
 	}
 }

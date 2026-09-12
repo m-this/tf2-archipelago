@@ -60,6 +60,15 @@ export class MissionList {
         dim: !mission.unlocked,
         playing: mission.popFile === playing,
         play: mission.unlocked && running ? (mission.played ? 'Replay' : 'Play') : '',
+        // Every wave of the mission, so a team can go straight to the one they
+        // want. Offered only where it would do something: the mission has to
+        // be playable now and the server up.
+        waveChoices:
+          mission.unlocked && running && mission.waves > 1
+            ? Array.from({ length: mission.waves }, (_, index) => index + 1)
+            : [],
+        // On the wave they got to, which is the one they came back for.
+        waveStart: Math.min(mission.waveReached + 1, Math.max(mission.waves, 1)),
       }));
   });
 
@@ -74,18 +83,33 @@ export class MissionList {
     return `${unlocked} of ${missions.length} unlocked, ${played} played`;
   });
 
-  readonly switchHint = computed(() =>
-    this.running()
-      ? 'Play next loads the mission on the running server. Anyone on it is sent to the new map.'
-      : 'Start the server to load a mission.',
-  );
+  readonly switchHint = computed(() => {
+    if (!this.running()) {
+      return 'Start the server to load a mission.';
+    }
+    const play =
+      'Play next loads the mission on the running server. Anyone on it is sent to the new map.';
+    if (!this.rows().some((row) => row.waveChoices.length > 0)) {
+      return play;
+    }
+    return (
+      play + ' Picking a wave starts the mission there, with the money for the waves before it.'
+    );
+  });
 
   readonly choose = new Subject<string>();
+  readonly resume = new Subject<{ key: string; wave: number }>();
 
   constructor() {
     this.choose
       .pipe(
         exhaustMap((popFile) => this.commands.setMission(popFile)),
+        takeUntilDestroyed(),
+      )
+      .subscribe();
+    this.resume
+      .pipe(
+        exhaustMap((asked) => this.commands.resumeMission(asked.key, asked.wave)),
         takeUntilDestroyed(),
       )
       .subscribe();
