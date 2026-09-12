@@ -354,11 +354,26 @@ func runSrcdsWithSink(ctx context.Context, s settings.Settings, logger *slog.Log
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("cannot start the game server: %w", err)
 	}
+	// Most srcds output reaches stdout, but the engine occasionally writes the
+	// FakeIP allocation only to the -condebug file. That address controls the
+	// Join button and is the only address remote players can use in Steam relay
+	// mode, so follow the durable console for that one signal as well. Both
+	// sources share a deduplicating sink because the usual case writes it twice.
+	outputSink := sink
+	watchCtx, stopWatching := context.WithCancel(ctx)
+	if sink != nil {
+		outputSink = dedupeFakeIPSink(sink)
+	}
 	var wg sync.WaitGroup
 	wg.Add(2)
-	go pipeLines(stdout, "srcds", logger, sink, &wg)
-	go pipeLines(stderr, "srcds", logger, sink, &wg)
+	go pipeLines(stdout, "srcds", logger, outputSink, &wg)
+	go pipeLines(stderr, "srcds", logger, outputSink, &wg)
+	if outputSink != nil {
+		wg.Add(1)
+		go watchConsoleFakeIP(watchCtx, filepath.Join(gameDir, "tf", ConsoleLogName), outputSink, &wg)
+	}
 	waitErr := cmd.Wait()
+	stopWatching()
 	wg.Wait()
 	// A non-nil waitErr after context cancellation is the subprocess being
 	// killed, which is expected and not an error to report.
