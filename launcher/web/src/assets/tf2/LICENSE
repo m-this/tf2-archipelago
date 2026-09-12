@@ -1,0 +1,26 @@
+Team Fortress 2 image assets
+====================================
+
+The PNG files in the `classes` and `items` directories are copyright Valve
+Corporation. All rights are reserved by Valve. They are not covered by the MIT
+license at the root of this repository and no ownership of them is claimed by
+the tf2-archipelago contributors.
+
+They are included solely as part of this non-commercial Team Fortress 2 fan
+project under the "License to Use Valve Game Content in Fan Art" in section
+2.D of the Steam Subscriber Agreement:
+
+https://store.steampowered.com/subscriber_agreement/
+
+`PROVENANCE.json` records the Official Team Fortress Wiki file page, downloaded
+URL, Wiki license template, retrieval date, file size and SHA-256 digest for
+every image. Item images use the MD5 of their original Wiki filename as their
+local filename because Go embeds reject punctuation found in several weapon
+names; the manifest retains the original names and URLs. At the time of
+retrieval, every listed page identified its image as either material extracted
+from Team Fortress 2 (`ExtractTF2`) or a Team Fortress 2 screenshot
+(`ScreenshotTF2`), with copyright held by Valve.
+
+Team Fortress, the Team Fortress logo, Valve and the Valve logo are trademarks
+and/or registered trademarks of Valve Corporation. This project is not
+affiliated with or endorsed by Valve Corporation.

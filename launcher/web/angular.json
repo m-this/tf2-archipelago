@@ -98,6 +98,47 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "tracker": {
+              "browser": "src/tracker/main.ts",
+              "index": "src/tracker/index.html",
+              "outputPath": {
+                "base": "../../dist/tracker",
+                "browser": ""
+              },
+              "baseHref": "./",
+              "styles": [
+                "src/styles.scss",
+                "src/tracker/styles.scss"
+              ],
+              "assets": [
+                {
+                  "glob": "**/*",
+                  "input": "src/assets",
+                  "output": "assets"
+                },
+                {
+                  "glob": "*.json",
+                  "input": "src/tracker/data",
+                  "output": "data"
+                }
+              ],
+              "optimization": {
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": false
+                },
+                "fonts": true
+              },
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "450kB",
+                  "maximumError": "500kB"
+                }
+              ],
+              "outputHashing": "all"
             }
           },
           "defaultConfiguration": "production"

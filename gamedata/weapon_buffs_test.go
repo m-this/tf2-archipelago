@@ -1,7 +1,9 @@
 package gamedata
 
 import (
+	"net/url"
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -688,6 +690,74 @@ func TestItemExportMarksOnlyNumericBuffsStackable(t *testing.T) {
 		if item.Stackable != want {
 			t.Errorf("%s stackable = %t, want %t for mode %d",
 				buff.Key, item.Stackable, want, buff.Mode)
+		}
+	}
+}
+
+func TestEveryEligibleBuffNamesTheClassesThatCanEquipIt(t *testing.T) {
+	for _, buff := range WeaponBuffs {
+		if buff.Eligible && len(weaponClassNames(buff.Weapon, buff.DefIndexes)) == 0 {
+			t.Errorf("eligible buff %q has no equipping class", buff.ItemName())
+		}
+	}
+	for _, test := range []struct {
+		weapon string
+		want   []string
+	}{
+		{"Air Strike", []string{"Soldier"}},
+		{"Mad Milk", []string{"Scout"}},
+		{"Crusader's Crossbow", []string{"Medic"}},
+		{"Shotgun", []string{"Soldier", "Pyro", "Heavy", "Engineer"}},
+		{"Saxxy", []string{"Scout", "Soldier", "Pyro", "Demoman", "Heavy", "Engineer", "Medic", "Sniper", "Spy"}},
+	} {
+		buff := buffNamed(t, test.weapon, "damage")
+		if got := weaponClassNames(buff.Weapon, buff.DefIndexes); !slices.Equal(got, test.want) {
+			t.Errorf("%s classes = %v, want %v", test.weapon, got, test.want)
+		}
+	}
+}
+
+func TestWeaponClassExportCarriesWeaponClasses(t *testing.T) {
+	icons := make(map[string]string)
+	for _, weapon := range buildWeaponClassesFile().Weapons {
+		icons[weapon.Name] = weapon.Icon
+		if weapon.Name != "Air Strike" {
+			continue
+		}
+		if !slices.Equal(weapon.Classes, []string{"Soldier"}) {
+			t.Fatalf("Air Strike export classes = %v, want Soldier", weapon.Classes)
+		}
+		if want := "assets/tf2/items/f87faf790afc0d04056479f1566f09f1.png"; weapon.Icon != want {
+			t.Fatalf("Air Strike icon = %q, want %q", weapon.Icon, want)
+		}
+	}
+	if icons["Air Strike"] == "" {
+		t.Fatal("Air Strike is missing from weapon class export")
+	}
+	for weapon, filename := range tfWikiItemIconNames {
+		want := trackerItemIconPath(filename)
+		if got := icons[weapon]; got != want {
+			t.Errorf("%s icon = %q, want %q", weapon, got, want)
+		}
+	}
+}
+
+func TestWeaponClassExportIconsAreBundled(t *testing.T) {
+	for _, weapon := range buildWeaponClassesFile().Weapons {
+		icon, err := url.PathUnescape(weapon.Icon)
+		if err != nil {
+			t.Fatalf("%s icon path %q: %v", weapon.Name, weapon.Icon, err)
+		}
+		if !strings.HasPrefix(icon, "assets/tf2/items/") {
+			t.Errorf("%s icon is not a bundled asset: %q", weapon.Name, weapon.Icon)
+			continue
+		}
+		name := strings.TrimSuffix(filepath.Base(icon), ".png")
+		if len(name) != 32 || strings.Trim(name, "0123456789abcdef") != "" {
+			t.Errorf("%s icon has an embed-unsafe filename: %q", weapon.Name, weapon.Icon)
+		}
+		if _, err := os.Stat(filepath.Join("../launcher/web/src", filepath.FromSlash(icon))); err != nil {
+			t.Errorf("%s icon %q is not bundled: %v", weapon.Name, weapon.Icon, err)
 		}
 	}
 }

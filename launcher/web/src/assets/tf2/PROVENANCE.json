@@ -1,0 +1,1390 @@
+{
+  "notice": "These images are Valve Corporation property and are not covered by the repository MIT license.",
+  "retrieved_at": "2026-09-11",
+  "images": [
+    {
+      "path": "classes/Class_demored.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Class_demored.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/e/e9/Class_demored.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "b3109b3b26f48f977d275eadbc561fd3789f328087dbe9275e04379c1d53bfcc",
+      "bytes": 63685
+    },
+    {
+      "path": "classes/Class_engired.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Class_engired.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/3/36/Class_engired.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "d6a19e06ccb83448effa354f70a36c4aabd862dc84031c915d6b0336fd3d1f0d",
+      "bytes": 57568
+    },
+    {
+      "path": "classes/Class_heavyred.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Class_heavyred.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/c/c1/Class_heavyred.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "f109e44a7c29b4701cea5464e848107de1c0c5647f90e8ae97c6f8be8e2bf3b0",
+      "bytes": 63652
+    },
+    {
+      "path": "classes/Class_medicred.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Class_medicred.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/b/bb/Class_medicred.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "d8fabf7183b6f8697e5e5f195f20ab95df0e066106e0c133c3e635c0d7ba1f91",
+      "bytes": 52955
+    },
+    {
+      "path": "classes/Class_pyrored.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Class_pyrored.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/1/17/Class_pyrored.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "7b6038991f394cfdf37b4acf1c593e69c3b8296a4ad0d1f1c1975b19e6bd576c",
+      "bytes": 56066
+    },
+    {
+      "path": "classes/Class_scoutred.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Class_scoutred.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/b/b4/Class_scoutred.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "1a7259d7996a5aced34effa4c1fdbb4a366cccac7c1a21524be99de89b850bfa",
+      "bytes": 49238
+    },
+    {
+      "path": "classes/Class_sniperred.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Class_sniperred.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/8/81/Class_sniperred.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "c31b1b37cf64d15ba3ec3ebc19c0dc8e9850b5740bbf868fb178985559eb56b3",
+      "bytes": 66725
+    },
+    {
+      "path": "classes/Class_soldierred.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Class_soldierred.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/2/2f/Class_soldierred.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "3dbf05431b78c6388ee59298dc81903c07e5f1380472cd0c18217d7658dd7399",
+      "bytes": 61585
+    },
+    {
+      "path": "classes/Class_spyred.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Class_spyred.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/6/64/Class_spyred.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "09cc5e9f8f8da200d8fdb94f4874758511d6ff055900920609d27b2e9efe3f48",
+      "bytes": 47535
+    },
+    {
+      "path": "items/f87faf790afc0d04056479f1566f09f1.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Air_Strike.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/f/f8/Item_icon_Air_Strike.png/128px-Item_icon_Air_Strike.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "a27bc638ed4f94078d78ab304a6e1c7c03044ea52fbadf2db696581cae3166e5",
+      "bytes": 8159
+    },
+    {
+      "path": "items/a4e0f4a0d6af7480aa80dd8fc05f6028.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Ali_Baba%27s_Wee_Booties.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/a/a4/Item_icon_Ali_Baba%27s_Wee_Booties.png/128px-Item_icon_Ali_Baba%27s_Wee_Booties.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "f4e644959bf8536c6dc938a4ad238f2b2bf7ac41ecee051a5db55c064b378e79",
+      "bytes": 8840
+    },
+    {
+      "path": "items/ec51bdc417abd21ee7c98ca6ac551586.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Ambassador.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/e/ec/Item_icon_Ambassador.png/128px-Item_icon_Ambassador.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "d37358eb077bb65237f989b8dd9332f99e4d8ae783ecb081eadf1c8954eea090",
+      "bytes": 10107
+    },
+    {
+      "path": "items/ab304b319464cfbdf3c84b0b765cde12.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Amputator.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/a/ab/Item_icon_Amputator.png/128px-Item_icon_Amputator.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "50b509dc7831c3d7bf9667b298737cc6ce53f2f955691b072a8d810820771c91",
+      "bytes": 8781
+    },
+    {
+      "path": "items/290f86b9492dd0ce677a4fb1a513b9ea.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Atomizer.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/2/29/Item_icon_Atomizer.png/128px-Item_icon_Atomizer.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "ea8280cbe7de9cf3e1c951ce93df121addb00b7330d0f22b0a132d02290a91a2",
+      "bytes": 8910
+    },
+    {
+      "path": "items/c92b8d80c70ad204a97132004e968a15.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Axtinguisher.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/c/c9/Item_icon_Axtinguisher.png/128px-Item_icon_Axtinguisher.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "d0dbe26aea1f4182854f6b665de52e9838b7cc9b6da90f869ce55ae8a2aed9a7",
+      "bytes": 8800
+    },
+    {
+      "path": "items/b20943292026738f37bc16ee16f1d0d6.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_B.A.S.E._Jumper.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/b/b2/Item_icon_B.A.S.E._Jumper.png/128px-Item_icon_B.A.S.E._Jumper.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "2e16cb32937991936a049a5506b1a994b54160dcee558ce029f9119547611d1e",
+      "bytes": 10976
+    },
+    {
+      "path": "items/e63a5a9f877fe219e9f2b57be74572d2.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Baby_Face%27s_Blaster.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/e/e6/Item_icon_Baby_Face%27s_Blaster.png/128px-Item_icon_Baby_Face%27s_Blaster.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "a1d1e84aaef72db554e471728dcfcf64cdab1692967297b40472ab492cb7b6d7",
+      "bytes": 8146
+    },
+    {
+      "path": "items/113a6b8dc20809553172d5da14938356.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Back_Scatter.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/1/11/Item_icon_Back_Scatter.png/128px-Item_icon_Back_Scatter.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "15cc8ed1f0d6adf57a288f40653d3665281c8678ec701bdcad99237b2adc7d05",
+      "bytes": 12173
+    },
+    {
+      "path": "items/48852f24e698e1a809c2cd433a21e370.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Back_Scratcher.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/4/48/Item_icon_Back_Scratcher.png/128px-Item_icon_Back_Scratcher.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "3687df5ae0056d58bcb29a7beda8d535290cd73018745d7e36406cc3ce320cfb",
+      "bytes": 7402
+    },
+    {
+      "path": "items/5d402db6a0f953245ccdaf82e25b6789.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Backburner.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/5/5d/Item_icon_Backburner.png/128px-Item_icon_Backburner.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "0f61b45c107612a29477bf92376ef63ee149ae28ee338e61221b6ac4884ed37e",
+      "bytes": 10802
+    },
+    {
+      "path": "items/b528077a39ea8ae787c7d45630dbd4bd.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Bat.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/b/b5/Item_icon_Bat.png/128px-Item_icon_Bat.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "410a8ee31d898a2b0f4304e68279dea22be6d1ee326b0b983629be04b2ff9e73",
+      "bytes": 7857
+    },
+    {
+      "path": "items/d89adced10d4636fdb2892a14ec8b56a.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Battalion%27s_Backup.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/d/d8/Item_icon_Battalion%27s_Backup.png/128px-Item_icon_Battalion%27s_Backup.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "c32e4c4e7ee7bc408eaaa9bfa2f3eb16d524fad0b708c6524eef8dcc552d1c1d",
+      "bytes": 9195
+    },
+    {
+      "path": "items/f45a8337a5af9142d7d55bedfb571bf0.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Bazaar_Bargain.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/f/f4/Item_icon_Bazaar_Bargain.png/128px-Item_icon_Bazaar_Bargain.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "9510b45cf240574f9e0bc9b34d9a2d0e97dd72e4512c3bc8da11babeeee0b8a4",
+      "bytes": 6691
+    },
+    {
+      "path": "items/77f5db482a0cb21b610cc2b35a62f2e3.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Beggar%27s_Bazooka.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/7/77/Item_icon_Beggar%27s_Bazooka.png/128px-Item_icon_Beggar%27s_Bazooka.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "aefd4c04637aeacd57c173f02444007d22a51034ef5ebc3387425e8f0c35b7e0",
+      "bytes": 6871
+    },
+    {
+      "path": "items/c9585a0364c8e5406c49db4826d0fbc6.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Big_Earner.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/c/c9/Item_icon_Big_Earner.png/128px-Item_icon_Big_Earner.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "7cbe03a6b93e3f011161ce24fcc93df94381b5560f290fe589799e080db2d67c",
+      "bytes": 6295
+    },
+    {
+      "path": "items/d2452f8c663ac7f1a05929acd3e1a871.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Black_Box.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/d/d2/Item_icon_Black_Box.png/128px-Item_icon_Black_Box.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "0dcc7b406551ac3849038d4b96d3972abdc137f1322ae982b60d0cb6d0c2004b",
+      "bytes": 7956
+    },
+    {
+      "path": "items/13a98f87cb2547f3c9681f46704eaa9d.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Blutsauger.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/1/13/Item_icon_Blutsauger.png/128px-Item_icon_Blutsauger.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "d8d6f3d277f3c76d09f0952e802b3f4872c1380800d25d058370c6306dea15cb",
+      "bytes": 11060
+    },
+    {
+      "path": "items/8d31f7be6196f4e0c238be9d33c45204.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Bonesaw.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/8/8d/Item_icon_Bonesaw.png/128px-Item_icon_Bonesaw.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "05deb79490475c36916e2120b06c3b52eb5c3e6f223fcc653b3aa80ed5ce9887",
+      "bytes": 8646
+    },
+    {
+      "path": "items/8f71f05d8055577c59e7df8312acd80a.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Bonk%21_Atomic_Punch.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/8/8f/Item_icon_Bonk%21_Atomic_Punch.png/128px-Item_icon_Bonk%21_Atomic_Punch.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "7af65a3d5bc746ebd6d93772b0f8d0d4b5752c3c3a639722f720bf6aafba4a6a",
+      "bytes": 8517
+    },
+    {
+      "path": "items/4c5a39e5cfd934a5e069ecfc4948f6b6.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Bootlegger.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/4/4c/Item_icon_Bootlegger.png/128px-Item_icon_Bootlegger.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "d4e1bd9e6bc432b9acd8e2c6382942e1df186a625783c20cdfef87ec22d982cc",
+      "bytes": 9793
+    },
+    {
+      "path": "items/b5d85af732f93216889c5563e54cbe16.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Boston_Basher.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/b/b5/Item_icon_Boston_Basher.png/128px-Item_icon_Boston_Basher.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "95f2a1809100320225e0f25ebecd363dedc925bb7b6a33716a21ad2a5ef9de55",
+      "bytes": 9097
+    },
+    {
+      "path": "items/b235c2890e172032f790b3a1b66a6a6c.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Bottle.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/b/b2/Item_icon_Bottle.png/128px-Item_icon_Bottle.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "5c10d561c3089f0d34de4f36b7931dee9aa56149a184abc8f510b9471352d30e",
+      "bytes": 10995
+    },
+    {
+      "path": "items/6456418125aa45327e7aa2e6a7189f75.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Brass_Beast.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/6/64/Item_icon_Brass_Beast.png/128px-Item_icon_Brass_Beast.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "78ec68f81083d75c28601f7e4ac10cfd39d24401d8eab00563c6f7b5adde084b",
+      "bytes": 14562
+    },
+    {
+      "path": "items/7c916dbd5b39ee376000431047dace34.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Buff_Banner.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/7/7c/Item_icon_Buff_Banner.png/128px-Item_icon_Buff_Banner.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "7876e90075cb9c0802f4f13fb464ac9997660140ad93a76442aa77c3fc237bf2",
+      "bytes": 8925
+    },
+    {
+      "path": "items/629b63a8a98ef5f6561e79d4836dc270.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Buffalo_Steak_Sandvich.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/6/62/Item_icon_Buffalo_Steak_Sandvich.png/128px-Item_icon_Buffalo_Steak_Sandvich.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "34ee4bdf310486a309a3c31bd547c5b0fa281205f2432775fdcb0c9e4bf7d1bc",
+      "bytes": 10211
+    },
+    {
+      "path": "items/46dd5a17a38c2fbeaac1002467ac4d2f.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Bushwacka.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/4/46/Item_icon_Bushwacka.png/128px-Item_icon_Bushwacka.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "6e4b7c34b8bc543379fe11198c02714de3eb90ec5cc23d785d272bb013c64396",
+      "bytes": 7782
+    },
+    {
+      "path": "items/0508f0be162d4519d2c3ae5bbd8803b7.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Candy_Cane.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/0/05/Item_icon_Candy_Cane.png/128px-Item_icon_Candy_Cane.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "2b59dbe726419af7adbfa46791b4160d5339a6f24a1823aef05ba7cb9418d85f",
+      "bytes": 9397
+    },
+    {
+      "path": "items/7a234fb61fe47655492585dc1ab6e01d.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Chargin%27_Targe.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/7/7a/Item_icon_Chargin%27_Targe.png/128px-Item_icon_Chargin%27_Targe.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "49b4dcc0aa9252d3682dc5c122eab289f6ba46bb4509cb84cd87023ab0fe470b",
+      "bytes": 13374
+    },
+    {
+      "path": "items/0f48009ba3576868467eaf5e20ab0b13.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Claidheamh_M%C3%B2r.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/0/0f/Item_icon_Claidheamh_M%C3%B2r.png/128px-Item_icon_Claidheamh_M%C3%B2r.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "f0aa24f21952056b0e4fb3031f00972b7ed01aa90f2ce57383f980cfb0b6220c",
+      "bytes": 7280
+    },
+    {
+      "path": "items/7395a3b68ca3a52ed0032358df33cbff.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Classic.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/7/73/Item_icon_Classic.png/128px-Item_icon_Classic.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "4664736a9beec760191db1f0eaf22a3c474ec8978ebd964a90df756d5fccea04",
+      "bytes": 7612
+    },
+    {
+      "path": "items/64a2180782c8806200a70f78df1a09b3.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Cleaner%27s_Carbine.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/6/64/Item_icon_Cleaner%27s_Carbine.png/128px-Item_icon_Cleaner%27s_Carbine.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "062c124b9db20c5ee5973820c3a4fd2d0e8fe3c441b8cf6e8e77a2b5a4284525",
+      "bytes": 9296
+    },
+    {
+      "path": "items/004ec1cdc219a4f6c8aa45ceee5f74a6.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Cloak_and_Dagger.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/0/00/Item_icon_Cloak_and_Dagger.png/128px-Item_icon_Cloak_and_Dagger.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "868655b4af9f7bc6f10fe007a1f5e6ac12044d492cd5df744b3fc953e849bc9b",
+      "bytes": 9943
+    },
+    {
+      "path": "items/7e1a305dffb509ad414b27b132126c17.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Concheror.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/7/7e/Item_icon_Concheror.png/128px-Item_icon_Concheror.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "0715d06ae7f387b89a7017ff9f48d1dc90d991731b4be1cab085f1107d0cba3f",
+      "bytes": 9876
+    },
+    {
+      "path": "items/0256f10b235a52a1d1ea8dccaf4c1c78.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Conniver%27s_Kunai.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/0/02/Item_icon_Conniver%27s_Kunai.png/128px-Item_icon_Conniver%27s_Kunai.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "8d1ae49a3f8425c90f0f85532e6c4835bddd31c8fd59e7b2ffa4f0b0c22698b7",
+      "bytes": 5552
+    },
+    {
+      "path": "items/46aff2b2f778bb2ae078d9b4c4d28c84.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Cow_Mangler_5000.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/4/46/Item_icon_Cow_Mangler_5000.png/128px-Item_icon_Cow_Mangler_5000.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "c224ed844df0468c45bba546e58b0a378e772f2298b40ebdce76704fdeb136fe",
+      "bytes": 9398
+    },
+    {
+      "path": "items/018354a5bdecbf35736be3d0b7d362fc.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Cozy_Camper.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/0/01/Item_icon_Cozy_Camper.png/128px-Item_icon_Cozy_Camper.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "4c284b20b0f2b2894cbf661d09147d8d41f3b9c869014b5b0649722f9095450a",
+      "bytes": 13944
+    },
+    {
+      "path": "items/ae6e14b57b8ffd8e2718450b5c1304d8.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Crit-a-Cola.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/a/ae/Item_icon_Crit-a-Cola.png/128px-Item_icon_Crit-a-Cola.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "02e3ac91cd2b32a241141dca24cdba11cfce8f23eb69bf17b811a6a642f103cc",
+      "bytes": 8853
+    },
+    {
+      "path": "items/9c40cbf4c4717626e8e02f0fcfbea19d.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Crusader%27s_Crossbow.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/9/9c/Item_icon_Crusader%27s_Crossbow.png/128px-Item_icon_Crusader%27s_Crossbow.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "0ae01b32947d69ebec1aadcb2bf92f228c6ae3942a2d1926956340419cc103e6",
+      "bytes": 13421
+    },
+    {
+      "path": "items/35661e55736fe2f5dc8b94c60948559a.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Dalokohs_Bar.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/3/35/Item_icon_Dalokohs_Bar.png/128px-Item_icon_Dalokohs_Bar.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "3ffff82afa3b0c5ce8917a5c7fec4efd74e7990df2a2c712ac8c54857eed3076",
+      "bytes": 10645
+    },
+    {
+      "path": "items/448589c7b3e5cc991db86a8b760ad6a5.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Darwin%27s_Danger_Shield.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/4/44/Item_icon_Darwin%27s_Danger_Shield.png/128px-Item_icon_Darwin%27s_Danger_Shield.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "517a443891288e96010b53bc72da7a118469e68bf2d7aab4914e70ae31a82fa2",
+      "bytes": 12663
+    },
+    {
+      "path": "items/b710edd08ddd4e1661b05296d75eacc8.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Dead_Ringer.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/b/b7/Item_icon_Dead_Ringer.png/128px-Item_icon_Dead_Ringer.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "abe1da94f365772f73648d4e4978cee29f00c65f9929be551fc0f8411a6788cc",
+      "bytes": 7610
+    },
+    {
+      "path": "items/940a2729fb150f0c36a5521d20b8e599.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Degreaser.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/9/94/Item_icon_Degreaser.png/128px-Item_icon_Degreaser.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "fd2b35e9736a837163fd1b6a0b3c022153896deaba6daafade5d9a0b6ddbe51e",
+      "bytes": 10633
+    },
+    {
+      "path": "items/532bbf1f7b3c0ba77fc218bbc4e0d7ef.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Detonator.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/5/53/Item_icon_Detonator.png/128px-Item_icon_Detonator.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "31fda51caf3eeadf3f73a2c575f925196ecdd9e64412c5e30e8470f77c323601",
+      "bytes": 8681
+    },
+    {
+      "path": "items/b4cacf0335762885d49bd96edf211eaf.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Diamondback.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/b/b4/Item_icon_Diamondback.png/128px-Item_icon_Diamondback.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "ae7d35cb4a85063c64bb6d858e8b7bb127816ae6e7462220beae4649a2f4db23",
+      "bytes": 10303
+    },
+    {
+      "path": "items/e7a20590ffcc83ac678be37a6d60ff28.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Direct_Hit.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/e/e7/Item_icon_Direct_Hit.png/128px-Item_icon_Direct_Hit.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "3bffc7d59a75526e337f70059445093cf10a95bae192a12e690318bfc77f388a",
+      "bytes": 7471
+    },
+    {
+      "path": "items/cfa0b621781baf205604ab4c7e7e7caa.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Disciplinary_Action.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/c/cf/Item_icon_Disciplinary_Action.png/128px-Item_icon_Disciplinary_Action.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "5d13a5364dd29eb72456cfea0ebdae2cb01f0da665c309b0356bc1c02b71d525",
+      "bytes": 5426
+    },
+    {
+      "path": "items/8120f9def9d7e4283e3244db972f27b9.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Disguise_Kit.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/8/81/Item_icon_Disguise_Kit.png/128px-Item_icon_Disguise_Kit.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "61bde196834d08c746eab0765ad84ec5666214397fd290521d498c82318404f0",
+      "bytes": 11303
+    },
+    {
+      "path": "items/1ff1727d46d0f24bace05a9170fcbffc.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Dragon%27s_Fury.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/1/1f/Item_icon_Dragon%27s_Fury.png/128px-Item_icon_Dragon%27s_Fury.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "86c4400eeabc397d0193cd5849d1fdf744dbd73a8a1b21a504219ef35bcb1671",
+      "bytes": 10716
+    },
+    {
+      "path": "items/f2114636a5b9e6724fc8931967ae6ae7.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Electro_Sapper.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/f/f2/Item_icon_Electro_Sapper.png/128px-Item_icon_Electro_Sapper.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "c0de1ae9a2ace6e22a16b5396e4db198fafef93fd4fb4cf4643fd0662f94555b",
+      "bytes": 9847
+    },
+    {
+      "path": "items/b6e242a1d25cac07490c0212233ce415.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Enforcer.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/b/b6/Item_icon_Enforcer.png/128px-Item_icon_Enforcer.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "c20b728f535acbadcaf0e918782e2a47bea507b2712d1a416e39d095cde3d6ca",
+      "bytes": 10382
+    },
+    {
+      "path": "items/ba8f88e3c46374878655c6264bab4d21.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Equalizer.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/b/ba/Item_icon_Equalizer.png/128px-Item_icon_Equalizer.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "b90b1c84f6f0d7c707522dafa272bb5ddc92a3836fc418b72e23f3f3b444ec57",
+      "bytes": 8096
+    },
+    {
+      "path": "items/0cbaf2b29520038851c7f6adae993a34.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Escape_Plan.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/0/0c/Item_icon_Escape_Plan.png/128px-Item_icon_Escape_Plan.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "859c6585680b13f7f3c59c6cc41bc2f7dd1d91308fa8048e62e9addaad0287c5",
+      "bytes": 7661
+    },
+    {
+      "path": "items/cf40499cacd7b4c469ada7628e9c9601.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Eureka_Effect.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/c/cf/Item_icon_Eureka_Effect.png/128px-Item_icon_Eureka_Effect.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "310dfd0264f2126d4baa89a9fdb43555d223c5b5631514ad8d3cd519fe2ab85f",
+      "bytes": 11744
+    },
+    {
+      "path": "items/62a1886dfe5c7ded1e3a74029b4c29c3.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Eviction_Notice.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/6/62/Item_icon_Eviction_Notice.png/128px-Item_icon_Eviction_Notice.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "a51d2837f9fdc344e1075ac6c1ee42b67c00b45fa05ef6f7193c7112132b7c19",
+      "bytes": 5740
+    },
+    {
+      "path": "items/9452b75dd3e629850a8ab56f131ada35.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Eyelander.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/9/94/Item_icon_Eyelander.png/128px-Item_icon_Eyelander.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "dcef315569c9391067eea8c1c82d5a2c0f53451f8c7bc37a99975bc2f092e866",
+      "bytes": 7525
+    },
+    {
+      "path": "items/cd1f45579001308a47f026ba8bd7253b.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Family_Business.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/c/cd/Item_icon_Family_Business.png/128px-Item_icon_Family_Business.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "92e4de15a29e8cc674754e20f3ea8c3862551e94a4d1eeaa57e4ba7dac53f95a",
+      "bytes": 8700
+    },
+    {
+      "path": "items/f4b2d7d6b1341eef3459821ed61062e3.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Fan_O%27War.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/f/f4/Item_icon_Fan_O%27War.png/128px-Item_icon_Fan_O%27War.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "56b453705a690f732ac8e3b92c86e0306a60dfda45bd948a644db28de39b9273",
+      "bytes": 9160
+    },
+    {
+      "path": "items/9ff477f90652901b0a9ec6e6497b9723.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Fire_Axe.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/9/9f/Item_icon_Fire_Axe.png/128px-Item_icon_Fire_Axe.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "bab26363da8c8865cfb27ab603b396a25d688002da1e75ccc46cf1b4f267290a",
+      "bytes": 8193
+    },
+    {
+      "path": "items/1999dfa03dd782e36e3b6494869cfd85.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Fists.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/1/19/Item_icon_Fists.png/128px-Item_icon_Fists.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "b3d914551240d5bfbf4349f5f680ae606c276e92f5aa25f43ff63161b6050326",
+      "bytes": 11287
+    },
+    {
+      "path": "items/9cd030a2e371e8993e0d42410f1cde32.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Fists_of_Steel.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/9/9c/Item_icon_Fists_of_Steel.png/128px-Item_icon_Fists_of_Steel.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "2cc616aa20c43e786e2a9436c199f4d538912888ea4caaaa91979b8867549fea",
+      "bytes": 14412
+    },
+    {
+      "path": "items/ec378fa05588803c8c4dfd318bca60eb.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Flame_Thrower.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/e/ec/Item_icon_Flame_Thrower.png/128px-Item_icon_Flame_Thrower.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "45a241b3a811cd5ad3af8133e69065388da1846076ff952cc9c40ce8d43728d6",
+      "bytes": 10231
+    },
+    {
+      "path": "items/7b7312daee652ff009eca5eac5017ca2.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Flare_Gun.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/7/7b/Item_icon_Flare_Gun.png/128px-Item_icon_Flare_Gun.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "01be691019a4303e40c8d77b383b2e258a99d0d43883da5a440b2c3ab8d5f501",
+      "bytes": 7567
+    },
+    {
+      "path": "items/5ad3ffaee50ea9825d12ac0cd0945603.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Flying_Guillotine.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/5/5a/Item_icon_Flying_Guillotine.png/128px-Item_icon_Flying_Guillotine.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "dd2a6ab5e1dd2c5ba1bf5d12c9c4c01b33249f7af713b1335e543e1b1c4a1dbc",
+      "bytes": 8076
+    },
+    {
+      "path": "items/edd4beffa034105d6093ab06838a4f23.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Force-A-Nature.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/e/ed/Item_icon_Force-A-Nature.png/128px-Item_icon_Force-A-Nature.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "571c4541b4b658a9b97e856e0c5d18f8bcf8af145aff8da5ce6dbe50bbb178cd",
+      "bytes": 8443
+    },
+    {
+      "path": "items/26a119e53633cf2eeee4bc67893dd653.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Frontier_Justice.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/2/26/Item_icon_Frontier_Justice.png/128px-Item_icon_Frontier_Justice.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "b8a9b3e09e76837be7f7965b21a0c44435d79a7032ec67e6a2f56da75ff7ec02",
+      "bytes": 9054
+    },
+    {
+      "path": "items/0e08a4eafcbe48e07e1b8393546ed410.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Gas_Passer.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/0/0e/Item_icon_Gas_Passer.png/128px-Item_icon_Gas_Passer.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "72e35338bf5b31c6905c8cc21f74f0e9155c289bdee80cf711ca57d642b0feff",
+      "bytes": 9722
+    },
+    {
+      "path": "items/4fb6fa6cb6ef8663d8407a1b486cedcf.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Gloves_of_Running_Urgently.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/4/4f/Item_icon_Gloves_of_Running_Urgently.png/128px-Item_icon_Gloves_of_Running_Urgently.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "1f2da7de40f15d8b43112bec0b3dfc1b23d6845280668bc09ca401dc317cff96",
+      "bytes": 11924
+    },
+    {
+      "path": "items/eadba6f0e8dc08e8e734a4454705b006.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Grappling_Hook.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/e/ea/Item_icon_Grappling_Hook.png/128px-Item_icon_Grappling_Hook.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "b25b01f05dad7e5dda1ae90e5fcda472b86cf39ac66ed28263eca563b4032778",
+      "bytes": 11521
+    },
+    {
+      "path": "items/e62935cf06f65a239f52541c2fd9472f.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Grenade_Launcher.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/e/e6/Item_icon_Grenade_Launcher.png/128px-Item_icon_Grenade_Launcher.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "ef5b2697907ee88c486e79d41766f67c0aa799ca2e35581938b983d5b4e100cb",
+      "bytes": 12246
+    },
+    {
+      "path": "items/0cbd14c32d3cfa5f327c3499e202fd5d.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Gunboats.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/0/0c/Item_icon_Gunboats.png/128px-Item_icon_Gunboats.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "f592c05884fefe85d79817f42e2ee8c0272a1fdfb0b35bcfc2885aa267c8e648",
+      "bytes": 9624
+    },
+    {
+      "path": "items/ca0ed443afa9dd4e1347a4a6a8ad6ccd.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Gunslinger.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/c/ca/Item_icon_Gunslinger.png/128px-Item_icon_Gunslinger.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "c26cac1a6cb051340706f3258597034effa03c56791b55c921768679b09c6abf",
+      "bytes": 11247
+    },
+    {
+      "path": "items/a9ce199495ef4b15dc923a5ddf62558d.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Half-Zatoichi.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/a/a9/Item_icon_Half-Zatoichi.png/128px-Item_icon_Half-Zatoichi.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "c3d2dc0bbbe9db474f26e0a67bbfcf307bdec5ae5b4e49fa130f94d40173af47",
+      "bytes": 5045
+    },
+    {
+      "path": "items/183d0bbb7674b4144b67cf3c006e6493.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Hitman%27s_Heatmaker.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/1/18/Item_icon_Hitman%27s_Heatmaker.png/128px-Item_icon_Hitman%27s_Heatmaker.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "8bd579326bcebb88942d7c7e2a005458458f48a26f99367a2963960ef2d1231c",
+      "bytes": 9673
+    },
+    {
+      "path": "items/543256da124691e2bfa2f534b22d9839.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Holiday_Punch.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/5/54/Item_icon_Holiday_Punch.png/128px-Item_icon_Holiday_Punch.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "3222e079da78691385034305ae42051d12d44782f0d7d8e83a215d71a85ee2f1",
+      "bytes": 12780
+    },
+    {
+      "path": "items/4a8ed7701615e5fc58f2e7d3b4a3d44a.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Homewrecker.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/4/4a/Item_icon_Homewrecker.png/128px-Item_icon_Homewrecker.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "73f2dad02322b4b2d30bef83e8abb4929fd14df01f89011b539f161a6ae40e6d",
+      "bytes": 8207
+    },
+    {
+      "path": "items/f6ddad5b62679abe0ffa3eedda962a1e.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Hot_Hand.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/f/f6/Item_icon_Hot_Hand.png/128px-Item_icon_Hot_Hand.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "adb6625561a7651c563feff3dd35be15f7a843ff8192e410716310c35dd3ba63",
+      "bytes": 10837
+    },
+    {
+      "path": "items/f8c7bc9717b6784e35b4464657c6d437.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Huntsman.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/f/f8/Item_icon_Huntsman.png/128px-Item_icon_Huntsman.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "24a1afb99c04d1205559245bc2960ac337a46afb347d6362e42cee39f5d4537f",
+      "bytes": 6558
+    },
+    {
+      "path": "items/819eff36ec5f06117537e473063110cd.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Huo-Long_Heater.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/8/81/Item_icon_Huo-Long_Heater.png/128px-Item_icon_Huo-Long_Heater.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "90b7ac30b44334f8abf740074d1e5b5469ef2c5b0a8a26368f482be8719a53ec",
+      "bytes": 11533
+    },
+    {
+      "path": "items/0e5478a405e2f482370375772b46d286.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Invisibility_Watch.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/0/0e/Item_icon_Invisibility_Watch.png/128px-Item_icon_Invisibility_Watch.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "b6cd0d24e42b459f3cfcd2929d8c8078e588f820d44be22f4577cd0e4d70a13a",
+      "bytes": 11091
+    },
+    {
+      "path": "items/cd40c8f4740ad286b33e684569f3afc3.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Iron_Bomber.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/c/cd/Item_icon_Iron_Bomber.png/128px-Item_icon_Iron_Bomber.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "a8974ca2f82383baf63a382564e1baadcbe5d17221b1111ad3b7883d62c52221",
+      "bytes": 11787
+    },
+    {
+      "path": "items/49157e185a9e606614a2b24e92423730.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Jag.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/4/49/Item_icon_Jag.png/128px-Item_icon_Jag.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "7f66fc9738e63161746ecb34de86020bc1dcc2ee9d1e0ff5c2784298b0ef3bf2",
+      "bytes": 10999
+    },
+    {
+      "path": "items/b365a23408c4d66da785297049ca86ad.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Jarate.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/b/b3/Item_icon_Jarate.png/128px-Item_icon_Jarate.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "110359d888a9ed1aa140cc36f41c688a25aa686b09a83d4b29e205ea006adca9",
+      "bytes": 8585
+    },
+    {
+      "path": "items/f6a1f7211945b9b63ad5110ae83f5543.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Killing_Gloves_of_Boxing.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/f/f6/Item_icon_Killing_Gloves_of_Boxing.png/128px-Item_icon_Killing_Gloves_of_Boxing.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "23fa8279d54dfc5c05bb9e5ae4f357c4fa0aed1e4e0c2d2a4448d248dc9f5863",
+      "bytes": 9683
+    },
+    {
+      "path": "items/575122f104180ec3e8e5c3a1819afa2c.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Knife.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/5/57/Item_icon_Knife.png/128px-Item_icon_Knife.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "64ce333e28473948e8e44d32cc66bb07e1f1cf6d077eef6a47a2c9b618224fff",
+      "bytes": 5515
+    },
+    {
+      "path": "items/8515af6c611edac6ad31fae7a5157fd4.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Kritzkrieg.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/8/85/Item_icon_Kritzkrieg.png/128px-Item_icon_Kritzkrieg.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "1b33db61b61703bd26e9c56e5bac62f33da6531b80fe2193c9e9b661092decad",
+      "bytes": 9734
+    },
+    {
+      "path": "items/eaf6c2a635439622535213950edc1833.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Kukri.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/e/ea/Item_icon_Kukri.png/128px-Item_icon_Kukri.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "e0ef3a9e97e3ca7a0dc2838fec6058dca7b6a11b8c51233ee9a24257c02a0e89",
+      "bytes": 6562
+    },
+    {
+      "path": "items/bd5d0cccd1b6cbed93ae1000348eb845.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_L%27%C3%89tranger.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/b/bd/Item_icon_L%27%C3%89tranger.png/128px-Item_icon_L%27%C3%89tranger.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "55b0c5acb980d474ea3ed6241fae7657352c8e3948fd06b087fc84f76e7beee4",
+      "bytes": 10265
+    },
+    {
+      "path": "items/24a30f6fb3496dff8eafef32ca40e73c.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Liberty_Launcher.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/2/24/Item_icon_Liberty_Launcher.png/128px-Item_icon_Liberty_Launcher.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "d869a9fc0662d6eea1f7ca8349872cef0d2d2afeebe98eea4eb0b7479457b7e4",
+      "bytes": 8484
+    },
+    {
+      "path": "items/62c3aea3a4dc1e7b4f1af717b1098e40.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Loch-n-Load.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/6/62/Item_icon_Loch-n-Load.png/128px-Item_icon_Loch-n-Load.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "257524c2e13f75f218f83c2d340c81fa296ec821f48dceb9c4685137bed2a979",
+      "bytes": 10373
+    },
+    {
+      "path": "items/70083619afd119881ec4c88e95317525.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Loose_Cannon.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/7/70/Item_icon_Loose_Cannon.png/128px-Item_icon_Loose_Cannon.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "5417d9817603e07acffaaf54af7cd3b24050d768b323cedc896d06f707d45a87",
+      "bytes": 10244
+    },
+    {
+      "path": "items/ae3608d2f4c02cb2fe3f4f2cc23c445c.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Machina.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/a/ae/Item_icon_Machina.png/128px-Item_icon_Machina.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "a149d7d73383f4dfaa09c0e747947618925dd1ef8bee45f4de5dda690d8d4b56",
+      "bytes": 8683
+    },
+    {
+      "path": "items/56b94729a6e2f3fa8f0992d6fc8c1895.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Mad_Milk.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/5/56/Item_icon_Mad_Milk.png/128px-Item_icon_Mad_Milk.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "b0020bee065b42ef7121cccc366fb02d6f5938d49162ce42902483c7b7331b4a",
+      "bytes": 5966
+    },
+    {
+      "path": "items/9d83e835ec8f86f8eb55b903de33809e.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Manmelter.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/9/9d/Item_icon_Manmelter.png/128px-Item_icon_Manmelter.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "d94eb6412aa0d5048ccf667ffd74f13dfc411894969a69b4ad7435a92daeeb01",
+      "bytes": 8813
+    },
+    {
+      "path": "items/6a5652288b9d1dfff5b4843ef3071b35.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Mantreads.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/6/6a/Item_icon_Mantreads.png/128px-Item_icon_Mantreads.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "aab62eb85255f8aaf3ea860405e78116077fa1b7c7b8d793b0f4665d09d809f5",
+      "bytes": 10465
+    },
+    {
+      "path": "items/ac16c4fb8ee74a82a4b199c8e6fe6fa7.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Market_Gardener.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/a/ac/Item_icon_Market_Gardener.png/128px-Item_icon_Market_Gardener.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "7e9e942c05c124e26109fc6ca50183320688386c7b3246ce049fa03cf6f1d01c",
+      "bytes": 8909
+    },
+    {
+      "path": "items/4ae35d101d36608493bd9bbf661a1c8b.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Medi_Gun.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/4/4a/Item_icon_Medi_Gun.png/128px-Item_icon_Medi_Gun.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "3e232278fbbe7011fcddd2aef67f41e7ef2e7a351f7df15cce84ec7b08cc24dd",
+      "bytes": 9449
+    },
+    {
+      "path": "items/a74b4d01f56a2f93c537b4d5e8b73715.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Minigun.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/a/a7/Item_icon_Minigun.png/128px-Item_icon_Minigun.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "6ef9ac713260ca54783e1d08d11ef930c76f0041a4c009edfd177dab67216aff",
+      "bytes": 12115
+    },
+    {
+      "path": "items/cc795d95444e2a7632bf0887a5d2c9d9.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Natascha.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/c/cc/Item_icon_Natascha.png/128px-Item_icon_Natascha.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "5bdc2a35a758d4812878ca472e64ffa618f528db157c35e3101c64eda1137d91",
+      "bytes": 12273
+    },
+    {
+      "path": "items/e9539b28fb03c98ee1a25d2c1f48a291.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Neon_Annihilator.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/e/e9/Item_icon_Neon_Annihilator.png/128px-Item_icon_Neon_Annihilator.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "082cdfaaa33bfdf612e8d8e381ae29304b2ff9ab70c2d08b9e12c127f61b507b",
+      "bytes": 10269
+    },
+    {
+      "path": "items/fe11fe17cb51b6faa8d174466b7b31be.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Overdose.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/f/fe/Item_icon_Overdose.png/128px-Item_icon_Overdose.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "d11ac21178249a0ee2ad829a01e1c0dc915864144ad5e2b49887766cb2ab4d03",
+      "bytes": 13385
+    },
+    {
+      "path": "items/16abd0dc3d48af126d04e41405b80f82.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_PDA_Build.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/1/16/Item_icon_PDA_Build.png/128px-Item_icon_PDA_Build.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "9223a85509f859436457880634902f7187f4707c9a29c86c3b9da2e3ae43c899",
+      "bytes": 8789
+    },
+    {
+      "path": "items/2653545f708710a96bccbfd10276d8e7.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_PDA_Destroy.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/2/26/Item_icon_PDA_Destroy.png/128px-Item_icon_PDA_Destroy.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "f0ba8263d06bd5d48de966cf99dead749ec759bba853496e82a43b77cab12f06",
+      "bytes": 6178
+    },
+    {
+      "path": "items/4bda2d029b89dab1b0c152bce4d43ac2.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Pain_Train.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/4/4b/Item_icon_Pain_Train.png/128px-Item_icon_Pain_Train.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "3b1352c4c7a3ebe74f601793162be8875b8f1b9611fcf91af735d4d4051d5c08",
+      "bytes": 9217
+    },
+    {
+      "path": "items/be7abea72377e6df65af3e344f05c8fa.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Panic_Attack.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/b/be/Item_icon_Panic_Attack.png/128px-Item_icon_Panic_Attack.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "f204a3c3958576eba1609d9d30fec61774df2b406075fd9c9d2f51bbdf6ceddc",
+      "bytes": 8536
+    },
+    {
+      "path": "items/984f843a6777e04a6f4079cf78d165f1.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Persian_Persuader.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/9/98/Item_icon_Persian_Persuader.png/128px-Item_icon_Persian_Persuader.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "9a431cd8216da7f2ff68dd52f4e0e0ad57835c7e9ccf32f2bf4a189cd4d010ec",
+      "bytes": 7352
+    },
+    {
+      "path": "items/22eaa66e77484c0a8b036370129a7059.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Phlogistinator.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/2/22/Item_icon_Phlogistinator.png/128px-Item_icon_Phlogistinator.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "e16fa915206401118f089c1a2c089c1cb4c0c58aa1767789b222e76b3a7445e7",
+      "bytes": 10126
+    },
+    {
+      "path": "items/52c30a75ea0f9a8c039a1e36eff4f9ae.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Pistol.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/5/52/Item_icon_Pistol.png/128px-Item_icon_Pistol.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "c7501a7f83e026d8664ac8c6c964f29463d6d2a80bb517d5d924413d1dfd7055",
+      "bytes": 9344
+    },
+    {
+      "path": "items/89367b7a7862348b0583b8f7ed444b54.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Pomson_6000.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/8/89/Item_icon_Pomson_6000.png/128px-Item_icon_Pomson_6000.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "44309fa28b26ac6d8e9a0d226fac198e37e532b1ce0896e7d1c187b7163fe4df",
+      "bytes": 12047
+    },
+    {
+      "path": "items/cfaa9d7171eee449dfffa96a44d21f4e.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Powerjack.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/c/cf/Item_icon_Powerjack.png/128px-Item_icon_Powerjack.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "04bd2c5662dc564273d2de7a1ceef94c2ce0ad43673aedd5e91e65becef56061",
+      "bytes": 10754
+    },
+    {
+      "path": "items/f6b6345355dcf3cf423af51168654569.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Pretty_Boy%27s_Pocket_Pistol.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/f/f6/Item_icon_Pretty_Boy%27s_Pocket_Pistol.png/128px-Item_icon_Pretty_Boy%27s_Pocket_Pistol.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "ea7d9a8a3bfa9936200f76da744f3b3c8576218e371f23a4eef9734e8c6a963c",
+      "bytes": 8737
+    },
+    {
+      "path": "items/50d7afc15e4ecf56d441241ab7c1cd42.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Quick-Fix.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/5/50/Item_icon_Quick-Fix.png/128px-Item_icon_Quick-Fix.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "dcff74172e669bcae02807ae65d80ffcd94b14f8c4900e46bebb3581e32f0076",
+      "bytes": 10436
+    },
+    {
+      "path": "items/f9a5603c74a3dc1aec271ba8e625c1a1.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Quickiebomb_Launcher.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/f/f9/Item_icon_Quickiebomb_Launcher.png/128px-Item_icon_Quickiebomb_Launcher.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "60825a6c48b88f27c6bb3fef192eb4be05c14aef3807f67d523c68fa348727ba",
+      "bytes": 13141
+    },
+    {
+      "path": "items/0fd6ff844a72aa6df31069f49ba91411.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Razorback.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/0/0f/Item_icon_Razorback.png/128px-Item_icon_Razorback.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "db2e9425525c2bd78c1e2c799145ffb3b86e42bc34ab7a3ebb17f383a644a9ff",
+      "bytes": 12898
+    },
+    {
+      "path": "items/7dee97387ec97d210fa3374370e4aa2e.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Red-Tape_Recorder.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/7/7d/Item_icon_Red-Tape_Recorder.png/128px-Item_icon_Red-Tape_Recorder.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "6d9d11fbed8d0a09bbed544592568312050735572128e44cb6b0d44886fe72ec",
+      "bytes": 10559
+    },
+    {
+      "path": "items/29439a58850176828ab4bc693893517f.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Rescue_Ranger.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/2/29/Item_icon_Rescue_Ranger.png/128px-Item_icon_Rescue_Ranger.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "1c22c07e5a8b8db2f3f3a4ef26484eb87c30efdfd94af005f7704c7693b6524c",
+      "bytes": 7404
+    },
+    {
+      "path": "items/34f57de6d224f9814602f695e1f0ffba.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Reserve_Shooter.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/3/34/Item_icon_Reserve_Shooter.png/128px-Item_icon_Reserve_Shooter.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "26b6b8ad72ade4f3c861e4c0abe60ce5a1683ca06c24490e5015e6aa8e4101af",
+      "bytes": 9412
+    },
+    {
+      "path": "items/1ffe98b7d26c94041a851adaaca0c0cc.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Revolver.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/1/1f/Item_icon_Revolver.png/128px-Item_icon_Revolver.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "ddeedf9a54140cdbd92bbcc7b13cd53eb66ce32bef1ff8011771b683326201d9",
+      "bytes": 10265
+    },
+    {
+      "path": "items/1ddb8c25b5d9c16c987526e2f62eebda.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Righteous_Bison.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/1/1d/Item_icon_Righteous_Bison.png/128px-Item_icon_Righteous_Bison.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "4e4b87be962a3663d3725b5c50585bf20f2860b0d086b1989429b2839ea831da",
+      "bytes": 8074
+    },
+    {
+      "path": "items/537a9c78d2f4190c47301fca1f8d4a0c.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Rocket_Jumper.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/5/53/Item_icon_Rocket_Jumper.png/128px-Item_icon_Rocket_Jumper.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "32525f5c7b347888013d5cc2a85982fd20071ec72320b8b340d2524be74af8c2",
+      "bytes": 8982
+    },
+    {
+      "path": "items/fe07ac82028329c8e7665bb021604d56.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Rocket_Launcher.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/f/fe/Item_icon_Rocket_Launcher.png/128px-Item_icon_Rocket_Launcher.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "4fa2f3ff9a6c855a9793816edaff6045b2ac9b9128f662b769b85911d3330ea0",
+      "bytes": 8320
+    },
+    {
+      "path": "items/7093763ca2645129fdc59e11e9205fb7.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Sandman.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/7/70/Item_icon_Sandman.png/128px-Item_icon_Sandman.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "92db8078f09af27a56c77e7fa6162fdb560c95e1c6080391a46dbc41e26f022e",
+      "bytes": 8013
+    },
+    {
+      "path": "items/5e6b8daa547fcb83131397990a06af9e.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Sandvich.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/5/5e/Item_icon_Sandvich.png/128px-Item_icon_Sandvich.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "f43466e18855b9f6c50332564c76205d17516dc548331cdd0b800521f8a2fd12",
+      "bytes": 10127
+    },
+    {
+      "path": "items/18bae3fe6c4e5dcc7f859f1d5a3f9474.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Saxxy.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/1/18/Item_icon_Saxxy.png/128px-Item_icon_Saxxy.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "17609171a4e7c76ceb1b79fa4cd1c016cc283a52cb17c916fc8033674e90d520",
+      "bytes": 6506
+    },
+    {
+      "path": "items/1bef8b856de1e8572c8d4a06215d6af5.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Scattergun.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/1/1b/Item_icon_Scattergun.png/128px-Item_icon_Scattergun.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "34c3e8bce61d90dd99ef62e7c3f885ba15fcebae728e13d2023d16aaee006147",
+      "bytes": 9353
+    },
+    {
+      "path": "items/be40ce572f2c16616c8901d643755d15.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Scorch_Shot.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/b/be/Item_icon_Scorch_Shot.png/128px-Item_icon_Scorch_Shot.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "9f7abdc8388c5f8b212532309a89658403b3180960c458b69868a4df1965515c",
+      "bytes": 8293
+    },
+    {
+      "path": "items/c64c5397e381876d788725b85f479e8c.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Scotsman%27s_Skullcutter.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/c/c6/Item_icon_Scotsman%27s_Skullcutter.png/128px-Item_icon_Scotsman%27s_Skullcutter.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "f69ac4c2c2208f4369839a16f550749cd324db840305e3a9973d19aa11ebe274",
+      "bytes": 8853
+    },
+    {
+      "path": "items/2ca6e0e69b9f93629c6f635b4a4acf80.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Scottish_Resistance.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/2/2c/Item_icon_Scottish_Resistance.png/128px-Item_icon_Scottish_Resistance.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "b82b6c8450947b7530d3a653f3175cab5f4b8c35b97af94859ff26e36baf3e4a",
+      "bytes": 11120
+    },
+    {
+      "path": "items/7715ea7b65b6ecad49ccb5deb2766677.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Second_Banana.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/7/77/Item_icon_Second_Banana.png/128px-Item_icon_Second_Banana.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "f1a7f412eebf7b5dd0dcfa46c4008ed3727256f29c717173d061273ea153a4b2",
+      "bytes": 12124
+    },
+    {
+      "path": "items/8db2cacca68868e1b3e0fe2982d2e9ec.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Shahanshah.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/8/8d/Item_icon_Shahanshah.png/128px-Item_icon_Shahanshah.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "d995695bc03ed7b9f0d8d10b50623d7f74004f4128b509c26ebbda59bf4f57c6",
+      "bytes": 5402
+    },
+    {
+      "path": "items/acccba4d5e3465ec9fc2f4c8bb38d5ab.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Sharpened_Volcano_Fragment.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/a/ac/Item_icon_Sharpened_Volcano_Fragment.png/128px-Item_icon_Sharpened_Volcano_Fragment.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "20d204e67c3f7fc5b515889a51eeeeb17ec94ea700fe222c0dba1df57dcc2a23",
+      "bytes": 8581
+    },
+    {
+      "path": "items/36b52764b3188a246735021663928082.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Short_Circuit.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/3/36/Item_icon_Short_Circuit.png/128px-Item_icon_Short_Circuit.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "db6a20bef5f4e465ad9a26402bf41473a97fd91a83a956387f55aaaf8f05e062",
+      "bytes": 9945
+    },
+    {
+      "path": "items/84ce0ebd69dee8825f27570c3c508559.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Shortstop.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/8/84/Item_icon_Shortstop.png/128px-Item_icon_Shortstop.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "a5e1728ef4f56f2850b5be58d633f3d6acc8fb2cc7c7338d90d522786cadbbb7",
+      "bytes": 8904
+    },
+    {
+      "path": "items/5f41c8b4c7f6a27790406e96ba9ec690.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Shotgun.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/5/5f/Item_icon_Shotgun.png/128px-Item_icon_Shotgun.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "65c0927f726b86c361b506d707cd68fc12b3cb9e19fdc582fb3755de5311081a",
+      "bytes": 10172
+    },
+    {
+      "path": "items/7316025306a7870057bcd0a5dbfac419.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Shovel.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/7/73/Item_icon_Shovel.png/128px-Item_icon_Shovel.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "7b90c05b035810df0c07d1546e7609b9f429a140eba9805cfb2a80a10e867ffa",
+      "bytes": 8923
+    },
+    {
+      "path": "items/a1d42872475507e5c65ed8326b74fe97.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Sniper_Rifle.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/a/a1/Item_icon_Sniper_Rifle.png/128px-Item_icon_Sniper_Rifle.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "14e88c11aaa460bf0b622da0c33844246126357ec56c97bd6993530f1b0366fd",
+      "bytes": 8646
+    },
+    {
+      "path": "items/f1cca3c3ebbe8fba796e39ea5308c81c.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Soda_Popper.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/f/f1/Item_icon_Soda_Popper.png/128px-Item_icon_Soda_Popper.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "5f3d1cd1fd3f5304fe2534fcc67ad3a470ae76637b287ce4473a75e6410311d3",
+      "bytes": 9962
+    },
+    {
+      "path": "items/dbc9273de68b2ebbfebcabd1a9ab44fd.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Solemn_Vow.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/d/db/Item_icon_Solemn_Vow.png/128px-Item_icon_Solemn_Vow.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "c07f779d2dcada4b27dff8375c4229373e4c3691655cc1d9cdc89d4587ca3a84",
+      "bytes": 7948
+    },
+    {
+      "path": "items/ec32b232e92b62e3e55802d5dd0a0759.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Southern_Hospitality.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/e/ec/Item_icon_Southern_Hospitality.png/128px-Item_icon_Southern_Hospitality.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "cf20e225046aa8f2f963b4fc62b7009bd84658cc8ee2666be088637e5f9c8f99",
+      "bytes": 12250
+    },
+    {
+      "path": "items/c307dde01aeb0738f53e4c61cb9fdf4b.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Splendid_Screen.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/c/c3/Item_icon_Splendid_Screen.png/128px-Item_icon_Splendid_Screen.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "d2f396d2dc738ca0b6c4a4f39b733bf31781b859eeb5ac4aa00bd3c7a88e928a",
+      "bytes": 13710
+    },
+    {
+      "path": "items/723badd2d2a0f680bd9cd3ce5a8ed733.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Spy-Cicle.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/7/72/Item_icon_Spy-Cicle.png/128px-Item_icon_Spy-Cicle.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "57a4c91a4d4dbac29667c1e6cd71b761e257baf5616607311ea565b21215865d",
+      "bytes": 3676
+    },
+    {
+      "path": "items/569fbe1e30e34ab6ddcad45e4988e91e.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Sticky_Jumper.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/5/56/Item_icon_Sticky_Jumper.png/128px-Item_icon_Sticky_Jumper.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "6ae66c17efebd54e5171761ec45664e995b1516a9c71522f08ff2b9ed747ef90",
+      "bytes": 11761
+    },
+    {
+      "path": "items/7c1a1737f84b198479e22fd241be079d.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Stickybomb_Launcher.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/7/7c/Item_icon_Stickybomb_Launcher.png/128px-Item_icon_Stickybomb_Launcher.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "71455e30c8305c661033d15cfb97f4710b3b74ad0fdecef10109fdcab02985b5",
+      "bytes": 10776
+    },
+    {
+      "path": "items/121cc73153bff97db74b715a7dc8316a.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Submachine_Gun.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/1/12/Item_icon_Submachine_Gun.png/128px-Item_icon_Submachine_Gun.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "a559b617ea58da1b8fc7c8900307365d06718bc662be1213032e91919b50a8df",
+      "bytes": 8036
+    },
+    {
+      "path": "items/067638128ed3e824d180d65071076514.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Sun-on-a-Stick.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/0/06/Item_icon_Sun-on-a-Stick.png/128px-Item_icon_Sun-on-a-Stick.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "36b93673cdd06cf6e4bac4e06780fc76f1ae51f0c2aa247295eca8622b0458f8",
+      "bytes": 7427
+    },
+    {
+      "path": "items/6adf268e2f9b647d16abcea4145b8f0e.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Sydney_Sleeper.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/6/6a/Item_icon_Sydney_Sleeper.png/128px-Item_icon_Sydney_Sleeper.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "9a8a46fbb6d3e3f931d532e1e5485ee49580b21db9a7e1d7480975045f3180ed",
+      "bytes": 8876
+    },
+    {
+      "path": "items/c4cf2c4b0e75d6a00a58a7e80dbd4f3c.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Syringe_Gun.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/c/c4/Item_icon_Syringe_Gun.png/128px-Item_icon_Syringe_Gun.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "c597961c71eb63c834cb22ede84b115dee4f1b7edb6b5cfee2eb897a85c7c5c7",
+      "bytes": 10871
+    },
+    {
+      "path": "items/003cd4bb11268ce94daec922b6d24cd0.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Thermal_Thruster.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/0/00/Item_icon_Thermal_Thruster.png/128px-Item_icon_Thermal_Thruster.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "e5affe393baeee1638558ec0a2f4f822ce8ea06ed7f7768ba2e301cb8259cb61",
+      "bytes": 13675
+    },
+    {
+      "path": "items/91517e53e4d105b10604c78f8d81b442.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Third_Degree.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/9/91/Item_icon_Third_Degree.png/128px-Item_icon_Third_Degree.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "8ed7030ad74923411dd0645f50a620f5f923017c82fa7be52c42ded4bb551979",
+      "bytes": 8129
+    },
+    {
+      "path": "items/f636845da130d34c1ed5938e8504f1f5.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Three-Rune_Blade.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/f/f6/Item_icon_Three-Rune_Blade.png/128px-Item_icon_Three-Rune_Blade.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "5edb00b4e335aa75a65f716cffdd1d3a78c0c6a2c54cfef7a7ff8f234fb0aeef",
+      "bytes": 6265
+    },
+    {
+      "path": "items/cdffb3a3c79c8d5978586d6207bc19eb.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Tide_Turner.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/c/cd/Item_icon_Tide_Turner.png/128px-Item_icon_Tide_Turner.png",
+      "wiki_license_template": "ExtractTF2",
+      "sha256": "0229f62960f91fc11b2ada1973dba40ddda3ec8901988fff0914246a556aed16",
+      "bytes": 8671
+    },
+    {
+      "path": "items/3e2f88b17d849f7c1548287d2bfcce83.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Tomislav.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/3/3e/Item_icon_Tomislav.png/128px-Item_icon_Tomislav.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "44793aa416cb2835b1692a5d8a130bfd95e0ce6ac27f597f0815783f4ce6be6f",
+      "bytes": 11981
+    },
+    {
+      "path": "items/55f921b6cfca8d1018bfb4a0c8378cfd.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Tribalman%27s_Shiv.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/5/55/Item_icon_Tribalman%27s_Shiv.png/128px-Item_icon_Tribalman%27s_Shiv.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "96016d020a9891b0adfaa016e81faef3d7afd0db8ba906b8bee30818f1e44677",
+      "bytes": 6371
+    },
+    {
+      "path": "items/04d9b077abf0223692e84e3d1ea4cbe2.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Ubersaw.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/0/04/Item_icon_Ubersaw.png/128px-Item_icon_Ubersaw.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "0fa975a352dbdd3409f4f1a17aa16e2e18d3dd9913b7836fc35825a47d98363e",
+      "bytes": 9504
+    },
+    {
+      "path": "items/a59718348fe378233dd8eda5e9750a71.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Ullapool_Caber.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/a/a5/Item_icon_Ullapool_Caber.png/128px-Item_icon_Ullapool_Caber.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "faae002e0359aa3de24a7aec707672212327b894967c6018219ada6e7f29e745",
+      "bytes": 8110
+    },
+    {
+      "path": "items/9ddeef6903c49ef13d88c2c6ea34a856.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Vaccinator.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/9/9d/Item_icon_Vaccinator.png/128px-Item_icon_Vaccinator.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "7352f201aa27640398b3609a3b297ddf588db763175220b70c9094535769c4e7",
+      "bytes": 8635
+    },
+    {
+      "path": "items/70b022a9c6f6dca148f7fcbe3e40dac2.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Vita-Saw.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/7/70/Item_icon_Vita-Saw.png/128px-Item_icon_Vita-Saw.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "37776368f434d9fc7513cb569c388d57371e30403ef0437da238851f744b296d",
+      "bytes": 7237
+    },
+    {
+      "path": "items/87c54e9707252363643144464c05c6a6.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Warrior%27s_Spirit.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/8/87/Item_icon_Warrior%27s_Spirit.png/128px-Item_icon_Warrior%27s_Spirit.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "ef99bc8a260b46277e19562e7f5cf7b3dfeb8ff959840bedd12e519aea4ad18c",
+      "bytes": 11245
+    },
+    {
+      "path": "items/b85188459f52769829054c879fc6b292.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Widowmaker.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/b/b8/Item_icon_Widowmaker.png/128px-Item_icon_Widowmaker.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "af1cc8c7aed9c7a7d029f2d51fb67c53a82dc0b2d7ae75a0211d96dfedf3b83e",
+      "bytes": 10063
+    },
+    {
+      "path": "items/4ef00aca732d1ee981cd538a22791338.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Winger.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/4/4e/Item_icon_Winger.png/128px-Item_icon_Winger.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "353c5688ae33cad1091533572e1df1bfb31508a668e96e46c6100347798c3043",
+      "bytes": 10120
+    },
+    {
+      "path": "items/ceb150202047822295fb4d5f303709a2.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Wrangler.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/c/ce/Item_icon_Wrangler.png/128px-Item_icon_Wrangler.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "7b17eec32658003054b32919d9e950be0466b0929de24e7289b410dc31782ab8",
+      "bytes": 9657
+    },
+    {
+      "path": "items/6bf02c6a95b02d47f455a624ca892672.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Wrap_Assassin.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/6/6b/Item_icon_Wrap_Assassin.png/128px-Item_icon_Wrap_Assassin.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "8505f8487b1e32272d8073869423efc1b778f7b5732d75ea1da1301b96c69ca4",
+      "bytes": 7469
+    },
+    {
+      "path": "items/7dc916f4e7d1c4e3edeee8f038b76706.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Wrench.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/7/7d/Item_icon_Wrench.png/128px-Item_icon_Wrench.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "a66aa4b4ba454d8a73fa4f7acd4f4a742948216cf0381486be907cd458392aa7",
+      "bytes": 8224
+    },
+    {
+      "path": "items/d3ac70232e4808d7988b91a054b20264.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Item_icon_Your_Eternal_Reward.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/thumb/d/d3/Item_icon_Your_Eternal_Reward.png/128px-Item_icon_Your_Eternal_Reward.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "sha256": "666e1e8420be3f491ff91ddba503db813a67563ec519947cb5a4bba81e2fe1dc",
+      "bytes": 5998
+    }
+  ]
+}

@@ -200,6 +200,18 @@ class TestHardestPool(TF2MvMTestBase):
         self.assertEqual(requirement.slots, held.count(data.PROGRESSIVE_WEAPON_SLOT))
         self.assertEqual(requirement.classes, sum(name in data.CLASS_NAMES for name in held))
 
+    def test_tracker_gets_the_final_precollected_inventory(self) -> None:
+        expected = [item.name for item in self.multiworld.precollected_items[self.world.player]]
+        tracker = self.world.fill_slot_data()["tracker"]
+        self.assertEqual(1, tracker["version"])
+        self.assertEqual(expected, tracker["starting_items"])
+        # The list, rather than a set, preserves progressive copies.
+        requirement = REQUIREMENTS[self.world.start_mission.difficulty]
+        self.assertEqual(
+            requirement.slots,
+            tracker["starting_items"].count(data.PROGRESSIVE_WEAPON_SLOT),
+        )
+
 
 class TestExcludedMissions(TF2MvMTestBase):
     options: ClassVar[dict[str, Any]] = {

@@ -1,0 +1,1166 @@
+{
+  "format_version": 4,
+  "weapons": [
+    {
+      "name": "Air Strike",
+      "classes": [
+        "Soldier"
+      ],
+      "icon": "assets/tf2/items/f87faf790afc0d04056479f1566f09f1.png"
+    },
+    {
+      "name": "Ali Baba's Wee Booties",
+      "classes": [
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/a4e0f4a0d6af7480aa80dd8fc05f6028.png"
+    },
+    {
+      "name": "Ambassador",
+      "classes": [
+        "Spy"
+      ],
+      "icon": "assets/tf2/items/ec51bdc417abd21ee7c98ca6ac551586.png"
+    },
+    {
+      "name": "Amputator",
+      "classes": [
+        "Medic"
+      ],
+      "icon": "assets/tf2/items/ab304b319464cfbdf3c84b0b765cde12.png"
+    },
+    {
+      "name": "Atomizer",
+      "classes": [
+        "Scout"
+      ],
+      "icon": "assets/tf2/items/290f86b9492dd0ce677a4fb1a513b9ea.png"
+    },
+    {
+      "name": "Axtinguisher",
+      "classes": [
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/c92b8d80c70ad204a97132004e968a15.png"
+    },
+    {
+      "name": "B.A.S.E. Jumper",
+      "classes": [
+        "Soldier",
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/b20943292026738f37bc16ee16f1d0d6.png"
+    },
+    {
+      "name": "Baby Face's Blaster",
+      "classes": [
+        "Scout"
+      ],
+      "icon": "assets/tf2/items/e63a5a9f877fe219e9f2b57be74572d2.png"
+    },
+    {
+      "name": "Back Scatter",
+      "classes": [
+        "Scout"
+      ],
+      "icon": "assets/tf2/items/113a6b8dc20809553172d5da14938356.png"
+    },
+    {
+      "name": "Back Scratcher",
+      "classes": [
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/48852f24e698e1a809c2cd433a21e370.png"
+    },
+    {
+      "name": "Backburner",
+      "classes": [
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/5d402db6a0f953245ccdaf82e25b6789.png"
+    },
+    {
+      "name": "Bat",
+      "classes": [
+        "Scout"
+      ],
+      "icon": "assets/tf2/items/b528077a39ea8ae787c7d45630dbd4bd.png"
+    },
+    {
+      "name": "Battalion's Backup",
+      "classes": [
+        "Soldier"
+      ],
+      "icon": "assets/tf2/items/d89adced10d4636fdb2892a14ec8b56a.png"
+    },
+    {
+      "name": "Bazaar Bargain",
+      "classes": [
+        "Sniper"
+      ],
+      "icon": "assets/tf2/items/f45a8337a5af9142d7d55bedfb571bf0.png"
+    },
+    {
+      "name": "Beggar's Bazooka",
+      "classes": [
+        "Soldier"
+      ],
+      "icon": "assets/tf2/items/77f5db482a0cb21b610cc2b35a62f2e3.png"
+    },
+    {
+      "name": "Big Earner",
+      "classes": [
+        "Spy"
+      ],
+      "icon": "assets/tf2/items/c9585a0364c8e5406c49db4826d0fbc6.png"
+    },
+    {
+      "name": "Black Box",
+      "classes": [
+        "Soldier"
+      ],
+      "icon": "assets/tf2/items/d2452f8c663ac7f1a05929acd3e1a871.png"
+    },
+    {
+      "name": "Blutsauger",
+      "classes": [
+        "Medic"
+      ],
+      "icon": "assets/tf2/items/13a98f87cb2547f3c9681f46704eaa9d.png"
+    },
+    {
+      "name": "Bonesaw",
+      "classes": [
+        "Medic"
+      ],
+      "icon": "assets/tf2/items/8d31f7be6196f4e0c238be9d33c45204.png"
+    },
+    {
+      "name": "Bonk! Atomic Punch",
+      "classes": [
+        "Scout"
+      ],
+      "icon": "assets/tf2/items/8f71f05d8055577c59e7df8312acd80a.png"
+    },
+    {
+      "name": "Bootlegger",
+      "classes": [
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/4c5a39e5cfd934a5e069ecfc4948f6b6.png"
+    },
+    {
+      "name": "Boston Basher",
+      "classes": [
+        "Scout"
+      ],
+      "icon": "assets/tf2/items/b5d85af732f93216889c5563e54cbe16.png"
+    },
+    {
+      "name": "Bottle",
+      "classes": [
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/b235c2890e172032f790b3a1b66a6a6c.png"
+    },
+    {
+      "name": "Brass Beast",
+      "classes": [
+        "Heavy"
+      ],
+      "icon": "assets/tf2/items/6456418125aa45327e7aa2e6a7189f75.png"
+    },
+    {
+      "name": "Buff Banner",
+      "classes": [
+        "Soldier"
+      ],
+      "icon": "assets/tf2/items/7c916dbd5b39ee376000431047dace34.png"
+    },
+    {
+      "name": "Buffalo Steak Sandvich",
+      "classes": [
+        "Heavy"
+      ],
+      "icon": "assets/tf2/items/629b63a8a98ef5f6561e79d4836dc270.png"
+    },
+    {
+      "name": "Bushwacka",
+      "classes": [
+        "Sniper"
+      ],
+      "icon": "assets/tf2/items/46dd5a17a38c2fbeaac1002467ac4d2f.png"
+    },
+    {
+      "name": "Candy Cane",
+      "classes": [
+        "Scout"
+      ],
+      "icon": "assets/tf2/items/0508f0be162d4519d2c3ae5bbd8803b7.png"
+    },
+    {
+      "name": "Chargin' Targe",
+      "classes": [
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/7a234fb61fe47655492585dc1ab6e01d.png"
+    },
+    {
+      "name": "Claidheamh Mòr",
+      "classes": [
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/0f48009ba3576868467eaf5e20ab0b13.png"
+    },
+    {
+      "name": "Classic",
+      "classes": [
+        "Sniper"
+      ],
+      "icon": "assets/tf2/items/7395a3b68ca3a52ed0032358df33cbff.png"
+    },
+    {
+      "name": "Cleaner's Carbine",
+      "classes": [
+        "Sniper"
+      ],
+      "icon": "assets/tf2/items/64a2180782c8806200a70f78df1a09b3.png"
+    },
+    {
+      "name": "Cloak and Dagger",
+      "classes": [
+        "Spy"
+      ],
+      "icon": "assets/tf2/items/004ec1cdc219a4f6c8aa45ceee5f74a6.png"
+    },
+    {
+      "name": "Concheror",
+      "classes": [
+        "Soldier"
+      ],
+      "icon": "assets/tf2/items/7e1a305dffb509ad414b27b132126c17.png"
+    },
+    {
+      "name": "Conniver's Kunai",
+      "classes": [
+        "Spy"
+      ],
+      "icon": "assets/tf2/items/0256f10b235a52a1d1ea8dccaf4c1c78.png"
+    },
+    {
+      "name": "Construction PDA",
+      "classes": [
+        "Engineer"
+      ],
+      "icon": "assets/tf2/items/16abd0dc3d48af126d04e41405b80f82.png"
+    },
+    {
+      "name": "Cow Mangler 5000",
+      "classes": [
+        "Soldier"
+      ],
+      "icon": "assets/tf2/items/46aff2b2f778bb2ae078d9b4c4d28c84.png"
+    },
+    {
+      "name": "Cozy Camper",
+      "classes": [
+        "Sniper"
+      ],
+      "icon": "assets/tf2/items/018354a5bdecbf35736be3d0b7d362fc.png"
+    },
+    {
+      "name": "Crit-a-Cola",
+      "classes": [
+        "Scout"
+      ],
+      "icon": "assets/tf2/items/ae6e14b57b8ffd8e2718450b5c1304d8.png"
+    },
+    {
+      "name": "Crusader's Crossbow",
+      "classes": [
+        "Medic"
+      ],
+      "icon": "assets/tf2/items/9c40cbf4c4717626e8e02f0fcfbea19d.png"
+    },
+    {
+      "name": "Dalokohs Bar",
+      "classes": [
+        "Heavy"
+      ],
+      "icon": "assets/tf2/items/35661e55736fe2f5dc8b94c60948559a.png"
+    },
+    {
+      "name": "Darwin's Danger Shield",
+      "classes": [
+        "Sniper"
+      ],
+      "icon": "assets/tf2/items/448589c7b3e5cc991db86a8b760ad6a5.png"
+    },
+    {
+      "name": "Dead Ringer",
+      "classes": [
+        "Spy"
+      ],
+      "icon": "assets/tf2/items/b710edd08ddd4e1661b05296d75eacc8.png"
+    },
+    {
+      "name": "Degreaser",
+      "classes": [
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/940a2729fb150f0c36a5521d20b8e599.png"
+    },
+    {
+      "name": "Destruction PDA",
+      "classes": [
+        "Engineer"
+      ],
+      "icon": "assets/tf2/items/2653545f708710a96bccbfd10276d8e7.png"
+    },
+    {
+      "name": "Detonator",
+      "classes": [
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/532bbf1f7b3c0ba77fc218bbc4e0d7ef.png"
+    },
+    {
+      "name": "Diamondback",
+      "classes": [
+        "Spy"
+      ],
+      "icon": "assets/tf2/items/b4cacf0335762885d49bd96edf211eaf.png"
+    },
+    {
+      "name": "Direct Hit",
+      "classes": [
+        "Soldier"
+      ],
+      "icon": "assets/tf2/items/e7a20590ffcc83ac678be37a6d60ff28.png"
+    },
+    {
+      "name": "Disciplinary Action",
+      "classes": [
+        "Soldier"
+      ],
+      "icon": "assets/tf2/items/cfa0b621781baf205604ab4c7e7e7caa.png"
+    },
+    {
+      "name": "Disguise Kit",
+      "classes": [
+        "Spy"
+      ],
+      "icon": "assets/tf2/items/8120f9def9d7e4283e3244db972f27b9.png"
+    },
+    {
+      "name": "Dragon's Fury",
+      "classes": [
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/1ff1727d46d0f24bace05a9170fcbffc.png"
+    },
+    {
+      "name": "Enforcer",
+      "classes": [
+        "Spy"
+      ],
+      "icon": "assets/tf2/items/b6e242a1d25cac07490c0212233ce415.png"
+    },
+    {
+      "name": "Equalizer",
+      "classes": [
+        "Soldier"
+      ],
+      "icon": "assets/tf2/items/ba8f88e3c46374878655c6264bab4d21.png"
+    },
+    {
+      "name": "Escape Plan",
+      "classes": [
+        "Soldier"
+      ],
+      "icon": "assets/tf2/items/0cbaf2b29520038851c7f6adae993a34.png"
+    },
+    {
+      "name": "Eureka Effect",
+      "classes": [
+        "Engineer"
+      ],
+      "icon": "assets/tf2/items/cf40499cacd7b4c469ada7628e9c9601.png"
+    },
+    {
+      "name": "Eviction Notice",
+      "classes": [
+        "Heavy"
+      ],
+      "icon": "assets/tf2/items/62a1886dfe5c7ded1e3a74029b4c29c3.png"
+    },
+    {
+      "name": "Eyelander",
+      "classes": [
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/9452b75dd3e629850a8ab56f131ada35.png"
+    },
+    {
+      "name": "Family Business",
+      "classes": [
+        "Heavy"
+      ],
+      "icon": "assets/tf2/items/cd1f45579001308a47f026ba8bd7253b.png"
+    },
+    {
+      "name": "Fan O'War",
+      "classes": [
+        "Scout"
+      ],
+      "icon": "assets/tf2/items/f4b2d7d6b1341eef3459821ed61062e3.png"
+    },
+    {
+      "name": "Fire Axe",
+      "classes": [
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/9ff477f90652901b0a9ec6e6497b9723.png"
+    },
+    {
+      "name": "Fists",
+      "classes": [
+        "Heavy"
+      ],
+      "icon": "assets/tf2/items/1999dfa03dd782e36e3b6494869cfd85.png"
+    },
+    {
+      "name": "Fists of Steel",
+      "classes": [
+        "Heavy"
+      ],
+      "icon": "assets/tf2/items/9cd030a2e371e8993e0d42410f1cde32.png"
+    },
+    {
+      "name": "Flame Thrower",
+      "classes": [
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/ec378fa05588803c8c4dfd318bca60eb.png"
+    },
+    {
+      "name": "Flare Gun",
+      "classes": [
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/7b7312daee652ff009eca5eac5017ca2.png"
+    },
+    {
+      "name": "Flying Guillotine",
+      "classes": [
+        "Scout",
+        "Sniper"
+      ],
+      "icon": "assets/tf2/items/5ad3ffaee50ea9825d12ac0cd0945603.png"
+    },
+    {
+      "name": "Force-a-Nature",
+      "classes": [
+        "Scout"
+      ],
+      "icon": "assets/tf2/items/edd4beffa034105d6093ab06838a4f23.png"
+    },
+    {
+      "name": "Frontier Justice",
+      "classes": [
+        "Engineer"
+      ],
+      "icon": "assets/tf2/items/26a119e53633cf2eeee4bc67893dd653.png"
+    },
+    {
+      "name": "Gas Passer",
+      "classes": [
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/0e08a4eafcbe48e07e1b8393546ed410.png"
+    },
+    {
+      "name": "Gloves of Running Urgently",
+      "classes": [
+        "Heavy"
+      ],
+      "icon": "assets/tf2/items/4fb6fa6cb6ef8663d8407a1b486cedcf.png"
+    },
+    {
+      "name": "Grenade Launcher",
+      "classes": [
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/e62935cf06f65a239f52541c2fd9472f.png"
+    },
+    {
+      "name": "Gunboats",
+      "classes": [
+        "Soldier"
+      ],
+      "icon": "assets/tf2/items/0cbd14c32d3cfa5f327c3499e202fd5d.png"
+    },
+    {
+      "name": "Gunslinger",
+      "classes": [
+        "Engineer"
+      ],
+      "icon": "assets/tf2/items/ca0ed443afa9dd4e1347a4a6a8ad6ccd.png"
+    },
+    {
+      "name": "Half-Zatoichi",
+      "classes": [
+        "Soldier",
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/a9ce199495ef4b15dc923a5ddf62558d.png"
+    },
+    {
+      "name": "Hitman's Heatmaker",
+      "classes": [
+        "Sniper"
+      ],
+      "icon": "assets/tf2/items/183d0bbb7674b4144b67cf3c006e6493.png"
+    },
+    {
+      "name": "Holiday Punch",
+      "classes": [
+        "Heavy"
+      ],
+      "icon": "assets/tf2/items/543256da124691e2bfa2f534b22d9839.png"
+    },
+    {
+      "name": "Homewrecker",
+      "classes": [
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/4a8ed7701615e5fc58f2e7d3b4a3d44a.png"
+    },
+    {
+      "name": "Hot Hand",
+      "classes": [
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/f6ddad5b62679abe0ffa3eedda962a1e.png"
+    },
+    {
+      "name": "Huntsman",
+      "classes": [
+        "Sniper"
+      ],
+      "icon": "assets/tf2/items/f8c7bc9717b6784e35b4464657c6d437.png"
+    },
+    {
+      "name": "Huo-Long Heater",
+      "classes": [
+        "Heavy"
+      ],
+      "icon": "assets/tf2/items/819eff36ec5f06117537e473063110cd.png"
+    },
+    {
+      "name": "Invis Watch",
+      "classes": [
+        "Spy"
+      ],
+      "icon": "assets/tf2/items/0e5478a405e2f482370375772b46d286.png"
+    },
+    {
+      "name": "Iron Bomber",
+      "classes": [
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/cd40c8f4740ad286b33e684569f3afc3.png"
+    },
+    {
+      "name": "Jag",
+      "classes": [
+        "Engineer"
+      ],
+      "icon": "assets/tf2/items/49157e185a9e606614a2b24e92423730.png"
+    },
+    {
+      "name": "Jarate",
+      "classes": [
+        "Sniper"
+      ],
+      "icon": "assets/tf2/items/b365a23408c4d66da785297049ca86ad.png"
+    },
+    {
+      "name": "Killing Gloves of Boxing",
+      "classes": [
+        "Heavy"
+      ],
+      "icon": "assets/tf2/items/f6a1f7211945b9b63ad5110ae83f5543.png"
+    },
+    {
+      "name": "Knife",
+      "classes": [
+        "Spy"
+      ],
+      "icon": "assets/tf2/items/575122f104180ec3e8e5c3a1819afa2c.png"
+    },
+    {
+      "name": "Kritzkrieg",
+      "classes": [
+        "Medic"
+      ],
+      "icon": "assets/tf2/items/8515af6c611edac6ad31fae7a5157fd4.png"
+    },
+    {
+      "name": "Kukri",
+      "classes": [
+        "Sniper"
+      ],
+      "icon": "assets/tf2/items/eaf6c2a635439622535213950edc1833.png"
+    },
+    {
+      "name": "L'Étranger",
+      "classes": [
+        "Spy"
+      ],
+      "icon": "assets/tf2/items/bd5d0cccd1b6cbed93ae1000348eb845.png"
+    },
+    {
+      "name": "Liberty Launcher",
+      "classes": [
+        "Soldier"
+      ],
+      "icon": "assets/tf2/items/24a30f6fb3496dff8eafef32ca40e73c.png"
+    },
+    {
+      "name": "Loch-n-Load",
+      "classes": [
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/62c3aea3a4dc1e7b4f1af717b1098e40.png"
+    },
+    {
+      "name": "Loose Cannon",
+      "classes": [
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/70083619afd119881ec4c88e95317525.png"
+    },
+    {
+      "name": "Machina",
+      "classes": [
+        "Sniper"
+      ],
+      "icon": "assets/tf2/items/ae3608d2f4c02cb2fe3f4f2cc23c445c.png"
+    },
+    {
+      "name": "Mad Milk",
+      "classes": [
+        "Scout"
+      ],
+      "icon": "assets/tf2/items/56b94729a6e2f3fa8f0992d6fc8c1895.png"
+    },
+    {
+      "name": "Manmelter",
+      "classes": [
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/9d83e835ec8f86f8eb55b903de33809e.png"
+    },
+    {
+      "name": "Mantreads",
+      "classes": [
+        "Soldier"
+      ],
+      "icon": "assets/tf2/items/6a5652288b9d1dfff5b4843ef3071b35.png"
+    },
+    {
+      "name": "Market Gardener",
+      "classes": [
+        "Soldier"
+      ],
+      "icon": "assets/tf2/items/ac16c4fb8ee74a82a4b199c8e6fe6fa7.png"
+    },
+    {
+      "name": "Medi Gun",
+      "classes": [
+        "Medic"
+      ],
+      "icon": "assets/tf2/items/4ae35d101d36608493bd9bbf661a1c8b.png"
+    },
+    {
+      "name": "Minigun",
+      "classes": [
+        "Heavy"
+      ],
+      "icon": "assets/tf2/items/a74b4d01f56a2f93c537b4d5e8b73715.png"
+    },
+    {
+      "name": "Natascha",
+      "classes": [
+        "Heavy"
+      ],
+      "icon": "assets/tf2/items/cc795d95444e2a7632bf0887a5d2c9d9.png"
+    },
+    {
+      "name": "Neon Annihilator",
+      "classes": [
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/e9539b28fb03c98ee1a25d2c1f48a291.png"
+    },
+    {
+      "name": "Overdose",
+      "classes": [
+        "Medic"
+      ],
+      "icon": "assets/tf2/items/fe11fe17cb51b6faa8d174466b7b31be.png"
+    },
+    {
+      "name": "Pain Train",
+      "classes": [
+        "Soldier",
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/4bda2d029b89dab1b0c152bce4d43ac2.png"
+    },
+    {
+      "name": "Panic Attack",
+      "classes": [
+        "Soldier",
+        "Pyro",
+        "Heavy",
+        "Engineer"
+      ],
+      "icon": "assets/tf2/items/be7abea72377e6df65af3e344f05c8fa.png"
+    },
+    {
+      "name": "Persian Persuader",
+      "classes": [
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/984f843a6777e04a6f4079cf78d165f1.png"
+    },
+    {
+      "name": "Phlogistinator",
+      "classes": [
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/22eaa66e77484c0a8b036370129a7059.png"
+    },
+    {
+      "name": "Pistol",
+      "classes": [
+        "Scout",
+        "Engineer"
+      ],
+      "icon": "assets/tf2/items/52c30a75ea0f9a8c039a1e36eff4f9ae.png"
+    },
+    {
+      "name": "Pomson 6000",
+      "classes": [
+        "Engineer"
+      ],
+      "icon": "assets/tf2/items/89367b7a7862348b0583b8f7ed444b54.png"
+    },
+    {
+      "name": "Powerjack",
+      "classes": [
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/cfaa9d7171eee449dfffa96a44d21f4e.png"
+    },
+    {
+      "name": "Pretty Boy's Pocket Pistol",
+      "classes": [
+        "Scout"
+      ],
+      "icon": "assets/tf2/items/f6b6345355dcf3cf423af51168654569.png"
+    },
+    {
+      "name": "Quick-Fix",
+      "classes": [
+        "Medic"
+      ],
+      "icon": "assets/tf2/items/50d7afc15e4ecf56d441241ab7c1cd42.png"
+    },
+    {
+      "name": "Quickiebomb Launcher",
+      "classes": [
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/f9a5603c74a3dc1aec271ba8e625c1a1.png"
+    },
+    {
+      "name": "Razorback",
+      "classes": [
+        "Sniper"
+      ],
+      "icon": "assets/tf2/items/0fd6ff844a72aa6df31069f49ba91411.png"
+    },
+    {
+      "name": "Red-Tape Recorder",
+      "classes": [
+        "Spy"
+      ],
+      "icon": "assets/tf2/items/7dee97387ec97d210fa3374370e4aa2e.png"
+    },
+    {
+      "name": "Rescue Ranger",
+      "classes": [
+        "Engineer"
+      ],
+      "icon": "assets/tf2/items/29439a58850176828ab4bc693893517f.png"
+    },
+    {
+      "name": "Reserve Shooter",
+      "classes": [
+        "Soldier",
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/34f57de6d224f9814602f695e1f0ffba.png"
+    },
+    {
+      "name": "Revolver",
+      "classes": [
+        "Spy"
+      ],
+      "icon": "assets/tf2/items/1ffe98b7d26c94041a851adaaca0c0cc.png"
+    },
+    {
+      "name": "Righteous Bison",
+      "classes": [
+        "Soldier"
+      ],
+      "icon": "assets/tf2/items/1ddb8c25b5d9c16c987526e2f62eebda.png"
+    },
+    {
+      "name": "Rocket Jumper",
+      "classes": [
+        "Soldier"
+      ],
+      "icon": "assets/tf2/items/537a9c78d2f4190c47301fca1f8d4a0c.png"
+    },
+    {
+      "name": "Rocket Launcher",
+      "classes": [
+        "Soldier"
+      ],
+      "icon": "assets/tf2/items/fe07ac82028329c8e7665bb021604d56.png"
+    },
+    {
+      "name": "Sandman",
+      "classes": [
+        "Scout"
+      ],
+      "icon": "assets/tf2/items/7093763ca2645129fdc59e11e9205fb7.png"
+    },
+    {
+      "name": "Sandvich",
+      "classes": [
+        "Heavy"
+      ],
+      "icon": "assets/tf2/items/5e6b8daa547fcb83131397990a06af9e.png"
+    },
+    {
+      "name": "Sapper",
+      "classes": [
+        "Spy"
+      ],
+      "icon": "assets/tf2/items/f2114636a5b9e6724fc8931967ae6ae7.png"
+    },
+    {
+      "name": "Saxxy",
+      "classes": [
+        "Scout",
+        "Soldier",
+        "Pyro",
+        "Demoman",
+        "Heavy",
+        "Engineer",
+        "Medic",
+        "Sniper",
+        "Spy"
+      ],
+      "icon": "assets/tf2/items/18bae3fe6c4e5dcc7f859f1d5a3f9474.png"
+    },
+    {
+      "name": "Scattergun",
+      "classes": [
+        "Scout"
+      ],
+      "icon": "assets/tf2/items/1bef8b856de1e8572c8d4a06215d6af5.png"
+    },
+    {
+      "name": "Scorch Shot",
+      "classes": [
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/be40ce572f2c16616c8901d643755d15.png"
+    },
+    {
+      "name": "Scotsman's Skullcutter",
+      "classes": [
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/c64c5397e381876d788725b85f479e8c.png"
+    },
+    {
+      "name": "Scottish Resistance",
+      "classes": [
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/2ca6e0e69b9f93629c6f635b4a4acf80.png"
+    },
+    {
+      "name": "Second Banana",
+      "classes": [
+        "Heavy"
+      ],
+      "icon": "assets/tf2/items/7715ea7b65b6ecad49ccb5deb2766677.png"
+    },
+    {
+      "name": "Shahanshah",
+      "classes": [
+        "Sniper"
+      ],
+      "icon": "assets/tf2/items/8db2cacca68868e1b3e0fe2982d2e9ec.png"
+    },
+    {
+      "name": "Sharpened Volcano Fragment",
+      "classes": [
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/acccba4d5e3465ec9fc2f4c8bb38d5ab.png"
+    },
+    {
+      "name": "Short Circuit",
+      "classes": [
+        "Engineer"
+      ],
+      "icon": "assets/tf2/items/36b52764b3188a246735021663928082.png"
+    },
+    {
+      "name": "Shortstop",
+      "classes": [
+        "Scout"
+      ],
+      "icon": "assets/tf2/items/84ce0ebd69dee8825f27570c3c508559.png"
+    },
+    {
+      "name": "Shotgun",
+      "classes": [
+        "Soldier",
+        "Pyro",
+        "Heavy",
+        "Engineer"
+      ],
+      "icon": "assets/tf2/items/5f41c8b4c7f6a27790406e96ba9ec690.png"
+    },
+    {
+      "name": "Shovel",
+      "classes": [
+        "Soldier"
+      ],
+      "icon": "assets/tf2/items/7316025306a7870057bcd0a5dbfac419.png"
+    },
+    {
+      "name": "SMG",
+      "classes": [
+        "Sniper"
+      ],
+      "icon": "assets/tf2/items/121cc73153bff97db74b715a7dc8316a.png"
+    },
+    {
+      "name": "Sniper Rifle",
+      "classes": [
+        "Sniper"
+      ],
+      "icon": "assets/tf2/items/a1d42872475507e5c65ed8326b74fe97.png"
+    },
+    {
+      "name": "Soda Popper",
+      "classes": [
+        "Scout"
+      ],
+      "icon": "assets/tf2/items/f1cca3c3ebbe8fba796e39ea5308c81c.png"
+    },
+    {
+      "name": "Solemn Vow",
+      "classes": [
+        "Medic"
+      ],
+      "icon": "assets/tf2/items/dbc9273de68b2ebbfebcabd1a9ab44fd.png"
+    },
+    {
+      "name": "Southern Hospitality",
+      "classes": [
+        "Engineer"
+      ],
+      "icon": "assets/tf2/items/ec32b232e92b62e3e55802d5dd0a0759.png"
+    },
+    {
+      "name": "Splendid Screen",
+      "classes": [
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/c307dde01aeb0738f53e4c61cb9fdf4b.png"
+    },
+    {
+      "name": "Spy-Cicle",
+      "classes": [
+        "Spy"
+      ],
+      "icon": "assets/tf2/items/723badd2d2a0f680bd9cd3ce5a8ed733.png"
+    },
+    {
+      "name": "Sticky Jumper",
+      "classes": [
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/569fbe1e30e34ab6ddcad45e4988e91e.png"
+    },
+    {
+      "name": "Stickybomb Launcher",
+      "classes": [
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/7c1a1737f84b198479e22fd241be079d.png"
+    },
+    {
+      "name": "Sun-on-a-Stick",
+      "classes": [
+        "Scout"
+      ],
+      "icon": "assets/tf2/items/067638128ed3e824d180d65071076514.png"
+    },
+    {
+      "name": "Sydney Sleeper",
+      "classes": [
+        "Sniper"
+      ],
+      "icon": "assets/tf2/items/6adf268e2f9b647d16abcea4145b8f0e.png"
+    },
+    {
+      "name": "Syringe Gun",
+      "classes": [
+        "Medic"
+      ],
+      "icon": "assets/tf2/items/c4cf2c4b0e75d6a00a58a7e80dbd4f3c.png"
+    },
+    {
+      "name": "Thermal Thruster",
+      "classes": [
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/003cd4bb11268ce94daec922b6d24cd0.png"
+    },
+    {
+      "name": "Third Degree",
+      "classes": [
+        "Pyro"
+      ],
+      "icon": "assets/tf2/items/91517e53e4d105b10604c78f8d81b442.png"
+    },
+    {
+      "name": "Three-Rune Blade",
+      "classes": [
+        "Scout"
+      ],
+      "icon": "assets/tf2/items/f636845da130d34c1ed5938e8504f1f5.png"
+    },
+    {
+      "name": "Tide Turner",
+      "classes": [
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/cdffb3a3c79c8d5978586d6207bc19eb.png"
+    },
+    {
+      "name": "Tomislav",
+      "classes": [
+        "Heavy"
+      ],
+      "icon": "assets/tf2/items/3e2f88b17d849f7c1548287d2bfcce83.png"
+    },
+    {
+      "name": "Tribalman's Shiv",
+      "classes": [
+        "Sniper"
+      ],
+      "icon": "assets/tf2/items/55f921b6cfca8d1018bfb4a0c8378cfd.png"
+    },
+    {
+      "name": "Ullapool Caber",
+      "classes": [
+        "Demoman"
+      ],
+      "icon": "assets/tf2/items/a59718348fe378233dd8eda5e9750a71.png"
+    },
+    {
+      "name": "Vaccinator",
+      "classes": [
+        "Medic"
+      ],
+      "icon": "assets/tf2/items/9ddeef6903c49ef13d88c2c6ea34a856.png"
+    },
+    {
+      "name": "Vita-Saw",
+      "classes": [
+        "Medic"
+      ],
+      "icon": "assets/tf2/items/70b022a9c6f6dca148f7fcbe3e40dac2.png"
+    },
+    {
+      "name": "Warrior's Spirit",
+      "classes": [
+        "Heavy"
+      ],
+      "icon": "assets/tf2/items/87c54e9707252363643144464c05c6a6.png"
+    },
+    {
+      "name": "Widowmaker",
+      "classes": [
+        "Engineer"
+      ],
+      "icon": "assets/tf2/items/b85188459f52769829054c879fc6b292.png"
+    },
+    {
+      "name": "Winger",
+      "classes": [
+        "Scout"
+      ],
+      "icon": "assets/tf2/items/4ef00aca732d1ee981cd538a22791338.png"
+    },
+    {
+      "name": "Wrangler",
+      "classes": [
+        "Engineer"
+      ],
+      "icon": "assets/tf2/items/ceb150202047822295fb4d5f303709a2.png"
+    },
+    {
+      "name": "Wrap Assassin",
+      "classes": [
+        "Scout"
+      ],
+      "icon": "assets/tf2/items/6bf02c6a95b02d47f455a624ca892672.png"
+    },
+    {
+      "name": "Wrench",
+      "classes": [
+        "Engineer"
+      ],
+      "icon": "assets/tf2/items/7dc916f4e7d1c4e3edeee8f038b76706.png"
+    },
+    {
+      "name": "Your Eternal Reward",
+      "classes": [
+        "Spy"
+      ],
+      "icon": "assets/tf2/items/d3ac70232e4808d7988b91a054b20264.png"
+    },
+    {
+      "name": "Übersaw",
+      "classes": [
+        "Medic"
+      ],
+      "icon": "assets/tf2/items/04d9b077abf0223692e84e3d1ea4cbe2.png"
+    }
+  ]
+}

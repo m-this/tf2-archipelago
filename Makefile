@@ -100,7 +100,7 @@ GO_SRC := $$(find . -type f -name '*.go' -not -path './deploy/bots/build/*' -not
         go-version-check \
         launcher launcher-assets launcher-assets-common \
         proto proto-lint proto-fmt proto-deps \
-        web-ready web-install web-build web-lint web-test web-e2e web-e2e-real \
+        web-ready web-install web-build tracker-data tracker-build web-lint web-test web-e2e web-e2e-real \
         web-captures web-check \
         web-ready-direct web-install-direct web-build-direct web-lint-direct \
         web-test-direct \
@@ -117,6 +117,7 @@ help:
 	@echo "  make check         The gate: everything CI runs"
 	@echo "  make proto         Regenerate the launcher contract from proto/"
 	@echo "  make web-build     Build the browser interface into the launcher"
+	@echo "  make tracker-build Build the public campaign tracker into ./dist/tracker"
 	@echo "  make web-e2e       Drive the interface in a browser against the fake launcher"
 	@echo "  make export        Regenerate apworld/tf2_mvm/data from gamedata/"
 	@echo "  make community-check Validate community.json against community-content/tf"
@@ -259,6 +260,18 @@ web-ready: proto embed-placeholders web-install
 web-build: web-ready
 	$(NPM) run build
 
+# The public tracker is a second entry into the same Angular source tree. It
+# shares the launcher's components and theme, but its output needs no launcher
+# or game server and can be served by any static host.
+# Angular will not reach outside its workspace for assets. Stage the two
+# generated catalogues rather than commit a second copy of either one.
+tracker-data:
+	mkdir -p $(WEB)/src/tracker/data
+	cp apworld/tf2_mvm/data/missions.json apworld/tf2_mvm/data/weapon_classes.json $(WEB)/src/tracker/data/
+
+tracker-build: web-ready tracker-data
+	$(NPM) run build:tracker
+
 web-lint: web-ready
 	$(NPM) run lint
 	$(NPM) run format:check
@@ -293,7 +306,7 @@ web-e2e-real:
 web-captures: web-build
 	cd $(WEB) && TF2AP_CAPTURE=1 npx playwright test e2e/screenshots.spec.ts
 
-web-check: web-lint web-test web-build
+web-check: web-lint web-test web-build tracker-build
 
 # Direct targets: host npm, for CI, which already runs inside a node image, and
 # for a developer who would rather not pay the container round trip.

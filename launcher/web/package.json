@@ -7,6 +7,7 @@
     "ng": "ng",
     "start": "ng serve --host 0.0.0.0",
     "build": "ng build",
+    "build:tracker": "ng build --configuration tracker",
     "watch": "ng build --watch --configuration development",
     "lint": "ng lint",
     "lint:fix": "ng lint --fix",

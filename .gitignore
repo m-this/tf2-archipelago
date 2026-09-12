@@ -71,6 +71,7 @@ toolchain/
 # fails on a diff, so a checked-in copy would only ever be a second answer to
 # what the contract says.
 launcher/internal/gen/
+launcher/web/src/tracker/data/
 launcher/web/src/gen/
 
 # The Angular build's output, which the launcher embeds. `ng build` writes it

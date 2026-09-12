@@ -4,19 +4,7 @@ import { RouterLink } from '@angular/router';
 import { appLink } from '@app/routing/app-routes';
 import { LauncherStore } from '@app/server/launcher-store';
 import { Panel } from '@app/ui/panel';
-
-/** The nine, in the order the game lists them. */
-const mercenaries = [
-  'Scout',
-  'Soldier',
-  'Pyro',
-  'Demoman',
-  'Heavy',
-  'Engineer',
-  'Medic',
-  'Sniper',
-  'Spy',
-] as const;
+import { mercenaries } from '@app/ui/tf2-art';
 
 /**
  * What the run has handed this slot, at a glance: which mercenaries you may

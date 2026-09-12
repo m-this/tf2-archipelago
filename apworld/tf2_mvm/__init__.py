@@ -304,7 +304,10 @@ class TF2MvMWorld(World):
         return self.random.choice(data.FILLER_NAMES)
 
     def fill_slot_data(self) -> dict[str, object]:
-        # Only what the bridge cannot work out from gamedata alone.
+        # What the bridge cannot work out from gamedata alone, plus the small
+        # piece of generated state the public tracker API otherwise omits.
+        # Use MultiWorld's final list rather than self.start_items: common
+        # start-inventory options can add precollected items of their own.
         return {
             "format_version": data.FORMAT_VERSION,
             "missions": [mission.pop_file for mission in self.missions],
@@ -315,6 +318,12 @@ class TF2MvMWorld(World):
             "death_link": bool(self.options.death_link.value),
             "server_mods": sorted(self.options.server_mods.value),
             "mission_ticket_importance": self.options.mission_ticket_importance.current_key,
+            "tracker": {
+                "version": 1,
+                "starting_items": [
+                    item.name for item in self.multiworld.precollected_items[self.player]
+                ],
+            },
         }
 
     def _available_missions(self) -> list[data.Mission]:

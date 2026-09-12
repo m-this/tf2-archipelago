@@ -1,0 +1,352 @@
+<header class="site-header">
+  <div class="brand">
+    <app-logo [size]="48" />
+    <div>
+      <h1>Mann vs Archipelago</h1>
+      <div class="eyebrow">Campaign tracker</div>
+    </div>
+  </div>
+  <div class="header-state" aria-live="polite">
+    <span class="status-dot" [class.live]="live()"></span>
+    <span class="status-label">{{ status() }}</span>
+  </div>
+</header>
+
+<main>
+  <div class="connect-panel" [hidden]="view() !== undefined">
+    <app-panel>
+      <div class="connect-copy">
+        <div class="kicker">Shared run overview</div>
+        <h2>Track the whole Mann Co. campaign</h2>
+        <p>
+          Paste an Archipelago room or tracker link. This page reads the same public room state as
+          Archipelago's standard tracker; it never asks for the room password.
+        </p>
+      </div>
+      <app-button tone="secondary" (press)="showSample()">View sample run</app-button>
+
+      <form class="room-form" (submit)="$event.preventDefault(); load()">
+        <label for="room-input" class="visually-hidden">Room or tracker link</label>
+        <input
+          #roomInput
+          id="room-input"
+          class="text-input"
+          type="text"
+          inputmode="url"
+          autocomplete="url"
+          placeholder="https://archipelago.gg/room/…"
+          required
+          [value]="input()"
+          (input)="input.set(roomInput.value)"
+        />
+        <app-button type="submit" tone="primary" [disabled]="busy()">
+          {{ busy() ? 'Connecting…' : 'Load tracker' }}
+        </app-button>
+        <app-button tone="secondary" (press)="input.set('')">Clear</app-button>
+        <div class="form-note" [class.error-message]="error()" aria-live="polite">
+          {{ message() }}
+        </div>
+      </form>
+    </app-panel>
+  </div>
+
+  @if (view(); as run) {
+    <div class="tracker-shell">
+      <section class="run-header">
+        <div class="run-title">
+          <div class="kicker">
+            {{ source()?.mode === 'demo' ? 'Sample campaign' : 'Team 1 · Slot ' + run.player }} ·
+            Shared TF2 server
+          </div>
+          <h2>{{ run.playerName }}</h2>
+        </div>
+        <div class="run-actions">
+          @if (players().length > 1) {
+            <select
+              class="slot-select"
+              aria-label="TF2 slot"
+              [value]="run.player"
+              (change)="choosePlayer($event)"
+            >
+              @for (choice of players(); track choice.id) {
+                <option [value]="choice.id">{{ choice.name }}</option>
+              }
+            </select>
+          }
+          <app-button size="small" tone="secondary" (press)="changeRoom()">Change room</app-button>
+          <app-button size="small" tone="primary" [disabled]="refreshing()" (press)="refresh()">
+            {{ refreshing() ? 'Refreshing…' : 'Refresh' }}
+          </app-button>
+        </div>
+      </section>
+
+      <section class="stats" aria-label="Run summary">
+        <article class="stat">
+          <span class="stat-label">Checks cleared</span>
+          <strong class="stat-value">{{ run.checked.size }} / {{ run.total }}</strong>
+          <span class="stat-detail">
+            {{
+              run.checked.size === run.total
+                ? 'every objective complete'
+                : run.total - run.checked.size + ' checks remain'
+            }}
+          </span>
+        </article>
+        <article class="stat">
+          <span class="stat-label">Missions</span>
+          <strong class="stat-value">{{ run.completed }} / {{ run.missions.length }}</strong>
+          <span class="stat-detail">campaign medals earned</span>
+        </article>
+        <article class="stat">
+          <span class="stat-label">Mercenaries</span>
+          <strong class="stat-value">{{ run.classCount }} / 9</strong>
+          <span class="stat-detail">classes unlocked</span>
+        </article>
+        <article class="stat">
+          <span class="stat-label">Loadout</span>
+          <strong class="stat-value">{{ run.slotCount }} / 3</strong>
+          <span class="stat-detail">weapon slots available</span>
+        </article>
+      </section>
+
+      <app-panel>
+        <div class="goal-panel">
+          <div class="goal-mark" aria-hidden="true">M</div>
+          <div class="goal-copy">
+            <div class="kicker">Contract objective</div>
+            <h3>{{ run.goalTitle }}</h3>
+            <p>{{ run.goalDescription }}</p>
+          </div>
+          <div
+            class="progress-ring"
+            role="img"
+            [style.--progress]="run.goalPercent * 3.6 + 'deg'"
+            [attr.aria-label]="'Goal ' + run.goalPercent + '% complete'"
+          >
+            <span>{{ run.goalPercent }}%</span>
+          </div>
+        </div>
+      </app-panel>
+
+      <div class="content-grid">
+        <app-panel heading="Mission board">
+          <span panelAside class="section-aside">{{ run.total }} objectives</span>
+          <div class="mission-list">
+            @for (mission of run.missions; track mission.pop_file) {
+              <article
+                class="mission"
+                [class.complete]="mission.complete"
+                [class.locked]="mission.locked"
+                [class.final-boss]="mission.finalBoss"
+                [attr.data-tier]="mission.difficulty"
+              >
+                <div class="mission-name">
+                  <h3>{{ mission.name }}</h3>
+                  <span class="tier">{{ mission.difficulty }}</span>
+                  @if (mission.finalBoss) {
+                    <span class="boss-badge">Final boss</span>
+                  }
+                </div>
+                <div class="objectives">
+                  @for (objective of mission.locations; track objective.id) {
+                    @if (objectiveLabel(objective); as label) {
+                      <span
+                        class="objective"
+                        [class.special]="objective.kind !== 'wave_cleared'"
+                        [class.checked]="run.checked.has(objective.id)"
+                        [title]="objective.name"
+                      >
+                        {{ label }}
+                      </span>
+                    }
+                  }
+                </div>
+                <div class="mission-state">
+                  <strong>
+                    {{
+                      mission.complete ? 'Complete' : mission.locked ? 'Ticket needed' : 'Available'
+                    }}
+                  </strong>
+                  <span>{{ mission.progress }} / {{ mission.locations.length }} checks</span>
+                </div>
+                @if (mission.finalBoss) {
+                  <span class="boss-corners"></span>
+                }
+              </article>
+            } @empty {
+              <app-empty-state>The mission catalog could not match this seed.</app-empty-state>
+            }
+          </div>
+        </app-panel>
+
+        <aside class="side-column">
+          <app-panel heading="The roster">
+            <span panelAside class="section-aside">RED</span>
+            <div class="class-grid">
+              @for (classView of run.classes; track classView.name) {
+                <button
+                  type="button"
+                  class="class-card"
+                  [class.owned]="classView.unlocked"
+                  [attr.aria-label]="
+                    classView.name +
+                    ', ' +
+                    (classView.unlocked ? 'unlocked' : 'locked') +
+                    '; inspect upgrades'
+                  "
+                  (click)="openBuffs(classView)"
+                >
+                  <img
+                    class="class-icon"
+                    [src]="mercenaryIcons[classView.name]"
+                    alt=""
+                    loading="lazy"
+                  />
+                  <small>{{ classView.name }}</small>
+                </button>
+              }
+            </div>
+          </app-panel>
+
+          <app-panel heading="Loadout & equipment">
+            <div class="slot-track">
+              @for (slot of slots; track slot; let index = $index) {
+                <div class="weapon-slot" [class.owned]="index < run.slotCount">
+                  <strong>0{{ index + 1 }}</strong>
+                  <small>{{ slot }}</small>
+                </div>
+              }
+              <div
+                class="server-equipment"
+                [class.locked]="!run.grapplingHook"
+                [attr.aria-label]="'Grappling Hook, ' + (run.grapplingHook ? 'unlocked' : 'locked')"
+              >
+                <img [src]="grapplingHookIcon" alt="" loading="lazy" />
+                <div class="equipment-copy">
+                  <small>Server-wide equipment</small>
+                  <strong>Grappling Hook</strong>
+                </div>
+                <span class="equipment-state">
+                  {{ run.grapplingHook ? 'Unlocked' : 'Locked' }}
+                </span>
+              </div>
+            </div>
+          </app-panel>
+
+          <app-panel heading="Everything received">
+            <span panelAside class="section-aside">
+              {{ run.unlocks.length }} {{ run.unlocks.length === 1 ? 'kind' : 'kinds' }}
+            </span>
+            <div class="unlock-list">
+              @for (unlock of run.unlocks; track unlock.kind + unlock.name) {
+                <div class="unlock">
+                  <app-badge [tone]="unlock.tone">{{ unlock.kind }}</app-badge>
+                  <span class="unlock-name">{{ unlock.name }}</span>
+                  <span class="unlock-count">{{ unlock.count > 1 ? '×' + unlock.count : '' }}</span>
+                </div>
+              } @empty {
+                <app-empty-state>Nothing received yet.</app-empty-state>
+              }
+            </div>
+            <p class="prototype-note">
+              {{
+                run.oldInventory
+                  ? 'This room predates tracker inventory data, so its randomly selected starting classes may appear locked.'
+                  : 'Includes starting inventory and everything received from the multiworld.'
+              }}
+            </p>
+          </app-panel>
+        </aside>
+      </div>
+    </div>
+  }
+</main>
+
+<dialog #buffDialog class="buff-dialog">
+  @if (selectedClass(); as chosen) {
+    <header class="buff-dialog-head">
+      <img class="buff-dialog-icon" [src]="mercenaryIcons[chosen.name]" alt="" />
+      <div class="buff-dialog-title">
+        <div class="kicker">Mann Co. upgrade station</div>
+        <h2>{{ chosen.name }} arsenal</h2>
+        <p>
+          {{
+            chosen.unlocked
+              ? 'Class unlocked · compatible upgrades received by the RED team.'
+              : 'Class locked · preview compatible upgrades for this mercenary.'
+          }}
+        </p>
+      </div>
+      <button class="dialog-close" type="button" aria-label="Close" (click)="closeBuffs()">
+        ×
+      </button>
+    </header>
+    <div class="buff-dialog-body">
+      <div class="buff-summary">
+        <span>Only weapons {{ chosen.name }} can equip are shown.</span>
+        <strong>
+          {{ classBuffs().length }} {{ classBuffs().length === 1 ? 'weapon' : 'weapons' }} · ×{{
+            buffLevels()
+          }}
+          total
+        </strong>
+      </div>
+      <div class="buff-list">
+        @for (weapon of classBuffs(); track weapon.weapon) {
+          <article class="buff-card">
+            <div class="buff-card-top">
+              <strong class="buff-weapon">{{ weapon.weapon }}</strong>
+              @if (weapon.icon) {
+                <img
+                  class="buff-weapon-icon"
+                  [src]="weapon.icon"
+                  [alt]="weapon.weapon + ' item icon'"
+                  loading="lazy"
+                  (error)="hideBrokenImage($event)"
+                />
+              }
+            </div>
+            <div class="buff-effects">
+              @for (effect of weapon.effects; track effect.effect) {
+                <div class="buff-effect">
+                  <span>{{ effect.effect }}</span>
+                  <strong class="buff-stack-count">×{{ effect.count }}</strong>
+                </div>
+              }
+            </div>
+            <div class="power-label">
+              <span>Combined power</span>
+              <span>×{{ weapon.total }} levels</span>
+            </div>
+            <div
+              class="power-bar"
+              role="img"
+              [attr.aria-label]="
+                weapon.total + ' combined buff ' + (weapon.total === 1 ? 'level' : 'levels')
+              "
+            >
+              @for (level of powerSegments; track level) {
+                <span class="power-segment" [class.filled]="level <= weapon.total"></span>
+              }
+            </div>
+            @if (weapon.total > 10) {
+              <div class="buff-overflow">OVERDRIVE +{{ weapon.total - 10 }}</div>
+            }
+          </article>
+        } @empty {
+          <app-empty-state>
+            No compatible weapon upgrades have been unlocked for {{ chosen.name }} yet.
+          </app-empty-state>
+        }
+      </div>
+    </div>
+  }
+</dialog>
+
+<footer>
+  <span>
+    Unofficial TF2 MvM tracker · Class and item art © Valve ·
+    <a href="assets/tf2/LICENSE">asset notice</a>
+  </span>
+  <a href="https://github.com/m-this/tf2-archipelago">tf2-archipelago on GitHub</a>
+</footer>

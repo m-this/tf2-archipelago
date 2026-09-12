@@ -47,6 +47,11 @@ runs the published images with no clone at all.
 
 The first start downloads about 14 GB of game files.
 
+To share a visual overview of the campaign, use the static [visual campaign
+tracker](./tracker/README.md). It reads an `archipelago.gg` room or tracker link
+and shows mission progress, class access, loadout slots and compatible weapon
+buffs for the whole TF2 server.
+
 Custom MvM packs can be overlaid without modifying the container image. The
 [community content guide](./community-content/README.md) covers custom BSPs,
 population files, stable Archipelago IDs, validation, and the rebuild/relaunch
