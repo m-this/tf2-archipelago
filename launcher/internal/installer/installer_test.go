@@ -4,15 +4,52 @@ import (
 	"archive/zip"
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/m-this/tf2-archipelago/launcher/internal/assets"
 )
+
+func withSigmodPin(t *testing.T, data []byte) {
+	t.Helper()
+	oldVersion, oldSHA := assets.SigsegvMVMVersion, assets.SigsegvMVMSHA256
+	assets.SigsegvMVMVersion = "test-version"
+	assets.SigsegvMVMSHA256 = fmt.Sprintf("%x", sha256.Sum256(data))
+	t.Cleanup(func() {
+		assets.SigsegvMVMVersion, assets.SigsegvMVMSHA256 = oldVersion, oldSHA
+	})
+}
+
+func fakeSigmodZip(t *testing.T) []byte {
+	t.Helper()
+	return zipWith(t, map[string]string{
+		"addons/sourcemod/extensions/sigsegv.ext.2.tf2.so":     "32-bit extension",
+		"addons/sourcemod/extensions/x64/sigsegv.ext.2.tf2.so": "64-bit extension",
+		"addons/sourcemod/extensions/sigsegv.autoload":         "",
+		"addons/sourcemod/gamedata/sigsegv/population.txt":     "gamedata",
+		"cfg/sigsegv_convars.cfg":                              "configuration",
+	})
+}
+
+func writeFakeSourcemod(t *testing.T, modDir string) {
+	t.Helper()
+	for _, relative := range sourcemodFiles(runtime.GOOS) {
+		path := filepath.Join(modDir, filepath.FromSlash(relative))
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte("sourcemod"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
 
 func zipWith(t *testing.T, entries map[string]string) []byte {
 	t.Helper()
@@ -84,7 +121,7 @@ func TestInstallCommunityZipStripsTFDownload(t *testing.T) {
 		t.Fatal(err)
 	}
 	modDir := filepath.Join(root, "server", "tf")
-	if err := installCommunityZip(archive, modDir); err != nil {
+	if err := installCommunityZip(archive, modDir, nil); err != nil {
 		t.Fatal(err)
 	}
 	for _, name := range []string{"maps/mvm_example.bsp", "scripts/population/mvm_example_adv_test.pop"} {
@@ -146,7 +183,7 @@ func TestCommunityInstallSkipsUnsupportedMissionsButKeepsSharedPopulationFiles(t
 		t.Fatal(err)
 	}
 	modDir := filepath.Join(root, "server", "tf")
-	if err := installCommunityZip(archive, modDir); err != nil {
+	if err := installCommunityZip(archive, modDir, nil); err != nil {
 		t.Fatal(err)
 	}
 	for _, name := range []string{
@@ -160,6 +197,58 @@ func TestCommunityInstallSkipsUnsupportedMissionsButKeepsSharedPopulationFiles(t
 	}
 	if _, err := os.Stat(filepath.Join(modDir, "scripts", "population", "mvm_lotus_b6_adv_ledmotif.pop")); !os.IsNotExist(err) {
 		t.Errorf("unsupported mission was installed: %v", err)
+	}
+}
+
+func TestCommunityInstallIncludesSigmodMissionsOnlyWithVerifiedMod(t *testing.T) {
+	root := t.TempDir()
+	archive := filepath.Join(root, "archive-assets.zip")
+	if err := os.WriteFile(archive, zipWith(t, map[string]string{
+		"tf/download/scripts/population/mvm_lotus_b6_adv_ledmotif.pop": "SigMod mission",
+	}), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	without := filepath.Join(root, "without", "tf")
+	with := filepath.Join(root, "with", "tf")
+	if err := installCommunityZip(archive, without, nil); err != nil {
+		t.Fatal(err)
+	}
+	if err := installCommunityZip(archive, with, []string{sigmodKey}); err != nil {
+		t.Fatal(err)
+	}
+	relative := filepath.Join("scripts", "population", "mvm_lotus_b6_adv_ledmotif.pop")
+	if _, err := os.Stat(filepath.Join(without, relative)); !os.IsNotExist(err) {
+		t.Errorf("SigMod mission installed without SigMod: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(with, relative)); err != nil {
+		t.Errorf("SigMod mission missing with SigMod: %v", err)
+	}
+}
+
+func TestInstallServerModsUsesVerifiedCacheAndDetectsTheInstall(t *testing.T) {
+	data := fakeSigmodZip(t)
+	withSigmodPin(t, data)
+	root := t.TempDir()
+	modDir := filepath.Join(root, "tf-dedicated", "tf")
+	writeFakeSourcemod(t, modDir)
+	cache := filepath.Join(root, "downloads", "sigsegv-mvm-test-version-linux.zip")
+	if err := os.MkdirAll(filepath.Dir(cache), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(cache, data, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := installServerMods(context.Background(), root, modDir, []string{sigmodKey}, func(string, ...any) {}); err != nil {
+		t.Fatal(err)
+	}
+	if got := ReadyServerMods(root); len(got) != 1 || got[0] != sigmodKey {
+		t.Fatalf("ready server mods = %v", got)
+	}
+	if err := os.Remove(filepath.Join(modDir, "addons", "sourcemod", "gamedata", "sigsegv", "population.txt")); err != nil {
+		t.Fatal(err)
+	}
+	if got := ReadyServerMods(root); len(got) != 0 {
+		t.Fatalf("incomplete SigMod reported ready: %v", got)
 	}
 }
 
@@ -178,7 +267,7 @@ func TestCommunityInstallRemovesUnsupportedMissionsFromExistingTrees(t *testing.
 			t.Fatal(err)
 		}
 	}
-	removed, err := removeUnsupportedCommunityPopfiles(modDir)
+	removed, err := removeUnsupportedCommunityPopfiles(modDir, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -238,7 +327,7 @@ func TestInstallCommunityArchivesNeverDownloadsAMissingPack(t *testing.T) {
 
 	root := t.TempDir()
 	archive := filepath.Join(root, "archive-assets.zip")
-	err := installCommunityArchives([]string{archive}, filepath.Join(root, "server", "tf"), func(string, ...any) {})
+	err := installCommunityArchives([]string{archive}, filepath.Join(root, "server", "tf"), nil, func(string, ...any) {})
 	if err == nil {
 		t.Fatal("Start accepted a missing selected pack")
 	}

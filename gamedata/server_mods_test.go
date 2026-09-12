@@ -41,6 +41,19 @@ func TestRequirementLabels(t *testing.T) {
 	}
 }
 
+func TestMissingNavigationMeshNamesTheMapAsset(t *testing.T) {
+	mission, ok := MissionByPopFile("mvm_bogland_rc12_adv_swamp_fever")
+	if !ok {
+		t.Fatal("missing-NAV fixture mission is not in the catalog")
+	}
+	if got, want := MissingNavigationMesh(mission.ID), "maps/mvm_bogland_rc12.nav"; got != want {
+		t.Errorf("MissingNavigationMesh = %q, want %q", got, want)
+	}
+	if got := MissingNavigationMesh(1); got != "" {
+		t.Errorf("Valve mission claims to be missing %q", got)
+	}
+}
+
 func TestPlayableWithModsFollowsTheCatalog(t *testing.T) {
 	saved := communityContent
 	defer func() { communityContent = saved }()

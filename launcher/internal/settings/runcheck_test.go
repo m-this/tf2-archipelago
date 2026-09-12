@@ -1,10 +1,28 @@
 package settings
 
 import (
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/m-this/tf2-archipelago/launcher/internal/runshape"
 )
+
+func TestCheckServerModsReadyRequiresIntentAndVerifiedInstall(t *testing.T) {
+	s := Defaults()
+	popFile := "mvm_bronx_rc2_adv_point_of_impact"
+	s.MvmExcludedMissions = slices.DeleteFunc(s.MvmExcludedMissions, func(one string) bool { return one == popFile })
+	if err := CheckServerModsReady(s, nil); err == nil || !strings.Contains(err.Error(), "turn on SigMod") {
+		t.Fatalf("missing mod selection error = %v", err)
+	}
+	s.SrcdsMods = []string{"sigsegv-mvm"}
+	if err := CheckServerModsReady(s, nil); err == nil || !strings.Contains(err.Error(), "missing or incomplete") {
+		t.Fatalf("missing install error = %v", err)
+	}
+	if err := CheckServerModsReady(s, []string{"sigsegv-mvm"}); err != nil {
+		t.Fatalf("verified install refused: %v", err)
+	}
+}
 
 /*
 apw-2kw: the number the launcher offers and the number the generator draws from

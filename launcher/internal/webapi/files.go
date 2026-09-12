@@ -43,10 +43,16 @@ func (a *App) FilePath(ctx context.Context, target launcherv1.FileTarget) (strin
 	}
 	switch target {
 	case launcherv1.FileTarget_FILE_TARGET_PLAYER_FILE:
+		if err := settings.CheckServerModsReady(s, a.readyServerMods()); err != nil {
+			return "", err
+		}
 		return settings.WritePlayerFile(s, assets.ArchipelagoVersion)
 	case launcherv1.FileTarget_FILE_TARGET_INSTALL_ROOT:
 		return s.InstallRoot, nil
 	case launcherv1.FileTarget_FILE_TARGET_GENERATED_SEED:
+		if err := settings.CheckServerModsReady(s, a.readyServerMods()); err != nil {
+			return "", err
+		}
 		result, err := generate.Run(ctx, generate.Options{
 			Settings: s, AppDir: s.ArchipelagoDir,
 			Apworld: assets.Apworld(), ArchipelagoVersion: assets.ArchipelagoVersion,

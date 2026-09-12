@@ -1,6 +1,7 @@
 package form
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 )
@@ -108,6 +109,11 @@ func Apply(s State, env Env, c Change) (State, error) {
 	}
 	if spec.Set == nil {
 		return s, fmt.Errorf("%q is a %s and is dispatched, not applied", c.Field, spec.Kind)
+	}
+	if spec.Unavailable != nil {
+		if reason := spec.Unavailable(s, env); reason != "" {
+			return s, errors.New(reason)
+		}
 	}
 	return spec.Set(s, c.Value)
 }

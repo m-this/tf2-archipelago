@@ -41,6 +41,7 @@ const (
 	gameBytesNeeded           = 20 * gigabyte
 	communityProgressInterval = 250_000_000
 	communityDownloadTimeout  = 2 * time.Hour
+	sigmodKey                 = "sigsegv-mvm"
 )
 
 // communityArchiveURLs are the full Potato asset packs. The "no maps"
@@ -56,11 +57,12 @@ var communityHTTPClient = &http.Client{Timeout: communityDownloadTimeout}
 
 // Status reports what the installer did, for the UI to show.
 type Status struct {
-	SteamcmdInstalled  bool   `json:"steamcmd_installed"`
-	GameInstalled      bool   `json:"game_installed"`
-	SourcemodInstalled bool   `json:"sourcemod_installed"`
-	GameSizeGB         string `json:"game_size_gb,omitempty"`
-	Message            string `json:"message,omitempty"`
+	SteamcmdInstalled  bool     `json:"steamcmd_installed"`
+	GameInstalled      bool     `json:"game_installed"`
+	SourcemodInstalled bool     `json:"sourcemod_installed"`
+	ServerModsReady    []string `json:"server_mods_ready,omitempty"`
+	GameSizeGB         string   `json:"game_size_gb,omitempty"`
+	Message            string   `json:"message,omitempty"`
 }
 
 // Result is the outcome of an Ensure call: whether work was done, and where
@@ -73,7 +75,7 @@ type Result struct {
 
 // Ensure installs whatever is missing. It prints progress to logf as it goes.
 // Cancel the context to abort a download or a steamcmd run.
-func Ensure(ctx context.Context, installRoot string, communityArchives []string, logf func(format string, args ...any)) (Result, error) {
+func Ensure(ctx context.Context, installRoot string, communityArchives, serverMods []string, logf func(format string, args ...any)) (Result, error) {
 	if err := assets.RequireVersions(); err != nil {
 		return Result{}, err
 	}
@@ -122,7 +124,12 @@ func Ensure(ctx context.Context, installRoot string, communityArchives []string,
 	if err := installMods(ctx, filepath.Join(result.GameDir, "tf"), logf); err != nil {
 		return result, err
 	}
-	if err := installCommunityArchives(communityArchives, filepath.Join(result.GameDir, "tf"), logf); err != nil {
+	modDir := filepath.Join(result.GameDir, "tf")
+	if err := installServerMods(ctx, installRoot, modDir, serverMods, logf); err != nil {
+		return result, err
+	}
+	result.Done.ServerModsReady = ReadyServerMods(installRoot)
+	if err := installCommunityArchives(communityArchives, modDir, result.Done.ServerModsReady, logf); err != nil {
 		return result, err
 	}
 	result.Done.SourcemodInstalled = true
@@ -130,11 +137,11 @@ func Ensure(ctx context.Context, installRoot string, communityArchives []string,
 	return result, nil
 }
 
-func installCommunityArchives(archives []string, modDir string, logf func(string, ...any)) error {
+func installCommunityArchives(archives []string, modDir string, serverMods []string, logf func(string, ...any)) error {
 	if err := ValidateCommunityArchives(archives, logf); err != nil {
 		return err
 	}
-	removed, err := removeUnsupportedCommunityPopfiles(modDir)
+	removed, err := removeUnsupportedCommunityPopfiles(modDir, serverMods)
 	if err != nil {
 		return err
 	}
@@ -147,7 +154,7 @@ func installCommunityArchives(archives []string, modDir string, logf func(string
 		if err != nil {
 			return fmt.Errorf("cannot use community pack %s: %w", path, err)
 		}
-		identity := fmt.Sprintf("%s\n%d\n%d\n", path, info.Size(), info.ModTime().UnixNano())
+		identity := fmt.Sprintf("%s\n%d\n%d\nmods=%s\n", path, info.Size(), info.ModTime().UnixNano(), strings.Join(serverMods, ","))
 		sum := sha256.Sum256([]byte(path))
 		stamp := filepath.Join(stampDir, fmt.Sprintf("%x.stamp", sum[:8]))
 		if body, err := os.ReadFile(stamp); err == nil && string(body) == identity {
@@ -155,7 +162,7 @@ func installCommunityArchives(archives []string, modDir string, logf func(string
 			continue
 		}
 		logf("installing community pack %s (this can take a minute)", filepath.Base(path))
-		if err := installCommunityZip(path, modDir); err != nil {
+		if err := installCommunityZip(path, modDir, serverMods); err != nil {
 			return fmt.Errorf("cannot install community pack %s: %w", path, err)
 		}
 		if err := os.MkdirAll(stampDir, 0o755); err != nil {
@@ -420,7 +427,7 @@ func (w *communityDownloadWriter) Write(body []byte) (int, error) {
 // installCommunityZip streams a Potato-style tf/download tree into SRCDS's
 // tf directory. The archives are several gigabytes, so they are never read
 // into memory as the small embedded mod archives are.
-func installCommunityZip(path, modDir string) error {
+func installCommunityZip(path, modDir string, serverMods []string) error {
 	file, err := os.Open(path)
 	if err != nil {
 		return err
@@ -451,7 +458,7 @@ func installCommunityZip(path, modDir string) error {
 		// Full Potato packs contain missions for server mods we do not ship.
 		// Keep their maps and shared assets, but do not let stock TF2 discover
 		// and select an incompatible mission as that map's default.
-		if unsupportedCommunityPopfile(relative) {
+		if unsupportedCommunityPopfile(relative, serverMods) {
 			continue
 		}
 		target, err := safeJoin(modDir, relative)
@@ -474,28 +481,22 @@ func installCommunityZip(path, modDir string) error {
 	return nil
 }
 
-var supportedCommunityPopfiles, communityMapNames = communityPopfilePolicy()
+var communityMapNames = communityMapPolicy()
 
-func communityPopfilePolicy() (map[string]struct{}, []string) {
-	supported := make(map[string]struct{})
-	for _, mission := range gamedata.PlayableMissions() {
-		if gamedata.IsCommunityMission(mission.ID) {
-			supported[strings.ToLower(mission.PopFile)] = struct{}{}
-		}
-	}
+func communityMapPolicy() []string {
 	maps := make([]string, 0)
 	for _, played := range gamedata.Maps {
 		if gamedata.IsCommunityMap(played.ID) {
 			maps = append(maps, strings.ToLower(played.Name))
 		}
 	}
-	return supported, maps
+	return maps
 }
 
 // unsupportedCommunityPopfile recognizes only mission files belonging to
 // community maps in our catalog. It deliberately leaves robot templates and
 // population files for unrelated user-installed maps alone.
-func unsupportedCommunityPopfile(relative string) bool {
+func unsupportedCommunityPopfile(relative string, serverMods []string) bool {
 	clean := strings.ToLower(filepath.ToSlash(relative))
 	if filepath.ToSlash(filepath.Dir(clean)) != "scripts/population" || filepath.Ext(clean) != ".pop" {
 		return false
@@ -505,15 +506,15 @@ func unsupportedCommunityPopfile(relative string) bool {
 		if name != mapName && !strings.HasPrefix(name, mapName+"_") {
 			continue
 		}
-		_, supported := supportedCommunityPopfiles[name]
-		return !supported
+		mission, cataloged := gamedata.MissionByPopFile(name)
+		return !cataloged || !gamedata.IsMissionPlayableWith(mission.ID, serverMods)
 	}
 	return false
 }
 
 // removeUnsupportedCommunityPopfiles repairs installations made by older
 // launchers even when the ZIP stamp says the pack is already installed.
-func removeUnsupportedCommunityPopfiles(modDir string) (int, error) {
+func removeUnsupportedCommunityPopfiles(modDir string, serverMods []string) (int, error) {
 	populationDir := filepath.Join(modDir, "scripts", "population")
 	entries, err := os.ReadDir(populationDir)
 	if errors.Is(err, fs.ErrNotExist) {
@@ -524,7 +525,7 @@ func removeUnsupportedCommunityPopfiles(modDir string) (int, error) {
 	}
 	removed := 0
 	for _, entry := range entries {
-		if entry.IsDir() || !unsupportedCommunityPopfile(filepath.Join("scripts", "population", entry.Name())) {
+		if entry.IsDir() || !unsupportedCommunityPopfile(filepath.Join("scripts", "population", entry.Name()), serverMods) {
 			continue
 		}
 		if err := os.Remove(filepath.Join(populationDir, entry.Name())); err != nil {
@@ -565,6 +566,124 @@ func installMods(ctx context.Context, modDir string, logf func(string, ...any)) 
 		return fmt.Errorf("cannot install the defender bots: %w", err)
 	}
 	return nil
+}
+
+// ReadyServerMods reports launcher-managed server mods whose pinned install is
+// complete. A setting is only intent; mission selection uses this inspection
+// so a stale config cannot claim that a missing extension is available.
+func ReadyServerMods(installRoot string) []string {
+	modDir := filepath.Join(installRoot, "tf-dedicated", "tf")
+	if runtime.GOOS == "linux" && sigmodReady(modDir) {
+		return []string{sigmodKey}
+	}
+	return nil
+}
+
+func sigmodReady(modDir string) bool {
+	if assets.SigsegvMVMVersion == "" || assets.SigsegvMVMSHA256 == "" {
+		return false
+	}
+	if firstMissing(modDir, sourcemodFiles(runtime.GOOS)) != "" {
+		return false
+	}
+	want, err := sigmodStamp(modDir)
+	if err != nil {
+		return false
+	}
+	stamp, err := os.ReadFile(filepath.Join(modDir, "addons", ".tf2ap-sigsegv-mvm.stamp"))
+	return err == nil && string(stamp) == want
+}
+
+var sigmodFiles = []string{
+	"addons/sourcemod/extensions/sigsegv.ext.2.tf2.so",
+	"addons/sourcemod/extensions/x64/sigsegv.ext.2.tf2.so",
+	"addons/sourcemod/extensions/sigsegv.autoload",
+	"addons/sourcemod/gamedata/sigsegv/population.txt",
+	"cfg/sigsegv_convars.cfg",
+}
+
+func sigmodStamp(modDir string) (string, error) {
+	var stamp strings.Builder
+	fmt.Fprintf(&stamp, "%s\n%s\n", assets.SigsegvMVMVersion, assets.SigsegvMVMSHA256)
+	for _, relative := range sigmodFiles {
+		body, err := os.ReadFile(filepath.Join(modDir, filepath.FromSlash(relative)))
+		if err != nil {
+			return "", err
+		}
+		fmt.Fprintf(&stamp, "%s %x\n", relative, sha256.Sum256(body))
+	}
+	return stamp.String(), nil
+}
+
+func installServerMods(ctx context.Context, installRoot, modDir string, requested []string, logf func(string, ...any)) error {
+	for _, key := range requested {
+		mod, known := gamedata.ServerModByKey(key)
+		if !known {
+			return fmt.Errorf("server mod %q is not supported by this launcher", key)
+		}
+		if (runtime.GOOS == "windows" && !mod.Windows) || (runtime.GOOS == "linux" && !mod.Linux) {
+			return fmt.Errorf("%s has no %s server build; deselect it or run the server on a supported platform", mod.Name, runtime.GOOS)
+		}
+		if key == sigmodKey {
+			if sigmodReady(modDir) {
+				logf("SigMod %s is already installed and verified", assets.SigsegvMVMVersion)
+				continue
+			}
+			logf("downloading and installing SigMod %s", assets.SigsegvMVMVersion)
+			data, err := cachedSigmod(ctx, installRoot)
+			if err != nil {
+				return err
+			}
+			if err := unzipTo(data, modDir); err != nil {
+				return fmt.Errorf("cannot install SigMod: %w", err)
+			}
+			stampDir := filepath.Join(modDir, "addons")
+			if err := os.MkdirAll(stampDir, 0o755); err != nil {
+				return err
+			}
+			stamp, err := sigmodStamp(modDir)
+			if err != nil {
+				return fmt.Errorf("cannot verify installed SigMod files: %w", err)
+			}
+			if err := os.WriteFile(filepath.Join(stampDir, ".tf2ap-sigsegv-mvm.stamp"), []byte(stamp), 0o644); err != nil {
+				return err
+			}
+			if !sigmodReady(modDir) {
+				return errors.New("SigMod package was extracted but its extension, gamedata, or managed version stamp is incomplete")
+			}
+		}
+	}
+	return nil
+}
+
+func cachedSigmod(ctx context.Context, installRoot string) ([]byte, error) {
+	cacheDir := filepath.Join(installRoot, "downloads")
+	path := filepath.Join(cacheDir, "sigsegv-mvm-"+assets.SigsegvMVMVersion+"-linux.zip")
+	if data, err := os.ReadFile(path); err == nil && validSigmodPackage(data) {
+		return data, nil
+	}
+	data, err := fetch(ctx, sigmodURL())
+	if err != nil {
+		return nil, fmt.Errorf("cannot download SigMod: %w", err)
+	}
+	if !validSigmodPackage(data) {
+		return nil, fmt.Errorf("SigMod download checksum does not match the pinned %s release", assets.SigsegvMVMVersion)
+	}
+	if err := os.MkdirAll(cacheDir, 0o755); err != nil {
+		return nil, err
+	}
+	temporary := path + ".partial"
+	if err := os.WriteFile(temporary, data, 0o644); err != nil {
+		return nil, err
+	}
+	if err := os.Rename(temporary, path); err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func validSigmodPackage(data []byte) bool {
+	return fmt.Sprintf("%x", sha256.Sum256(data)) == strings.ToLower(assets.SigsegvMVMSHA256)
 }
 
 /*
@@ -979,6 +1098,7 @@ func Clean(installRoot string) ([]string, error) {
 		filepath.Join(installRoot, "steamcmd"),
 		filepath.Join(installRoot, "tf-dedicated", "tf", "addons"),
 		filepath.Join(installRoot, "tf-dedicated", "steamapps"),
+		filepath.Join(installRoot, "downloads", "sigsegv-mvm-"+assets.SigsegvMVMVersion+"-linux.zip"),
 	}
 	var removed []string
 	for _, target := range targets {

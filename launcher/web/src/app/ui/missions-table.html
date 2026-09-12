@@ -30,6 +30,7 @@
               <input
                 type="checkbox"
                 [checked]="row.on"
+                [disabled]="row.disabled"
                 [attr.aria-label]="row.name"
                 (change)="toggled.emit(row.key)"
               />

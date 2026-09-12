@@ -70,8 +70,9 @@ func TestCommunityManifestRejectsTyposAndReservedIDs(t *testing.T) {
 
 func TestFrostwyndMissionsNameTheirMedievalLoadout(t *testing.T) {
 	want := map[string]bool{
-		"mvm_frostwynd_rc1_int_wicked_wizardry": true,
-		"mvm_frostwynd_rc1_adv_fiefdom_fiasco":  true,
+		"mvm_frostwynd_rc1_int_wicked_wizardry":  true,
+		"mvm_frostwynd_rc1_adv_fiefdom_fiasco":   true,
+		"mvm_frostwynd_rc1_adv_medieval_madness": true,
 	}
 	for _, mission := range communityMissions {
 		got := MissionLoadout(mission.ID)
@@ -109,23 +110,50 @@ func TestUnsupportedCommunityMissionsAreNotPlayableChoices(t *testing.T) {
 	}
 }
 
+func TestCommunityCatalogueCounts(t *testing.T) {
+	if got, want := len(communityMaps), 46; got != want {
+		t.Errorf("community maps = %d, want %d", got, want)
+	}
+	counts := map[string]int{}
+	for _, mission := range communityMissions {
+		requirement := MissionRequirement(mission.ID)
+		if requirement == "" {
+			requirement = "ready"
+		}
+		counts[requirement]++
+	}
+	if got, want := len(communityMissions), 201; got != want {
+		t.Errorf("community missions = %d, want %d", got, want)
+	}
+	for requirement, want := range map[string]int{"ready": 86, "sigsegv-mvm": 99, "no_nav": 16} {
+		if got := counts[requirement]; got != want {
+			t.Errorf("%s missions = %d, want %d", requirement, got, want)
+		}
+	}
+}
+
 func TestPortableCommunityMissionCountsByMap(t *testing.T) {
 	want := map[string]int{
-		"mvm_area_52_rc3":        8,
+		"mvm_area_52_rc3":        9,
 		"mvm_autumnull_rc2":      2,
 		"mvm_condemned_b3":       2,
-		"mvm_downpour_rc3a":      3,
+		"mvm_creepside_b2":       1,
+		"mvm_downpour_rc3a":      4,
 		"mvm_frostwynd_rc1":      2,
-		"mvm_heatrock_rc6a":      1,
-		"mvm_hideout_b3":         6,
+		"mvm_heatrock_rc6a":      2,
+		"mvm_hideout_b3":         7,
 		"mvm_kelly_rc1b":         1,
 		"mvm_lotus_b6":           2,
+		"mvm_memorial_b1":        1,
+		"mvm_nightsky_rc4d":      1,
 		"mvm_null_b9c":           1,
-		"mvm_oilrig_rc5d":        5,
+		"mvm_oilrig_rc5d":        6,
 		"mvm_oxidize_rc3":        3,
-		"mvm_oxidize_rr18":       3,
+		"mvm_oxidize_rr18":       5,
 		"mvm_radar_b10":          3,
-		"mvm_redstone_ridge_rc5": 1,
+		"mvm_redstone_ridge_rc5": 2,
+		"mvm_robotfactory_b30":   1,
+		"mvm_skeleclipse_b7a":    2,
 		"mvm_snowpine_rc4_fix1":  4,
 		"mvm_teien_rc6":          3,
 		"mvm_transmission_rc7a":  2,
@@ -137,10 +165,10 @@ func TestPortableCommunityMissionCountsByMap(t *testing.T) {
 		"mvm_decoy":      3,
 		"mvm_coaltown":   2,
 		"mvm_mannworks":  4,
-		"mvm_bigrock":    2,
-		"mvm_mannhattan": 4,
-		"mvm_rottenburg": 10,
-		"mvm_ghost_town": 5,
+		"mvm_bigrock":    1,
+		"mvm_mannhattan": 2,
+		"mvm_rottenburg": 6,
+		"mvm_ghost_town": 1,
 	}
 
 	got := make(map[string]int, len(want))
@@ -224,5 +252,24 @@ WaveSchedule
 	want = populationFacts{Waves: 1}
 	if got := inspectPopulation(withoutObjectives); got != want {
 		t.Fatalf("inspectPopulation() = %v, want %v", got, want)
+	}
+}
+
+func TestCommunityPopulationRequiresSigMod(t *testing.T) {
+	for name, test := range map[string]struct {
+		body string
+		want bool
+	}{
+		"stock":               {`WaveSchedule { Wave { } }`, false},
+		"commented extension": {`// ItemAttributes { } [$SIGSEGV]`, false},
+		"delivery hint":       {`PrecacheModel "example.mdl" [$SIGSEGV]`, false},
+		"active annotation":   {`ItemAttributes { } [$SIGSEGV]`, true},
+		"unguarded template":  {`SpawnTemplate Example`, true},
+	} {
+		t.Run(name, func(t *testing.T) {
+			if got := CommunityPopulationRequiresSigMod([]byte(test.body)); got != test.want {
+				t.Errorf("CommunityPopulationRequiresSigMod() = %t, want %t", got, test.want)
+			}
+		})
 	}
 }

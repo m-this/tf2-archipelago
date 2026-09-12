@@ -91,7 +91,7 @@ NPM := docker run --rm -u $$(id -u):$$(id -g) \
 # checkout of one must not be able to fail our own format check.
 GO_SRC := $$(find . -type f -name '*.go' -not -path './deploy/bots/build/*' -not -path './launcher/internal/gen/*' -not -path './launcher/web/*')
 
-.PHONY: help seed up down restart logs ps rcon community-check \
+.PHONY: help seed up down restart logs ps rcon community-catalog community-check \
         check fmt fmt-check vet lint lint-fix fix-check vuln compile test \
         test-fast export apworld-lint \
 		apworld-fmt apworld-test apworld-build apworld-package plugin bots bots-from-source \
@@ -120,6 +120,7 @@ help:
 	@echo "  make tracker-build Build the public campaign tracker into ./dist/tracker"
 	@echo "  make web-e2e       Drive the interface in a browser against the fake launcher"
 	@echo "  make export        Regenerate apworld/tf2_mvm/data from gamedata/"
+	@echo "  make community-catalog Add every viable mission from the official archives"
 	@echo "  make community-check Validate community.json against community-content/tf"
 	@echo "  make plugin        Compile the SourceMod plugin"
 	@echo "  make bots          Stage the MvM defender bots the image installs"
@@ -404,6 +405,10 @@ export:
 	go generate ./gamedata
 
 COMMUNITY_CONTENT ?= ./community-content/tf
+COMMUNITY_ARCHIVES ?= ./community-content/archive-assets.zip ./community-content/mlarchive-assets.zip
+community-catalog:
+	go run ./gamedata/cmd/communitycatalog $(COMMUNITY_ARCHIVES)
+
 community-check:
 	go run ./gamedata/cmd/communitycheck $(COMMUNITY_CONTENT)
 
@@ -500,6 +505,8 @@ LAUNCHER_LDFLAGS := -X github.com/m-this/tf2-archipelago/launcher/internal/asset
 	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.MetamodVersion=$(MMSOURCE_VERSION) \
 	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.RipextVersion=$(RIPEXT_VERSION) \
 	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.ArchipelagoVersion=$(ARCHIPELAGO_VERSION) \
+	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.SigsegvMVMVersion=$(SIGSEGV_MVM_VERSION) \
+	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.SigsegvMVMSHA256=$(SIGSEGV_MVM_SHA256) \
 	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.DefenderbotsVersion=$(DEFENDERBOTS_VERSION) \
 	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.LauncherVersion=$(LAUNCHER_VERSION)
 

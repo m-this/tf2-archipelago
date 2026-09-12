@@ -83,6 +83,42 @@ void Missions_OnConfigsExecuted()
     }
 }
 
+/* Ask TF2 for a mission using the map-relative name its mission picker uses.
+ *
+ * The run and bridge keep the complete popfile name because it is the stable
+ * mission id. The game command accepts that name too, except SigMod's mission
+ * vote guard mistakes every command in the first ten seconds of a map for a
+ * vote. Its allowed list contains `int_name`, not `mvm_map_int_name`, so the
+ * complete name is rejected during exactly the two-second window in which a
+ * cross-map switch lands.
+ *
+ * A relative name is TF2's normal spelling for this command and works with or
+ * without SigMod. The complete id remains untouched everywhere else.
+ */
+static void Missions_ApplyPopFile(const char[] popFile, const char[] map)
+{
+    char commandName[64];
+    if (StrEqual(popFile, map, false))
+    {
+        strcopy(commandName, sizeof(commandName), "normal");
+    }
+    else
+    {
+        char prefix[64];
+        FormatEx(prefix, sizeof(prefix), "%s_", map);
+        int prefixLength = strlen(prefix);
+        if (StrContains(popFile, prefix, false) == 0)
+        {
+            strcopy(commandName, sizeof(commandName), popFile[prefixLength]);
+        }
+        else
+        {
+            strcopy(commandName, sizeof(commandName), popFile);
+        }
+    }
+    ServerCommand("tf_mvm_popfile %s", commandName);
+}
+
 // tf_mvm_popfile reloads the mission on the map that is already loaded, so the
 // map change goes first and this lands after it.
 static Action Timer_ApplyPendingPopFile(Handle timer)
@@ -92,7 +128,9 @@ static Action Timer_ApplyPendingPopFile(Handle timer)
         return Plugin_Stop;
     }
     AP_Debug("The plugin names the mission %s now that the map is up.", g_PendingPopFile);
-    ServerCommand("tf_mvm_popfile %s", g_PendingPopFile);
+    char currentMap[64];
+    GetCurrentMap(currentMap, sizeof(currentMap));
+    Missions_ApplyPopFile(g_PendingPopFile, currentMap);
     g_PendingPopFile[0] = '\0';
     return Plugin_Stop;
 }
@@ -341,7 +379,7 @@ static void Missions_Load(Mission mission)
     if (StrEqual(current, mission.map, false) && MvM_IsActive())
     {
         AP_Announce("Mission: %s. Reloading.", mission.name);
-        ServerCommand("tf_mvm_popfile %s", mission.popFile);
+        Missions_ApplyPopFile(mission.popFile, mission.map);
         return;
     }
     AP_Announce("Mission: %s. The map changes now.", mission.name);

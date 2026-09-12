@@ -33,11 +33,13 @@ connectent avec un client TF2 standard et n'installent rien.
 - Aucune tentative de soumettre ceci en amont à
   `ArchipelagoMW/Archipelago` dans la v1. À reconsidérer une fois que ça
   génère réellement et que quelqu'un termine une partie de bout en bout.
-- Aucune exécution automatique des extensions serveur propres à Potato.tf ou
-  Moonlight.tf. Les cartes communautaires, fichiers de population, VScript et
-  tables d'améliorations standard sont pris en charge par un manifeste
-  versionné ; une mission SigMod exige toujours l'installation séparée de
-  cette dépendance.
+- Aucune exécution d'une extension serveur Potato.tf ou Moonlight.tf qui ne
+  soit ni répertoriée ni versionnée. Les cartes communautaires, fichiers de
+  population, VScript et tables d'améliorations standard sont pris en charge
+  par un manifeste versionné. Sous Linux, le lanceur télécharge et vérifie
+  automatiquement la version SigMod répertoriée lorsque le joueur la choisit ;
+  les missions restent verrouillées tant que cette installation n'est pas
+  validée.
 
 ## Architecture
 

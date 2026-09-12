@@ -914,6 +914,934 @@
       "mission_id": 189
     },
     {
+      "id": 7443001190,
+      "name": "Mission Ticket: Gold And Grit",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 190
+    },
+    {
+      "id": 7443001191,
+      "name": "Mission Ticket: Reboot Rush",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 191
+    },
+    {
+      "id": 7443001192,
+      "name": "Mission Ticket: Thermal Thunder",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 192
+    },
+    {
+      "id": 7443001193,
+      "name": "Mission Ticket: Diamond And Dross",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 193
+    },
+    {
+      "id": 7443001194,
+      "name": "Mission Ticket: Bronze And Bristle",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 194
+    },
+    {
+      "id": 7443001195,
+      "name": "Mission Ticket: Nuclear Threat",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 195
+    },
+    {
+      "id": 7443001196,
+      "name": "Mission Ticket: Dynamic Disaster",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 196
+    },
+    {
+      "id": 7443001197,
+      "name": "Mission Ticket: Tincan Termination",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 197
+    },
+    {
+      "id": 7443001198,
+      "name": "Mission Ticket: Codename Omega",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 198
+    },
+    {
+      "id": 7443001199,
+      "name": "Mission Ticket: Denominator",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 199
+    },
+    {
+      "id": 7443001200,
+      "name": "Mission Ticket: Numerator",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 200
+    },
+    {
+      "id": 7443001201,
+      "name": "Mission Ticket: Reanimation",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 201
+    },
+    {
+      "id": 7443001202,
+      "name": "Mission Ticket: Terminal Lucidity",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 202
+    },
+    {
+      "id": 7443001203,
+      "name": "Mission Ticket: Wretched Witchery",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 203
+    },
+    {
+      "id": 7443001204,
+      "name": "Mission Ticket: Sed De Sangre",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 204
+    },
+    {
+      "id": 7443001205,
+      "name": "Mission Ticket: Spooky Spiral",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 205
+    },
+    {
+      "id": 7443001206,
+      "name": "Mission Ticket: Bog Business",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 206
+    },
+    {
+      "id": 7443001207,
+      "name": "Mission Ticket: Dire Mire",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 207
+    },
+    {
+      "id": 7443001208,
+      "name": "Mission Ticket: Mud Maker",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 208
+    },
+    {
+      "id": 7443001209,
+      "name": "Mission Ticket: Crocodile Operation",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 209
+    },
+    {
+      "id": 7443001210,
+      "name": "Mission Ticket: Point Of Impact",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 210
+    },
+    {
+      "id": 7443001211,
+      "name": "Mission Ticket: Remedic",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 211
+    },
+    {
+      "id": 7443001212,
+      "name": "Mission Ticket: Computer Crash",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 212
+    },
+    {
+      "id": 7443001213,
+      "name": "Mission Ticket: Trespasser",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 213
+    },
+    {
+      "id": 7443001214,
+      "name": "Mission Ticket: Trespasser Remaster",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 214
+    },
+    {
+      "id": 7443001215,
+      "name": "Mission Ticket: Abyssal Atrocities",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 215
+    },
+    {
+      "id": 7443001216,
+      "name": "Mission Ticket: Catastrophic Conjuring",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 216
+    },
+    {
+      "id": 7443001217,
+      "name": "Mission Ticket: Dismal Devilry",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 217
+    },
+    {
+      "id": 7443001218,
+      "name": "Mission Ticket: Dust To Dust",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 218
+    },
+    {
+      "id": 7443001219,
+      "name": "Mission Ticket: Celestial Broken Tomb",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 219
+    },
+    {
+      "id": 7443001220,
+      "name": "Mission Ticket: Midnight Massacre",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 220
+    },
+    {
+      "id": 7443001221,
+      "name": "Mission Ticket: Frozen Freaks",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 221
+    },
+    {
+      "id": 7443001222,
+      "name": "Mission Ticket: Launch Sequence",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 222
+    },
+    {
+      "id": 7443001223,
+      "name": "Mission Ticket: Rusty Rapture",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 223
+    },
+    {
+      "id": 7443001224,
+      "name": "Mission Ticket: Snowblitz",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 224
+    },
+    {
+      "id": 7443001225,
+      "name": "Mission Ticket: Cascading Steel Swarm",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 225
+    },
+    {
+      "id": 7443001226,
+      "name": "Mission Ticket: Northern Lights",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 226
+    },
+    {
+      "id": 7443001227,
+      "name": "Mission Ticket: Arctic Arrangement",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 227
+    },
+    {
+      "id": 7443001228,
+      "name": "Mission Ticket: Blackout",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 228
+    },
+    {
+      "id": 7443001229,
+      "name": "Mission Ticket: Bloodpour",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 229
+    },
+    {
+      "id": 7443001230,
+      "name": "Mission Ticket: Technical Terror",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 230
+    },
+    {
+      "id": 7443001231,
+      "name": "Mission Ticket: Deprecated Designs",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 231
+    },
+    {
+      "id": 7443001232,
+      "name": "Mission Ticket: Ghoulish Genesis",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 232
+    },
+    {
+      "id": 7443001233,
+      "name": "Mission Ticket: Last Stand Of Dead Men",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 233
+    },
+    {
+      "id": 7443001234,
+      "name": "Mission Ticket: Wet Wreckage",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 234
+    },
+    {
+      "id": 7443001235,
+      "name": "Mission Ticket: Backup Security Protocol",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 235
+    },
+    {
+      "id": 7443001236,
+      "name": "Mission Ticket: Medieval Madness",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 236
+    },
+    {
+      "id": 7443001237,
+      "name": "Mission Ticket: Brain Taker",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 237
+    },
+    {
+      "id": 7443001238,
+      "name": "Mission Ticket: Impending Apocalypse",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 238
+    },
+    {
+      "id": 7443001239,
+      "name": "Mission Ticket: Slaughterhouse",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 239
+    },
+    {
+      "id": 7443001240,
+      "name": "Mission Ticket: Korpoelec Invasion",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 240
+    },
+    {
+      "id": 7443001241,
+      "name": "Mission Ticket: Wet Warfare",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 241
+    },
+    {
+      "id": 7443001242,
+      "name": "Mission Ticket: Galois",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 242
+    },
+    {
+      "id": 7443001243,
+      "name": "Mission Ticket: Awakening",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 243
+    },
+    {
+      "id": 7443001244,
+      "name": "Mission Ticket: Crop Circles",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 244
+    },
+    {
+      "id": 7443001245,
+      "name": "Mission Ticket: Mobocracy",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 245
+    },
+    {
+      "id": 7443001246,
+      "name": "Mission Ticket: Ominous Outback",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 246
+    },
+    {
+      "id": 7443001247,
+      "name": "Mission Ticket: Midnight Patrol",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 247
+    },
+    {
+      "id": 7443001248,
+      "name": "Mission Ticket: Shrouded Shrieks",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 248
+    },
+    {
+      "id": 7443001249,
+      "name": "Mission Ticket: Legacy Heresy",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 249
+    },
+    {
+      "id": 7443001250,
+      "name": "Mission Ticket: Castle Crush",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 250
+    },
+    {
+      "id": 7443001251,
+      "name": "Mission Ticket: Ledmotif",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 251
+    },
+    {
+      "id": 7443001252,
+      "name": "Mission Ticket: Property Inspection",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 252
+    },
+    {
+      "id": 7443001253,
+      "name": "Mission Ticket: Secret Struggle",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 253
+    },
+    {
+      "id": 7443001254,
+      "name": "Mission Ticket: Martian Civilizations",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 254
+    },
+    {
+      "id": 7443001255,
+      "name": "Mission Ticket: Necropolis",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 255
+    },
+    {
+      "id": 7443001256,
+      "name": "Mission Ticket: Nightsky Nightmare",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 256
+    },
+    {
+      "id": 7443001257,
+      "name": "Mission Ticket: Condemned Conflict",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 257
+    },
+    {
+      "id": 7443001258,
+      "name": "Mission Ticket: Death Con One",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 258
+    },
+    {
+      "id": 7443001259,
+      "name": "Mission Ticket: Mountain Of Fear",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 259
+    },
+    {
+      "id": 7443001260,
+      "name": "Mission Ticket: Night Of Fire",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 260
+    },
+    {
+      "id": 7443001261,
+      "name": "Mission Ticket: Baneful Harvest",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 261
+    },
+    {
+      "id": 7443001262,
+      "name": "Mission Ticket: Distorted Reality",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 262
+    },
+    {
+      "id": 7443001263,
+      "name": "Mission Ticket: Syntax Error",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 263
+    },
+    {
+      "id": 7443001264,
+      "name": "Mission Ticket: 0",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 264
+    },
+    {
+      "id": 7443001265,
+      "name": "Mission Ticket: Call Of The Void",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 265
+    },
+    {
+      "id": 7443001266,
+      "name": "Mission Ticket: Waters Of Wrath",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 266
+    },
+    {
+      "id": 7443001267,
+      "name": "Mission Ticket: Orson Oligarchy",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 267
+    },
+    {
+      "id": 7443001268,
+      "name": "Mission Ticket: Inverted Incursion",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 268
+    },
+    {
+      "id": 7443001269,
+      "name": "Mission Ticket: Recollection Repression",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 269
+    },
+    {
+      "id": 7443001270,
+      "name": "Mission Ticket: Mannure",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 270
+    },
+    {
+      "id": 7443001271,
+      "name": "Mission Ticket: Overclock",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 271
+    },
+    {
+      "id": 7443001272,
+      "name": "Mission Ticket: Reddish Rebellion",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 272
+    },
+    {
+      "id": 7443001273,
+      "name": "Mission Ticket: Frantic Flood",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 273
+    },
+    {
+      "id": 7443001274,
+      "name": "Mission Ticket: Enduring Exceptions",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 274
+    },
+    {
+      "id": 7443001275,
+      "name": "Mission Ticket: Industrial Injection",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 275
+    },
+    {
+      "id": 7443001276,
+      "name": "Mission Ticket: Short Circuit Execution",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 276
+    },
+    {
+      "id": 7443001277,
+      "name": "Mission Ticket: Breaking Walls",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 277
+    },
+    {
+      "id": 7443001278,
+      "name": "Mission Ticket: Spanner Switchup",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 278
+    },
+    {
+      "id": 7443001279,
+      "name": "Mission Ticket: Ocean Commotion",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 279
+    },
+    {
+      "id": 7443001280,
+      "name": "Mission Ticket: Bauernhof",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 280
+    },
+    {
+      "id": 7443001281,
+      "name": "Mission Ticket: Sudden Equinox",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 281
+    },
+    {
+      "id": 7443001282,
+      "name": "Mission Ticket: Gilead Gehenom",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 282
+    },
+    {
+      "id": 7443001283,
+      "name": "Mission Ticket: Vicious Delicious",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 283
+    },
+    {
+      "id": 7443001284,
+      "name": "Mission Ticket: Spooky Sprockets",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 284
+    },
+    {
+      "id": 7443001285,
+      "name": "Mission Ticket: When The Sun Shines Red",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 285
+    },
+    {
+      "id": 7443001286,
+      "name": "Mission Ticket: Crescent Calamity",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 286
+    },
+    {
+      "id": 7443001287,
+      "name": "Mission Ticket: Sunburn",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 287
+    },
+    {
+      "id": 7443001288,
+      "name": "Mission Ticket: Twilight Of Terror",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 288
+    },
+    {
+      "id": 7443001289,
+      "name": "Mission Ticket: Claire De Lune",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 289
+    },
+    {
+      "id": 7443001290,
+      "name": "Mission Ticket: Logging Dreadwood",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 290
+    },
+    {
+      "id": 7443001291,
+      "name": "Mission Ticket: Respiration Restriction",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 291
+    },
+    {
+      "id": 7443001292,
+      "name": "Mission Ticket: Hazardous Haze",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 292
+    },
+    {
+      "id": 7443001293,
+      "name": "Mission Ticket: Shivering Slumber",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 293
+    },
+    {
+      "id": 7443001294,
+      "name": "Mission Ticket: Waters Of A Robot Regime",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 294
+    },
+    {
+      "id": 7443001295,
+      "name": "Mission Ticket: Shogun Slaughter",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 295
+    },
+    {
+      "id": 7443001296,
+      "name": "Mission Ticket: Accursed Aggrievocation",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 296
+    },
+    {
+      "id": 7443001297,
+      "name": "Mission Ticket: Echoes Of A Warzone",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 297
+    },
+    {
+      "id": 7443001298,
+      "name": "Mission Ticket: White Noise",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 298
+    },
+    {
+      "id": 7443001299,
+      "name": "Mission Ticket: Terrorstorm",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 299
+    },
+    {
+      "id": 7443001300,
+      "name": "Mission Ticket: Bloodwater",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 300
+    },
+    {
+      "id": 7443001301,
+      "name": "Mission Ticket: River Of Despair",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 301
+    },
+    {
+      "id": 7443001302,
+      "name": "Mission Ticket: Forgotten",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 302
+    },
+    {
+      "id": 7443001303,
+      "name": "Mission Ticket: Recalled To Life",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 303
+    },
+    {
+      "id": 7443001304,
+      "name": "Mission Ticket: Mesa Malware",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 304
+    },
+    {
+      "id": 7443001305,
+      "name": "Mission Ticket: Omega Machine",
+      "kind": "mission_ticket",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 305
+    },
+    {
       "id": 7443002001,
       "name": "Class: Scout",
       "kind": "class",
@@ -157007,6 +157935,934 @@
       "classification": "progression",
       "count": 1,
       "mission_id": 189
+    },
+    {
+      "id": 7443008190,
+      "name": "Australium Medal: Gold And Grit",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 190
+    },
+    {
+      "id": 7443008191,
+      "name": "Australium Medal: Reboot Rush",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 191
+    },
+    {
+      "id": 7443008192,
+      "name": "Australium Medal: Thermal Thunder",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 192
+    },
+    {
+      "id": 7443008193,
+      "name": "Australium Medal: Diamond And Dross",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 193
+    },
+    {
+      "id": 7443008194,
+      "name": "Australium Medal: Bronze And Bristle",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 194
+    },
+    {
+      "id": 7443008195,
+      "name": "Australium Medal: Nuclear Threat",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 195
+    },
+    {
+      "id": 7443008196,
+      "name": "Australium Medal: Dynamic Disaster",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 196
+    },
+    {
+      "id": 7443008197,
+      "name": "Australium Medal: Tincan Termination",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 197
+    },
+    {
+      "id": 7443008198,
+      "name": "Australium Medal: Codename Omega",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 198
+    },
+    {
+      "id": 7443008199,
+      "name": "Australium Medal: Denominator",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 199
+    },
+    {
+      "id": 7443008200,
+      "name": "Australium Medal: Numerator",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 200
+    },
+    {
+      "id": 7443008201,
+      "name": "Australium Medal: Reanimation",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 201
+    },
+    {
+      "id": 7443008202,
+      "name": "Australium Medal: Terminal Lucidity",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 202
+    },
+    {
+      "id": 7443008203,
+      "name": "Australium Medal: Wretched Witchery",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 203
+    },
+    {
+      "id": 7443008204,
+      "name": "Australium Medal: Sed De Sangre",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 204
+    },
+    {
+      "id": 7443008205,
+      "name": "Australium Medal: Spooky Spiral",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 205
+    },
+    {
+      "id": 7443008206,
+      "name": "Australium Medal: Bog Business",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 206
+    },
+    {
+      "id": 7443008207,
+      "name": "Australium Medal: Dire Mire",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 207
+    },
+    {
+      "id": 7443008208,
+      "name": "Australium Medal: Mud Maker",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 208
+    },
+    {
+      "id": 7443008209,
+      "name": "Australium Medal: Crocodile Operation",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 209
+    },
+    {
+      "id": 7443008210,
+      "name": "Australium Medal: Point Of Impact",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 210
+    },
+    {
+      "id": 7443008211,
+      "name": "Australium Medal: Remedic",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 211
+    },
+    {
+      "id": 7443008212,
+      "name": "Australium Medal: Computer Crash",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 212
+    },
+    {
+      "id": 7443008213,
+      "name": "Australium Medal: Trespasser",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 213
+    },
+    {
+      "id": 7443008214,
+      "name": "Australium Medal: Trespasser Remaster",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 214
+    },
+    {
+      "id": 7443008215,
+      "name": "Australium Medal: Abyssal Atrocities",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 215
+    },
+    {
+      "id": 7443008216,
+      "name": "Australium Medal: Catastrophic Conjuring",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 216
+    },
+    {
+      "id": 7443008217,
+      "name": "Australium Medal: Dismal Devilry",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 217
+    },
+    {
+      "id": 7443008218,
+      "name": "Australium Medal: Dust To Dust",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 218
+    },
+    {
+      "id": 7443008219,
+      "name": "Australium Medal: Celestial Broken Tomb",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 219
+    },
+    {
+      "id": 7443008220,
+      "name": "Australium Medal: Midnight Massacre",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 220
+    },
+    {
+      "id": 7443008221,
+      "name": "Australium Medal: Frozen Freaks",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 221
+    },
+    {
+      "id": 7443008222,
+      "name": "Australium Medal: Launch Sequence",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 222
+    },
+    {
+      "id": 7443008223,
+      "name": "Australium Medal: Rusty Rapture",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 223
+    },
+    {
+      "id": 7443008224,
+      "name": "Australium Medal: Snowblitz",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 224
+    },
+    {
+      "id": 7443008225,
+      "name": "Australium Medal: Cascading Steel Swarm",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 225
+    },
+    {
+      "id": 7443008226,
+      "name": "Australium Medal: Northern Lights",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 226
+    },
+    {
+      "id": 7443008227,
+      "name": "Australium Medal: Arctic Arrangement",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 227
+    },
+    {
+      "id": 7443008228,
+      "name": "Australium Medal: Blackout",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 228
+    },
+    {
+      "id": 7443008229,
+      "name": "Australium Medal: Bloodpour",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 229
+    },
+    {
+      "id": 7443008230,
+      "name": "Australium Medal: Technical Terror",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 230
+    },
+    {
+      "id": 7443008231,
+      "name": "Australium Medal: Deprecated Designs",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 231
+    },
+    {
+      "id": 7443008232,
+      "name": "Australium Medal: Ghoulish Genesis",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 232
+    },
+    {
+      "id": 7443008233,
+      "name": "Australium Medal: Last Stand Of Dead Men",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 233
+    },
+    {
+      "id": 7443008234,
+      "name": "Australium Medal: Wet Wreckage",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 234
+    },
+    {
+      "id": 7443008235,
+      "name": "Australium Medal: Backup Security Protocol",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 235
+    },
+    {
+      "id": 7443008236,
+      "name": "Australium Medal: Medieval Madness",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 236
+    },
+    {
+      "id": 7443008237,
+      "name": "Australium Medal: Brain Taker",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 237
+    },
+    {
+      "id": 7443008238,
+      "name": "Australium Medal: Impending Apocalypse",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 238
+    },
+    {
+      "id": 7443008239,
+      "name": "Australium Medal: Slaughterhouse",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 239
+    },
+    {
+      "id": 7443008240,
+      "name": "Australium Medal: Korpoelec Invasion",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 240
+    },
+    {
+      "id": 7443008241,
+      "name": "Australium Medal: Wet Warfare",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 241
+    },
+    {
+      "id": 7443008242,
+      "name": "Australium Medal: Galois",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 242
+    },
+    {
+      "id": 7443008243,
+      "name": "Australium Medal: Awakening",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 243
+    },
+    {
+      "id": 7443008244,
+      "name": "Australium Medal: Crop Circles",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 244
+    },
+    {
+      "id": 7443008245,
+      "name": "Australium Medal: Mobocracy",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 245
+    },
+    {
+      "id": 7443008246,
+      "name": "Australium Medal: Ominous Outback",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 246
+    },
+    {
+      "id": 7443008247,
+      "name": "Australium Medal: Midnight Patrol",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 247
+    },
+    {
+      "id": 7443008248,
+      "name": "Australium Medal: Shrouded Shrieks",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 248
+    },
+    {
+      "id": 7443008249,
+      "name": "Australium Medal: Legacy Heresy",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 249
+    },
+    {
+      "id": 7443008250,
+      "name": "Australium Medal: Castle Crush",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 250
+    },
+    {
+      "id": 7443008251,
+      "name": "Australium Medal: Ledmotif",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 251
+    },
+    {
+      "id": 7443008252,
+      "name": "Australium Medal: Property Inspection",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 252
+    },
+    {
+      "id": 7443008253,
+      "name": "Australium Medal: Secret Struggle",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 253
+    },
+    {
+      "id": 7443008254,
+      "name": "Australium Medal: Martian Civilizations",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 254
+    },
+    {
+      "id": 7443008255,
+      "name": "Australium Medal: Necropolis",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 255
+    },
+    {
+      "id": 7443008256,
+      "name": "Australium Medal: Nightsky Nightmare",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 256
+    },
+    {
+      "id": 7443008257,
+      "name": "Australium Medal: Condemned Conflict",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 257
+    },
+    {
+      "id": 7443008258,
+      "name": "Australium Medal: Death Con One",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 258
+    },
+    {
+      "id": 7443008259,
+      "name": "Australium Medal: Mountain Of Fear",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 259
+    },
+    {
+      "id": 7443008260,
+      "name": "Australium Medal: Night Of Fire",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 260
+    },
+    {
+      "id": 7443008261,
+      "name": "Australium Medal: Baneful Harvest",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 261
+    },
+    {
+      "id": 7443008262,
+      "name": "Australium Medal: Distorted Reality",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 262
+    },
+    {
+      "id": 7443008263,
+      "name": "Australium Medal: Syntax Error",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 263
+    },
+    {
+      "id": 7443008264,
+      "name": "Australium Medal: 0",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 264
+    },
+    {
+      "id": 7443008265,
+      "name": "Australium Medal: Call Of The Void",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 265
+    },
+    {
+      "id": 7443008266,
+      "name": "Australium Medal: Waters Of Wrath",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 266
+    },
+    {
+      "id": 7443008267,
+      "name": "Australium Medal: Orson Oligarchy",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 267
+    },
+    {
+      "id": 7443008268,
+      "name": "Australium Medal: Inverted Incursion",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 268
+    },
+    {
+      "id": 7443008269,
+      "name": "Australium Medal: Recollection Repression",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 269
+    },
+    {
+      "id": 7443008270,
+      "name": "Australium Medal: Mannure",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 270
+    },
+    {
+      "id": 7443008271,
+      "name": "Australium Medal: Overclock",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 271
+    },
+    {
+      "id": 7443008272,
+      "name": "Australium Medal: Reddish Rebellion",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 272
+    },
+    {
+      "id": 7443008273,
+      "name": "Australium Medal: Frantic Flood",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 273
+    },
+    {
+      "id": 7443008274,
+      "name": "Australium Medal: Enduring Exceptions",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 274
+    },
+    {
+      "id": 7443008275,
+      "name": "Australium Medal: Industrial Injection",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 275
+    },
+    {
+      "id": 7443008276,
+      "name": "Australium Medal: Short Circuit Execution",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 276
+    },
+    {
+      "id": 7443008277,
+      "name": "Australium Medal: Breaking Walls",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 277
+    },
+    {
+      "id": 7443008278,
+      "name": "Australium Medal: Spanner Switchup",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 278
+    },
+    {
+      "id": 7443008279,
+      "name": "Australium Medal: Ocean Commotion",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 279
+    },
+    {
+      "id": 7443008280,
+      "name": "Australium Medal: Bauernhof",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 280
+    },
+    {
+      "id": 7443008281,
+      "name": "Australium Medal: Sudden Equinox",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 281
+    },
+    {
+      "id": 7443008282,
+      "name": "Australium Medal: Gilead Gehenom",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 282
+    },
+    {
+      "id": 7443008283,
+      "name": "Australium Medal: Vicious Delicious",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 283
+    },
+    {
+      "id": 7443008284,
+      "name": "Australium Medal: Spooky Sprockets",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 284
+    },
+    {
+      "id": 7443008285,
+      "name": "Australium Medal: When The Sun Shines Red",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 285
+    },
+    {
+      "id": 7443008286,
+      "name": "Australium Medal: Crescent Calamity",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 286
+    },
+    {
+      "id": 7443008287,
+      "name": "Australium Medal: Sunburn",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 287
+    },
+    {
+      "id": 7443008288,
+      "name": "Australium Medal: Twilight Of Terror",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 288
+    },
+    {
+      "id": 7443008289,
+      "name": "Australium Medal: Claire De Lune",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 289
+    },
+    {
+      "id": 7443008290,
+      "name": "Australium Medal: Logging Dreadwood",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 290
+    },
+    {
+      "id": 7443008291,
+      "name": "Australium Medal: Respiration Restriction",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 291
+    },
+    {
+      "id": 7443008292,
+      "name": "Australium Medal: Hazardous Haze",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 292
+    },
+    {
+      "id": 7443008293,
+      "name": "Australium Medal: Shivering Slumber",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 293
+    },
+    {
+      "id": 7443008294,
+      "name": "Australium Medal: Waters Of A Robot Regime",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 294
+    },
+    {
+      "id": 7443008295,
+      "name": "Australium Medal: Shogun Slaughter",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 295
+    },
+    {
+      "id": 7443008296,
+      "name": "Australium Medal: Accursed Aggrievocation",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 296
+    },
+    {
+      "id": 7443008297,
+      "name": "Australium Medal: Echoes Of A Warzone",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 297
+    },
+    {
+      "id": 7443008298,
+      "name": "Australium Medal: White Noise",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 298
+    },
+    {
+      "id": 7443008299,
+      "name": "Australium Medal: Terrorstorm",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 299
+    },
+    {
+      "id": 7443008300,
+      "name": "Australium Medal: Bloodwater",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 300
+    },
+    {
+      "id": 7443008301,
+      "name": "Australium Medal: River Of Despair",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 301
+    },
+    {
+      "id": 7443008302,
+      "name": "Australium Medal: Forgotten",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 302
+    },
+    {
+      "id": 7443008303,
+      "name": "Australium Medal: Recalled To Life",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 303
+    },
+    {
+      "id": 7443008304,
+      "name": "Australium Medal: Mesa Malware",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 304
+    },
+    {
+      "id": 7443008305,
+      "name": "Australium Medal: Omega Machine",
+      "kind": "trophy",
+      "classification": "progression",
+      "count": 1,
+      "mission_id": 305
     }
   ]
 }

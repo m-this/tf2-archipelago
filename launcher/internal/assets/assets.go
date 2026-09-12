@@ -40,6 +40,8 @@ var (
 	MetamodVersion     = ""
 	RipextVersion      = ""
 	ArchipelagoVersion = ""
+	SigsegvMVMVersion  = ""
+	SigsegvMVMSHA256   = ""
 
 	// LauncherVersion is this build of the launcher itself: the release it
 	// belongs to and the commit it was built from. The commit is the useful
@@ -93,6 +95,7 @@ func Versions() map[string]string {
 		"metamod":      MetamodVersion,
 		"ripext":       RipextVersion,
 		"archipelago":  ArchipelagoVersion,
+		"sigsegv-mvm":  SigsegvMVMVersion,
 		"defenderbots": DefenderbotsVersion,
 		"launcher":     LauncherVersion,
 	}
@@ -120,6 +123,9 @@ func RequireVersions() error {
 		if value == "" {
 			return fmt.Errorf("asset version %s is empty: build with `make launcher` so -ldflags injects it from deploy/env/versions.env", name)
 		}
+	}
+	if SigsegvMVMSHA256 == "" {
+		return fmt.Errorf("asset version sigsegv-mvm checksum is empty: build with `make launcher` so -ldflags injects it from deploy/env/versions.env")
 	}
 	return nil
 }

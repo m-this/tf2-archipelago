@@ -171,10 +171,17 @@ func VisibleMissions(availablePacks []string) []gamedata.Mission {
 // MissionChoicesForPacks excludes unavailable and locked community missions
 // from menus that can actually select a starting mission.
 func MissionChoicesForPacks(availablePacks []string) []MissionChoice {
+	return MissionChoicesForPacksAndMods(availablePacks, nil)
+}
+
+// MissionChoicesForPacksAndMods is the selectable mission list for an
+// inspected server. A mod name in settings is not enough: callers pass only
+// mods whose managed installation was verified.
+func MissionChoicesForPacksAndMods(availablePacks, serverMods []string) []MissionChoice {
 	playable := VisibleMissions(availablePacks)
 	choices := make([]MissionChoice, 0, len(playable))
 	for _, mission := range playable {
-		if !gamedata.IsPlayableMission(mission.ID) {
+		if !gamedata.IsMissionPlayableWith(mission.ID, serverMods) {
 			continue
 		}
 		played, _ := gamedata.MapByID(mission.Map)
@@ -256,6 +263,10 @@ func StartMissionChoices() []MissionChoice {
 // StartMissionChoicesForPacks is the availability-aware start menu.
 func StartMissionChoicesForPacks(availablePacks []string) []MissionChoice {
 	return append([]MissionChoice{{PopFile: "", Label: AnyLabel}}, MissionChoicesForPacks(availablePacks)...)
+}
+
+func StartMissionChoicesForPacksAndMods(availablePacks, serverMods []string) []MissionChoice {
+	return append([]MissionChoice{{PopFile: "", Label: AnyLabel}}, MissionChoicesForPacksAndMods(availablePacks, serverMods)...)
 }
 
 // StartMissionLabel is what StartMissionChoices shows for one popfile.
