@@ -453,8 +453,7 @@
     {
       "name": "Flying Guillotine",
       "classes": [
-        "Scout",
-        "Sniper"
+        "Scout"
       ],
       "icon": "assets/tf2/items/5ad3ffaee50ea9825d12ac0cd0945603.png"
     },
@@ -792,13 +791,6 @@
         "Sniper"
       ],
       "icon": "assets/tf2/items/0fd6ff844a72aa6df31069f49ba91411.png"
-    },
-    {
-      "name": "Red-Tape Recorder",
-      "classes": [
-        "Spy"
-      ],
-      "icon": "assets/tf2/items/7dee97387ec97d210fa3374370e4aa2e.png"
     },
     {
       "name": "Rescue Ranger",

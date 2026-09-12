@@ -221,6 +221,60 @@ func TestWeaponFamiliesShareOneRewardPool(t *testing.T) {
 	}
 }
 
+func TestRequestedReskinsUseTheirMechanicalWeaponPool(t *testing.T) {
+	for member, canonicalName := range map[string]string{
+		"Holy Mackerel":          "Bat",
+		"Unarmed Combat":         "Bat",
+		"Mutated Milk":           "Mad Milk",
+		"Self-Aware Beauty Mark": "Jarate",
+		"Flying Guillotine":      "Flying Guillotine",
+		"Red-Tape Recorder":      "Sapper",
+	} {
+		memberWeapon := weaponNamed(t, member)
+		canonical := weaponNamed(t, canonicalName)
+		if memberWeapon.ApplyID != canonical.ID {
+			t.Errorf("%s applies to weapon %d, want %s (%d)", member, memberWeapon.ApplyID, canonicalName, canonical.ID)
+		}
+	}
+}
+
+func TestDecoratedWeaponDefinitionsUseTheirUnderlyingWeaponPool(t *testing.T) {
+	// TF2's current item schema has one decorated weapon definition at every
+	// index from 15000 through 15158 except the unused 15093. Keep the snapshot
+	// exhaustive so adding one example cannot leave the rest silently broken.
+	seen := make(map[int]string)
+	for _, weapon := range legacyWeaponBuffs {
+		for _, definition := range weapon.DefIndexes {
+			if definition < 15000 || definition > 15158 {
+				continue
+			}
+			if previous, ok := seen[definition]; ok {
+				t.Errorf("decorated definition %d belongs to both %s and %s", definition, previous, weapon.Weapon)
+			}
+			seen[definition] = weapon.Weapon
+		}
+	}
+	for definition := 15000; definition <= 15158; definition++ {
+		if definition == 15093 {
+			continue
+		}
+		if _, ok := seen[definition]; !ok {
+			t.Errorf("decorated definition %d has no weapon buff pool", definition)
+		}
+	}
+
+	for definition, want := range map[int]string{
+		15008: "Medi Gun",
+		15029: "Scattergun", // Backcountry Blaster
+		15030: "Flame Thrower",
+		15157: "Scattergun", // Corsair
+	} {
+		if got := seen[definition]; got != want {
+			t.Errorf("decorated definition %d uses %q buffs, want %q", definition, got, want)
+		}
+	}
+}
+
 func TestBuilderToolboxSharesTheConstructionPDABuffPool(t *testing.T) {
 	construction := weaponNamed(t, "Construction PDA")
 	builder := weaponNamed(t, "PDA")
