@@ -33,6 +33,7 @@
 #include "tf2_archipelago/missions.inc"
 #include "tf2_archipelago/bots.inc"
 #include "tf2_archipelago/botswitch.inc"
+#include "tf2_archipelago/downloads.inc"
 
 #define PLUGIN_VERSION "1.13.0"
 
@@ -343,6 +344,7 @@ public void OnMapStart()
     g_MissionReported = false;
     g_TankReported = false;
     g_GiantReported = false;
+    Downloads_OnMapStart();
     Bots_OnMapStart();
     MvM_OnMapStart();
 
