@@ -19,6 +19,7 @@ export interface Weapon {
   readonly name: string;
   readonly classes: readonly string[];
   readonly icon?: string;
+  readonly aliases?: readonly string[];
 }
 
 export interface Player {
@@ -106,6 +107,7 @@ export interface BuffEffect {
 export interface BuffWeaponView {
   readonly weapon: string;
   readonly icon?: string;
+  readonly aliases: readonly string[];
   readonly effects: readonly BuffEffect[];
   readonly total: number;
 }

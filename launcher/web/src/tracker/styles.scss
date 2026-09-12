@@ -680,6 +680,21 @@ main {
   object-fit: contain;
 }
 
+.buff-aliases {
+  display: grid;
+  gap: 3px;
+  color: var(--text-faint);
+  font-size: var(--text-xs);
+}
+
+.buff-aliases span:first-child {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .buff-effects {
   display: grid;
   gap: 4px;

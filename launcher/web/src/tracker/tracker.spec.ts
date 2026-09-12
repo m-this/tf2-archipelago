@@ -53,10 +53,65 @@ describe('tracker view', () => {
 
   it('groups compatible buffs by weapon', () => {
     const soldier = buffsFor('Soldier', view.owned, source.buffWeapons);
-    expect(soldier).toHaveLength(1);
+    expect(soldier).toHaveLength(2);
     expect(soldier[0]?.weapon).toBe('Air Strike');
     expect(soldier[0]?.total).toBe(6);
     expect(soldier[0]?.effects).toHaveLength(3);
+  });
+
+  it('shows the shared melee pool for every class', () => {
+    for (const className of [
+      'Scout',
+      'Soldier',
+      'Pyro',
+      'Demoman',
+      'Heavy',
+      'Engineer',
+      'Medic',
+      'Sniper',
+      'Spy',
+    ] as const) {
+      const melee = buffsFor(className, view.owned, source.buffWeapons).find(
+        (weapon) => weapon.weapon === 'All-Class Melee',
+      );
+      expect(melee?.total).toBe(3);
+      expect(melee?.icon).toContain('cb6c1fb553e24bdf3d885d5c07a9a1cc.png');
+    }
+  });
+
+  it('presents legacy Saxxy rewards as the shared melee pool', () => {
+    const owned = new Map([['Weapon Buff: Saxxy — +10% damage', 2]]);
+    const weapons = new Map([
+      [
+        'Saxxy',
+        {
+          name: 'Saxxy',
+          classes: ['Scout'],
+          icon: 'assets/tf2/items/legacy-saxxy.png',
+        },
+      ],
+    ]);
+    expect(buffsFor('Scout', owned, weapons)).toEqual([
+      {
+        weapon: 'All-Class Melee',
+        icon: 'assets/tf2/items/legacy-saxxy.png',
+        aliases: [],
+        effects: [{ effect: '+10% damage', count: 2 }],
+        total: 2,
+      },
+    ]);
+  });
+
+  it('folds equivalent reskin rewards into their base weapon cards', () => {
+    const scout = buffsFor('Scout', view.owned, source.buffWeapons);
+    const basher = scout.find((weapon) => weapon.weapon === 'Boston Basher');
+    expect(basher?.total).toBe(2);
+    expect(basher?.aliases).toContain('Three-Rune Blade');
+
+    const demoman = buffsFor('Demoman', view.owned, source.buffWeapons);
+    const booties = demoman.find((weapon) => weapon.weapon === "Ali Baba's Wee Booties");
+    expect(booties?.total).toBe(1);
+    expect(booties?.aliases).toContain('Bootlegger');
   });
 });
 
@@ -77,6 +132,7 @@ describe('tracker screen', () => {
     expect(element.querySelectorAll('app-panel').length).toBeGreaterThan(3);
     expect(element.textContent).toContain('RED Team Server');
     expect(element.textContent).toContain('Grappling Hook');
+    expect(element.textContent).toContain('All-Class Melee');
     expect(element.querySelector('.equipment-state')?.textContent?.trim()).toBe('Unlocked');
     expect(element.querySelector('.tier')).not.toBeNull();
     expect(element.querySelector('app-badge span.accent')).not.toBeNull();

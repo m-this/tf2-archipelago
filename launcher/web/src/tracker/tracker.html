@@ -306,6 +306,12 @@
                 />
               }
             </div>
+            @if (weapon.aliases.length) {
+              <div class="buff-aliases">
+                <span>Also covers</span>
+                <span>{{ weapon.aliases.join(' · ') }}</span>
+              </div>
+            }
             <div class="buff-effects">
               @for (effect of weapon.effects; track effect.effect) {
                 <div class="buff-effect">

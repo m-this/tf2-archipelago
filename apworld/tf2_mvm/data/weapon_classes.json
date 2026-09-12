@@ -13,7 +13,10 @@
       "classes": [
         "Demoman"
       ],
-      "icon": "assets/tf2/items/a4e0f4a0d6af7480aa80dd8fc05f6028.png"
+      "icon": "assets/tf2/items/a4e0f4a0d6af7480aa80dd8fc05f6028.png",
+      "aliases": [
+        "Bootlegger"
+      ]
     },
     {
       "name": "Ambassador",
@@ -41,7 +44,10 @@
       "classes": [
         "Pyro"
       ],
-      "icon": "assets/tf2/items/c92b8d80c70ad204a97132004e968a15.png"
+      "icon": "assets/tf2/items/c92b8d80c70ad204a97132004e968a15.png",
+      "aliases": [
+        "Postal Pummeler"
+      ]
     },
     {
       "name": "B.A.S.E. Jumper",
@@ -84,7 +90,12 @@
       "classes": [
         "Scout"
       ],
-      "icon": "assets/tf2/items/b528077a39ea8ae787c7d45630dbd4bd.png"
+      "icon": "assets/tf2/items/b528077a39ea8ae787c7d45630dbd4bd.png",
+      "aliases": [
+        "Holy Mackerel",
+        "Unarmed Combat",
+        "Batsaber"
+      ]
     },
     {
       "name": "Battalion's Backup",
@@ -143,25 +154,24 @@
       "icon": "assets/tf2/items/8f71f05d8055577c59e7df8312acd80a.png"
     },
     {
-      "name": "Bootlegger",
-      "classes": [
-        "Demoman"
-      ],
-      "icon": "assets/tf2/items/4c5a39e5cfd934a5e069ecfc4948f6b6.png"
-    },
-    {
       "name": "Boston Basher",
       "classes": [
         "Scout"
       ],
-      "icon": "assets/tf2/items/b5d85af732f93216889c5563e54cbe16.png"
+      "icon": "assets/tf2/items/b5d85af732f93216889c5563e54cbe16.png",
+      "aliases": [
+        "Three-Rune Blade"
+      ]
     },
     {
       "name": "Bottle",
       "classes": [
         "Demoman"
       ],
-      "icon": "assets/tf2/items/b235c2890e172032f790b3a1b66a6a6c.png"
+      "icon": "assets/tf2/items/b235c2890e172032f790b3a1b66a6a6c.png",
+      "aliases": [
+        "Scottish Handshake"
+      ]
     },
     {
       "name": "Brass Beast",
@@ -252,7 +262,10 @@
       "classes": [
         "Engineer"
       ],
-      "icon": "assets/tf2/items/16abd0dc3d48af126d04e41405b80f82.png"
+      "icon": "assets/tf2/items/16abd0dc3d48af126d04e41405b80f82.png",
+      "aliases": [
+        "PDA"
+      ]
     },
     {
       "name": "Cow Mangler 5000",
@@ -287,7 +300,10 @@
       "classes": [
         "Heavy"
       ],
-      "icon": "assets/tf2/items/35661e55736fe2f5dc8b94c60948559a.png"
+      "icon": "assets/tf2/items/35661e55736fe2f5dc8b94c60948559a.png",
+      "aliases": [
+        "Fishcake"
+      ]
     },
     {
       "name": "Darwin's Danger Shield",
@@ -399,7 +415,11 @@
       "classes": [
         "Demoman"
       ],
-      "icon": "assets/tf2/items/9452b75dd3e629850a8ab56f131ada35.png"
+      "icon": "assets/tf2/items/9452b75dd3e629850a8ab56f131ada35.png",
+      "aliases": [
+        "Nessie's Nine Iron",
+        "Horseless Headless Horsemann's Headtaker"
+      ]
     },
     {
       "name": "Family Business",
@@ -420,14 +440,20 @@
       "classes": [
         "Pyro"
       ],
-      "icon": "assets/tf2/items/9ff477f90652901b0a9ec6e6497b9723.png"
+      "icon": "assets/tf2/items/9ff477f90652901b0a9ec6e6497b9723.png",
+      "aliases": [
+        "Lollichop"
+      ]
     },
     {
       "name": "Fists",
       "classes": [
         "Heavy"
       ],
-      "icon": "assets/tf2/items/1999dfa03dd782e36e3b6494869cfd85.png"
+      "icon": "assets/tf2/items/1999dfa03dd782e36e3b6494869cfd85.png",
+      "aliases": [
+        "Apoco-Fists"
+      ]
     },
     {
       "name": "Fists of Steel",
@@ -441,7 +467,11 @@
       "classes": [
         "Pyro"
       ],
-      "icon": "assets/tf2/items/ec378fa05588803c8c4dfd318bca60eb.png"
+      "icon": "assets/tf2/items/ec378fa05588803c8c4dfd318bca60eb.png",
+      "aliases": [
+        "Rainblower",
+        "Nostromo Napalmer"
+      ]
     },
     {
       "name": "Flare Gun",
@@ -483,7 +513,10 @@
       "classes": [
         "Heavy"
       ],
-      "icon": "assets/tf2/items/4fb6fa6cb6ef8663d8407a1b486cedcf.png"
+      "icon": "assets/tf2/items/4fb6fa6cb6ef8663d8407a1b486cedcf.png",
+      "aliases": [
+        "Bread Bite"
+      ]
     },
     {
       "name": "Grenade Launcher",
@@ -533,7 +566,10 @@
       "classes": [
         "Pyro"
       ],
-      "icon": "assets/tf2/items/4a8ed7701615e5fc58f2e7d3b4a3d44a.png"
+      "icon": "assets/tf2/items/4a8ed7701615e5fc58f2e7d3b4a3d44a.png",
+      "aliases": [
+        "Maul"
+      ]
     },
     {
       "name": "Hot Hand",
@@ -547,7 +583,10 @@
       "classes": [
         "Sniper"
       ],
-      "icon": "assets/tf2/items/f8c7bc9717b6784e35b4464657c6d437.png"
+      "icon": "assets/tf2/items/f8c7bc9717b6784e35b4464657c6d437.png",
+      "aliases": [
+        "Fortified Compound"
+      ]
     },
     {
       "name": "Huo-Long Heater",
@@ -561,7 +600,12 @@
       "classes": [
         "Spy"
       ],
-      "icon": "assets/tf2/items/0e5478a405e2f482370375772b46d286.png"
+      "icon": "assets/tf2/items/0e5478a405e2f482370375772b46d286.png",
+      "aliases": [
+        "Enthusiast's Timepiece",
+        "Reissued Enthusiast's Timepiece",
+        "Quäckenbirdt"
+      ]
     },
     {
       "name": "Iron Bomber",
@@ -582,7 +626,10 @@
       "classes": [
         "Sniper"
       ],
-      "icon": "assets/tf2/items/b365a23408c4d66da785297049ca86ad.png"
+      "icon": "assets/tf2/items/b365a23408c4d66da785297049ca86ad.png",
+      "aliases": [
+        "Self-Aware Beauty Mark"
+      ]
     },
     {
       "name": "Killing Gloves of Boxing",
@@ -596,7 +643,11 @@
       "classes": [
         "Spy"
       ],
-      "icon": "assets/tf2/items/575122f104180ec3e8e5c3a1819afa2c.png"
+      "icon": "assets/tf2/items/575122f104180ec3e8e5c3a1819afa2c.png",
+      "aliases": [
+        "Black Rose",
+        "Sharp Dresser"
+      ]
     },
     {
       "name": "Kritzkrieg",
@@ -645,14 +696,20 @@
       "classes": [
         "Sniper"
       ],
-      "icon": "assets/tf2/items/ae3608d2f4c02cb2fe3f4f2cc23c445c.png"
+      "icon": "assets/tf2/items/ae3608d2f4c02cb2fe3f4f2cc23c445c.png",
+      "aliases": [
+        "Shooting Star"
+      ]
     },
     {
       "name": "Mad Milk",
       "classes": [
         "Scout"
       ],
-      "icon": "assets/tf2/items/56b94729a6e2f3fa8f0992d6fc8c1895.png"
+      "icon": "assets/tf2/items/56b94729a6e2f3fa8f0992d6fc8c1895.png",
+      "aliases": [
+        "Mutated Milk"
+      ]
     },
     {
       "name": "Manmelter",
@@ -687,7 +744,12 @@
       "classes": [
         "Heavy"
       ],
-      "icon": "assets/tf2/items/a74b4d01f56a2f93c537b4d5e8b73715.png"
+      "icon": "assets/tf2/items/a74b4d01f56a2f93c537b4d5e8b73715.png",
+      "aliases": [
+        "Iron Curtain",
+        "Reissued Iron Curtain",
+        "Deflector"
+      ]
     },
     {
       "name": "Natascha",
@@ -748,7 +810,12 @@
         "Scout",
         "Engineer"
       ],
-      "icon": "assets/tf2/items/52c30a75ea0f9a8c039a1e36eff4f9ae.png"
+      "icon": "assets/tf2/items/52c30a75ea0f9a8c039a1e36eff4f9ae.png",
+      "aliases": [
+        "Lugermorph",
+        "Reissued Lugermorph",
+        "C.A.P.P.E.R"
+      ]
     },
     {
       "name": "Pomson 6000",
@@ -812,7 +879,10 @@
       "classes": [
         "Spy"
       ],
-      "icon": "assets/tf2/items/1ffe98b7d26c94041a851adaaca0c0cc.png"
+      "icon": "assets/tf2/items/1ffe98b7d26c94041a851adaaca0c0cc.png",
+      "aliases": [
+        "Big Kill"
+      ]
     },
     {
       "name": "Righteous Bison",
@@ -833,7 +903,10 @@
       "classes": [
         "Soldier"
       ],
-      "icon": "assets/tf2/items/fe07ac82028329c8e7665bb021604d56.png"
+      "icon": "assets/tf2/items/fe07ac82028329c8e7665bb021604d56.png",
+      "aliases": [
+        "Original"
+      ]
     },
     {
       "name": "Sandman",
@@ -847,17 +920,25 @@
       "classes": [
         "Heavy"
       ],
-      "icon": "assets/tf2/items/5e6b8daa547fcb83131397990a06af9e.png"
+      "icon": "assets/tf2/items/5e6b8daa547fcb83131397990a06af9e.png",
+      "aliases": [
+        "Robo-Sandvich"
+      ]
     },
     {
       "name": "Sapper",
       "classes": [
         "Spy"
       ],
-      "icon": "assets/tf2/items/f2114636a5b9e6724fc8931967ae6ae7.png"
+      "icon": "assets/tf2/items/f2114636a5b9e6724fc8931967ae6ae7.png",
+      "aliases": [
+        "Ap-Sap",
+        "Snack Attack",
+        "Red-Tape Recorder"
+      ]
     },
     {
-      "name": "Saxxy",
+      "name": "All-Class Melee",
       "classes": [
         "Scout",
         "Soldier",
@@ -869,7 +950,19 @@
         "Sniper",
         "Spy"
       ],
-      "icon": "assets/tf2/items/18bae3fe6c4e5dcc7f859f1d5a3f9474.png"
+      "icon": "assets/tf2/items/cb6c1fb553e24bdf3d885d5c07a9a1cc.png",
+      "aliases": [
+        "Bat Outta Hell",
+        "Conscientious Objector",
+        "Crossing Guard",
+        "Freedom Staff",
+        "Frying Pan",
+        "Golden Frying Pan",
+        "Ham Shank",
+        "Memory Maker",
+        "Necro Smasher",
+        "Prinny Machete"
+      ]
     },
     {
       "name": "Scattergun",
@@ -963,7 +1056,10 @@
       "classes": [
         "Sniper"
       ],
-      "icon": "assets/tf2/items/a1d42872475507e5c65ed8326b74fe97.png"
+      "icon": "assets/tf2/items/a1d42872475507e5c65ed8326b74fe97.png",
+      "aliases": [
+        "AWPer Hand"
+      ]
     },
     {
       "name": "Soda Popper",
@@ -1050,13 +1146,6 @@
       "icon": "assets/tf2/items/91517e53e4d105b10604c78f8d81b442.png"
     },
     {
-      "name": "Three-Rune Blade",
-      "classes": [
-        "Scout"
-      ],
-      "icon": "assets/tf2/items/f636845da130d34c1ed5938e8504f1f5.png"
-    },
-    {
       "name": "Tide Turner",
       "classes": [
         "Demoman"
@@ -1124,7 +1213,10 @@
       "classes": [
         "Engineer"
       ],
-      "icon": "assets/tf2/items/ceb150202047822295fb4d5f303709a2.png"
+      "icon": "assets/tf2/items/ceb150202047822295fb4d5f303709a2.png",
+      "aliases": [
+        "Giger Counter"
+      ]
     },
     {
       "name": "Wrap Assassin",
@@ -1138,14 +1230,20 @@
       "classes": [
         "Engineer"
       ],
-      "icon": "assets/tf2/items/7dc916f4e7d1c4e3edeee8f038b76706.png"
+      "icon": "assets/tf2/items/7dc916f4e7d1c4e3edeee8f038b76706.png",
+      "aliases": [
+        "Golden Wrench"
+      ]
     },
     {
       "name": "Your Eternal Reward",
       "classes": [
         "Spy"
       ],
-      "icon": "assets/tf2/items/d3ac70232e4808d7988b91a054b20264.png"
+      "icon": "assets/tf2/items/d3ac70232e4808d7988b91a054b20264.png",
+      "aliases": [
+        "Wanga Prick"
+      ]
     },
     {
       "name": "Übersaw",

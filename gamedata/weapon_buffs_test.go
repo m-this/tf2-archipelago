@@ -275,6 +275,34 @@ func TestDecoratedWeaponDefinitionsUseTheirUnderlyingWeaponPool(t *testing.T) {
 	}
 }
 
+func TestAllClassMeleeHasAPlayerFacingGroupName(t *testing.T) {
+	damage := buffNamed(t, "Saxxy", "damage")
+	if got := damage.ItemName(); got != "Weapon Buff: All-Class Melee — +10% damage" {
+		t.Fatalf("Saxxy family reward name = %q", got)
+	}
+	if damage.ApplyWeaponID != weaponNamed(t, "Conscientious Objector").ApplyID {
+		t.Fatal("All-Class Melee no longer shares the Conscientious Objector pool")
+	}
+}
+
+func TestEquivalentReskinsShareTheirBaseWeaponPool(t *testing.T) {
+	for base, reskin := range map[string]string{
+		"Ali Baba's Wee Booties": "Bootlegger",
+		"Boston Basher":          "Three-Rune Blade",
+	} {
+		canonical := weaponNamed(t, base)
+		if got := weaponNamed(t, reskin).ApplyID; got != canonical.ID {
+			t.Errorf("%s applies to weapon %d, want %s (%d)", reskin, got, base, canonical.ID)
+		}
+		if buffNamed(t, reskin, "damage").Eligible {
+			t.Errorf("%s has a separate eligible reward pool", reskin)
+		}
+		if !slices.Contains(weaponFamilyAliases(base), reskin) {
+			t.Errorf("tracker aliases for %s omit %s", base, reskin)
+		}
+	}
+}
+
 func TestBuilderToolboxSharesTheConstructionPDABuffPool(t *testing.T) {
 	construction := weaponNamed(t, "Construction PDA")
 	builder := weaponNamed(t, "PDA")
@@ -787,6 +815,12 @@ func TestWeaponClassExportCarriesWeaponClasses(t *testing.T) {
 	}
 	if icons["Air Strike"] == "" {
 		t.Fatal("Air Strike is missing from weapon class export")
+	}
+	if icons["Saxxy"] != "" {
+		t.Fatal("Saxxy is still exposed as a separate tracker weapon")
+	}
+	if want := trackerItemIconPath("Conscientious Objector"); icons[allClassMeleeName] != want {
+		t.Errorf("All-Class Melee icon = %q, want %q", icons[allClassMeleeName], want)
 	}
 	for weapon, filename := range tfWikiItemIconNames {
 		want := trackerItemIconPath(filename)

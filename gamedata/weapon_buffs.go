@@ -24,6 +24,17 @@ type BuffWeapon struct {
 	ApplyID uint16
 }
 
+const allClassMeleeName = "All-Class Melee"
+
+// DisplayName is the player-facing name of a reward pool. Stable weapon names
+// still identify the pool internally, so relabelling one does not move its IDs.
+func (w BuffWeapon) DisplayName() string {
+	if w.Name == "Saxxy" {
+		return allClassMeleeName
+	}
+	return w.Name
+}
+
 // WeaponEffect is one positive TF2 item attribute. Every effect is deliberately
 // paired with every weapon, including combinations the stock game never uses.
 type WeaponEffect struct {
@@ -112,7 +123,7 @@ func buildWeaponBuffs() []WeaponBuff {
 			all = append(all, WeaponBuff{
 				ID: id, Key: key, WeaponID: weapon.ID, ApplyWeaponID: weapon.ApplyID,
 				EffectID: effect.ID,
-				Weapon:   weapon.Name, DefIndexes: weapon.DefIndexes,
+				Weapon:   weapon.DisplayName(), DefIndexes: weapon.DefIndexes,
 				Attribute: effect.Attribute, Value: effect.Increment,
 				Description: weaponEffectDescription(weapon.Name, effect), Additive: effect.Mode == BuffAdd,
 				Mode:     effect.Mode,
