@@ -225,9 +225,9 @@ test.describe('the mission table', () => {
     const rows = await table.getByRole('row').count();
     const ticks = await table.getByRole('checkbox').count();
     expect(ticks).toBe(rows - 1);
-    // The three ticks above the table are the packs and the community toggle,
-    // not missions.
-    expect(await page.getByRole('checkbox').count()).toBe(ticks + 3);
+    // The four ticks above the table are the packs, community toggle and
+    // managed SigMod toggle, not missions.
+    expect(await page.getByRole('checkbox').count()).toBe(ticks + 4);
   });
 
   test('says why a mission is not ready rather than hiding it', async ({ page }) => {

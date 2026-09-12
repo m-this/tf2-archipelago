@@ -200,8 +200,10 @@ func missionRow(popFile string, mapIDs map[string]uint8, nav map[string]bool, po
 		title += "*"
 	}
 	names[title] = true
-	row := mission{ID: nextID + 1, PopFile: popFile, Name: title, MapID: mapIDs[played], Difficulty: difficulty,
-		Waves: uint8(waves), HasTank: hasTank, HasGiant: hasGiant, Requires: requirement}
+	row := mission{
+		ID: nextID + 1, PopFile: popFile, Name: title, MapID: mapIDs[played], Difficulty: difficulty,
+		Waves: uint8(waves), HasTank: hasTank, HasGiant: hasGiant, Requires: requirement,
+	}
 	if pop.pack == "mlarchive-assets.zip" {
 		row.Pack = pop.pack
 	}
