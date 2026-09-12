@@ -453,8 +453,7 @@
     {
       "name": "Flying Guillotine",
       "classes": [
-        "Scout",
-        "Sniper"
+        "Scout"
       ],
       "icon": "assets/tf2/items/5ad3ffaee50ea9825d12ac0cd0945603.png"
     },

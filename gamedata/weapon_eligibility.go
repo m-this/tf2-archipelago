@@ -21,7 +21,7 @@ var weaponFamilies = [][]string{
 	{"Rocket Launcher", "Original"},
 	{"Huntsman", "Fortified Compound"},
 	{"Mad Milk", "Mutated Milk"},
-	{"Flying Guillotine", "Self-Aware Beauty Mark"},
+	{"Jarate", "Self-Aware Beauty Mark"},
 	{"Sniper Rifle", "AWPer Hand"},
 	{"Machina", "Shooting Star"},
 	{"Revolver", "Big Kill"},

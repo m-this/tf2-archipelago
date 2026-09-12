@@ -226,7 +226,8 @@ func TestRequestedReskinsUseTheirMechanicalWeaponPool(t *testing.T) {
 		"Holy Mackerel":          "Bat",
 		"Unarmed Combat":         "Bat",
 		"Mutated Milk":           "Mad Milk",
-		"Self-Aware Beauty Mark": "Flying Guillotine",
+		"Self-Aware Beauty Mark": "Jarate",
+		"Flying Guillotine":      "Flying Guillotine",
 		"Red-Tape Recorder":      "Sapper",
 	} {
 		memberWeapon := weaponNamed(t, member)
