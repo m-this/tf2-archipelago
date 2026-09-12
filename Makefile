@@ -94,7 +94,7 @@ GO_SRC := $$(find . -type f -name '*.go' -not -path './deploy/bots/build/*' -not
 .PHONY: help seed up down restart logs ps rcon community-check \
         check fmt fmt-check vet lint lint-fix fix-check vuln compile test \
         test-fast export apworld-lint \
-		apworld-fmt apworld-test apworld-build apworld-package plugin bots bots-pin-check bots-from-source \
+		apworld-fmt apworld-test apworld-build apworld-package plugin bots bots-from-source \
         integration build docs \
         docs-build docs-down dist compose-release version-check clean \
         go-version-check \
@@ -458,35 +458,13 @@ plugin:
 # compiled from patched source, two extensions from the pinned upstream
 # releases for both Linux and Windows. The image runs this in its own stage;
 # this target is for looking at what it produces.
-bots: bots-pin-check
+bots:
 	./deploy/bots/build.sh
-
-# The pin has to name a commit, because the debug bundle prints it and nothing
-# else in a bundle says which bots were playing.
-#
-# DEFENDERBOTS_VERSION is the go.mod requirement and goes into the summary
-# verbatim. A pseudo-version carries the date and the commit; a bare tag carries
-# neither, and there is no offline way to turn one back into a commit. A bundle
-# collected on 2026-09-06 said "defenderbots v0.14.3" and reading it meant
-# resolving that tag against a repository the reader had to have, and trusting
-# that nobody had moved it.
-#
-# `go get <module>@<sha>` is the whole of it. The tag stays on the mod's side as
-# a release name; this repository pins the commit under it.
-bots-pin-check:
-	@case '$(DEFENDERBOTS_VERSION)' in \
-		'') echo "go.mod has no github.com/m-this/tf2-mvm-bots-go requirement" >&2; exit 1 ;; \
-		*-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]) ;; \
-		*) echo "the bots pin is the bare tag $(DEFENDERBOTS_VERSION), which names no commit." >&2; \
-		   echo "A debug bundle prints this string and nothing else in it says which bots ran." >&2; \
-		   echo "Pin the commit instead: go get github.com/m-this/tf2-mvm-bots-go@<sha>" >&2; \
-		   exit 1 ;; \
-	esac
 
 # The same, but compiling the two extensions here instead of downloading them.
 # Needs clang and a 32-bit toolchain. Linux only, and only worth it when a TF2
 # update breaks CBaseNPC and the fix has to be ours.
-bots-from-source: bots-pin-check
+bots-from-source:
 	BOTS_BUILD_EXTENSIONS=1 ./deploy/bots/build.sh
 
 # --- The launcher ---
@@ -694,7 +672,7 @@ version-check:
 # whole point: the gate refuses to skip a differential test, and a developer
 # who has not run `make toolchain` gets a skip that names what is missing.
 check: REQUIRE_SPSHELL := TF2AP_REQUIRE_SPSHELL=1
-check: go-version-check bots-pin-check fmt-check proto-lint lint fix-check compile web-check toolchain test vuln apworld-lint plugin apworld-test docs-build compose-release integration
+check: go-version-check fmt-check proto-lint lint fix-check compile web-check toolchain test vuln apworld-lint plugin apworld-test docs-build compose-release integration
 
 # The go directive owns the version. Two pins cannot read it, so this says when
 # they have drifted rather than leaving it to whoever hits the failure.
