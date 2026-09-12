@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"sync"
 	"testing"
 	"time"
@@ -28,6 +29,25 @@ func TestTestModeRejectsAnInvalidRunBeforeOpeningARoom(t *testing.T) {
 			_ = room.Close(context.Background())
 		}
 		t.Fatal("Test mode accepted an empty mission pool")
+	}
+}
+
+func TestTestModeLoadsEverySelectedMissionRegardlessOfSeedCount(t *testing.T) {
+	s := settings.Defaults()
+	s.MvmMissionCount = 1
+	s.MvmDifficulty = "normal"
+	selected := []string{"mvm_decoy", "mvm_coaltown_intermediate", "mvm_mannworks_advanced"}
+	for _, mission := range gamedata.PlayableMissions() {
+		if !slices.Contains(selected, mission.PopFile) {
+			s.MvmExcludedMissions = append(s.MvmExcludedMissions, mission.PopFile)
+		}
+	}
+	s.MvmStartMission = selected[1]
+
+	got := testModeMissions(s)
+	want := []string{selected[1], selected[0], selected[2]}
+	if !slices.Equal(got, want) {
+		t.Fatalf("test-mode missions = %v, want %v", got, want)
 	}
 }
 

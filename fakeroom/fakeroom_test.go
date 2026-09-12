@@ -180,6 +180,29 @@ func TestDefaultMissionsSkipTheExcluded(t *testing.T) {
 	}
 }
 
+func TestEveryNamedMissionCanStartUnlocked(t *testing.T) {
+	missions := []string{"mvm_decoy", "mvm_coaltown_intermediate", "mvm_mannworks_advanced"}
+	start := roomStartingInventory(missions, "", true)
+
+	for _, popFile := range missions {
+		mission, known := gamedata.MissionByPopFile(popFile)
+		if !known {
+			t.Fatalf("unknown test mission %s", popFile)
+		}
+		found := false
+		for _, id := range start {
+			item, known := gamedata.ItemByID(id)
+			if known && item.Kind == gamedata.ItemMissionTicket && item.Mission == mission.ID {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("starting inventory has no ticket for %s", popFile)
+		}
+	}
+}
+
 // Eight missions in the order of the settings list, and the next eight once
 // those were unticked, read from a player's chair as a randomiser that does
 // not randomise. The draw is a draw.

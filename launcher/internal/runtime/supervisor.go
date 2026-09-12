@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"sync"
 	"syscall"
 	"time"
@@ -15,6 +16,7 @@ import (
 	"github.com/m-this/tf2-archipelago/bridge"
 	"github.com/m-this/tf2-archipelago/bridge/config"
 	"github.com/m-this/tf2-archipelago/fakeroom"
+	"github.com/m-this/tf2-archipelago/gamedata"
 	"github.com/m-this/tf2-archipelago/launcher/internal/assets"
 	"github.com/m-this/tf2-archipelago/launcher/internal/release"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
@@ -361,21 +363,37 @@ func StartTestRoom(
 		emit = func(string) {}
 	}
 	room, address, err := fakeroom.Start(ctx, fakeroom.Options{
-		SlotName:     s.APSlotName,
-		Goal:         s.MvmGoal,
-		MissionCount: s.MvmMissionCount,
-		Excluded:     s.MvmExcludedMissions,
-		Difficulty:   s.MvmDifficulty,
-		StartMission: s.MvmStartMission,
-		StartClass:   s.MvmStartClass,
-		DeathLink:    s.MvmDeathLink,
-		Log:          emit,
+		SlotName:       s.APSlotName,
+		Missions:       testModeMissions(s),
+		UnlockMissions: true,
+		Goal:           s.MvmGoal,
+		StartClass:     s.MvmStartClass,
+		DeathLink:      s.MvmDeathLink,
+		Log:            emit,
 	})
 	if err != nil {
 		return nil, err
 	}
 	cfg.ArchipelagoURL = address
 	return room, nil
+}
+
+// testModeMissions is every mission the settings leave eligible, rather than
+// the smaller random draw a generated multiworld uses. Test mode is the place
+// to try the selected maps and switch between them before committing to a
+// seed, so MvmMissionCount does not narrow this list.
+func testModeMissions(s settings.Settings) []string {
+	floor, _ := gamedata.DifficultyByKey(s.MvmDifficulty)
+	var missions []string
+	for _, mission := range settings.MissionPool(s).Missions() {
+		if mission.Difficulty >= floor {
+			missions = append(missions, mission.PopFile)
+		}
+	}
+	if at := slices.Index(missions, s.MvmStartMission); at > 0 {
+		missions = slices.Insert(slices.Delete(slices.Clone(missions), at, at+1), 0, s.MvmStartMission)
+	}
+	return missions
 }
 
 // announceRelease says once, off the start path, when a newer launcher is out.
