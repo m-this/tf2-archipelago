@@ -59,11 +59,16 @@ type Room struct {
 // Options say what the made-up seed looks like. Missions and Goal come from the
 // player's own run settings, so a test run has the shape they asked for.
 type Options struct {
-	SlotName     string
-	Missions     []string
-	Goal         string
-	Log          func(string)
-	MissionCount int
+	SlotName string
+	Missions []string
+	// UnlockMissions puts every named mission ticket in the starting
+	// inventory. The launcher's test mode uses this so its selected missions
+	// are immediately available for switching; ordinary fake-room tests keep
+	// the generated run's one-ticket progression.
+	UnlockMissions bool
+	Goal           string
+	Log            func(string)
+	MissionCount   int
 
 	// Excluded is the popfiles a test run leaves out, the way the real
 	// generator's excluded_missions does.
@@ -110,7 +115,7 @@ func Start(ctx context.Context, options Options) (*Room, string, error) {
 		missions = defaultMissions(options.MissionCount, options.Excluded,
 			options.Difficulty, options.StartMission)
 	}
-	start := startingInventory(missions[0], options.StartClass)
+	start := roomStartingInventory(missions, options.StartClass, options.UnlockMissions)
 	room := &Room{
 		listener:  listener,
 		log:       logf,
@@ -390,19 +395,22 @@ func fillerItem() int64 {
 	return gamedata.Items[0].ID
 }
 
+// roomStartingInventory may widen the normal starting inventory for a room
+// used to switch freely among a set of test missions.
+func roomStartingInventory(missions []string, startClass string, unlockMissions bool) []int64 {
+	start := startingInventory(missions[0], startClass)
+	if unlockMissions {
+		start = append(start, missionTickets(missions[1:])...)
+	}
+	return start
+}
+
 // startingInventory is what a normal-tier run starts with, matching the
 // apworld's own rule: the first mission's ticket, one class, one weapon slot.
 // Without the ticket the plugin has no mission it may play.
 func startingInventory(popFile, startClass string) []int64 {
 	var start []int64
-	if mission, known := gamedata.MissionByPopFile(popFile); known {
-		for _, item := range gamedata.Items {
-			if item.Kind == gamedata.ItemMissionTicket && item.Mission == mission.ID {
-				start = append(start, item.ID)
-				break
-			}
-		}
-	}
+	start = append(start, missionTickets([]string{popFile})...)
 	if class, found := classItem(startClass); found {
 		start = append(start, class)
 	} else {
@@ -410,6 +418,23 @@ func startingInventory(popFile, startClass string) []int64 {
 	}
 	start = append(start, firstItemOfKind(gamedata.ItemWeaponSlot)...)
 	return start
+}
+
+func missionTickets(missions []string) []int64 {
+	var tickets []int64
+	for _, popFile := range missions {
+		mission, known := gamedata.MissionByPopFile(popFile)
+		if !known {
+			continue
+		}
+		for _, item := range gamedata.Items {
+			if item.Kind == gamedata.ItemMissionTicket && item.Mission == mission.ID {
+				tickets = append(tickets, item.ID)
+				break
+			}
+		}
+	}
+	return tickets
 }
 
 // classItem is the item that grants the named mercenary. A name nothing
