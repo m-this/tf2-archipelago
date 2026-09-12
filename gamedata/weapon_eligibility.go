@@ -9,7 +9,10 @@ var weaponFamilies = [][]string{
 	// Choosing a building replaces the Construction PDA (definition 25) with
 	// the Builder toolbox (definition 28, named PDA in the item schema).
 	{"Construction PDA", "PDA"},
-	{"Sapper", "Ap-Sap", "Snack Attack"},
+	// The Red-Tape Recorder's construction reversal has no meaningful
+	// distinction from sapper damage against MvM robot buildings, so all
+	// sapper models share one reward pool here.
+	{"Sapper", "Ap-Sap", "Snack Attack", "Red-Tape Recorder"},
 	{"Minigun", "Iron Curtain", "Reissued Iron Curtain", "Deflector"},
 	{"Pistol", "Lugermorph", "Reissued Lugermorph", "C.A.P.P.E.R"},
 	{"Invis Watch", "Enthusiast's Timepiece", "Reissued Enthusiast's Timepiece", "Quäckenbirdt"},

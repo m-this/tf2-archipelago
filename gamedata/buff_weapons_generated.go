@@ -17,7 +17,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 3, Key: "weapon-003", Weapon: "Ambassador",
-		DefIndexes: []int{61, 1006, 15061, 15068, 15069, 15073, 15088}, Attribute: "clip size bonus", Value: 1.25,
+		DefIndexes: []int{61, 1006}, Attribute: "clip size bonus", Value: 1.25,
 		Description: "+25% clip size", Additive: false,
 	},
 	{
@@ -47,7 +47,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 9, Key: "weapon-009", Weapon: "Axtinguisher",
-		DefIndexes: []int{38, 1000, 15038}, Attribute: "bleeding duration", Value: 3.00,
+		DefIndexes: []int{38, 1000}, Attribute: "bleeding duration", Value: 3.00,
 		Description: "inflicts 3 seconds of bleed", Additive: true,
 	},
 	{
@@ -72,7 +72,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 14, Key: "weapon-014", Weapon: "Backburner",
-		DefIndexes: []int{40, 1146, 15040}, Attribute: "damage bonus", Value: 1.10,
+		DefIndexes: []int{40, 1146}, Attribute: "damage bonus", Value: 1.10,
 		Description: "+10% damage", Additive: false,
 	},
 	{
@@ -122,17 +122,17 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 24, Key: "weapon-024", Weapon: "Blutsauger",
-		DefIndexes: []int{36, 15036}, Attribute: "clip size bonus", Value: 1.25,
+		DefIndexes: []int{36}, Attribute: "clip size bonus", Value: 1.25,
 		Description: "+25% clip size", Additive: false,
 	},
 	{
 		ID: 25, Key: "weapon-025", Weapon: "Bonesaw",
-		DefIndexes: []int{8, 198, 1143, 15009}, Attribute: "fire rate bonus", Value: 0.90,
+		DefIndexes: []int{8, 198, 1143}, Attribute: "fire rate bonus", Value: 0.90,
 		Description: "+10% firing speed", Additive: false,
 	},
 	{
 		ID: 26, Key: "weapon-026", Weapon: "Bonk! Atomic Punch",
-		DefIndexes: []int{46, 1145, 15046}, Attribute: "bleeding duration", Value: 3.00,
+		DefIndexes: []int{46, 1145}, Attribute: "bleeding duration", Value: 3.00,
 		Description: "inflicts 3 seconds of bleed", Additive: true,
 	},
 	{
@@ -147,7 +147,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 29, Key: "weapon-029", Weapon: "Bottle",
-		DefIndexes: []int{1, 191, 15014}, Attribute: "increased jump height from weapon", Value: 1.15,
+		DefIndexes: []int{1, 191}, Attribute: "increased jump height from weapon", Value: 1.15,
 		Description: "+15% jump height", Additive: false,
 	},
 	{
@@ -202,7 +202,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 40, Key: "weapon-040", Weapon: "Cloak and Dagger",
-		DefIndexes: []int{60, 15066, 15074, 15077, 15081, 15082, 15085}, Attribute: "major move speed bonus", Value: 1.05,
+		DefIndexes: []int{60}, Attribute: "major move speed bonus", Value: 1.05,
 		Description: "+5% movement speed while active", Additive: false,
 	},
 	{
@@ -222,7 +222,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 44, Key: "weapon-044", Weapon: "Construction PDA",
-		DefIndexes: []int{25, 737, 15025}, Attribute: "major move speed bonus", Value: 1.05,
+		DefIndexes: []int{25, 737}, Attribute: "major move speed bonus", Value: 1.05,
 		Description: "+5% movement speed while active", Additive: false,
 	},
 	{
@@ -262,7 +262,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 52, Key: "weapon-052", Weapon: "Dead Ringer",
-		DefIndexes: []int{59, 15059}, Attribute: "major move speed bonus", Value: 1.05,
+		DefIndexes: []int{59}, Attribute: "major move speed bonus", Value: 1.05,
 		Description: "+5% movement speed while active", Additive: false,
 	},
 	{
@@ -277,7 +277,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 55, Key: "weapon-055", Weapon: "Destruction PDA",
-		DefIndexes: []int{26, 15026}, Attribute: "major move speed bonus", Value: 1.05,
+		DefIndexes: []int{26}, Attribute: "major move speed bonus", Value: 1.05,
 		Description: "+5% movement speed while active", Additive: false,
 	},
 	{
@@ -302,7 +302,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 60, Key: "weapon-060", Weapon: "Disguise Kit",
-		DefIndexes: []int{27, 15027}, Attribute: "major move speed bonus", Value: 1.05,
+		DefIndexes: []int{27}, Attribute: "major move speed bonus", Value: 1.05,
 		Description: "+5% movement speed while active", Additive: false,
 	},
 	{
@@ -357,7 +357,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 71, Key: "weapon-071", Weapon: "Fire Axe",
-		DefIndexes: []int{2, 192, 15010}, Attribute: "increased jump height from weapon", Value: 1.15,
+		DefIndexes: []int{2, 192}, Attribute: "increased jump height from weapon", Value: 1.15,
 		Description: "+15% jump height", Additive: false,
 	},
 	{
@@ -367,7 +367,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 73, Key: "weapon-073", Weapon: "Fists",
-		DefIndexes: []int{5, 195, 15008}, Attribute: "fire rate bonus", Value: 0.90,
+		DefIndexes: []int{5, 195}, Attribute: "fire rate bonus", Value: 0.90,
 		Description: "+10% firing speed", Additive: false,
 	},
 	{
@@ -377,12 +377,12 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 75, Key: "weapon-075", Weapon: "Flame Thrower",
-		DefIndexes: []int{21, 208, 659, 798, 807, 887, 896, 905, 914, 963, 972, 15021}, Attribute: "bleeding duration", Value: 3.00,
+		DefIndexes: []int{21, 208, 659, 798, 807, 887, 896, 905, 914, 963, 972, 15005, 15017, 15030, 15034, 15049, 15054, 15066, 15067, 15068, 15089, 15090, 15115, 15141}, Attribute: "bleeding duration", Value: 3.00,
 		Description: "inflicts 3 seconds of bleed", Additive: true,
 	},
 	{
 		ID: 76, Key: "weapon-076", Weapon: "Flare Gun",
-		DefIndexes: []int{39, 1081, 15039}, Attribute: "heal on kill", Value: 15.00,
+		DefIndexes: []int{39, 1081}, Attribute: "heal on kill", Value: 15.00,
 		Description: "+15 health on kill", Additive: true,
 	},
 	{
@@ -392,7 +392,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 78, Key: "weapon-078", Weapon: "Force-a-Nature",
-		DefIndexes: []int{45, 1078, 15045}, Attribute: "fire rate bonus", Value: 0.90,
+		DefIndexes: []int{45, 1078}, Attribute: "fire rate bonus", Value: 0.90,
 		Description: "+10% firing speed", Additive: false,
 	},
 	{
@@ -437,7 +437,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 87, Key: "weapon-087", Weapon: "Grenade Launcher",
-		DefIndexes: []int{19, 206, 1007, 15019}, Attribute: "Projectile speed increased", Value: 1.15,
+		DefIndexes: []int{19, 206, 1007, 15077, 15079, 15091, 15092, 15116, 15117, 15142, 15158}, Attribute: "Projectile speed increased", Value: 1.15,
 		Description: "+15% projectile speed", Additive: false,
 	},
 	{
@@ -492,7 +492,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 98, Key: "weapon-098", Weapon: "Huntsman",
-		DefIndexes: []int{56, 1005, 15056}, Attribute: "faster reload rate", Value: 0.85,
+		DefIndexes: []int{56, 1005}, Attribute: "faster reload rate", Value: 0.85,
 		Description: "+15% reload speed", Additive: false,
 	},
 	{
@@ -502,7 +502,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 100, Key: "weapon-100", Weapon: "Invis Watch",
-		DefIndexes: []int{30, 212, 15030}, Attribute: "major move speed bonus", Value: 1.05,
+		DefIndexes: []int{30, 212}, Attribute: "major move speed bonus", Value: 1.05,
 		Description: "+5% movement speed while active", Additive: false,
 	},
 	{
@@ -522,27 +522,27 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 104, Key: "weapon-104", Weapon: "Jarate",
-		DefIndexes: []int{58, 1083, 15058}, Attribute: "critboost on kill", Value: 2.00,
+		DefIndexes: []int{58, 1083}, Attribute: "critboost on kill", Value: 2.00,
 		Description: "2 seconds of critical hits on kill", Additive: true,
 	},
 	{
 		ID: 105, Key: "weapon-105", Weapon: "Killing Gloves of Boxing",
-		DefIndexes: []int{43, 15043}, Attribute: "bleeding duration", Value: 3.00,
+		DefIndexes: []int{43}, Attribute: "bleeding duration", Value: 3.00,
 		Description: "inflicts 3 seconds of bleed", Additive: true,
 	},
 	{
 		ID: 106, Key: "weapon-106", Weapon: "Knife",
-		DefIndexes: []int{4, 194, 665, 794, 803, 883, 892, 901, 910, 959, 968, 15012}, Attribute: "critboost on kill", Value: 2.00,
+		DefIndexes: []int{4, 194, 665, 794, 803, 883, 892, 901, 910, 959, 968, 15080, 15094, 15095, 15096, 15118, 15119, 15143, 15144}, Attribute: "critboost on kill", Value: 2.00,
 		Description: "2 seconds of critical hits on kill", Additive: true,
 	},
 	{
 		ID: 107, Key: "weapon-107", Weapon: "Kritzkrieg",
-		DefIndexes: []int{35, 15035}, Attribute: "heal rate bonus", Value: 1.10,
+		DefIndexes: []int{35}, Attribute: "heal rate bonus", Value: 1.10,
 		Description: "+10% healing", Additive: false,
 	},
 	{
 		ID: 108, Key: "weapon-108", Weapon: "Kukri",
-		DefIndexes: []int{3, 193, 15011}, Attribute: "damage bonus", Value: 1.10,
+		DefIndexes: []int{3, 193}, Attribute: "damage bonus", Value: 1.10,
 		Description: "+10% damage", Additive: false,
 	},
 	{
@@ -607,7 +607,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 121, Key: "weapon-121", Weapon: "Medi Gun",
-		DefIndexes: []int{29, 211, 663, 796, 805, 885, 894, 903, 912, 961, 970, 15029}, Attribute: "heal rate bonus", Value: 1.10,
+		DefIndexes: []int{29, 211, 663, 796, 805, 885, 894, 903, 912, 961, 970, 15008, 15010, 15025, 15039, 15050, 15078, 15097, 15120, 15121, 15122, 15145, 15146}, Attribute: "heal rate bonus", Value: 1.10,
 		Description: "+10% healing", Additive: false,
 	},
 	{
@@ -617,7 +617,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 123, Key: "weapon-123", Weapon: "Minigun",
-		DefIndexes: []int{15, 202, 654, 793, 802, 882, 891, 900, 909, 958, 967, 15015}, Attribute: "heal on kill", Value: 15.00,
+		DefIndexes: []int{15, 202, 654, 793, 802, 882, 891, 900, 909, 958, 967, 15004, 15020, 15026, 15031, 15040, 15055, 15086, 15087, 15088, 15098, 15099, 15123, 15124, 15125, 15147}, Attribute: "heal on kill", Value: 15.00,
 		Description: "+15 health on kill", Additive: true,
 	},
 	{
@@ -627,7 +627,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 125, Key: "weapon-125", Weapon: "Natascha",
-		DefIndexes: []int{41, 15041}, Attribute: "critboost on kill", Value: 2.00,
+		DefIndexes: []int{41}, Attribute: "critboost on kill", Value: 2.00,
 		Description: "2 seconds of critical hits on kill", Additive: true,
 	},
 	{
@@ -667,7 +667,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 133, Key: "weapon-133", Weapon: "PDA",
-		DefIndexes: []int{28, 15028}, Attribute: "major move speed bonus", Value: 1.05,
+		DefIndexes: []int{28}, Attribute: "major move speed bonus", Value: 1.05,
 		Description: "+5% movement speed while active", Additive: false,
 	},
 	{
@@ -682,7 +682,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 136, Key: "weapon-136", Weapon: "Pistol",
-		DefIndexes: []int{22, 23, 209, 15013, 15022, 15023}, Attribute: "clip size bonus", Value: 1.25,
+		DefIndexes: []int{22, 23, 209, 15013, 15018, 15035, 15041, 15046, 15056, 15060, 15061, 15100, 15101, 15102, 15126, 15148}, Attribute: "clip size bonus", Value: 1.25,
 		Description: "+25% clip size", Additive: false,
 	},
 	{
@@ -727,7 +727,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 145, Key: "weapon-145", Weapon: "Razorback",
-		DefIndexes: []int{57, 15057}, Attribute: "major move speed bonus", Value: 1.05,
+		DefIndexes: []int{57}, Attribute: "major move speed bonus", Value: 1.05,
 		Description: "+5% movement speed while active", Additive: false,
 	},
 	{
@@ -762,7 +762,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 152, Key: "weapon-152", Weapon: "Revolver",
-		DefIndexes: []int{24, 210, 1142, 15024}, Attribute: "bleeding duration", Value: 3.00,
+		DefIndexes: []int{24, 210, 1142, 15011, 15027, 15042, 15051, 15062, 15063, 15064, 15103, 15127, 15128, 15149}, Attribute: "bleeding duration", Value: 3.00,
 		Description: "inflicts 3 seconds of bleed", Additive: true,
 	},
 	{
@@ -782,17 +782,17 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 156, Key: "weapon-156", Weapon: "Rocket Launcher",
-		DefIndexes: []int{18, 205, 658, 800, 809, 889, 898, 907, 916, 965, 974, 15018}, Attribute: "heal on kill", Value: 15.00,
+		DefIndexes: []int{18, 205, 658, 800, 809, 889, 898, 907, 916, 965, 974, 15006, 15014, 15028, 15043, 15052, 15057, 15081, 15104, 15105, 15129, 15130, 15150}, Attribute: "heal on kill", Value: 15.00,
 		Description: "+15 health on kill", Additive: true,
 	},
 	{
 		ID: 157, Key: "weapon-157", Weapon: "Sandman",
-		DefIndexes: []int{44, 15044}, Attribute: "fire rate bonus", Value: 0.90,
+		DefIndexes: []int{44}, Attribute: "fire rate bonus", Value: 0.90,
 		Description: "+10% firing speed", Additive: false,
 	},
 	{
 		ID: 158, Key: "weapon-158", Weapon: "Sandvich",
-		DefIndexes: []int{42, 1002, 15042}, Attribute: "heal on kill", Value: 15.00,
+		DefIndexes: []int{42, 1002}, Attribute: "heal on kill", Value: 15.00,
 		Description: "+15 health on kill", Additive: true,
 	},
 	{
@@ -807,7 +807,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 161, Key: "weapon-161", Weapon: "Scattergun",
-		DefIndexes: []int{13, 200, 669, 799, 808, 888, 897, 906, 915, 964, 973, 15001}, Attribute: "damage bonus", Value: 1.10,
+		DefIndexes: []int{13, 200, 669, 799, 808, 888, 897, 906, 915, 964, 973, 15002, 15015, 15021, 15029, 15036, 15053, 15065, 15069, 15106, 15107, 15108, 15131, 15151, 15157}, Attribute: "damage bonus", Value: 1.10,
 		Description: "+10% damage", Additive: false,
 	},
 	{
@@ -867,17 +867,17 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 173, Key: "weapon-173", Weapon: "Shotgun",
-		DefIndexes: []int{9, 10, 11, 12, 199, 1141, 15002, 15003, 15004, 15005}, Attribute: "bleeding duration", Value: 3.00,
+		DefIndexes: []int{9, 10, 11, 12, 199, 1141, 15003, 15016, 15044, 15047, 15085, 15109, 15132, 15133, 15152}, Attribute: "bleeding duration", Value: 3.00,
 		Description: "inflicts 3 seconds of bleed", Additive: true,
 	},
 	{
 		ID: 174, Key: "weapon-174", Weapon: "Shovel",
-		DefIndexes: []int{6, 196, 15006}, Attribute: "damage bonus", Value: 1.10,
+		DefIndexes: []int{6, 196}, Attribute: "damage bonus", Value: 1.10,
 		Description: "+10% damage", Additive: false,
 	},
 	{
 		ID: 175, Key: "weapon-175", Weapon: "SMG",
-		DefIndexes: []int{16, 203, 1149, 15016}, Attribute: "damage bonus", Value: 1.10,
+		DefIndexes: []int{16, 203, 1149, 15001, 15022, 15032, 15037, 15058, 15076, 15110, 15134, 15153}, Attribute: "damage bonus", Value: 1.10,
 		Description: "+10% damage", Additive: false,
 	},
 	{
@@ -887,7 +887,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 177, Key: "weapon-177", Weapon: "Sniper Rifle",
-		DefIndexes: []int{14, 201, 664, 792, 801, 881, 890, 899, 908, 957, 966, 15000}, Attribute: "faster reload rate", Value: 0.85,
+		DefIndexes: []int{14, 201, 664, 792, 801, 881, 890, 899, 908, 957, 966, 15000, 15007, 15019, 15023, 15033, 15059, 15070, 15071, 15072, 15111, 15112, 15135, 15136, 15154}, Attribute: "faster reload rate", Value: 0.85,
 		Description: "+15% reload speed", Additive: false,
 	},
 	{
@@ -922,7 +922,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 184, Key: "weapon-184", Weapon: "Stickybomb Launcher",
-		DefIndexes: []int{20, 207, 661, 797, 806, 886, 895, 904, 913, 962, 971, 15020}, Attribute: "faster reload rate", Value: 0.85,
+		DefIndexes: []int{20, 207, 661, 797, 806, 886, 895, 904, 913, 962, 971, 15009, 15012, 15024, 15038, 15045, 15048, 15082, 15083, 15084, 15113, 15137, 15138, 15155}, Attribute: "faster reload rate", Value: 0.85,
 		Description: "+15% reload speed", Additive: false,
 	},
 	{
@@ -937,7 +937,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 187, Key: "weapon-187", Weapon: "Syringe Gun",
-		DefIndexes: []int{17, 204, 15017}, Attribute: "bleeding duration", Value: 3.00,
+		DefIndexes: []int{17, 204}, Attribute: "bleeding duration", Value: 3.00,
 		Description: "inflicts 3 seconds of bleed", Additive: true,
 	},
 	{
@@ -1022,7 +1022,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 204, Key: "weapon-204", Weapon: "Wrench",
-		DefIndexes: []int{7, 197, 662, 795, 804, 884, 893, 902, 911, 960, 969, 15007}, Attribute: "damage bonus", Value: 1.10,
+		DefIndexes: []int{7, 197, 662, 795, 804, 884, 893, 902, 911, 960, 969, 15073, 15074, 15075, 15114, 15139, 15140, 15156}, Attribute: "damage bonus", Value: 1.10,
 		Description: "+10% damage", Additive: false,
 	},
 	{
@@ -1032,7 +1032,7 @@ var legacyWeaponBuffs = []WeaponBuff{
 	},
 	{
 		ID: 206, Key: "weapon-206", Weapon: "Übersaw",
-		DefIndexes: []int{37, 1003, 15037}, Attribute: "heal on kill", Value: 15.00,
+		DefIndexes: []int{37, 1003}, Attribute: "heal on kill", Value: 15.00,
 		Description: "+15 health on kill", Additive: true,
 	},
 	{

@@ -29,8 +29,6 @@ type candidate struct {
 	Name      string
 	Slot      string
 	ItemClass string
-	// VariantOf is the definition this one is a paint of, or zero.
-	VariantOf int
 }
 
 // Weapon is what is printed: one name, and every definition index that is it.
@@ -98,13 +96,9 @@ func candidates(items, prefabs *tfschema.Object, names map[string]string) []cand
 		if name == "" {
 			continue
 		}
-		variantOf := 0
-		if static := item.Block("static_attrs"); static != nil {
-			variantOf, _ = strconv.Atoi(static.Text("paintkit_proto_def_index"))
-		}
 		found = append(found, candidate{
 			DefIndex: index, Name: name, Slot: slot,
-			ItemClass: merged["item_class"], VariantOf: variantOf,
+			ItemClass: merged["item_class"],
 		})
 	}
 	slices.SortStableFunc(found, func(a, b candidate) int {
@@ -148,14 +142,19 @@ func copyText(into map[string]string, from *tfschema.Object) {
 	}
 }
 
-// group folds the candidates into weapons: one per name, with the paints,
-// the Festives and the Botkillers attached to the gun they are a paint of.
+// group folds the candidates into weapons: one per inherited item name, with
+// the decorated paints, Festives and Botkillers attached to their base gun.
+//
+// A decorated definition's paintkit_proto_def_index is the paint-kit prototype
+// number, not a weapon definition index. The decorated item inherits the base
+// weapon's item_name through its paintkit_weapon_* prefab, which is the stable
+// relationship to group on.
 func group(entries []candidate) []*Weapon {
 	grouped := make(map[string]*Weapon)
 	var order []*Weapon
 	for _, e := range entries {
 		lower := strings.ToLower(e.Name)
-		if e.ItemClass == "slot_token" || e.VariantOf != 0 || slices.ContainsFunc(variantNames, func(m string) bool { return strings.Contains(lower, m) }) {
+		if e.ItemClass == "slot_token" || slices.ContainsFunc(variantNames, func(m string) bool { return strings.Contains(lower, m) }) {
 			continue
 		}
 		w, ok := grouped[e.Name]
@@ -167,21 +166,14 @@ func group(entries []candidate) []*Weapon {
 		w.DefIndexes = append(w.DefIndexes, e.DefIndex)
 	}
 
-	byDefinition := make(map[int]*Weapon)
 	byName := make(map[string]*Weapon)
 	for name, w := range grouped {
 		byName[strings.ToLower(name)] = w
-		for _, d := range w.DefIndexes {
-			byDefinition[d] = w
-		}
 	}
 	for _, e := range entries {
 		var w *Weapon
-		if e.VariantOf != 0 {
-			w = byDefinition[e.VariantOf]
-		}
 		lower := strings.ToLower(e.Name)
-		if w == nil && strings.HasPrefix(lower, "festive ") {
+		if strings.HasPrefix(lower, "festive ") {
 			w = byName[lower[len("festive "):]]
 		}
 		if w == nil && strings.Contains(lower, "botkiller") {
