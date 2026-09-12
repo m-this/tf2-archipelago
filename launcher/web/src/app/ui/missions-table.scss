@@ -108,7 +108,23 @@ tbody tr {
 }
 
 .play {
-  text-align: right;
+  display: flex;
+  gap: var(--gap-sm);
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Small, because it sits beside a small button and is the second thing in the
+   cell: Play is what most rows want, and the wave is for the one row somebody
+   left part way through. */
+.wave {
+  background: var(--surface-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  padding: 4px 6px;
 }
 
 input[type='checkbox'] {

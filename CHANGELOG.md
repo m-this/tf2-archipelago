@@ -6,6 +6,21 @@ in the release notes, so this file is the only place to write it.
 
 ## Unreleased
 
+### Added
+
+- A wave picker beside Play on the mission list. Pick a wave and the mission
+  starts there, with the money the game gives for having won every wave
+  before it. It opens on the wave your team got to, so the mission you left
+  part way through is one click from where you left it.
+- The run remembers the highest wave you reached in every mission, not only
+  the one you were on. Going to look at another mission no longer throws the
+  first one's progress away.
+- The wave restore now waits for the game to agree before it says it worked.
+  It used to announce the wave it had asked for, which is why a player could
+  read "Restored: Quarry at wave 3 of 6" and be standing in wave one. If the
+  jump never takes, the log says so and names the wave the game is actually
+  on.
+
 ### Fixed
 
 - The Grappling Hook can be turned on. The launcher wrote every option the

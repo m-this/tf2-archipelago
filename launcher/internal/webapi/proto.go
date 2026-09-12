@@ -79,7 +79,7 @@ func sessionProto(s session.Snapshot) *launcherv1.Session {
 			PopFile: mission.PopFile, Name: mission.Name, Map: mission.Map,
 			Waves: int32(mission.Waves), Source: mission.Source, Loadout: mission.Loadout,
 			Unlocked: mission.Unlocked, Cleared: mission.Cleared, Played: mission.Played,
-			Tier: tierOf(mission.PopFile),
+			Tier: tierOf(mission.PopFile), WaveReached: int32(mission.WaveReached),
 		})
 	}
 	unlocks := make([]*launcherv1.SessionUnlock, 0, len(s.Unlocks))

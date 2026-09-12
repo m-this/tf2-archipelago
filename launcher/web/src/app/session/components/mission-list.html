@@ -13,6 +13,7 @@
     [playable]="true"
     initialSort="status"
     (chosen)="choose.next($event)"
+    (resumed)="resume.next($event)"
   />
 
   <div class="line">{{ switchHint() }}</div>

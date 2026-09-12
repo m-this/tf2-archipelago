@@ -35,6 +35,12 @@ export interface MissionRow {
   readonly playing: boolean;
   /** The Play button, where the table has one: empty means none on this row. */
   readonly play: string;
+
+  /** The waves the picker beside Play offers, empty where it offers none. */
+  readonly waveChoices: readonly number[];
+
+  /** The wave the picker starts on: the one the team got to, or the first. */
+  readonly waveStart: number;
 }
 
 export type MissionColumn = 'on' | 'name' | 'map' | 'tier' | 'source' | 'waves' | 'status' | 'mods';
@@ -66,6 +72,7 @@ export class MissionsTable {
 
   readonly toggled = output<string>();
   readonly chosen = output<string>();
+  readonly resumed = output<{ key: string; wave: number }>();
 
   readonly sortBy = signal<MissionColumn | undefined>(undefined);
   readonly ascending = signal(true);

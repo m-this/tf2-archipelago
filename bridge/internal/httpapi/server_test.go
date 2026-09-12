@@ -145,7 +145,7 @@ func TestMissionsNameTheMapAndWhatIsUnlocked(t *testing.T) {
 	// Checked by the room but not played here, which is the case another
 	// world's !collect produces.
 	missions, unknown := missionsFor(
-		drawn, []string{"mvm_ghost_town_666"}, []int64{coaltown.ClearLocationID()}, nil, false)
+		drawn, []string{"mvm_ghost_town_666"}, []int64{coaltown.ClearLocationID()}, nil, false, nil)
 
 	if len(unknown) != 0 {
 		t.Fatalf("the tables did not know %v", unknown)
@@ -178,7 +178,7 @@ func TestMissionsNameTheMapAndWhatIsUnlocked(t *testing.T) {
 }
 
 func TestMissionsSkipWhatTheTablesDoNotKnow(t *testing.T) {
-	missions, unknown := missionsFor([]string{"mvm_potato", "mvm_coaltown"}, nil, nil, nil, false)
+	missions, unknown := missionsFor([]string{"mvm_potato", "mvm_coaltown"}, nil, nil, nil, false, nil)
 	if len(missions) != 1 || missions[0].PopFile != "mvm_coaltown" {
 		t.Fatalf("missions = %+v", missions)
 	}
@@ -189,7 +189,7 @@ func TestMissionsSkipWhatTheTablesDoNotKnow(t *testing.T) {
 
 func TestMissionsExposeTheSpecialLoadout(t *testing.T) {
 	popFile := "mvm_frostwynd_rc1_int_wicked_wizardry"
-	missions, unknown := missionsFor([]string{popFile}, []string{popFile}, nil, nil, false)
+	missions, unknown := missionsFor([]string{popFile}, []string{popFile}, nil, nil, false, nil)
 	if len(unknown) != 0 || len(missions) != 1 {
 		t.Fatalf("missions = %+v, unknown = %v", missions, unknown)
 	}
@@ -200,7 +200,7 @@ func TestMissionsExposeTheSpecialLoadout(t *testing.T) {
 
 func TestUsefulTicketsLeaveEveryDrawnMissionUnlocked(t *testing.T) {
 	drawn := []string{"mvm_coaltown", "mvm_coaltown_intermediate"}
-	missions, unknown := missionsFor(drawn, nil, nil, nil, true)
+	missions, unknown := missionsFor(drawn, nil, nil, nil, true, nil)
 	if len(unknown) != 0 || len(missions) != 2 {
 		t.Fatalf("missions = %+v, unknown = %v", missions, unknown)
 	}
@@ -621,7 +621,7 @@ func TestAMissionCheckedByTheRoomIsNotPlayedHere(t *testing.T) {
 
 	missions, _ := missionsFor(drawn, drawn,
 		[]int64{coaltown.ClearLocationID(), ghost.ClearLocationID()},
-		[]int64{ghost.ClearLocationID()}, false)
+		[]int64{ghost.ClearLocationID()}, false, nil)
 
 	if len(missions) != 2 {
 		t.Fatalf("missions = %+v", missions)
@@ -663,10 +663,33 @@ func TestTheMissionsAnswerCarriesWhereTheRunWas(t *testing.T) {
 		}
 	}
 
-	if err := store.ClearProgress(); err != nil {
+	if err := store.ClearProgress("mvm_decoy_advanced"); err != nil {
 		t.Fatal(err)
 	}
 	if body = get(t, handler, "/missions").Body.String(); strings.Contains(body, "resume") {
 		t.Errorf("a finished mission still offered a resume:\n%s", body)
+	}
+}
+
+/*
+	The mission list says where each mission can be resumed from.
+
+The Resume button reads this. It is per mission and it outlives the switch, so
+a team who left Coal Town at wave three and went to look at Decoy is still
+offered Coal Town at wave three.
+*/
+func TestTheMissionListSaysWhereEachMissionCanBeResumed(t *testing.T) {
+	drawn := []string{"mvm_coaltown_intermediate", "mvm_decoy_advanced"}
+	missions, _ := missionsFor(drawn, drawn, nil, nil, true,
+		map[string]int{"mvm_coaltown_intermediate": 3})
+
+	for _, got := range missions {
+		want := 0
+		if got.PopFile == "mvm_coaltown_intermediate" {
+			want = 3
+		}
+		if got.WaveReached != want {
+			t.Errorf("%s offers wave %d, want %d", got.PopFile, got.WaveReached, want)
+		}
 	}
 }

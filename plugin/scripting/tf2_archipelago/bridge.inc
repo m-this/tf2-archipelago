@@ -42,6 +42,10 @@ enum struct Mission
     int waves;
     bool unlocked;
     bool cleared;
+
+    // The highest wave the team has cleared here, zero for none. What the
+    // Resume button goes back to, and it outlives a switch to another mission.
+    int waveReached;
 }
 
 enum struct Objective
@@ -444,6 +448,7 @@ static void OnMissions(HTTPResponse response, any value, const char[] error)
         mission.waves = entry.GetInt("waves");
         mission.unlocked = entry.GetBool("unlocked");
         mission.cleared = entry.GetBool("cleared");
+        mission.waveReached = entry.GetInt("wave_reached");
         g_Missions.PushArray(mission);
         delete entry;
     }

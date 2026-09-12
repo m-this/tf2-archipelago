@@ -73,7 +73,7 @@ func TestAFinishedMissionForgetsWhereItWas(t *testing.T) {
 	if err := store.NoteProgress("mvm_decoy", 6); err != nil {
 		t.Fatal(err)
 	}
-	if err := store.ClearProgress(); err != nil {
+	if err := store.ClearProgress("mvm_decoy"); err != nil {
 		t.Fatal(err)
 	}
 	if got := store.Progress(); got != (Resume{}) {
@@ -99,5 +99,82 @@ func TestNothingToRecordIsNotAnError(t *testing.T) {
 		if got := store.Progress(); got != (Resume{}) {
 			t.Errorf("NoteProgress(%q, %d) recorded %+v", test.popFile, test.wave, got)
 		}
+	}
+}
+
+/*
+	The best each mission has ever seen, kept per mission.
+
+Resume is only ever the mission the team is on, so switching away threw the old
+one's progress out: three waves into Coal Town, go and look at Decoy, and Coal
+Town was back at wave one. This is the record the Resume button on the mission
+list reads, and it outlives the switch.
+*/
+func TestTheHighestWaveIsKeptPerMission(t *testing.T) {
+	store, err := Open(filepath.Join(t.TempDir(), "state.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := store.NoteProgress("mvm_coaltown", 3); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.NoteProgress("mvm_decoy", 1); err != nil {
+		t.Fatal(err)
+	}
+	if got := store.Reached()["mvm_coaltown"]; got != 3 {
+		t.Errorf("after switching missions Coal Town is at wave %d, want 3", got)
+	}
+
+	// Going back and doing worse does not lower the mark: it is the best the
+	// team has ever done, not the last thing they did.
+	if err := store.NoteProgress("mvm_coaltown", 2); err != nil {
+		t.Fatal(err)
+	}
+	if got := store.Reached()["mvm_coaltown"]; got != 3 {
+		t.Errorf("a worse run lowered the mark to %d", got)
+	}
+}
+
+// A mission the team has beaten has nothing to go back to, so the button stops
+// being offered for it. The other missions keep theirs.
+func TestClearingAMissionForgetsOnlyItsMark(t *testing.T) {
+	store, err := Open(filepath.Join(t.TempDir(), "state.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := store.NoteProgress("mvm_coaltown", 3); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.NoteProgress("mvm_decoy", 2); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.ClearProgress("mvm_decoy"); err != nil {
+		t.Fatal(err)
+	}
+	reached := store.Reached()
+	if _, kept := reached["mvm_decoy"]; kept {
+		t.Error("a beaten mission still offers somewhere to resume")
+	}
+	if reached["mvm_coaltown"] != 3 {
+		t.Errorf("clearing one mission took another's mark: %v", reached)
+	}
+}
+
+// The mark survives a restart, which is the whole point of writing it down.
+func TestTheMarkSurvivesAReopen(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "state.json")
+	store, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := store.NoteProgress("mvm_mannworks", 5); err != nil {
+		t.Fatal(err)
+	}
+	reopened, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := reopened.Reached()["mvm_mannworks"]; got != 5 {
+		t.Errorf("after a reopen the mark is %d, want 5", got)
 	}
 }

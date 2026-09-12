@@ -116,6 +116,11 @@ type mission struct {
 	// it has to know both.
 	Cleared bool `json:"cleared"`
 
+	// WaveReached is the highest wave the team has ever cleared here, and what
+	// the Resume button offers to go back to. Absent for a mission nobody has
+	// won a wave in, and for one the team has beaten.
+	WaveReached int `json:"wave_reached,omitempty"`
+
 	/* Played is this server having actually cleared it.
 	 *
 	 * A check reaches the disk when anybody in the room sends it, and another
@@ -310,7 +315,7 @@ func (s *Server) noteProgress(ctx context.Context, kind gamedata.ObjectiveKind, 
 	case gamedata.ObjectiveWaveCleared:
 		err = s.store.NoteProgress(popFile, wave)
 	case gamedata.ObjectiveMissionCleared:
-		err = s.store.ClearProgress()
+		err = s.store.ClearProgress(popFile)
 	case gamedata.ObjectiveTankDestroyed, gamedata.ObjectiveGiantKilled:
 		// Neither says a wave was won, so neither moves the record.
 		return
@@ -424,6 +429,7 @@ func (s *Server) getMissions(w http.ResponseWriter, r *http.Request) {
 		s.store.Checks(),
 		s.store.Played(),
 		health.MissionTicketImportance == "useful",
+		s.store.Reached(),
 	)
 	for _, popFile := range unknown {
 		s.logger.WarnContext(r.Context(), "the seed holds a mission the tables do not",
@@ -440,7 +446,7 @@ func (s *Server) getMissions(w http.ResponseWriter, r *http.Request) {
 // and reports the ones the tables do not know. A seed from a newer gamedata is
 // the only way that happens, and skipping such a mission beats serving a name
 // and a map this binary would be guessing at.
-func missionsFor(drawn, unlocked []string, checks, own []int64, unlockAll bool) ([]mission, []string) {
+func missionsFor(drawn, unlocked []string, checks, own []int64, unlockAll bool, reached map[string]int) ([]mission, []string) {
 	missions := make([]mission, 0, len(drawn))
 	var unknown []string
 	for _, popFile := range drawn {
@@ -451,14 +457,15 @@ func missionsFor(drawn, unlocked []string, checks, own []int64, unlockAll bool) 
 		}
 		played, _ := gamedata.MapByID(known.Map)
 		missions = append(missions, mission{
-			PopFile:  known.PopFile,
-			Name:     known.Name,
-			Map:      played.Name,
-			Waves:    int(known.Waves),
-			Loadout:  gamedata.MissionLoadout(known.ID),
-			Unlocked: unlockAll || slices.Contains(unlocked, known.PopFile),
-			Cleared:  slices.Contains(checks, known.ClearLocationID()),
-			Played:   slices.Contains(own, known.ClearLocationID()),
+			PopFile:     known.PopFile,
+			Name:        known.Name,
+			Map:         played.Name,
+			Waves:       int(known.Waves),
+			Loadout:     gamedata.MissionLoadout(known.ID),
+			Unlocked:    unlockAll || slices.Contains(unlocked, known.PopFile),
+			Cleared:     slices.Contains(checks, known.ClearLocationID()),
+			Played:      slices.Contains(own, known.ClearLocationID()),
+			WaveReached: reached[known.PopFile],
 		})
 	}
 	return missions, unknown

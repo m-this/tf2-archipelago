@@ -52,6 +52,11 @@ type Mission struct {
 	// holding the check. Another world's !collect sends every check it still
 	// has, so the two disagree and the run list has to show what you did.
 	Played bool `json:"played"`
+
+	// WaveReached is the highest wave the team has cleared here, and what the
+	// Resume button offers to go back to. Zero for a mission nobody has won a
+	// wave in and for one the team has beaten.
+	WaveReached int `json:"wave_reached"`
 }
 
 /*

@@ -51,6 +51,12 @@ export class LauncherCommands {
     return this.done(this.launcher.setMission({ popFile }));
   }
 
+  /** resumeMission loads a mission and starts it at a wave, with the money the
+      game gives for having won every wave before it. */
+  resumeMission(popFile: string, wave: number): Observable<void> {
+    return this.done(this.launcher.resumeMission({ popFile, wave }));
+  }
+
   approveFunnel(): Observable<{ approvalUrl: string; message: string }> {
     return from(this.launcher.approveFunnel({}));
   }

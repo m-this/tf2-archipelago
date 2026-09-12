@@ -3,6 +3,7 @@ package webapi
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -70,6 +71,19 @@ func (s LauncherRPC) SendRcon(_ context.Context, request *connect.Request[launch
 func (s LauncherRPC) SetMission(_ context.Context, request *connect.Request[launcherv1.SetMissionRequest]) (*connect.Response[launcherv1.SetMissionResponse], error) {
 	s.App.SendRCON("sm_ap_mission " + request.Msg.GetPopFile())
 	return connect.NewResponse(&launcherv1.SetMissionResponse{}), nil
+}
+
+/*
+ResumeMission loads a mission and starts it at a wave.
+
+Same road as SetMission: an sm_ap command over RCON, so the console and the
+browser have one way in and neither is a special case. What the money ends up
+being is the game's, not decided here.
+*/
+//nolint:contextcheck // Dialling RCON owns its timeout instead of the request.
+func (s LauncherRPC) ResumeMission(_ context.Context, request *connect.Request[launcherv1.ResumeMissionRequest]) (*connect.Response[launcherv1.ResumeMissionResponse], error) {
+	s.App.SendRCON(fmt.Sprintf("sm_ap_resume %s %d", request.Msg.GetPopFile(), request.Msg.GetWave()))
+	return connect.NewResponse(&launcherv1.ResumeMissionResponse{}), nil
 }
 
 // ApproveFunnel answers with the page the player has to visit, or the word
