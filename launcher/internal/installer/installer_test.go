@@ -97,6 +97,43 @@ func TestInstallCommunityZipStripsTFDownload(t *testing.T) {
 	}
 }
 
+func TestCommunityDownloadManifestIncludesIconsAndAliasedTextures(t *testing.T) {
+	modDir := t.TempDir()
+	populationDir := filepath.Join(modDir, "scripts", "population")
+	materialDir := filepath.Join(modDir, "materials", "hud")
+	if err := os.MkdirAll(populationDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(materialDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	write := func(path, body string) {
+		t.Helper()
+		if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write(filepath.Join(populationDir, "mvm_kelly_rc1b_adv_test.pop"),
+		"#base robot_test.pop\nClassIcon stock_icon\n")
+	write(filepath.Join(populationDir, "robot_test.pop"), "ClassIcon Engineer_Ranger_Test_Giant\n")
+	write(filepath.Join(materialDir, "leaderboard_class_engineer_ranger_test_giant.vmt"),
+		`"UnlitGeneric" { "$baseTexture" "hud/leaderboard_class_engineer_ranger_test" }`)
+	write(filepath.Join(materialDir, "leaderboard_class_engineer_ranger_test.vtf"), "texture")
+
+	if err := writeCommunityDownloadManifests(modDir); err != nil {
+		t.Fatal(err)
+	}
+	body, err := os.ReadFile(filepath.Join(modDir, "addons", "sourcemod", "data", "tf2_archipelago", "downloads", "mvm_kelly_rc1b.txt"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "materials/hud/leaderboard_class_engineer_ranger_test.vtf\n" +
+		"materials/hud/leaderboard_class_engineer_ranger_test_giant.vmt\n"
+	if string(body) != want {
+		t.Fatalf("manifest = %q, want %q", body, want)
+	}
+}
+
 func TestCommunityInstallSkipsUnsupportedMissionsButKeepsSharedPopulationFiles(t *testing.T) {
 	root := t.TempDir()
 	archive := filepath.Join(root, "archive-assets.zip")

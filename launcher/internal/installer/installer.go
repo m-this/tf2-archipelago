@@ -19,7 +19,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
+	"sort"
 	"strings"
 	"time"
 
@@ -163,7 +165,104 @@ func installCommunityArchives(archives []string, modDir string, logf func(string
 			return err
 		}
 	}
+	if err := writeCommunityDownloadManifests(modDir); err != nil {
+		return fmt.Errorf("cannot prepare community asset downloads: %w", err)
+	}
 	return nil
+}
+
+var (
+	popBasePattern     = regexp.MustCompile(`(?im)^\s*#base\s+"?([^"\s]+)`)
+	classIconPattern   = regexp.MustCompile(`(?im)^\s*ClassIcon\s+"?([^"\s/]+)`)
+	baseTexturePattern = regexp.MustCompile(`(?i)"?\$baseTexture"?\s+"?([^"\s]+)`)
+)
+
+// writeCommunityDownloadManifests gives the SourceMod plugin the custom wave
+// icons each map's population files can use. Merely putting an asset beside
+// SRCDS makes it available to the server and FastDL; the engine still needs it
+// added to the downloadables string table before a client will request it.
+func writeCommunityDownloadManifests(modDir string) error {
+	populationDir := filepath.Join(modDir, "scripts", "population")
+	manifestDir := filepath.Join(modDir, "addons", "sourcemod", "data", "tf2_archipelago", "downloads")
+	for _, mapName := range communityMapNames {
+		matches, err := filepath.Glob(filepath.Join(populationDir, mapName+"*.pop"))
+		if err != nil {
+			return err
+		}
+		icons := make(map[string]bool)
+		visited := make(map[string]bool)
+		for _, path := range matches {
+			if err := collectPopulationIcons(path, populationDir, visited, icons); err != nil {
+				return err
+			}
+		}
+		files := communityIconFiles(modDir, icons)
+		manifest := filepath.Join(manifestDir, mapName+".txt")
+		if len(files) == 0 {
+			if err := os.Remove(manifest); err != nil && !errors.Is(err, fs.ErrNotExist) {
+				return err
+			}
+			continue
+		}
+		if err := os.MkdirAll(manifestDir, 0o755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(manifest, []byte(strings.Join(files, "\n")+"\n"), 0o644); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func collectPopulationIcons(path, populationDir string, visited, icons map[string]bool) error {
+	path = filepath.Clean(path)
+	if visited[path] {
+		return nil
+	}
+	visited[path] = true
+	body, err := os.ReadFile(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	for _, match := range classIconPattern.FindAllSubmatch(body, -1) {
+		icons[strings.ToLower(string(match[1]))] = true
+	}
+	for _, match := range popBasePattern.FindAllSubmatch(body, -1) {
+		base := filepath.Base(filepath.FromSlash(string(match[1])))
+		if err := collectPopulationIcons(filepath.Join(populationDir, base), populationDir, visited, icons); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func communityIconFiles(modDir string, icons map[string]bool) []string {
+	files := make(map[string]bool)
+	for icon := range icons {
+		material := filepath.ToSlash(filepath.Join("materials", "hud", "leaderboard_class_"+icon+".vmt"))
+		body, err := os.ReadFile(filepath.Join(modDir, filepath.FromSlash(material)))
+		if err != nil {
+			continue // A stock icon lives in TF2's VPK and needs no download.
+		}
+		files[material] = true
+		texture := "hud/leaderboard_class_" + icon
+		if match := baseTexturePattern.FindSubmatch(body); len(match) > 1 {
+			texture = string(match[1])
+		}
+		textureFile := filepath.ToSlash(filepath.Join("materials", filepath.FromSlash(texture+".vtf")))
+		if _, err := os.Stat(filepath.Join(modDir, filepath.FromSlash(textureFile))); err == nil {
+			files[textureFile] = true
+		}
+	}
+	result := make([]string, 0, len(files))
+	for path := range files {
+		result = append(result, path)
+	}
+	sort.Strings(result)
+	return result
 }
 
 // DownloadCommunityArchives is the only path that fetches community content.
