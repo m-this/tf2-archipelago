@@ -81,7 +81,9 @@ func (s *Supervisor) watchNavigationRefresh(ctx context.Context, current setting
 
 		var client *rcon.Client
 		var err error
-		for _, address := range RconAddresses(current) {
+		// Address discovery owns a short hostname-lookup timeout; the RCON dial
+		// itself still stops immediately when the supervisor context is cancelled.
+		for _, address := range RconAddresses(current) { //nolint:contextcheck // Address discovery owns its bounded timeout.
 			client, err = rcon.DialContext(ctx, address, current.SrcdsRconPw)
 			if err == nil {
 				break
