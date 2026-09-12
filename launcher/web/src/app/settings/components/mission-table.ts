@@ -19,8 +19,8 @@ import { SearchBox } from '@app/ui/search-box';
  * a row of settings per mission.
  *
  * Compatibility is the launcher's word, not a guess made here. A row that is
- * not Ready still ticks: a mission the seed cannot draw yet is a mission the
- * player may be about to make drawable by ticking a pack.
+ * not Ready stays visible with the launcher's directions, but cannot enter the
+ * pool until its archive and server-mod requirements are met.
  */
 @Component({
   selector: 'app-mission-table',
@@ -59,6 +59,7 @@ export class MissionTable {
         badge: true,
         mods: pool.mods,
         on,
+        disabled: pool.disabled,
         dim: !on,
         playing: false,
         play: '',

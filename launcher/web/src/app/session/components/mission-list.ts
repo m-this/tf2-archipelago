@@ -57,6 +57,7 @@ export class MissionList {
         badge: false,
         mods: '',
         on: mission.unlocked,
+        disabled: false,
         dim: !mission.unlocked,
         playing: mission.popFile === playing,
         play: mission.unlocked && running ? (mission.played ? 'Replay' : 'Play') : '',

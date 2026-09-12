@@ -63,6 +63,24 @@ func MissionServerMod(id MissionID) string {
 	return ""
 }
 
+// MissingNavigationMesh names the exact asset a no-nav mission lacks. The
+// mission table uses the path rather than a generic "missing .nav" warning so
+// two missions on different maps do not become indistinguishable.
+func MissingNavigationMesh(id MissionID) string {
+	if MissionRequirement(id) != noNavRequirement {
+		return ""
+	}
+	mission, ok := MissionByID(id)
+	if !ok {
+		return ""
+	}
+	played, ok := MapByID(mission.Map)
+	if !ok {
+		return ""
+	}
+	return "maps/" + played.Name + ".nav"
+}
+
 // IsMissionPlayableWith reports whether a server that loads mods can put the
 // mission in a seed. A mission with no requirement always can; one that
 // names a mod can when the mod is among those; a no_nav mission never can.

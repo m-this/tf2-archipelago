@@ -58,8 +58,8 @@ type Settings struct {
 	// SrcdsMods are the server mods the game server loads, by the keys
 	// gamedata catalogs. A community mission that needs one is offered only
 	// when the mod is here, and the player file names the same mods so the
-	// seed and the server agree. The Windows launcher installs none of them
-	// yet: it only carries the choice through for a server that has one.
+	// seed and the server agree. The launcher downloads and verifies selected
+	// mods when it prepares the server; platform support comes from gamedata.
 	SrcdsMods []string `json:"srcds_mods"`
 	/*
 		FastDLPort is where the launcher serves the game's maps and other
@@ -520,7 +520,7 @@ func (s Settings) withDefaults() Settings {
 	if s.SrcdsStartMission == "" {
 		s.SrcdsStartMission = startMissionFor(s.SrcdsStartMap, d.SrcdsStartMission)
 	}
-	if mission, known := gamedata.MissionByPopFile(s.SrcdsStartMission); !known || !gamedata.IsPlayableMission(mission.ID) {
+	if mission, known := gamedata.MissionByPopFile(s.SrcdsStartMission); !known || !gamedata.IsMissionPlayableWith(mission.ID, ServerModKeys(s)) {
 		s.SrcdsStartMission = d.SrcdsStartMission
 	}
 	s.SrcdsStartMap = ""
@@ -588,7 +588,7 @@ func withCommunityDefaults(s, defaults Settings) Settings {
 		s.MvmExcludedMissions = slices.Clone(defaults.MvmExcludedMissions)
 	}
 	if s.MvmStartMission != "" {
-		if mission, known := gamedata.MissionByPopFile(s.MvmStartMission); !known || !gamedata.IsPlayableMission(mission.ID) {
+		if mission, known := gamedata.MissionByPopFile(s.MvmStartMission); !known || !gamedata.IsMissionPlayableWith(mission.ID, ServerModKeys(s)) {
 			s.MvmStartMission = ""
 		}
 	}

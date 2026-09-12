@@ -29,6 +29,8 @@ export interface MissionRow {
   readonly mods: string;
   /** The pool tick, where the table has one. */
   readonly on: boolean;
+  /** The pool tick cannot change until its compatibility requirement is met. */
+  readonly disabled: boolean;
   /** Dimmed: out of the pool, or not unlocked. */
   readonly dim: boolean;
   /** The row the server is on now. */

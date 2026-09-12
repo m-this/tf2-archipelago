@@ -1,113 +1,2350 @@
 {
   "format_version": 1,
   "maps": [
-    {"id": 101, "name": "mvm_kelly_rc1b"},
-    {"id": 103, "name": "mvm_condemned_b3"},
-    {"id": 104, "name": "mvm_area_52_rc3"},
-    {"id": 105, "name": "mvm_autumnull_rc2"},
-    {"id": 106, "name": "mvm_bogland_rc12"},
-    {"id": 107, "name": "mvm_cyberia_rc6a"},
-    {"id": 108, "name": "mvm_downpour_rc3a"},
-    {"id": 109, "name": "mvm_frostwynd_rc1"},
-    {"id": 110, "name": "mvm_heatrock_rc6a"},
-    {"id": 111, "name": "mvm_hideout_b3"},
-    {"id": 112, "name": "mvm_lotus_b6"},
-    {"id": 113, "name": "mvm_null_b9c"},
-    {"id": 114, "name": "mvm_oilrig_rc5d"},
-    {"id": 115, "name": "mvm_oxidize_rc3"},
-    {"id": 116, "name": "mvm_oxidize_rr18"},
-    {"id": 117, "name": "mvm_radar_b10"},
-    {"id": 118, "name": "mvm_redstone_ridge_rc5"},
-    {"id": 119, "name": "mvm_snowpine_rc4_fix1"},
-    {"id": 120, "name": "mvm_teien_rc6"},
-    {"id": 121, "name": "mvm_transmission_rc7a"},
-    {"id": 122, "name": "mvm_yiresa_rc5a"}
+    {
+      "id": 101,
+      "name": "mvm_kelly_rc1b"
+    },
+    {
+      "id": 103,
+      "name": "mvm_condemned_b3"
+    },
+    {
+      "id": 104,
+      "name": "mvm_area_52_rc3"
+    },
+    {
+      "id": 105,
+      "name": "mvm_autumnull_rc2"
+    },
+    {
+      "id": 106,
+      "name": "mvm_bogland_rc12"
+    },
+    {
+      "id": 107,
+      "name": "mvm_cyberia_rc6a"
+    },
+    {
+      "id": 108,
+      "name": "mvm_downpour_rc3a"
+    },
+    {
+      "id": 109,
+      "name": "mvm_frostwynd_rc1"
+    },
+    {
+      "id": 110,
+      "name": "mvm_heatrock_rc6a"
+    },
+    {
+      "id": 111,
+      "name": "mvm_hideout_b3"
+    },
+    {
+      "id": 112,
+      "name": "mvm_lotus_b6"
+    },
+    {
+      "id": 113,
+      "name": "mvm_null_b9c"
+    },
+    {
+      "id": 114,
+      "name": "mvm_oilrig_rc5d"
+    },
+    {
+      "id": 115,
+      "name": "mvm_oxidize_rc3"
+    },
+    {
+      "id": 116,
+      "name": "mvm_oxidize_rr18"
+    },
+    {
+      "id": 117,
+      "name": "mvm_radar_b10"
+    },
+    {
+      "id": 118,
+      "name": "mvm_redstone_ridge_rc5"
+    },
+    {
+      "id": 119,
+      "name": "mvm_snowpine_rc4_fix1"
+    },
+    {
+      "id": 120,
+      "name": "mvm_teien_rc6"
+    },
+    {
+      "id": 121,
+      "name": "mvm_transmission_rc7a"
+    },
+    {
+      "id": 122,
+      "name": "mvm_yiresa_rc5a"
+    },
+    {
+      "id": 123,
+      "name": "mvm_akure_rc1a"
+    },
+    {
+      "id": 124,
+      "name": "mvm_bloodlust_b6"
+    },
+    {
+      "id": 125,
+      "name": "mvm_bloodmoon_b8"
+    },
+    {
+      "id": 126,
+      "name": "mvm_bronx_rc2"
+    },
+    {
+      "id": 127,
+      "name": "mvm_chateau_rc3"
+    },
+    {
+      "id": 128,
+      "name": "mvm_creepside_b2"
+    },
+    {
+      "id": 129,
+      "name": "mvm_deathpour_rc1"
+    },
+    {
+      "id": 130,
+      "name": "mvm_decompose_rc7"
+    },
+    {
+      "id": 131,
+      "name": "mvm_encounter_b20a"
+    },
+    {
+      "id": 132,
+      "name": "mvm_legerdemain_a6e"
+    },
+    {
+      "id": 133,
+      "name": "mvm_mansion_rc2c"
+    },
+    {
+      "id": 134,
+      "name": "mvm_marsbase_rc5"
+    },
+    {
+      "id": 135,
+      "name": "mvm_memorial_b1"
+    },
+    {
+      "id": 136,
+      "name": "mvm_nightsky_rc4d"
+    },
+    {
+      "id": 137,
+      "name": "mvm_robotfactory_b30"
+    },
+    {
+      "id": 138,
+      "name": "mvm_seabed_b6"
+    },
+    {
+      "id": 139,
+      "name": "mvm_shadows_b3"
+    },
+    {
+      "id": 140,
+      "name": "mvm_sharp_rc9"
+    },
+    {
+      "id": 141,
+      "name": "mvm_skeleclipse_b7a"
+    },
+    {
+      "id": 142,
+      "name": "mvm_sludge_b6"
+    },
+    {
+      "id": 143,
+      "name": "mvm_smog_b3a"
+    },
+    {
+      "id": 144,
+      "name": "mvm_spybase_rc8"
+    },
+    {
+      "id": 145,
+      "name": "mvm_terrorlict_final1c5"
+    },
+    {
+      "id": 146,
+      "name": "mvm_traumatic_b2a"
+    },
+    {
+      "id": 147,
+      "name": "mvm_villa_b13f"
+    }
   ],
   "missions": [
-    {"id": 105, "pop_file": "mvm_area_52_rc3_int_anomalous_materials", "name": "Anomalous Materials", "map_id": 104, "difficulty": "intermediate", "waves": 6, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 106, "pop_file": "mvm_autumnull_rc2_int_urban_uprising", "name": "Urban Uprising", "map_id": 105, "difficulty": "intermediate", "waves": 6, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 107, "pop_file": "mvm_bogland_rc12_adv_swamp_fever", "name": "Swamp Fever", "map_id": 106, "difficulty": "advanced", "waves": 4, "has_tank": true, "has_giant": true, "requires": "no_nav"},
-    {"id": 108, "pop_file": "mvm_condemned_b3_int_thriller_terror", "name": "Thriller Terror", "map_id": 103, "difficulty": "intermediate", "waves": 5, "has_tank": false, "has_giant": true},
-    {"id": 109, "pop_file": "mvm_cyberia_rc6a_adv_silver_snow", "name": "Silver Snow", "map_id": 107, "difficulty": "advanced", "waves": 5, "has_tank": true, "has_giant": true, "requires": "no_nav", "pack": "mlarchive-assets.zip"},
-    {"id": 110, "pop_file": "mvm_downpour_rc3a_int_flash_flood_flurry", "name": "Flash Flood Flurry", "map_id": 108, "difficulty": "intermediate", "waves": 7, "has_tank": true, "has_giant": true},
-    {"id": 111, "pop_file": "mvm_frostwynd_rc1_int_wicked_wizardry", "name": "Wicked Wizardry", "map_id": 109, "difficulty": "intermediate", "waves": 7, "has_tank": true, "has_giant": true, "loadout": "medieval"},
-    {"id": 112, "pop_file": "mvm_heatrock_rc6a_adv_heated_argument", "name": "Heated Argument", "map_id": 110, "difficulty": "advanced", "waves": 8, "has_tank": true, "has_giant": true},
-    {"id": 113, "pop_file": "mvm_hideout_b3_int_covert_compromise", "name": "Covert Compromise", "map_id": 111, "difficulty": "intermediate", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 114, "pop_file": "mvm_kelly_rc1b_adv_homestead_happenings", "name": "Homestead Happenings", "map_id": 101, "difficulty": "advanced", "waves": 5, "has_tank": true, "has_giant": true},
-    {"id": 115, "pop_file": "mvm_lotus_b6_adv_mud", "name": "Mud", "map_id": 112, "difficulty": "advanced", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 116, "pop_file": "mvm_null_b9c_adv_void_voyage", "name": "Void Voyage", "map_id": 113, "difficulty": "advanced", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 117, "pop_file": "mvm_oilrig_rc5d_int_offshore_onslaught", "name": "Offshore Onslaught", "map_id": 114, "difficulty": "intermediate", "waves": 7, "has_tank": true, "has_giant": true},
-    {"id": 118, "pop_file": "mvm_oxidize_rc3_int_snowy_slaughter", "name": "Snowy Slaughter", "map_id": 115, "difficulty": "intermediate", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 119, "pop_file": "mvm_oxidize_rr18_int_pollution_dilution", "name": "Pollution Dilution", "map_id": 116, "difficulty": "intermediate", "waves": 8, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 120, "pop_file": "mvm_radar_b10_int_recursive_reinforcements", "name": "Recursive Reinforcements", "map_id": 117, "difficulty": "intermediate", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 121, "pop_file": "mvm_redstone_ridge_rc5_adv_armored_apparatus", "name": "Armored Apparatus", "map_id": 118, "difficulty": "advanced", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 122, "pop_file": "mvm_snowpine_rc4_fix1_int_alpine_assault", "name": "Alpine Assault", "map_id": 119, "difficulty": "intermediate", "waves": 7, "has_tank": true, "has_giant": true},
-    {"id": 123, "pop_file": "mvm_teien_rc6_adv_onsen_onslaught", "name": "Onsen Onslaught", "map_id": 120, "difficulty": "advanced", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 124, "pop_file": "mvm_transmission_rc7a_int_binary_broadcast", "name": "Binary Broadcast", "map_id": 121, "difficulty": "intermediate", "waves": 7, "has_tank": true, "has_giant": true},
-    {"id": 125, "pop_file": "mvm_yiresa_rc5a_int_black_east", "name": "Black East", "map_id": 122, "difficulty": "intermediate", "waves": 7, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 126, "pop_file": "mvm_condemned_b3_adv_unholy_undead", "name": "Unholy Undead", "map_id": 103, "difficulty": "advanced", "waves": 5, "has_tank": false, "has_giant": true},
-    {"id": 127, "pop_file": "mvm_area_52_rc3_adv_australian_christmas", "name": "Australian Christmas", "map_id": 104, "difficulty": "advanced", "waves": 7, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 128, "pop_file": "mvm_area_52_rc3_adv_complex_chaos", "name": "Complex Chaos", "map_id": 104, "difficulty": "advanced", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 129, "pop_file": "mvm_area_52_rc3_adv_extraterrestrial_epidemic", "name": "Extraterrestrial Epidemic", "map_id": 104, "difficulty": "advanced", "waves": 1, "has_tank": true, "has_giant": true},
-    {"id": 130, "pop_file": "mvm_area_52_rc3_adv_interstellar_intervention", "name": "Interstellar Intervention", "map_id": 104, "difficulty": "advanced", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 131, "pop_file": "mvm_area_52_rc3_adv_tech_mechs", "name": "Tech Mechs", "map_id": 104, "difficulty": "advanced", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 132, "pop_file": "mvm_area_52_rc3_adv_unusual_onslaught", "name": "Unusual Onslaught", "map_id": 104, "difficulty": "advanced", "waves": 5, "has_tank": true, "has_giant": true},
-    {"id": 133, "pop_file": "mvm_area_52_rc3_int_gatebot_apocalypse", "name": "Gatebot Apocalypse", "map_id": 104, "difficulty": "intermediate", "waves": 5, "has_tank": false, "has_giant": true},
-    {"id": 134, "pop_file": "mvm_autumnull_rc2_adv_steelblock", "name": "Steelblock", "map_id": 105, "difficulty": "advanced", "waves": 5, "has_tank": true, "has_giant": true},
-    {"id": 135, "pop_file": "mvm_downpour_rc3a_adv_storm_surge", "name": "Storm Surge", "map_id": 108, "difficulty": "advanced", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 136, "pop_file": "mvm_downpour_rc3a_exp_alluvion", "name": "Alluvion", "map_id": 108, "difficulty": "expert", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 137, "pop_file": "mvm_frostwynd_rc1_adv_fiefdom_fiasco", "name": "Fiefdom Fiasco", "map_id": 109, "difficulty": "advanced", "waves": 6, "has_tank": true, "has_giant": true, "loadout": "medieval"},
-    {"id": 138, "pop_file": "mvm_hideout_b3_adv_advanced", "name": "Advanced", "map_id": 111, "difficulty": "advanced", "waves": 5, "has_tank": true, "has_giant": true},
-    {"id": 139, "pop_file": "mvm_hideout_b3_adv_perilous_paradise", "name": "Perilous Paradise", "map_id": 111, "difficulty": "advanced", "waves": 6, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 140, "pop_file": "mvm_hideout_b3_exp_autonomous_annihilation", "name": "Autonomous Annihilation", "map_id": 111, "difficulty": "expert", "waves": 5, "has_tank": true, "has_giant": true},
-    {"id": 141, "pop_file": "mvm_hideout_b3_exp_interloper", "name": "Interloper", "map_id": 111, "difficulty": "expert", "waves": 5, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 142, "pop_file": "mvm_hideout_b3_int_intermediate", "name": "Intermediate", "map_id": 111, "difficulty": "intermediate", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 143, "pop_file": "mvm_lotus_b6_adv_mechanical_damnation", "name": "Mechanical Damnation", "map_id": 112, "difficulty": "advanced", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 144, "pop_file": "mvm_oilrig_rc5d_adv_666_oilpocalypse", "name": "Oilpocalypse", "map_id": 114, "difficulty": "haunted", "waves": 1, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 145, "pop_file": "mvm_oilrig_rc5d_adv_rescindment", "name": "Rescindment", "map_id": 114, "difficulty": "advanced", "waves": 7, "has_tank": true, "has_giant": true},
-    {"id": 146, "pop_file": "mvm_oilrig_rc5d_exp_oil_overflow", "name": "Oil Overflow", "map_id": 114, "difficulty": "expert", "waves": 7, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 147, "pop_file": "mvm_oilrig_rc5d_int_terrorist_simulation", "name": "Terrorist Simulation", "map_id": 114, "difficulty": "intermediate", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 148, "pop_file": "mvm_oxidize_rc3_adv_666_corroding_cadavers", "name": "Corroding Cadavers", "map_id": 115, "difficulty": "haunted", "waves": 1, "has_tank": true, "has_giant": true},
-    {"id": 149, "pop_file": "mvm_oxidize_rc3_adv_frosted_furnace", "name": "Frosted Furnace", "map_id": 115, "difficulty": "advanced", "waves": 7, "has_tank": true, "has_giant": true},
-    {"id": 150, "pop_file": "mvm_oxidize_rr18_adv_grass_run", "name": "Grass Run", "map_id": 116, "difficulty": "advanced", "waves": 6, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 151, "pop_file": "mvm_oxidize_rr18_int_greenhouse_roughhousing", "name": "Greenhouse Roughhousing", "map_id": 116, "difficulty": "intermediate", "waves": 3, "has_tank": true, "has_giant": true},
-    {"id": 152, "pop_file": "mvm_radar_b10_adv_rocky_ravage", "name": "Rocky Ravage", "map_id": 117, "difficulty": "advanced", "waves": 7, "has_tank": true, "has_giant": true},
-    {"id": 153, "pop_file": "mvm_radar_b10_int_recruits_recognition", "name": "Recruits Recognition", "map_id": 117, "difficulty": "intermediate", "waves": 7, "has_tank": true, "has_giant": true},
-    {"id": 154, "pop_file": "mvm_snowpine_rc4_fix1_adv_permafrost_panic", "name": "Permafrost Panic", "map_id": 119, "difficulty": "advanced", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 155, "pop_file": "mvm_snowpine_rc4_fix1_adv_shattered_iceshard", "name": "Shattered Iceshard", "map_id": 119, "difficulty": "advanced", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 156, "pop_file": "mvm_snowpine_rc4_fix1_exp_raid_resort", "name": "Raid Resort", "map_id": 119, "difficulty": "expert", "waves": 3, "has_tank": true, "has_giant": true},
-    {"id": 157, "pop_file": "mvm_teien_rc6_adv_program_seppuku", "name": "Program Seppuku", "map_id": 120, "difficulty": "advanced", "waves": 7, "has_tank": true, "has_giant": true},
-    {"id": 158, "pop_file": "mvm_teien_rc6_exp_disruption", "name": "Disruption", "map_id": 120, "difficulty": "expert", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 159, "pop_file": "mvm_transmission_rc7a_adv_signal_shutdown", "name": "Signal Shutdown", "map_id": 121, "difficulty": "advanced", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 160, "pop_file": "mvm_decoy_int_decimal_destruction", "name": "Decimal Destruction", "map_id": 1, "difficulty": "intermediate", "waves": 6, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 161, "pop_file": "mvm_decoy_adv_grutesque_getaway", "name": "Grutesque Getaway", "map_id": 1, "difficulty": "advanced", "waves": 6, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 162, "pop_file": "mvm_decoy_exp_dissolution", "name": "Dissolution", "map_id": 1, "difficulty": "expert", "waves": 7, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 163, "pop_file": "mvm_coaltown_int_trouble_in_mann_town", "name": "Trouble in Mann Town", "map_id": 2, "difficulty": "intermediate", "waves": 6, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 164, "pop_file": "mvm_coaltown_exp_catastrophic_course", "name": "Catastrophic Course", "map_id": 2, "difficulty": "expert", "waves": 6, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 165, "pop_file": "mvm_mannworks_int_mathematical_miscalculation", "name": "Mathematical Miscalculation", "map_id": 3, "difficulty": "intermediate", "waves": 5, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 166, "pop_file": "mvm_mannworks_int_xlr-8", "name": "XLR-8", "map_id": 3, "difficulty": "intermediate", "waves": 8, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 167, "pop_file": "mvm_mannworks_adv_manntenance", "name": "Manntenance", "map_id": 3, "difficulty": "advanced", "waves": 6, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 168, "pop_file": "mvm_mannworks_exp_monster_maneuvers", "name": "Monster Maneuvers", "map_id": 3, "difficulty": "expert", "waves": 7, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 169, "pop_file": "mvm_bigrock_int_bionic_breach", "name": "Bionic Breach", "map_id": 4, "difficulty": "intermediate", "waves": 7, "has_tank": true, "has_giant": true},
-    {"id": 170, "pop_file": "mvm_bigrock_adv_breaking_point", "name": "Breaking Point", "map_id": 4, "difficulty": "advanced", "waves": 8, "has_tank": true, "has_giant": true},
-    {"id": 171, "pop_file": "mvm_mannhattan_adv_factory_reset", "name": "Factory Reset", "map_id": 5, "difficulty": "advanced", "waves": 6, "has_tank": false, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 172, "pop_file": "mvm_mannhattan_adv_scorched_skies", "name": "Scorched Skies", "map_id": 5, "difficulty": "advanced", "waves": 6, "has_tank": false, "has_giant": true},
-    {"id": 173, "pop_file": "mvm_mannhattan_exp_ax20", "name": "AX20", "map_id": 5, "difficulty": "expert", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 174, "pop_file": "mvm_mannhattan_exp_discordant", "name": "Discordant", "map_id": 5, "difficulty": "expert", "waves": 6, "has_tank": false, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 175, "pop_file": "mvm_rottenburg_int_calendartillery", "name": "Calendartillery", "map_id": 6, "difficulty": "intermediate", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 176, "pop_file": "mvm_rottenburg_int_german_gears", "name": "German Gears", "map_id": 6, "difficulty": "intermediate", "waves": 7, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 177, "pop_file": "mvm_rottenburg_adv_assault_and_battery", "name": "Assault and Battery", "map_id": 6, "difficulty": "advanced", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 178, "pop_file": "mvm_rottenburg_adv_cybernetic_carnage", "name": "Cybernetic Carnage", "map_id": 6, "difficulty": "advanced", "waves": 7, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 179, "pop_file": "mvm_rottenburg_adv_marathon", "name": "Marathon", "map_id": 6, "difficulty": "advanced", "waves": 5, "has_tank": true, "has_giant": true},
-    {"id": 180, "pop_file": "mvm_rottenburg_adv_munich_mugging", "name": "Munich Mugging", "map_id": 6, "difficulty": "advanced", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 181, "pop_file": "mvm_rottenburg_adv_township_tussle", "name": "Township Tussle", "map_id": 6, "difficulty": "advanced", "waves": 7, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 182, "pop_file": "mvm_rottenburg_adv_windy_windup", "name": "Windy Windup", "map_id": 6, "difficulty": "advanced", "waves": 6, "has_tank": true, "has_giant": true, "pack": "mlarchive-assets.zip"},
-    {"id": 183, "pop_file": "mvm_rottenburg_exp_bx20", "name": "BX20", "map_id": 6, "difficulty": "expert", "waves": 7, "has_tank": true, "has_giant": true},
-    {"id": 184, "pop_file": "mvm_rottenburg_exp_germanium_gearbox", "name": "Germanium Gearbox", "map_id": 6, "difficulty": "expert", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 185, "pop_file": "mvm_ghost_town_int_cpu_spookies", "name": "CPU Spookies", "map_id": 7, "difficulty": "intermediate", "waves": 6, "has_tank": true, "has_giant": true},
-    {"id": 186, "pop_file": "mvm_ghost_town_int_phantasm", "name": "Phantasm", "map_id": 7, "difficulty": "intermediate", "waves": 7, "has_tank": true, "has_giant": true},
-    {"id": 187, "pop_file": "mvm_ghost_town_adv_horrorsome_happenings", "name": "Horrorsome Happenings", "map_id": 7, "difficulty": "advanced", "waves": 8, "has_tank": true, "has_giant": true},
-    {"id": 188, "pop_file": "mvm_ghost_town_adv_misfortunes", "name": "Misfortunes", "map_id": 7, "difficulty": "advanced", "waves": 7, "has_tank": true, "has_giant": true},
-    {"id": 189, "pop_file": "mvm_ghost_town_exp_deadweight", "name": "Deadweight", "map_id": 7, "difficulty": "expert", "waves": 6, "has_tank": true, "has_giant": true}
+    {
+      "id": 105,
+      "pop_file": "mvm_area_52_rc3_int_anomalous_materials",
+      "name": "Anomalous Materials",
+      "map_id": 104,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 106,
+      "pop_file": "mvm_autumnull_rc2_int_urban_uprising",
+      "name": "Urban Uprising",
+      "map_id": 105,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 107,
+      "pop_file": "mvm_bogland_rc12_adv_swamp_fever",
+      "name": "Swamp Fever",
+      "map_id": 106,
+      "difficulty": "advanced",
+      "waves": 4,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "no_nav"
+    },
+    {
+      "id": 108,
+      "pop_file": "mvm_condemned_b3_int_thriller_terror",
+      "name": "Thriller Terror",
+      "map_id": 103,
+      "difficulty": "intermediate",
+      "waves": 5,
+      "has_tank": false,
+      "has_giant": true
+    },
+    {
+      "id": 109,
+      "pop_file": "mvm_cyberia_rc6a_adv_silver_snow",
+      "name": "Silver Snow",
+      "map_id": 107,
+      "difficulty": "advanced",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "no_nav",
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 110,
+      "pop_file": "mvm_downpour_rc3a_int_flash_flood_flurry",
+      "name": "Flash Flood Flurry",
+      "map_id": 108,
+      "difficulty": "intermediate",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 111,
+      "pop_file": "mvm_frostwynd_rc1_int_wicked_wizardry",
+      "name": "Wicked Wizardry",
+      "map_id": 109,
+      "difficulty": "intermediate",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "loadout": "medieval"
+    },
+    {
+      "id": 112,
+      "pop_file": "mvm_heatrock_rc6a_adv_heated_argument",
+      "name": "Heated Argument",
+      "map_id": 110,
+      "difficulty": "advanced",
+      "waves": 8,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 113,
+      "pop_file": "mvm_hideout_b3_int_covert_compromise",
+      "name": "Covert Compromise",
+      "map_id": 111,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 114,
+      "pop_file": "mvm_kelly_rc1b_adv_homestead_happenings",
+      "name": "Homestead Happenings",
+      "map_id": 101,
+      "difficulty": "advanced",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 115,
+      "pop_file": "mvm_lotus_b6_adv_mud",
+      "name": "Mud",
+      "map_id": 112,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 116,
+      "pop_file": "mvm_null_b9c_adv_void_voyage",
+      "name": "Void Voyage",
+      "map_id": 113,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 117,
+      "pop_file": "mvm_oilrig_rc5d_int_offshore_onslaught",
+      "name": "Offshore Onslaught",
+      "map_id": 114,
+      "difficulty": "intermediate",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 118,
+      "pop_file": "mvm_oxidize_rc3_int_snowy_slaughter",
+      "name": "Snowy Slaughter",
+      "map_id": 115,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 119,
+      "pop_file": "mvm_oxidize_rr18_int_pollution_dilution",
+      "name": "Pollution Dilution",
+      "map_id": 116,
+      "difficulty": "intermediate",
+      "waves": 8,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 120,
+      "pop_file": "mvm_radar_b10_int_recursive_reinforcements",
+      "name": "Recursive Reinforcements",
+      "map_id": 117,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 121,
+      "pop_file": "mvm_redstone_ridge_rc5_adv_armored_apparatus",
+      "name": "Armored Apparatus",
+      "map_id": 118,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 122,
+      "pop_file": "mvm_snowpine_rc4_fix1_int_alpine_assault",
+      "name": "Alpine Assault",
+      "map_id": 119,
+      "difficulty": "intermediate",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 123,
+      "pop_file": "mvm_teien_rc6_adv_onsen_onslaught",
+      "name": "Onsen Onslaught",
+      "map_id": 120,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 124,
+      "pop_file": "mvm_transmission_rc7a_int_binary_broadcast",
+      "name": "Binary Broadcast",
+      "map_id": 121,
+      "difficulty": "intermediate",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 125,
+      "pop_file": "mvm_yiresa_rc5a_int_black_east",
+      "name": "Black East",
+      "map_id": 122,
+      "difficulty": "intermediate",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 126,
+      "pop_file": "mvm_condemned_b3_adv_unholy_undead",
+      "name": "Unholy Undead",
+      "map_id": 103,
+      "difficulty": "advanced",
+      "waves": 5,
+      "has_tank": false,
+      "has_giant": true
+    },
+    {
+      "id": 127,
+      "pop_file": "mvm_area_52_rc3_adv_australian_christmas",
+      "name": "Australian Christmas",
+      "map_id": 104,
+      "difficulty": "advanced",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 128,
+      "pop_file": "mvm_area_52_rc3_adv_complex_chaos",
+      "name": "Complex Chaos",
+      "map_id": 104,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 129,
+      "pop_file": "mvm_area_52_rc3_adv_extraterrestrial_epidemic",
+      "name": "Extraterrestrial Epidemic",
+      "map_id": 104,
+      "difficulty": "advanced",
+      "waves": 1,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 130,
+      "pop_file": "mvm_area_52_rc3_adv_interstellar_intervention",
+      "name": "Interstellar Intervention",
+      "map_id": 104,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 131,
+      "pop_file": "mvm_area_52_rc3_adv_tech_mechs",
+      "name": "Tech Mechs",
+      "map_id": 104,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 132,
+      "pop_file": "mvm_area_52_rc3_adv_unusual_onslaught",
+      "name": "Unusual Onslaught",
+      "map_id": 104,
+      "difficulty": "advanced",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 133,
+      "pop_file": "mvm_area_52_rc3_int_gatebot_apocalypse",
+      "name": "Gatebot Apocalypse",
+      "map_id": 104,
+      "difficulty": "intermediate",
+      "waves": 5,
+      "has_tank": false,
+      "has_giant": true
+    },
+    {
+      "id": 134,
+      "pop_file": "mvm_autumnull_rc2_adv_steelblock",
+      "name": "Steelblock",
+      "map_id": 105,
+      "difficulty": "advanced",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 135,
+      "pop_file": "mvm_downpour_rc3a_adv_storm_surge",
+      "name": "Storm Surge",
+      "map_id": 108,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 136,
+      "pop_file": "mvm_downpour_rc3a_exp_alluvion",
+      "name": "Alluvion",
+      "map_id": 108,
+      "difficulty": "expert",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 137,
+      "pop_file": "mvm_frostwynd_rc1_adv_fiefdom_fiasco",
+      "name": "Fiefdom Fiasco",
+      "map_id": 109,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "loadout": "medieval"
+    },
+    {
+      "id": 138,
+      "pop_file": "mvm_hideout_b3_adv_advanced",
+      "name": "Advanced",
+      "map_id": 111,
+      "difficulty": "advanced",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 139,
+      "pop_file": "mvm_hideout_b3_adv_perilous_paradise",
+      "name": "Perilous Paradise",
+      "map_id": 111,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 140,
+      "pop_file": "mvm_hideout_b3_exp_autonomous_annihilation",
+      "name": "Autonomous Annihilation",
+      "map_id": 111,
+      "difficulty": "expert",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 141,
+      "pop_file": "mvm_hideout_b3_exp_interloper",
+      "name": "Interloper",
+      "map_id": 111,
+      "difficulty": "expert",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 142,
+      "pop_file": "mvm_hideout_b3_int_intermediate",
+      "name": "Intermediate",
+      "map_id": 111,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 143,
+      "pop_file": "mvm_lotus_b6_adv_mechanical_damnation",
+      "name": "Mechanical Damnation",
+      "map_id": 112,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 144,
+      "pop_file": "mvm_oilrig_rc5d_adv_666_oilpocalypse",
+      "name": "Oilpocalypse",
+      "map_id": 114,
+      "difficulty": "haunted",
+      "waves": 1,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 145,
+      "pop_file": "mvm_oilrig_rc5d_adv_rescindment",
+      "name": "Rescindment",
+      "map_id": 114,
+      "difficulty": "advanced",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 146,
+      "pop_file": "mvm_oilrig_rc5d_exp_oil_overflow",
+      "name": "Oil Overflow",
+      "map_id": 114,
+      "difficulty": "expert",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 147,
+      "pop_file": "mvm_oilrig_rc5d_int_terrorist_simulation",
+      "name": "Terrorist Simulation",
+      "map_id": 114,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 148,
+      "pop_file": "mvm_oxidize_rc3_adv_666_corroding_cadavers",
+      "name": "Corroding Cadavers",
+      "map_id": 115,
+      "difficulty": "haunted",
+      "waves": 1,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 149,
+      "pop_file": "mvm_oxidize_rc3_adv_frosted_furnace",
+      "name": "Frosted Furnace",
+      "map_id": 115,
+      "difficulty": "advanced",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 150,
+      "pop_file": "mvm_oxidize_rr18_adv_grass_run",
+      "name": "Grass Run",
+      "map_id": 116,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 151,
+      "pop_file": "mvm_oxidize_rr18_int_greenhouse_roughhousing",
+      "name": "Greenhouse Roughhousing",
+      "map_id": 116,
+      "difficulty": "intermediate",
+      "waves": 3,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 152,
+      "pop_file": "mvm_radar_b10_adv_rocky_ravage",
+      "name": "Rocky Ravage",
+      "map_id": 117,
+      "difficulty": "advanced",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 153,
+      "pop_file": "mvm_radar_b10_int_recruits_recognition",
+      "name": "Recruits Recognition",
+      "map_id": 117,
+      "difficulty": "intermediate",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 154,
+      "pop_file": "mvm_snowpine_rc4_fix1_adv_permafrost_panic",
+      "name": "Permafrost Panic",
+      "map_id": 119,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 155,
+      "pop_file": "mvm_snowpine_rc4_fix1_adv_shattered_iceshard",
+      "name": "Shattered Iceshard",
+      "map_id": 119,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 156,
+      "pop_file": "mvm_snowpine_rc4_fix1_exp_raid_resort",
+      "name": "Raid Resort",
+      "map_id": 119,
+      "difficulty": "expert",
+      "waves": 3,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 157,
+      "pop_file": "mvm_teien_rc6_adv_program_seppuku",
+      "name": "Program Seppuku",
+      "map_id": 120,
+      "difficulty": "advanced",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 158,
+      "pop_file": "mvm_teien_rc6_exp_disruption",
+      "name": "Disruption",
+      "map_id": 120,
+      "difficulty": "expert",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 159,
+      "pop_file": "mvm_transmission_rc7a_adv_signal_shutdown",
+      "name": "Signal Shutdown",
+      "map_id": 121,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 160,
+      "pop_file": "mvm_decoy_int_decimal_destruction",
+      "name": "Decimal Destruction",
+      "map_id": 1,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 161,
+      "pop_file": "mvm_decoy_adv_grutesque_getaway",
+      "name": "Grutesque Getaway",
+      "map_id": 1,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 162,
+      "pop_file": "mvm_decoy_exp_dissolution",
+      "name": "Dissolution",
+      "map_id": 1,
+      "difficulty": "expert",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 163,
+      "pop_file": "mvm_coaltown_int_trouble_in_mann_town",
+      "name": "Trouble in Mann Town",
+      "map_id": 2,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 164,
+      "pop_file": "mvm_coaltown_exp_catastrophic_course",
+      "name": "Catastrophic Course",
+      "map_id": 2,
+      "difficulty": "expert",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 165,
+      "pop_file": "mvm_mannworks_int_mathematical_miscalculation",
+      "name": "Mathematical Miscalculation",
+      "map_id": 3,
+      "difficulty": "intermediate",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 166,
+      "pop_file": "mvm_mannworks_int_xlr-8",
+      "name": "XLR-8",
+      "map_id": 3,
+      "difficulty": "intermediate",
+      "waves": 8,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 167,
+      "pop_file": "mvm_mannworks_adv_manntenance",
+      "name": "Manntenance",
+      "map_id": 3,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 168,
+      "pop_file": "mvm_mannworks_exp_monster_maneuvers",
+      "name": "Monster Maneuvers",
+      "map_id": 3,
+      "difficulty": "expert",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 169,
+      "pop_file": "mvm_bigrock_int_bionic_breach",
+      "name": "Bionic Breach",
+      "map_id": 4,
+      "difficulty": "intermediate",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 170,
+      "pop_file": "mvm_bigrock_adv_breaking_point",
+      "name": "Breaking Point",
+      "map_id": 4,
+      "difficulty": "advanced",
+      "waves": 8,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 171,
+      "pop_file": "mvm_mannhattan_adv_factory_reset",
+      "name": "Factory Reset",
+      "map_id": 5,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": false,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 172,
+      "pop_file": "mvm_mannhattan_adv_scorched_skies",
+      "name": "Scorched Skies",
+      "map_id": 5,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": false,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 173,
+      "pop_file": "mvm_mannhattan_exp_ax20",
+      "name": "AX20",
+      "map_id": 5,
+      "difficulty": "expert",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 174,
+      "pop_file": "mvm_mannhattan_exp_discordant",
+      "name": "Discordant",
+      "map_id": 5,
+      "difficulty": "expert",
+      "waves": 6,
+      "has_tank": false,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 175,
+      "pop_file": "mvm_rottenburg_int_calendartillery",
+      "name": "Calendartillery",
+      "map_id": 6,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 176,
+      "pop_file": "mvm_rottenburg_int_german_gears",
+      "name": "German Gears",
+      "map_id": 6,
+      "difficulty": "intermediate",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 177,
+      "pop_file": "mvm_rottenburg_adv_assault_and_battery",
+      "name": "Assault and Battery",
+      "map_id": 6,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 178,
+      "pop_file": "mvm_rottenburg_adv_cybernetic_carnage",
+      "name": "Cybernetic Carnage",
+      "map_id": 6,
+      "difficulty": "advanced",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 179,
+      "pop_file": "mvm_rottenburg_adv_marathon",
+      "name": "Marathon",
+      "map_id": 6,
+      "difficulty": "advanced",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 180,
+      "pop_file": "mvm_rottenburg_adv_munich_mugging",
+      "name": "Munich Mugging",
+      "map_id": 6,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 181,
+      "pop_file": "mvm_rottenburg_adv_township_tussle",
+      "name": "Township Tussle",
+      "map_id": 6,
+      "difficulty": "advanced",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 182,
+      "pop_file": "mvm_rottenburg_adv_windy_windup",
+      "name": "Windy Windup",
+      "map_id": 6,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 183,
+      "pop_file": "mvm_rottenburg_exp_bx20",
+      "name": "BX20",
+      "map_id": 6,
+      "difficulty": "expert",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 184,
+      "pop_file": "mvm_rottenburg_exp_germanium_gearbox",
+      "name": "Germanium Gearbox",
+      "map_id": 6,
+      "difficulty": "expert",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 185,
+      "pop_file": "mvm_ghost_town_int_cpu_spookies",
+      "name": "CPU Spookies",
+      "map_id": 7,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 186,
+      "pop_file": "mvm_ghost_town_int_phantasm",
+      "name": "Phantasm",
+      "map_id": 7,
+      "difficulty": "intermediate",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 187,
+      "pop_file": "mvm_ghost_town_adv_horrorsome_happenings",
+      "name": "Horrorsome Happenings",
+      "map_id": 7,
+      "difficulty": "advanced",
+      "waves": 8,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 188,
+      "pop_file": "mvm_ghost_town_adv_misfortunes",
+      "name": "Misfortunes",
+      "map_id": 7,
+      "difficulty": "advanced",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 189,
+      "pop_file": "mvm_ghost_town_exp_deadweight",
+      "name": "Deadweight",
+      "map_id": 7,
+      "difficulty": "expert",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 190,
+      "pop_file": "mvm_akure_rc1a_adv_gold_and_grit",
+      "name": "Gold And Grit",
+      "map_id": 123,
+      "difficulty": "advanced",
+      "waves": 8,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 191,
+      "pop_file": "mvm_akure_rc1a_adv_reboot_rush",
+      "name": "Reboot Rush",
+      "map_id": 123,
+      "difficulty": "advanced",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 192,
+      "pop_file": "mvm_akure_rc1a_adv_thermal_thunder",
+      "name": "Thermal Thunder",
+      "map_id": 123,
+      "difficulty": "advanced",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 193,
+      "pop_file": "mvm_akure_rc1a_exp_diamond_and_dross",
+      "name": "Diamond And Dross",
+      "map_id": 123,
+      "difficulty": "expert",
+      "waves": 8,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 194,
+      "pop_file": "mvm_akure_rc1a_int_bronze_and_bristle",
+      "name": "Bronze And Bristle",
+      "map_id": 123,
+      "difficulty": "intermediate",
+      "waves": 8,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 195,
+      "pop_file": "mvm_area_52_rc3_int_nuclear_threat",
+      "name": "Nuclear Threat",
+      "map_id": 104,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 196,
+      "pop_file": "mvm_autumnull_rc2_adv_dynamic_disaster",
+      "name": "Dynamic Disaster",
+      "map_id": 105,
+      "difficulty": "advanced",
+      "waves": 2,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 197,
+      "pop_file": "mvm_autumnull_rc2_adv_tincan_termination",
+      "name": "Tincan Termination",
+      "map_id": 105,
+      "difficulty": "advanced",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 198,
+      "pop_file": "mvm_autumnull_rc2_rev_exp_codename_omega",
+      "name": "Codename Omega",
+      "map_id": 105,
+      "difficulty": "expert",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 199,
+      "pop_file": "mvm_bigrock_rev_adv_denominator",
+      "name": "Denominator",
+      "map_id": 4,
+      "difficulty": "advanced",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 200,
+      "pop_file": "mvm_bigrock_rev_adv_numerator",
+      "name": "Numerator",
+      "map_id": 4,
+      "difficulty": "advanced",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 201,
+      "pop_file": "mvm_bloodlust_b6_adv_reanimation",
+      "name": "Reanimation",
+      "map_id": 124,
+      "difficulty": "advanced",
+      "waves": 1,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 202,
+      "pop_file": "mvm_bloodlust_b6_int_terminal_lucidity",
+      "name": "Terminal Lucidity",
+      "map_id": 124,
+      "difficulty": "intermediate",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 203,
+      "pop_file": "mvm_bloodlust_b6_int_wretched_witchery",
+      "name": "Wretched Witchery",
+      "map_id": 124,
+      "difficulty": "intermediate",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 204,
+      "pop_file": "mvm_bloodmoon_b8_adv_sed_de_sangre",
+      "name": "Sed De Sangre",
+      "map_id": 125,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 205,
+      "pop_file": "mvm_bloodmoon_b8_adv_spooky_spiral",
+      "name": "Spooky Spiral",
+      "map_id": 125,
+      "difficulty": "advanced",
+      "waves": 8,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 206,
+      "pop_file": "mvm_bogland_rc12_adv_bog_business",
+      "name": "Bog Business",
+      "map_id": 106,
+      "difficulty": "advanced",
+      "waves": 8,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "no_nav"
+    },
+    {
+      "id": 207,
+      "pop_file": "mvm_bogland_rc12_adv_dire_mire",
+      "name": "Dire Mire",
+      "map_id": 106,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "no_nav"
+    },
+    {
+      "id": 208,
+      "pop_file": "mvm_bogland_rc12_adv_mud_maker",
+      "name": "Mud Maker",
+      "map_id": 106,
+      "difficulty": "advanced",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "no_nav"
+    },
+    {
+      "id": 209,
+      "pop_file": "mvm_bogland_rc12_int_crocodile_operation",
+      "name": "Crocodile Operation",
+      "map_id": 106,
+      "difficulty": "intermediate",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "no_nav"
+    },
+    {
+      "id": 210,
+      "pop_file": "mvm_bronx_rc2_adv_point_of_impact",
+      "name": "Point Of Impact",
+      "map_id": 126,
+      "difficulty": "advanced",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 211,
+      "pop_file": "mvm_chateau_rc3_adv_remedic",
+      "name": "Remedic",
+      "map_id": 127,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 212,
+      "pop_file": "mvm_coaltown_rev_adv_computer_crash",
+      "name": "Computer Crash",
+      "map_id": 2,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": false,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 213,
+      "pop_file": "mvm_condemned_b3_exp_trespasser",
+      "name": "Trespasser",
+      "map_id": 103,
+      "difficulty": "expert",
+      "waves": 1,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 214,
+      "pop_file": "mvm_condemned_b3_exp_trespasser_remaster",
+      "name": "Trespasser Remaster",
+      "map_id": 103,
+      "difficulty": "expert",
+      "waves": 1,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 215,
+      "pop_file": "mvm_creepside_b2_adv_abyssal_atrocities",
+      "name": "Abyssal Atrocities",
+      "map_id": 128,
+      "difficulty": "advanced",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 216,
+      "pop_file": "mvm_creepside_b2_adv_catastrophic_conjuring",
+      "name": "Catastrophic Conjuring",
+      "map_id": 128,
+      "difficulty": "advanced",
+      "waves": 4,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 217,
+      "pop_file": "mvm_creepside_b2_adv_dismal_devilry",
+      "name": "Dismal Devilry",
+      "map_id": 128,
+      "difficulty": "advanced",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 218,
+      "pop_file": "mvm_creepside_b2_adv_dust_to_dust",
+      "name": "Dust To Dust",
+      "map_id": 128,
+      "difficulty": "advanced",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 219,
+      "pop_file": "mvm_creepside_b2_exp_celestial_broken_tomb",
+      "name": "Celestial Broken Tomb",
+      "map_id": 128,
+      "difficulty": "expert",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 220,
+      "pop_file": "mvm_creepside_b2_int_midnight_massacre",
+      "name": "Midnight Massacre",
+      "map_id": 128,
+      "difficulty": "intermediate",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 221,
+      "pop_file": "mvm_cyberia_rc6a_adv_frozen_freaks",
+      "name": "Frozen Freaks",
+      "map_id": 107,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "no_nav"
+    },
+    {
+      "id": 222,
+      "pop_file": "mvm_cyberia_rc6a_adv_launch_sequence",
+      "name": "Launch Sequence",
+      "map_id": 107,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "no_nav"
+    },
+    {
+      "id": 223,
+      "pop_file": "mvm_cyberia_rc6a_adv_rusty_rapture",
+      "name": "Rusty Rapture",
+      "map_id": 107,
+      "difficulty": "advanced",
+      "waves": 1,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "no_nav",
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 224,
+      "pop_file": "mvm_cyberia_rc6a_adv_snowblitz",
+      "name": "Snowblitz",
+      "map_id": 107,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "no_nav",
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 225,
+      "pop_file": "mvm_cyberia_rc6a_exp_cascading_steel_swarm",
+      "name": "Cascading Steel Swarm",
+      "map_id": 107,
+      "difficulty": "expert",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "no_nav"
+    },
+    {
+      "id": 226,
+      "pop_file": "mvm_cyberia_rc6a_exp_northern_lights",
+      "name": "Northern Lights",
+      "map_id": 107,
+      "difficulty": "expert",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "no_nav"
+    },
+    {
+      "id": 227,
+      "pop_file": "mvm_cyberia_rc6a_rev_arctic_arrangement",
+      "name": "Arctic Arrangement",
+      "map_id": 107,
+      "difficulty": "advanced",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "no_nav"
+    },
+    {
+      "id": 228,
+      "pop_file": "mvm_deathpour_rc1_exp_blackout",
+      "name": "Blackout",
+      "map_id": 129,
+      "difficulty": "expert",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 229,
+      "pop_file": "mvm_deathpour_rc1_int_bloodpour",
+      "name": "Bloodpour",
+      "map_id": 129,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 230,
+      "pop_file": "mvm_deathpour_rc1_int_technical_terror",
+      "name": "Technical Terror",
+      "map_id": 129,
+      "difficulty": "intermediate",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 231,
+      "pop_file": "mvm_decompose_rc7_adv_deprecated_designs",
+      "name": "Deprecated Designs",
+      "map_id": 130,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "no_nav"
+    },
+    {
+      "id": 232,
+      "pop_file": "mvm_decompose_rc7_adv_ghoulish_genesis",
+      "name": "Ghoulish Genesis",
+      "map_id": 130,
+      "difficulty": "advanced",
+      "waves": 1,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "no_nav"
+    },
+    {
+      "id": 233,
+      "pop_file": "mvm_downpour_rc3a_adv_666_last_stand_of_dead_men",
+      "name": "Last Stand Of Dead Men",
+      "map_id": 108,
+      "difficulty": "haunted",
+      "waves": 1,
+      "has_tank": true,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 234,
+      "pop_file": "mvm_downpour_rc3a_adv_wet_wreckage",
+      "name": "Wet Wreckage",
+      "map_id": 108,
+      "difficulty": "advanced",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 235,
+      "pop_file": "mvm_encounter_b20a_rev_adv_backup_security_protocol",
+      "name": "Backup Security Protocol",
+      "map_id": 131,
+      "difficulty": "advanced",
+      "waves": 2,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 236,
+      "pop_file": "mvm_frostwynd_rc1_adv_medieval_madness",
+      "name": "Medieval Madness",
+      "map_id": 109,
+      "difficulty": "advanced",
+      "waves": 4,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm",
+      "loadout": "medieval"
+    },
+    {
+      "id": 237,
+      "pop_file": "mvm_heatrock_rc6a_adv_brain_taker",
+      "name": "Brain Taker",
+      "map_id": 110,
+      "difficulty": "advanced",
+      "waves": 4,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 238,
+      "pop_file": "mvm_heatrock_rc6a_exp_impending_apocalypse",
+      "name": "Impending Apocalypse",
+      "map_id": 110,
+      "difficulty": "expert",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 239,
+      "pop_file": "mvm_heatrock_rc6a_exp_slaughterhouse",
+      "name": "Slaughterhouse",
+      "map_id": 110,
+      "difficulty": "expert",
+      "waves": 3,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 240,
+      "pop_file": "mvm_hideout_b3_adv_korpoelec_invasion",
+      "name": "Korpoelec Invasion",
+      "map_id": 111,
+      "difficulty": "advanced",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 241,
+      "pop_file": "mvm_hideout_b3_adv_wet_warfare",
+      "name": "Wet Warfare",
+      "map_id": 111,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 242,
+      "pop_file": "mvm_hideout_b3_rev_adv_galois",
+      "name": "Galois",
+      "map_id": 111,
+      "difficulty": "advanced",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 243,
+      "pop_file": "mvm_kelly_rc1b_adv_awakening",
+      "name": "Awakening",
+      "map_id": 101,
+      "difficulty": "advanced",
+      "waves": 1,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 244,
+      "pop_file": "mvm_kelly_rc1b_adv_crop_circles",
+      "name": "Crop Circles",
+      "map_id": 101,
+      "difficulty": "advanced",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 245,
+      "pop_file": "mvm_kelly_rc1b_adv_mobocracy",
+      "name": "Mobocracy",
+      "map_id": 101,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 246,
+      "pop_file": "mvm_kelly_rc1b_adv_ominous_outback",
+      "name": "Ominous Outback",
+      "map_id": 101,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 247,
+      "pop_file": "mvm_legerdemain_a6e_adv_midnight_patrol",
+      "name": "Midnight Patrol",
+      "map_id": 132,
+      "difficulty": "advanced",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 248,
+      "pop_file": "mvm_legerdemain_a6e_adv_shrouded_shrieks",
+      "name": "Shrouded Shrieks",
+      "map_id": 132,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 249,
+      "pop_file": "mvm_legerdemain_a6e_int_legacy_heresy",
+      "name": "Legacy Heresy",
+      "map_id": 132,
+      "difficulty": "intermediate",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 250,
+      "pop_file": "mvm_legerdemain_a6e_rev_adv_castle_crush",
+      "name": "Castle Crush",
+      "map_id": 132,
+      "difficulty": "advanced",
+      "waves": 8,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 251,
+      "pop_file": "mvm_lotus_b6_adv_ledmotif",
+      "name": "Ledmotif",
+      "map_id": 112,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 252,
+      "pop_file": "mvm_mansion_rc2c_adv_property_inspection",
+      "name": "Property Inspection",
+      "map_id": 133,
+      "difficulty": "advanced",
+      "waves": 8,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "no_nav"
+    },
+    {
+      "id": 253,
+      "pop_file": "mvm_marsbase_rc5_adv_secret_struggle",
+      "name": "Secret Struggle",
+      "map_id": 134,
+      "difficulty": "advanced",
+      "waves": 1,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 254,
+      "pop_file": "mvm_marsbase_rc5_int_martian_civilizations",
+      "name": "Martian Civilizations",
+      "map_id": 134,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 255,
+      "pop_file": "mvm_memorial_b1_exp_necropolis",
+      "name": "Necropolis",
+      "map_id": 135,
+      "difficulty": "expert",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 256,
+      "pop_file": "mvm_nightsky_rc4d_adv_nightsky_nightmare",
+      "name": "Nightsky Nightmare",
+      "map_id": 136,
+      "difficulty": "advanced",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 257,
+      "pop_file": "mvm_nightsky_rc4d_exp_condemned_conflict",
+      "name": "Condemned Conflict",
+      "map_id": 136,
+      "difficulty": "expert",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 258,
+      "pop_file": "mvm_nightsky_rc4d_exp_death_con_one",
+      "name": "Death Con One",
+      "map_id": 136,
+      "difficulty": "expert",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 259,
+      "pop_file": "mvm_nightsky_rc4d_int_mountain_of_fear",
+      "name": "Mountain Of Fear",
+      "map_id": 136,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 260,
+      "pop_file": "mvm_nightsky_rc4d_int_night_of_fire",
+      "name": "Night Of Fire",
+      "map_id": 136,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 261,
+      "pop_file": "mvm_null_b9c_adv_baneful_harvest",
+      "name": "Baneful Harvest",
+      "map_id": 113,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 262,
+      "pop_file": "mvm_null_b9c_adv_distorted_reality",
+      "name": "Distorted Reality",
+      "map_id": 113,
+      "difficulty": "advanced",
+      "waves": 8,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 263,
+      "pop_file": "mvm_null_b9c_adv_syntax_error_",
+      "name": "Syntax Error",
+      "map_id": 113,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 264,
+      "pop_file": "mvm_null_b9c_exp_0",
+      "name": "0",
+      "map_id": 113,
+      "difficulty": "expert",
+      "waves": 3,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 265,
+      "pop_file": "mvm_null_b9c_exp_call_of_the_void",
+      "name": "Call Of The Void",
+      "map_id": 113,
+      "difficulty": "expert",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 266,
+      "pop_file": "mvm_oilrig_rc5d_adv_waters_of_wrath",
+      "name": "Waters Of Wrath",
+      "map_id": 114,
+      "difficulty": "advanced",
+      "waves": 8,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 267,
+      "pop_file": "mvm_oilrig_rc5d_int_orson_oligarchy",
+      "name": "Orson Oligarchy",
+      "map_id": 114,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 268,
+      "pop_file": "mvm_oxidize_rc3_adv_inverted_incursion",
+      "name": "Inverted Incursion",
+      "map_id": 115,
+      "difficulty": "advanced",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 269,
+      "pop_file": "mvm_oxidize_rc3_adv_recollection_repression",
+      "name": "Recollection Repression",
+      "map_id": 115,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 270,
+      "pop_file": "mvm_oxidize_rr18_adv_mannure",
+      "name": "Mannure",
+      "map_id": 116,
+      "difficulty": "advanced",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 271,
+      "pop_file": "mvm_oxidize_rr18_adv_overclock",
+      "name": "Overclock",
+      "map_id": 116,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 272,
+      "pop_file": "mvm_redstone_ridge_rc5_int_reddish_rebellion",
+      "name": "Reddish Rebellion",
+      "map_id": 118,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": false,
+      "has_giant": true,
+      "pack": "mlarchive-assets.zip"
+    },
+    {
+      "id": 273,
+      "pop_file": "mvm_robotfactory_b30_adv_frantic_flood",
+      "name": "Frantic Flood",
+      "map_id": 137,
+      "difficulty": "advanced",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 274,
+      "pop_file": "mvm_robotfactory_b30_exp_enduring_exceptions",
+      "name": "Enduring Exceptions",
+      "map_id": 137,
+      "difficulty": "expert",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 275,
+      "pop_file": "mvm_robotfactory_b30_int_industrial_injection",
+      "name": "Industrial Injection",
+      "map_id": 137,
+      "difficulty": "intermediate",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 276,
+      "pop_file": "mvm_robotfactory_b30_rev_adv_short_circuit_execution",
+      "name": "Short Circuit Execution",
+      "map_id": 137,
+      "difficulty": "advanced",
+      "waves": 3,
+      "has_tank": false,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 277,
+      "pop_file": "mvm_rottenburg_rev_int_breaking_walls",
+      "name": "Breaking Walls",
+      "map_id": 6,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 278,
+      "pop_file": "mvm_rottenburg_rev_int_spanner_switchup",
+      "name": "Spanner Switchup",
+      "map_id": 6,
+      "difficulty": "intermediate",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 279,
+      "pop_file": "mvm_seabed_b6_adv_ocean_commotion",
+      "name": "Ocean Commotion",
+      "map_id": 138,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": false,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 280,
+      "pop_file": "mvm_shadows_b3_adv_bauernhof",
+      "name": "Bauernhof",
+      "map_id": 139,
+      "difficulty": "advanced",
+      "waves": 1,
+      "has_tank": false,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 281,
+      "pop_file": "mvm_sharp_rc9_adv_sudden_equinox",
+      "name": "Sudden Equinox",
+      "map_id": 140,
+      "difficulty": "advanced",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 282,
+      "pop_file": "mvm_sharp_rc9_exp_gilead_gehenom",
+      "name": "Gilead Gehenom",
+      "map_id": 140,
+      "difficulty": "expert",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 283,
+      "pop_file": "mvm_skeleclipse_b7a_adv_vicious_delicious",
+      "name": "Vicious Delicious",
+      "map_id": 141,
+      "difficulty": "advanced",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 284,
+      "pop_file": "mvm_skeleclipse_b7a_exp_spooky_sprockets",
+      "name": "Spooky Sprockets",
+      "map_id": 141,
+      "difficulty": "expert",
+      "waves": 3,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 285,
+      "pop_file": "mvm_skeleclipse_b7a_exp_when_the_sun_shines_red",
+      "name": "When The Sun Shines Red",
+      "map_id": 141,
+      "difficulty": "expert",
+      "waves": 4,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 286,
+      "pop_file": "mvm_skeleclipse_b7a_int_crescent_calamity",
+      "name": "Crescent Calamity",
+      "map_id": 141,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 287,
+      "pop_file": "mvm_skeleclipse_b7a_int_sunburn",
+      "name": "Sunburn",
+      "map_id": 141,
+      "difficulty": "intermediate",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 288,
+      "pop_file": "mvm_skeleclipse_b7a_int_twilight_of_terror",
+      "name": "Twilight Of Terror",
+      "map_id": 141,
+      "difficulty": "intermediate",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true
+    },
+    {
+      "id": 289,
+      "pop_file": "mvm_sludge_b6_adv_claire_de_lune",
+      "name": "Claire De Lune",
+      "map_id": 142,
+      "difficulty": "advanced",
+      "waves": 8,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 290,
+      "pop_file": "mvm_sludge_b6_int_logging_dreadwood",
+      "name": "Logging Dreadwood",
+      "map_id": 142,
+      "difficulty": "intermediate",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 291,
+      "pop_file": "mvm_smog_b3a_adv_respiration_restriction",
+      "name": "Respiration Restriction",
+      "map_id": 143,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 292,
+      "pop_file": "mvm_smog_b3a_int_hazardous_haze",
+      "name": "Hazardous Haze",
+      "map_id": 143,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 293,
+      "pop_file": "mvm_snowpine_rc4_fix1_adv_shivering_slumber",
+      "name": "Shivering Slumber",
+      "map_id": 119,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 294,
+      "pop_file": "mvm_spybase_rc8_exp_waters_of_a_robot_regime",
+      "name": "Waters Of A Robot Regime",
+      "map_id": 144,
+      "difficulty": "expert",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 295,
+      "pop_file": "mvm_teien_rc6_rev_adv_shogun_slaughter",
+      "name": "Shogun Slaughter",
+      "map_id": 120,
+      "difficulty": "advanced",
+      "waves": 5,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 296,
+      "pop_file": "mvm_terrorlict_final1c5_adv_accursed_aggrievocation",
+      "name": "Accursed Aggrievocation",
+      "map_id": 145,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 297,
+      "pop_file": "mvm_terrorlict_final1c5_exp_echoes_of_a_warzone",
+      "name": "Echoes Of A Warzone",
+      "map_id": 145,
+      "difficulty": "expert",
+      "waves": 1,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 298,
+      "pop_file": "mvm_transmission_rc7a_adv_white_noise",
+      "name": "White Noise",
+      "map_id": 121,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": false,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 299,
+      "pop_file": "mvm_traumatic_b2a_adv_terrorstorm",
+      "name": "Terrorstorm",
+      "map_id": 146,
+      "difficulty": "advanced",
+      "waves": 3,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 300,
+      "pop_file": "mvm_traumatic_b2a_int_bloodwater",
+      "name": "Bloodwater",
+      "map_id": 146,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 301,
+      "pop_file": "mvm_traumatic_b2a_int_river_of_despair",
+      "name": "River Of Despair",
+      "map_id": 146,
+      "difficulty": "intermediate",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 302,
+      "pop_file": "mvm_villa_b13f_adv_forgotten",
+      "name": "Forgotten",
+      "map_id": 147,
+      "difficulty": "advanced",
+      "waves": 7,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 303,
+      "pop_file": "mvm_villa_b13f_adv_recalled_to_life",
+      "name": "Recalled To Life",
+      "map_id": 147,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 304,
+      "pop_file": "mvm_yiresa_rc5a_adv_mesa_malware",
+      "name": "Mesa Malware",
+      "map_id": 122,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    },
+    {
+      "id": 305,
+      "pop_file": "mvm_yiresa_rc5a_adv_omega_machine",
+      "name": "Omega Machine",
+      "map_id": 122,
+      "difficulty": "advanced",
+      "waves": 6,
+      "has_tank": true,
+      "has_giant": true,
+      "requires": "sigsegv-mvm"
+    }
   ]
 }

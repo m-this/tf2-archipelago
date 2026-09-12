@@ -114,6 +114,7 @@ message MissionPoolRow {
   string compatibility = 6;
   string mods = 7;
   string tier = 8;
+  bool disabled = 9;
 }
 
 // Snapshot is everything the interface needs for one draw. Passwords never

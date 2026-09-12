@@ -253,6 +253,12 @@ func TestMissionsWithoutTanksAreExplicit(t *testing.T) {
 		"Factory Reset",
 		"Scorched Skies",
 		"Discordant",
+		"Computer Crash",
+		"Reddish Rebellion",
+		"Short Circuit Execution",
+		"Ocean Commotion",
+		"Bauernhof",
+		"White Noise",
 	}
 	if !slices.Equal(without, want) {
 		t.Errorf("missions with no tank: %v, want %v", without, want)

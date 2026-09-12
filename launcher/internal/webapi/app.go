@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -67,6 +68,7 @@ type App struct {
 	formPage   string
 	community  []string
 	imported   []string
+	serverMods []string
 	smAsked    bool
 	smHeld     bool
 	itemServer string
@@ -80,11 +82,12 @@ type App struct {
 func New(s settings.Settings, logger *slog.Logger) *App {
 	community := availableCommunityPackNames(s.CommunityContentDir)
 	a := &App{
-		settings:  s,
-		community: community,
-		imported:  importedCommunityPackNames(s.CommunityContentDir, community),
-		listeners: make(map[*Listener]struct{}),
-		quit:      make(chan struct{}),
+		settings:   s,
+		community:  community,
+		imported:   importedCommunityPackNames(s.CommunityContentDir, community),
+		serverMods: installer.ReadyServerMods(s.InstallRoot),
+		listeners:  make(map[*Listener]struct{}),
+		quit:       make(chan struct{}),
 	}
 	a.supervisor = apruntime.NewSupervisor(s, logger, a.append)
 	return a
@@ -187,13 +190,21 @@ func (a *App) Start() {
 			a.publishLocked(Event{Name: "state", Data: struct{}{}})
 			a.mu.Unlock()
 		}()
-		if _, err := installer.Ensure(ctx, s.InstallRoot, settings.CommunityArchives(s), func(f string, args ...any) {
+		if _, err := installer.Ensure(ctx, s.InstallRoot, settings.CommunityArchives(s), settings.ServerModKeys(s), func(f string, args ...any) {
 			a.append(apruntime.Line{At: time.Now(), Source: "install", Text: fmt.Sprintf(f, args...)})
 		}); err != nil {
 			if ctx.Err() == nil {
 				a.Say("install failed: %v", err)
 				a.Say("%s.", installer.RepairAdvice)
 			}
+			return
+		}
+		a.mu.Lock()
+		a.serverMods = installer.ReadyServerMods(s.InstallRoot)
+		readyMods := slices.Clone(a.serverMods)
+		a.mu.Unlock()
+		if err := settings.CheckServerModsReady(s, readyMods); err != nil {
+			a.Say("server mod setup is incomplete: %v", err)
 			return
 		}
 		for _, line := range apruntime.ConnectLines(s) {

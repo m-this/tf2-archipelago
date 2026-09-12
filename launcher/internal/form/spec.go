@@ -107,6 +107,12 @@ type Env struct {
 	// that fails at run time instead of at the tick.
 	CommunityAvailable []string
 
+	// ServerModsReady names managed server mods whose pinned files and install
+	// stamp were found. Platform is GOOS; tests may leave it blank for the
+	// normal platform-neutral form.
+	ServerModsReady []string
+	Platform        string
+
 	// AppDirDefault is where the Archipelago app is looked for when the setting
 	// is blank. Shown as the placeholder, never written to the settings.
 	AppDirDefault string

@@ -3,7 +3,6 @@ package form
 import (
 	"fmt"
 	"slices"
-	"strings"
 
 	"github.com/m-this/tf2-archipelago/gamedata"
 	"github.com/m-this/tf2-archipelago/launcher/internal/runshape"
@@ -18,22 +17,24 @@ row, so renaming one is a
 protocol change rather than a rename.
 */
 func runSpecs(s State, env Env) []Spec {
-	specs := playerSpecs(s)
+	specs := playerSpecs(s, env)
 	specs = append(specs, rewardSpecs()...)
 	specs = append(specs, balancingSpecs()...)
-	specs = append(specs, missionSpecs(env)...)
+	specs = append(specs, missionSpecs(s, env)...)
 	specs = append(specs, roomSpecs()...)
 	specs = append(specs, serverSpecs()...)
 	specs = append(specs, networkingSpecs()...)
 	return specs
 }
 
-func playerSpecs(s State) []Spec {
+func playerSpecs(s State, env Env) []Spec {
 	/* The tiers describe the pool as the settings stand when the page is
 	   built, which is the same pool the ceiling below caps against. Turning a
 	   mission on is a Missions-page change and the labels catch up when the
 	   page is built again. */
-	tiers := runshape.Tiers(settings.MissionPool(s.Settings))
+	poolSettings := s.Settings
+	poolSettings.SrcdsMods = activeServerMods(s, env)
+	tiers := runshape.Tiers(settings.MissionPool(poolSettings))
 	tierValues := make([]string, 0, len(tiers))
 	tierLabels := make([]string, 0, len(tiers))
 	for _, tier := range tiers {
@@ -213,10 +214,10 @@ which missions exist depends on which community asset packs have a valid ZIP on
 disk. That is why Specs is a function of the state rather than a package
 variable: ticking a pack adds twenty rows below.
 */
-func missionSpecs(env Env) []Spec {
+func missionSpecs(s State, env Env) []Spec {
 	const tab = "Missions"
 
-	starts := runshape.StartMissionChoicesForPacks(env.CommunityAvailable)
+	starts := runshape.StartMissionChoicesForPacksAndMods(env.CommunityAvailable, activeServerMods(s, env))
 	startValues := make([]string, 0, len(starts))
 	startLabels := make([]string, 0, len(starts))
 	for _, start := range starts {
@@ -248,6 +249,9 @@ func missionSpecs(env Env) []Spec {
 			"let the seed draw them",
 			func(s State) bool { return s.Settings.MvmCommunityMissions },
 			func(s State, v bool) State { s.Settings.MvmCommunityMissions = v; return s }),
+
+		serverModSpec("sigsegv-mvm", "SigMod", env),
+		serverModInstallSpec(env),
 
 		press("missions.download_packs", tab, "Download Selected Community Assets",
 			"Download only the checked full-with-maps community packs. Start never downloads community content."),
@@ -283,6 +287,45 @@ func missionSpecs(env Env) []Spec {
 		specs = append(specs, poolSpec(mission))
 	}
 	return specs
+}
+
+func activeServerMods(s State, env Env) []string {
+	var active []string
+	for _, key := range settings.ServerModKeys(s.Settings) {
+		if slices.Contains(env.ServerModsReady, key) {
+			active = append(active, key)
+		}
+	}
+	return active
+}
+
+func serverModSpec(key, label string, env Env) Spec {
+	spec := toggle("missions.mod."+key, "Missions", label+" (Linux server only)",
+		"Required by missions that use SigMod population extensions. Start downloads, verifies and installs the pinned release automatically when this is selected.",
+		"selected for this server",
+		func(s State) bool { return slices.Contains(s.Settings.SrcdsMods, key) },
+		func(s State, v bool) State {
+			s.Settings.SrcdsMods = slices.DeleteFunc(slices.Clone(s.Settings.SrcdsMods), func(one string) bool { return one == key })
+			if v {
+				s.Settings.SrcdsMods = append(s.Settings.SrcdsMods, key)
+			}
+			return clearIneligibleStart(s)
+		})
+	if env.Platform == "windows" {
+		spec.Unavailable = func(State, Env) string {
+			return "SigMod has no Windows server build; use the Linux launcher/server for these missions"
+		}
+	}
+	return spec
+}
+
+func serverModInstallSpec(env Env) Spec {
+	spec := press("missions.install_mods", "Missions", "Download / set up selected server mods",
+		"Downloads verified pinned releases and installs their SourceMod extension. On a new machine this also installs TF2 and SourceMod; Start performs the same setup automatically.")
+	if env.Platform == "windows" {
+		spec.Unavailable = func(State, Env) string { return "no supported Windows server mods are available" }
+	}
+	return spec
 }
 
 // packSpec is one community asset pack, on or off. Off is not "absent": the
@@ -342,17 +385,10 @@ func poolSpec(mission gamedata.Mission) Spec {
 	/* A mission the game cannot play is shown and refused rather than hidden,
 	   so a player looking for one the wiki names finds out why it is not here.
 	   The row says what is missing rather than "unavailable": the two reasons
-	   are a missing navigation mesh and a server mod the launcher does not
-	   install, and the fix is different for each. */
-	if !gamedata.IsPlayableMission(mission.ID) {
-		why := "The asset pack has this map's BSP but no bot navigation mesh. It cannot be enabled in a seed."
-		if gamedata.MissionServerMod(mission.ID) != "" {
-			why = "This mission needs a server mod this launcher does not install. It cannot be enabled in a seed here."
-		}
-		short := strings.ToLower(gamedata.RequirementLabel(gamedata.MissionRequirement(mission.ID)))
-		spec.Help = why
-		spec.Unavailable = func(State, Env) string { return short }
-		return spec
+	   are a missing navigation mesh and a server mod whose verified setup is
+	   not ready, and the fix is different for each. */
+	if gamedata.MissionRequirement(mission.ID) != "" {
+		return missionRequirementSpec(spec, mission, help)
 	}
 	/* A ticked community mission the switch above will not let the seed draw.
 	   The tick is not wrong and neither is the pack, so the row says which
@@ -364,6 +400,39 @@ func poolSpec(mission gamedata.Mission) Spec {
 			}
 			return "community missions are off"
 		}
+	}
+	return spec
+}
+
+func missionRequirementSpec(spec Spec, mission gamedata.Mission, help string) Spec {
+	if gamedata.MissionRequirement(mission.ID) == "no_nav" {
+		nav := gamedata.MissingNavigationMesh(mission.ID)
+		why := "The asset pack has this map's BSP but is missing " + nav + ". Bots cannot navigate the map, so this mission cannot be enabled in a seed."
+		short := "missing " + nav
+		spec.Help = why
+		spec.Get = func(State) string { return "false" }
+		spec.Unavailable = func(State, Env) string { return short }
+		return spec
+	}
+	if key := gamedata.MissionServerMod(mission.ID); key != "" {
+		spec.Help = gamedata.RequirementLabel(key) + ". " + help
+		spec.Unavailable = func(s State, env Env) string {
+			mod, _ := gamedata.ServerModByKey(key)
+			if env.Platform == "windows" {
+				return mod.Name + " has no Windows server build; use Linux for this mission"
+			}
+			if !slices.Contains(settings.ServerModKeys(s.Settings), key) {
+				return "turn on " + mod.Name + " above, then press Download / set up selected server mods"
+			}
+			if !slices.Contains(env.ServerModsReady, key) {
+				return mod.Name + " is selected but its installation is missing or incomplete; press Download / set up selected server mods"
+			}
+			if !s.Settings.MvmCommunityMissions {
+				return "community missions are off"
+			}
+			return ""
+		}
+		return spec
 	}
 	return spec
 }

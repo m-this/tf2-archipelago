@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"runtime"
 	"slices"
 	"strings"
 
@@ -49,6 +50,7 @@ func (a *App) OpenSettings(page string) {
 	a.draft, a.formPage = &state, page
 	a.community = availableCommunityPackNames(a.settings.CommunityContentDir)
 	a.imported = importedCommunityPackNames(a.settings.CommunityContentDir, a.community)
+	a.serverMods = installer.ReadyServerMods(a.settings.InstallRoot)
 	a.publishLocked(Event{Name: "state", Data: struct{}{}})
 	a.mu.Unlock()
 }
@@ -75,12 +77,16 @@ func (a *App) SaveSettings(restart bool) error {
 		return errors.New("settings are not open")
 	}
 	draft := *a.draft
+	readyMods := slices.Clone(a.serverMods)
 	a.mu.Unlock()
 	room, roomErr := settings.ParseRoom(draft.Draft.Room)
 	if roomErr == nil {
 		draft.Settings.APHost, draft.Settings.APPort, draft.Settings.APTls = room.Host, room.Port, room.TLS
 	} else if strings.TrimSpace(draft.Draft.Room) == "" {
 		draft.Settings.APHost, draft.Settings.APPort = "", 0
+	}
+	if err := settings.CheckServerModsReady(draft.Settings, readyMods); err != nil {
+		return err
 	}
 	written, err := settings.Persist(draft.Settings)
 	if err != nil {
@@ -159,7 +165,10 @@ func (a *App) formEnvLocked() form.Env {
 	if len(dirs) > 0 {
 		appDir = dirs[0]
 	}
-	return form.Env{CommunityAvailable: slices.Clone(a.community), AppDirDefault: appDir}
+	return form.Env{
+		CommunityAvailable: slices.Clone(a.community), ServerModsReady: slices.Clone(a.serverMods),
+		Platform: runtime.GOOS, AppDirDefault: appDir,
+	}
 }
 
 func (a *App) Dispatch(id string) error {
@@ -188,6 +197,8 @@ func (a *App) Dispatch(id string) error {
 		go a.downloadPacks(s.Settings)
 	case "missions.import_assets":
 		return a.useLocalPacks(s.Settings.CommunityContentDir)
+	case "missions.install_mods":
+		go a.installSelectedMods(s.Settings)
 	case "server.repair":
 		go a.repair(s.Settings.InstallRoot)
 	case "server.reset":
@@ -199,6 +210,10 @@ func (a *App) Dispatch(id string) error {
 }
 
 func (a *App) checkMissionSelection(s settings.Settings) {
+	if modErr := settings.CheckServerModsReady(s, a.readyServerMods()); modErr != nil {
+		a.Notify(modErr.Error())
+		return
+	}
 	result, err := settings.CheckRunSelection(s)
 	if err != nil {
 		a.Notify(err.Error())
@@ -210,6 +225,7 @@ func (a *App) checkMissionSelection(s settings.Settings) {
 var wiredActions = []string{
 	"run.generate", "run.open_player_file", "run.open_folder", "run.open_settings_file",
 	"missions.download_packs", "missions.import_assets", "missions.check_selection",
+	"missions.install_mods",
 	"missions.pool_all", "missions.pool_none",
 	"server.debug_bundle", "server.repair", "server.reset",
 	"net.check_funnel", "bots.save_team", "bots.remove_team", "loadout.save",
@@ -230,15 +246,17 @@ func (a *App) setPool(all bool) {
 	if a.draft == nil {
 		return
 	}
+	activeMods := activeReadyServerMods(a.draft.Settings, a.serverMods)
 	var excluded []string
 	if !all {
-		for _, mission := range gamedata.PlayableMissions() {
+		for _, mission := range gamedata.Missions {
 			excluded = append(excluded, mission.PopFile)
 		}
 	} else {
 		visible := runshape.VisibleMissions(a.community)
-		for _, mission := range gamedata.PlayableMissions() {
-			if gamedata.MissionPack(mission.ID) != "" && !slices.ContainsFunc(visible, func(candidate gamedata.Mission) bool { return candidate.ID == mission.ID }) {
+		for _, mission := range gamedata.Missions {
+			if !gamedata.IsMissionPlayableWith(mission.ID, activeMods) ||
+				gamedata.MissionPack(mission.ID) != "" && !slices.ContainsFunc(visible, func(candidate gamedata.Mission) bool { return candidate.ID == mission.ID }) {
 				excluded = append(excluded, mission.PopFile)
 			}
 		}
@@ -250,6 +268,66 @@ func (a *App) setPool(all bool) {
 	a.notice = map[bool]string{true: "every mission is in the pool", false: "every mission is left out"}[all]
 	a.noticeSeq++
 	a.publishLocked(Event{Name: "state", Data: struct{}{}})
+}
+
+func activeReadyServerMods(s settings.Settings, ready []string) []string {
+	var active []string
+	for _, key := range settings.ServerModKeys(s) {
+		if slices.Contains(ready, key) {
+			active = append(active, key)
+		}
+	}
+	return active
+}
+
+func (a *App) readyServerMods() []string {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	return slices.Clone(a.serverMods)
+}
+
+func (a *App) installSelectedMods(s settings.Settings) {
+	mods := settings.ServerModKeys(s)
+	if len(mods) == 0 {
+		a.Notify("select a server mod first")
+		return
+	}
+	if a.supervisor.Running() {
+		a.Notify("stop the server before installing or repairing a server mod")
+		return
+	}
+	a.mu.Lock()
+	if a.busy {
+		a.mu.Unlock()
+		a.Notify("another install is already running")
+		return
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	a.busy, a.install = true, cancel
+	a.publishLocked(Event{Name: "state", Data: struct{}{}})
+	a.mu.Unlock()
+	defer func() {
+		cancel()
+		a.mu.Lock()
+		a.busy, a.install = false, nil
+		a.publishLocked(Event{Name: "state", Data: struct{}{}})
+		a.mu.Unlock()
+	}()
+	if _, err := installer.Ensure(ctx, s.InstallRoot, nil, mods, func(f string, args ...any) { a.Say(f, args...) }); err != nil {
+		if ctx.Err() == nil {
+			a.Notify("server mod setup: " + err.Error())
+		}
+		return
+	}
+	a.mu.Lock()
+	a.serverMods = installer.ReadyServerMods(s.InstallRoot)
+	ready := slices.Clone(a.serverMods)
+	a.mu.Unlock()
+	if err := settings.CheckServerModsReady(s, ready); err != nil && len(settings.RequiredServerMods(s)) > 0 {
+		a.Notify(err.Error())
+		return
+	}
+	a.Notify("selected server mods are installed and verified")
 }
 
 func (a *App) downloadPacks(s settings.Settings) {
@@ -286,6 +364,9 @@ func (a *App) repair(root string) {
 	} else {
 		a.Notify("repair removed " + strings.Join(removed, ", "))
 	}
+	a.mu.Lock()
+	a.serverMods = installer.ReadyServerMods(root)
+	a.mu.Unlock()
 }
 
 func (a *App) resetSettings() error {

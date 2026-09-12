@@ -108,7 +108,7 @@ func run(logger *slog.Logger) error {
 	}
 
 	if *installFlag {
-		_, err := installer.Ensure(context.Background(), s.InstallRoot, settings.CommunityArchives(s), logf(logger))
+		_, err := installer.Ensure(context.Background(), s.InstallRoot, settings.CommunityArchives(s), settings.ServerModKeys(s), logf(logger))
 		return err
 	}
 
@@ -158,7 +158,7 @@ func launchInterface(logger *slog.Logger, s settings.Settings, console bool, add
 func printVersion() {
 	v := assets.Versions()
 	fmt.Printf("tf2ap %s\n", version)
-	for _, name := range []string{"metamod", "sourcemod", "ripext", "archipelago"} {
+	for _, name := range []string{"metamod", "sourcemod", "ripext", "sigsegv-mvm", "archipelago"} {
 		fmt.Printf("  %-12s %s\n", name+":", v[name])
 	}
 }
@@ -227,6 +227,9 @@ func guided(logger *slog.Logger, s settings.Settings) error {
 // writeStarterYAML drops the player file next to the game files, for the
 // Archipelago app to generate from.
 func writeStarterYAML(s settings.Settings) error {
+	if err := settings.CheckServerModsReady(s, installer.ReadyServerMods(s.InstallRoot)); err != nil {
+		return err
+	}
 	path, err := settings.WritePlayerFile(s, assets.ArchipelagoVersion)
 	if err != nil {
 		return err
@@ -236,7 +239,7 @@ func writeStarterYAML(s settings.Settings) error {
 }
 
 func ensureInstalled(s settings.Settings, logger *slog.Logger) settings.Settings {
-	result, err := installer.Ensure(context.Background(), s.InstallRoot, settings.CommunityArchives(s), logf(logger))
+	result, err := installer.Ensure(context.Background(), s.InstallRoot, settings.CommunityArchives(s), settings.ServerModKeys(s), logf(logger))
 	if err != nil {
 		logger.Error("install failed", "error", err, "advice", installer.RepairAdvice)
 		os.Exit(1)
@@ -555,6 +558,9 @@ func showEnv() {
 }
 
 func writeYAML(s settings.Settings, path string) error {
+	if err := settings.CheckServerModsReady(s, installer.ReadyServerMods(s.InstallRoot)); err != nil {
+		return err
+	}
 	content := settings.PlayerYAML(s, assets.ArchipelagoVersion)
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 		return fmt.Errorf("cannot write %s: %w", path, err)

@@ -5,10 +5,13 @@ import (
 	"bytes"
 	_ "embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 )
 
@@ -139,6 +142,7 @@ func ValidateCommunityFiles(tfRoot string) error {
 func ValidateCommunitySources(sources ...string) error {
 	required := make(map[string]string)
 	populations := make(map[string][][]byte)
+	discoveredPopulations := make(map[string][][]byte)
 	for _, m := range communityMaps {
 		required[filepath.ToSlash(filepath.Join("maps", m.Name+".bsp"))] = "map " + m.Name
 	}
@@ -148,7 +152,7 @@ func ValidateCommunitySources(sources ...string) error {
 		   ship with the game, and a community mission that plays on one needs
 		   the pack for its population file and nothing else. Asking the archive
 		   for mvm_mannworks.nav is asking for a file it has no reason to hold. */
-		if IsPlayableMission(m.ID) && IsCommunityMap(m.Map) {
+		if MissionRequirement(m.ID) != noNavRequirement && IsCommunityMap(m.Map) {
 			if played, ok := MapByID(m.Map); ok {
 				required[filepath.ToSlash(filepath.Join("maps", played.Name+".nav"))] = "navigation mesh " + played.Name
 			}
@@ -161,43 +165,109 @@ func ValidateCommunitySources(sources ...string) error {
 			return err
 		}
 		if info.IsDir() {
-			for relative := range required {
-				path := filepath.Join(source, filepath.FromSlash(relative))
-				if file, err := os.Stat(path); err == nil && file.Mode().IsRegular() {
-					delete(required, relative)
-					if strings.HasSuffix(relative, ".pop") {
-						if body, err := os.ReadFile(path); err == nil {
-							populations[relative] = append(populations[relative], body)
-						}
-					}
-				}
+			if err := scanCommunityDirectory(source, required, populations, discoveredPopulations); err != nil {
+				return err
 			}
 			continue
 		}
-		reader, err := zip.OpenReader(source)
-		if err != nil {
-			return fmt.Errorf("cannot read community archive %s: %w", source, err)
+		if err := scanCommunityArchive(source, required, populations, discoveredPopulations); err != nil {
+			return err
 		}
-		for _, file := range reader.File {
-			name := filepath.ToSlash(file.Name)
-			name = strings.TrimPrefix(name, "tf/download/")
-			name = strings.TrimPrefix(name, "tf/")
-			if _, wanted := required[name]; wanted && strings.HasSuffix(name, ".pop") {
-				if opened, err := file.Open(); err == nil {
-					if body, err := io.ReadAll(opened); err == nil {
-						populations[name] = append(populations[name], body)
-					}
-					_ = opened.Close()
-				}
-			}
-			delete(required, name)
-		}
-		_ = reader.Close()
 	}
 	for relative, description := range required {
 		return fmt.Errorf("community %s is missing: %s", description, relative)
 	}
+	for relative, bodies := range discoveredPopulations {
+		popFile := strings.TrimSuffix(filepath.Base(relative), ".pop")
+		mission, cataloged := MissionByPopFile(popFile)
+		if !cataloged {
+			if _, onKnownMap := communityMapForPopFile(popFile); onKnownMap {
+				return fmt.Errorf("community mission %s is present on a cataloged map but missing from community.json", popFile)
+			}
+			continue
+		}
+		if MissionRequirement(mission.ID) == noNavRequirement {
+			continue
+		}
+		needsSigMod := slices.ContainsFunc(bodies, CommunityPopulationRequiresSigMod)
+		if needsSigMod != (MissionRequirement(mission.ID) == "sigsegv-mvm") {
+			return fmt.Errorf("community mission %s SigMod requirement is %t in its population file but %q in community.json", popFile, needsSigMod, MissionRequirement(mission.ID))
+		}
+	}
 	return validatePopulationFacts(populations)
+}
+
+func scanCommunityDirectory(source string, required map[string]string, populations, discovered map[string][][]byte) error {
+	populationRoot := filepath.Join(source, "scripts", "population")
+	err := filepath.WalkDir(populationRoot, func(path string, entry os.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if entry.IsDir() || !strings.HasPrefix(entry.Name(), "mvm_") || !strings.HasSuffix(entry.Name(), ".pop") {
+			return nil
+		}
+		body, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		relative := filepath.ToSlash(filepath.Join("scripts", "population", entry.Name()))
+		discovered[relative] = append(discovered[relative], body)
+		return nil
+	})
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return err
+	}
+	for relative := range required {
+		path := filepath.Join(source, filepath.FromSlash(relative))
+		if file, err := os.Stat(path); err == nil && file.Mode().IsRegular() {
+			delete(required, relative)
+			if strings.HasSuffix(relative, ".pop") {
+				if body, err := os.ReadFile(path); err == nil {
+					populations[relative] = append(populations[relative], body)
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func scanCommunityArchive(source string, required map[string]string, populations, discovered map[string][][]byte) error {
+	reader, err := zip.OpenReader(source)
+	if err != nil {
+		return fmt.Errorf("cannot read community archive %s: %w", source, err)
+	}
+	defer func() { _ = reader.Close() }()
+	for _, file := range reader.File {
+		name := filepath.ToSlash(file.Name)
+		name = strings.TrimPrefix(strings.TrimPrefix(name, "tf/download/"), "tf/")
+		if strings.HasPrefix(name, "scripts/population/mvm_") && strings.HasSuffix(name, ".pop") {
+			opened, openErr := file.Open()
+			if openErr != nil {
+				return openErr
+			}
+			body, readErr := io.ReadAll(opened)
+			_ = opened.Close()
+			if readErr != nil {
+				return readErr
+			}
+			discovered[name] = append(discovered[name], body)
+			if _, wanted := required[name]; wanted {
+				populations[name] = append(populations[name], body)
+			}
+		}
+		delete(required, name)
+	}
+	return nil
+}
+
+func communityMapForPopFile(popFile string) (Map, bool) {
+	var best Map
+	for _, candidate := range Maps {
+		if (popFile == candidate.Name || strings.HasPrefix(popFile, candidate.Name+"_")) && len(candidate.Name) > len(best.Name) {
+			best = candidate
+		}
+	}
+	return best, best.Name != ""
 }
 
 func validatePopulationFacts(populations map[string][][]byte) error {
@@ -257,6 +327,40 @@ func inspectPopulation(body []byte) populationFacts {
 		}
 	}
 	return facts
+}
+
+// InspectCommunityPopulation returns the immutable facts the manifest records
+// for one population file. It is exported for the archive catalogue tool; game
+// code uses the committed manifest and never parses mutable files at runtime.
+func InspectCommunityPopulation(body []byte) (waves int, hasTank, hasGiant bool) {
+	facts := inspectPopulation(body)
+	return facts.Waves, facts.HasTank, facts.HasGiant
+}
+
+// CommunityPopulationRequiresSigMod recognizes extension syntax whose absence
+// changes how a mission plays. Potato files annotate most such lines with the
+// $SIGSEGV KeyValues condition. Precaching and sound download annotations are
+// delivery hints rather than mission mechanics, so those alone stay portable.
+func CommunityPopulationRequiresSigMod(body []byte) bool {
+	for raw := range strings.SplitSeq(string(body), "\n") {
+		line, _, _ := strings.Cut(raw, "//")
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		fields := strings.Fields(line)
+		key := strings.ToLower(fields[0])
+		if strings.Contains(strings.ToUpper(line), "[$SIGSEGV]") &&
+			!strings.HasPrefix(key, "precache") && key != "disablesound" {
+			return true
+		}
+		switch key {
+		case "pointtemplates", "spawntemplate", "extraspawnpoint", "extratankpath",
+			"customweapon", "extendedupgrades", "luascript", "lua":
+			return true
+		}
+	}
+	return false
 }
 
 // populationTokens removes comments and preserves quoted template names. It

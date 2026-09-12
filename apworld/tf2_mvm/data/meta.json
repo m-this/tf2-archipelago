@@ -169,6 +169,131 @@
       "id": 122,
       "name": "mvm_yiresa_rc5a",
       "community": true
+    },
+    {
+      "id": 123,
+      "name": "mvm_akure_rc1a",
+      "community": true
+    },
+    {
+      "id": 124,
+      "name": "mvm_bloodlust_b6",
+      "community": true
+    },
+    {
+      "id": 125,
+      "name": "mvm_bloodmoon_b8",
+      "community": true
+    },
+    {
+      "id": 126,
+      "name": "mvm_bronx_rc2",
+      "community": true
+    },
+    {
+      "id": 127,
+      "name": "mvm_chateau_rc3",
+      "community": true
+    },
+    {
+      "id": 128,
+      "name": "mvm_creepside_b2",
+      "community": true
+    },
+    {
+      "id": 129,
+      "name": "mvm_deathpour_rc1",
+      "community": true
+    },
+    {
+      "id": 130,
+      "name": "mvm_decompose_rc7",
+      "community": true
+    },
+    {
+      "id": 131,
+      "name": "mvm_encounter_b20a",
+      "community": true
+    },
+    {
+      "id": 132,
+      "name": "mvm_legerdemain_a6e",
+      "community": true
+    },
+    {
+      "id": 133,
+      "name": "mvm_mansion_rc2c",
+      "community": true
+    },
+    {
+      "id": 134,
+      "name": "mvm_marsbase_rc5",
+      "community": true
+    },
+    {
+      "id": 135,
+      "name": "mvm_memorial_b1",
+      "community": true
+    },
+    {
+      "id": 136,
+      "name": "mvm_nightsky_rc4d",
+      "community": true
+    },
+    {
+      "id": 137,
+      "name": "mvm_robotfactory_b30",
+      "community": true
+    },
+    {
+      "id": 138,
+      "name": "mvm_seabed_b6",
+      "community": true
+    },
+    {
+      "id": 139,
+      "name": "mvm_shadows_b3",
+      "community": true
+    },
+    {
+      "id": 140,
+      "name": "mvm_sharp_rc9",
+      "community": true
+    },
+    {
+      "id": 141,
+      "name": "mvm_skeleclipse_b7a",
+      "community": true
+    },
+    {
+      "id": 142,
+      "name": "mvm_sludge_b6",
+      "community": true
+    },
+    {
+      "id": 143,
+      "name": "mvm_smog_b3a",
+      "community": true
+    },
+    {
+      "id": 144,
+      "name": "mvm_spybase_rc8",
+      "community": true
+    },
+    {
+      "id": 145,
+      "name": "mvm_terrorlict_final1c5",
+      "community": true
+    },
+    {
+      "id": 146,
+      "name": "mvm_traumatic_b2a",
+      "community": true
+    },
+    {
+      "id": 147,
+      "name": "mvm_villa_b13f",
+      "community": true
     }
   ],
   "classes": [

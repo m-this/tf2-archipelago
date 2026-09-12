@@ -29,10 +29,11 @@ client and install nothing.
   plugins, so there is nowhere for the integration to live.
 - No upstream submission to `ArchipelagoMW/Archipelago` in v1. Revisit this
   after it generates seeds and someone plays a seed end to end.
-- No automatic execution of server-specific Potato.tf or Moonlight.tf
-  extensions. Community maps, population files, VScript, and standard custom
-  upgrade tables are supported through a versioned manifest; a mission that
-  uses SigMod still needs that dependency installed separately.
+- No execution of an unlisted or unpinned Potato.tf or Moonlight.tf server
+  extension. Community maps, population files, VScript, and standard custom
+  upgrade tables are supported through a versioned manifest. The Linux
+  launcher automatically downloads and verifies the catalogued SigMod release
+  when the player selects it; missions remain locked until that install passes.
 
 ## Architecture
 
