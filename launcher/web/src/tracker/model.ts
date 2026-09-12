@@ -79,20 +79,23 @@ export function buffsFor(
   owned: ReadonlyMap<string, number>,
   weapons: ReadonlyMap<string, Weapon>,
 ): readonly BuffWeaponView[] {
-  const grouped = new Map<string, { effects: BuffEffect[]; total: number }>();
+  const grouped = new Map<string, { effects: BuffEffect[]; total: number; weapon: Weapon }>();
   for (const [name, count] of owned) {
     if (!name.startsWith('Weapon Buff:')) continue;
     const parts = buffParts(name);
-    if (!(weapons.get(parts.weapon)?.classes ?? []).includes(className)) continue;
-    const entry = grouped.get(parts.weapon) ?? { effects: [], total: 0 };
+    const weapon = trackerWeapon(weapons, parts.weapon);
+    if (weapon === undefined || !weapon.classes.includes(className)) continue;
+    const displayName = weaponDisplayName(weapon.name);
+    const entry = grouped.get(displayName) ?? { effects: [], total: 0, weapon };
     entry.effects.push({ effect: parts.effect, count });
     entry.total += count;
-    grouped.set(parts.weapon, entry);
+    grouped.set(displayName, entry);
   }
   return [...grouped.entries()]
     .map(([weapon, value]) => ({
       weapon,
-      icon: weapons.get(weapon)?.icon,
+      icon: value.weapon.icon,
+      aliases: value.weapon.aliases ?? [],
       effects: value.effects.toSorted(
         (left, right) => right.count - left.count || left.effect.localeCompare(right.effect),
       ),
@@ -123,11 +126,12 @@ function ownedNames(
   const names = new Map<string, number>();
   for (const item of rowFor(source.received, player)?.items ?? []) {
     const id = Number('item' in item ? item.item : item[0]);
-    const name = source.itemNames.get(id) ?? `Unknown item ${id}`;
+    const name = displayItemName(source.itemNames.get(id) ?? `Unknown item ${id}`);
     names.set(name, (names.get(name) ?? 0) + 1);
   }
   for (const item of slotData.tracker?.starting_items ?? slotData.starting_items ?? []) {
-    const name = typeof item === 'number' ? source.itemNames.get(item) : item;
+    const rawName = typeof item === 'number' ? source.itemNames.get(item) : item;
+    const name = rawName === undefined ? undefined : displayItemName(rawName);
     if (name !== undefined) names.set(name, (names.get(name) ?? 0) + 1);
   }
   const start = missions.find((mission) => mission.pop_file === slotData.start_mission);
@@ -180,9 +184,24 @@ function describeGoal(
 }
 
 function buffParts(itemName: string): { weapon: string; effect: string } {
-  const label = itemName.replace(/^Weapon Buff: /, '');
+  const label = displayItemName(itemName).replace(/^Weapon Buff: /, '');
   const separator = label.indexOf(' — ');
   return separator < 0
     ? { weapon: label, effect: 'Weapon upgrade unlocked' }
     : { weapon: label.slice(0, separator), effect: label.slice(separator + 3) };
+}
+
+function displayItemName(name: string): string {
+  return name.replace(/^Weapon Buff: Saxxy(?= —|$)/, 'Weapon Buff: All-Class Melee');
+}
+
+function weaponDisplayName(name: string): string {
+  return name === 'Saxxy' ? 'All-Class Melee' : name;
+}
+
+function trackerWeapon(weapons: ReadonlyMap<string, Weapon>, name: string): Weapon | undefined {
+  const direct =
+    weapons.get(name) ?? (name === 'All-Class Melee' ? weapons.get('Saxxy') : undefined);
+  if (direct !== undefined) return direct;
+  return [...weapons.values()].find((weapon) => weapon.aliases?.includes(name));
 }

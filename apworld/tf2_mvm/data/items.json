@@ -20035,8 +20035,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 10283,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443015539,
@@ -20045,8 +20044,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 10539,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443015795,
@@ -20055,8 +20053,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 10795,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443016051,
@@ -20065,8 +20062,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 11051,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443016307,
@@ -20084,8 +20080,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 11563,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443016819,
@@ -20094,8 +20089,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 11819,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443017075,
@@ -20104,8 +20098,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 12075,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443017331,
@@ -20114,8 +20107,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 12331,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443017587,
@@ -20123,8 +20115,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 12587,
-      "eligible": true
+      "weapon_buff_id": 12587
     },
     {
       "id": 7443017843,
@@ -20150,8 +20141,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 13355,
-      "eligible": true
+      "weapon_buff_id": 13355
     },
     {
       "id": 7443018611,
@@ -20159,8 +20149,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 13611,
-      "eligible": true
+      "weapon_buff_id": 13611
     },
     {
       "id": 7443018867,
@@ -20168,8 +20157,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 13867,
-      "eligible": true
+      "weapon_buff_id": 13867
     },
     {
       "id": 7443019123,
@@ -20185,8 +20173,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 14379,
-      "eligible": true
+      "weapon_buff_id": 14379
     },
     {
       "id": 7443019635,
@@ -20220,8 +20207,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 15403,
-      "eligible": true
+      "weapon_buff_id": 15403
     },
     {
       "id": 7443020659,
@@ -20230,8 +20216,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 15659,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443020915,
@@ -20239,8 +20224,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 15915,
-      "eligible": true
+      "weapon_buff_id": 15915
     },
     {
       "id": 7443021171,
@@ -20249,8 +20233,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 16171,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443005027,
@@ -20259,8 +20242,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 27,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443021683,
@@ -20269,8 +20251,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 16683,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443021939,
@@ -20387,8 +20368,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 20011,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443025267,
@@ -20405,8 +20385,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 20523,
-      "eligible": true
+      "weapon_buff_id": 20523
     },
     {
       "id": 7443025779,
@@ -20450,8 +20429,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 21803,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443027059,
@@ -20532,8 +20510,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 24107,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443029363,
@@ -20542,8 +20519,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 24363,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443029619,
@@ -20552,8 +20528,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 24619,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443029875,
@@ -20596,8 +20571,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 25899,
-      "eligible": true
+      "weapon_buff_id": 25899
     },
     {
       "id": 7443031155,
@@ -20613,8 +20587,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 26411,
-      "eligible": true
+      "weapon_buff_id": 26411
     },
     {
       "id": 7443031667,
@@ -20622,8 +20595,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 26667,
-      "eligible": true
+      "weapon_buff_id": 26667
     },
     {
       "id": 7443031923,
@@ -20641,8 +20613,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 27179,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443032435,
@@ -20651,8 +20622,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 27435,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443032691,
@@ -20670,8 +20640,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 27947,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443033203,
@@ -20680,8 +20649,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 28203,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443033459,
@@ -20743,8 +20711,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 29995,
-      "eligible": true
+      "weapon_buff_id": 29995
     },
     {
       "id": 7443035251,
@@ -20752,8 +20719,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 30251,
-      "eligible": true
+      "weapon_buff_id": 30251
     },
     {
       "id": 7443035507,
@@ -20761,8 +20727,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 30507,
-      "eligible": true
+      "weapon_buff_id": 30507
     },
     {
       "id": 7443035763,
@@ -117278,7 +117243,7 @@
     },
     {
       "id": 7443015416,
-      "name": "Weapon Buff: Saxxy — +10% damage",
+      "name": "Weapon Buff: All-Class Melee — +10% damage",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117288,7 +117253,7 @@
     },
     {
       "id": 7443015672,
-      "name": "Weapon Buff: Saxxy — +10% firing speed",
+      "name": "Weapon Buff: All-Class Melee — +10% firing speed",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117298,7 +117263,7 @@
     },
     {
       "id": 7443015928,
-      "name": "Weapon Buff: Saxxy — +15% reload speed",
+      "name": "Weapon Buff: All-Class Melee — +15% reload speed",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117307,7 +117272,7 @@
     },
     {
       "id": 7443016184,
-      "name": "Weapon Buff: Saxxy — +25% clip size",
+      "name": "Weapon Buff: All-Class Melee — +25% clip size",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117316,7 +117281,7 @@
     },
     {
       "id": 7443016440,
-      "name": "Weapon Buff: Saxxy — +15% projectile speed",
+      "name": "Weapon Buff: All-Class Melee — +15% projectile speed",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117325,7 +117290,7 @@
     },
     {
       "id": 7443016696,
-      "name": "Weapon Buff: Saxxy — +1 projectile or pellet per shot",
+      "name": "Weapon Buff: All-Class Melee — +1 projectile or pellet per shot",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117334,7 +117299,7 @@
     },
     {
       "id": 7443016952,
-      "name": "Weapon Buff: Saxxy — +15 health on kill",
+      "name": "Weapon Buff: All-Class Melee — +15 health on kill",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117344,7 +117309,7 @@
     },
     {
       "id": 7443005160,
-      "name": "Weapon Buff: Saxxy — 2 seconds of critical hits on kill",
+      "name": "Weapon Buff: All-Class Melee — 2 seconds of critical hits on kill",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117354,7 +117319,7 @@
     },
     {
       "id": 7443017464,
-      "name": "Weapon Buff: Saxxy — inflicts 3 seconds of bleed",
+      "name": "Weapon Buff: All-Class Melee — inflicts 3 seconds of bleed",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117364,7 +117329,7 @@
     },
     {
       "id": 7443017720,
-      "name": "Weapon Buff: Saxxy — ignites on hit",
+      "name": "Weapon Buff: All-Class Melee — ignites on hit",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117373,7 +117338,7 @@
     },
     {
       "id": 7443017976,
-      "name": "Weapon Buff: Saxxy — +25% afterburn damage",
+      "name": "Weapon Buff: All-Class Melee — +25% afterburn damage",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117382,7 +117347,7 @@
     },
     {
       "id": 7443018232,
-      "name": "Weapon Buff: Saxxy — +20% afterburn duration",
+      "name": "Weapon Buff: All-Class Melee — +20% afterburn duration",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117391,7 +117356,7 @@
     },
     {
       "id": 7443018488,
-      "name": "Weapon Buff: Saxxy — critical hits while airborne",
+      "name": "Weapon Buff: All-Class Melee — critical hits while airborne",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117400,7 +117365,7 @@
     },
     {
       "id": 7443018744,
-      "name": "Weapon Buff: Saxxy — mini-crits airborne targets",
+      "name": "Weapon Buff: All-Class Melee — mini-crits airborne targets",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117409,7 +117374,7 @@
     },
     {
       "id": 7443019000,
-      "name": "Weapon Buff: Saxxy — applies Mad Milk on hit",
+      "name": "Weapon Buff: All-Class Melee — applies Mad Milk on hit",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117418,7 +117383,7 @@
     },
     {
       "id": 7443019256,
-      "name": "Weapon Buff: Saxxy — gas-covered enemies explode on ignite",
+      "name": "Weapon Buff: All-Class Melee — gas-covered enemies explode on ignite",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117426,7 +117391,7 @@
     },
     {
       "id": 7443019512,
-      "name": "Weapon Buff: Saxxy — marks victims for death",
+      "name": "Weapon Buff: All-Class Melee — marks victims for death",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117435,7 +117400,7 @@
     },
     {
       "id": 7443019768,
-      "name": "Weapon Buff: Saxxy — +1 explosive-shot level",
+      "name": "Weapon Buff: All-Class Melee — +1 explosive-shot level",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117444,7 +117409,7 @@
     },
     {
       "id": 7443020024,
-      "name": "Weapon Buff: Saxxy — projectiles penetrate players",
+      "name": "Weapon Buff: All-Class Melee — projectiles penetrate players",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117452,7 +117417,7 @@
     },
     {
       "id": 7443020280,
-      "name": "Weapon Buff: Saxxy — +1 projectile-destruction level",
+      "name": "Weapon Buff: All-Class Melee — +1 projectile-destruction level",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117461,7 +117426,7 @@
     },
     {
       "id": 7443020536,
-      "name": "Weapon Buff: Saxxy — hits knock enemies back",
+      "name": "Weapon Buff: All-Class Melee — hits knock enemies back",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117470,7 +117435,7 @@
     },
     {
       "id": 7443020792,
-      "name": "Weapon Buff: Saxxy — +2 health on hit",
+      "name": "Weapon Buff: All-Class Melee — +2 health on hit",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117480,7 +117445,7 @@
     },
     {
       "id": 7443021048,
-      "name": "Weapon Buff: Saxxy — speed boost on kill",
+      "name": "Weapon Buff: All-Class Melee — speed boost on kill",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117489,7 +117454,7 @@
     },
     {
       "id": 7443021304,
-      "name": "Weapon Buff: Saxxy — +25% reserve ammo",
+      "name": "Weapon Buff: All-Class Melee — +25% reserve ammo",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117498,7 +117463,7 @@
     },
     {
       "id": 7443021560,
-      "name": "Weapon Buff: Saxxy — +5% movement speed while active",
+      "name": "Weapon Buff: All-Class Melee — +5% movement speed while active",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117508,7 +117473,7 @@
     },
     {
       "id": 7443021816,
-      "name": "Weapon Buff: Saxxy — +15% jump height",
+      "name": "Weapon Buff: All-Class Melee — +15% jump height",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117518,7 +117483,7 @@
     },
     {
       "id": 7443022072,
-      "name": "Weapon Buff: Saxxy — +10% healing",
+      "name": "Weapon Buff: All-Class Melee — +10% healing",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117527,7 +117492,7 @@
     },
     {
       "id": 7443022328,
-      "name": "Weapon Buff: Saxxy — +20% banner duration",
+      "name": "Weapon Buff: All-Class Melee — +20% banner duration",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117536,7 +117501,7 @@
     },
     {
       "id": 7443022584,
-      "name": "Weapon Buff: Saxxy — +10% ÜberCharge rate",
+      "name": "Weapon Buff: All-Class Melee — +10% ÜberCharge rate",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117545,7 +117510,7 @@
     },
     {
       "id": 7443022840,
-      "name": "Weapon Buff: Saxxy — +25% airblast force",
+      "name": "Weapon Buff: All-Class Melee — +25% airblast force",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117554,7 +117519,7 @@
     },
     {
       "id": 7443023096,
-      "name": "Weapon Buff: Saxxy — +10% airblast speed",
+      "name": "Weapon Buff: All-Class Melee — +10% airblast speed",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117563,7 +117528,7 @@
     },
     {
       "id": 7443023352,
-      "name": "Weapon Buff: Saxxy — +25% armor piercing",
+      "name": "Weapon Buff: All-Class Melee — +25% armor piercing",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117572,7 +117537,7 @@
     },
     {
       "id": 7443023608,
-      "name": "Weapon Buff: Saxxy — +5 cloak on hit",
+      "name": "Weapon Buff: All-Class Melee — +5 cloak on hit",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117581,7 +117546,7 @@
     },
     {
       "id": 7443023864,
-      "name": "Weapon Buff: Saxxy — +15 cloak on kill",
+      "name": "Weapon Buff: All-Class Melee — +15 cloak on kill",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117590,7 +117555,7 @@
     },
     {
       "id": 7443024120,
-      "name": "Weapon Buff: Saxxy — +25% building health",
+      "name": "Weapon Buff: All-Class Melee — +25% building health",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117599,7 +117564,7 @@
     },
     {
       "id": 7443024376,
-      "name": "Weapon Buff: Saxxy — +10% sentry firing speed",
+      "name": "Weapon Buff: All-Class Melee — +10% sentry firing speed",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117608,7 +117573,7 @@
     },
     {
       "id": 7443024632,
-      "name": "Weapon Buff: Saxxy — +1 disposable mini-sentry",
+      "name": "Weapon Buff: All-Class Melee — +1 disposable mini-sentry",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117617,7 +117582,7 @@
     },
     {
       "id": 7443024888,
-      "name": "Weapon Buff: Saxxy — +5 metal regenerated",
+      "name": "Weapon Buff: All-Class Melee — +5 metal regenerated",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117626,7 +117591,7 @@
     },
     {
       "id": 7443025144,
-      "name": "Weapon Buff: Saxxy — +15 max health while active",
+      "name": "Weapon Buff: All-Class Melee — +15 max health while active",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117636,7 +117601,7 @@
     },
     {
       "id": 7443025400,
-      "name": "Weapon Buff: Saxxy — +5% ÜberCharge on hit",
+      "name": "Weapon Buff: All-Class Melee — +5% ÜberCharge on hit",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117645,7 +117610,7 @@
     },
     {
       "id": 7443025656,
-      "name": "Weapon Buff: Saxxy — critical hits against burning enemies",
+      "name": "Weapon Buff: All-Class Melee — critical hits against burning enemies",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117654,7 +117619,7 @@
     },
     {
       "id": 7443025912,
-      "name": "Weapon Buff: Saxxy — critical hits from behind",
+      "name": "Weapon Buff: All-Class Melee — critical hits from behind",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117662,7 +117627,7 @@
     },
     {
       "id": 7443026168,
-      "name": "Weapon Buff: Saxxy — +15% charge rate",
+      "name": "Weapon Buff: All-Class Melee — +15% charge rate",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117671,7 +117636,7 @@
     },
     {
       "id": 7443026424,
-      "name": "Weapon Buff: Saxxy — +15% melee range",
+      "name": "Weapon Buff: All-Class Melee — +15% melee range",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117681,7 +117646,7 @@
     },
     {
       "id": 7443026680,
-      "name": "Weapon Buff: Saxxy — +15% movement speed while aiming",
+      "name": "Weapon Buff: All-Class Melee — +15% movement speed while aiming",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117690,7 +117655,7 @@
     },
     {
       "id": 7443026936,
-      "name": "Weapon Buff: Saxxy — +25% secondary reserve ammo",
+      "name": "Weapon Buff: All-Class Melee — +25% secondary reserve ammo",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117699,7 +117664,7 @@
     },
     {
       "id": 7443027192,
-      "name": "Weapon Buff: Saxxy — +25% max metal",
+      "name": "Weapon Buff: All-Class Melee — +25% max metal",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117708,7 +117673,7 @@
     },
     {
       "id": 7443027448,
-      "name": "Weapon Buff: Saxxy — +15% cloak duration",
+      "name": "Weapon Buff: All-Class Melee — +15% cloak duration",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117717,7 +117682,7 @@
     },
     {
       "id": 7443027704,
-      "name": "Weapon Buff: Saxxy — +15% cloak regeneration",
+      "name": "Weapon Buff: All-Class Melee — +15% cloak regeneration",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117726,7 +117691,7 @@
     },
     {
       "id": 7443027960,
-      "name": "Weapon Buff: Saxxy — +1 stickybomb out",
+      "name": "Weapon Buff: All-Class Melee — +1 stickybomb out",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117735,7 +117700,7 @@
     },
     {
       "id": 7443028216,
-      "name": "Weapon Buff: Saxxy — +25% construction rate",
+      "name": "Weapon Buff: All-Class Melee — +25% construction rate",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117744,7 +117709,7 @@
     },
     {
       "id": 7443028472,
-      "name": "Weapon Buff: Saxxy — +25% repair rate",
+      "name": "Weapon Buff: All-Class Melee — +25% repair rate",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117753,7 +117718,7 @@
     },
     {
       "id": 7443028728,
-      "name": "Weapon Buff: Saxxy — +15% explosion radius",
+      "name": "Weapon Buff: All-Class Melee — +15% explosion radius",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117762,7 +117727,7 @@
     },
     {
       "id": 7443028984,
-      "name": "Weapon Buff: Saxxy — +15% projectile range",
+      "name": "Weapon Buff: All-Class Melee — +15% projectile range",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117771,7 +117736,7 @@
     },
     {
       "id": 7443029240,
-      "name": "Weapon Buff: Saxxy — +10% accuracy",
+      "name": "Weapon Buff: All-Class Melee — +10% accuracy",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117780,7 +117745,7 @@
     },
     {
       "id": 7443029496,
-      "name": "Weapon Buff: Saxxy — +25% health from packs",
+      "name": "Weapon Buff: All-Class Melee — +25% health from packs",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117790,7 +117755,7 @@
     },
     {
       "id": 7443029752,
-      "name": "Weapon Buff: Saxxy — +5% ammo regeneration",
+      "name": "Weapon Buff: All-Class Melee — +5% ammo regeneration",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117799,7 +117764,7 @@
     },
     {
       "id": 7443030008,
-      "name": "Weapon Buff: Saxxy — +15% flame size",
+      "name": "Weapon Buff: All-Class Melee — +15% flame size",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117808,7 +117773,7 @@
     },
     {
       "id": 7443030264,
-      "name": "Weapon Buff: Saxxy — +15% flame range",
+      "name": "Weapon Buff: All-Class Melee — +15% flame range",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117817,7 +117782,7 @@
     },
     {
       "id": 7443030520,
-      "name": "Weapon Buff: Saxxy — airblast can be charged",
+      "name": "Weapon Buff: All-Class Melee — airblast can be charged",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117825,7 +117790,7 @@
     },
     {
       "id": 7443030776,
-      "name": "Weapon Buff: Saxxy — +2 seconds of Jarate on scoped hit",
+      "name": "Weapon Buff: All-Class Melee — +2 seconds of Jarate on scoped hit",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117834,7 +117799,7 @@
     },
     {
       "id": 7443031032,
-      "name": "Weapon Buff: Saxxy — mini-crits become critical hits",
+      "name": "Weapon Buff: All-Class Melee — mini-crits become critical hits",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117843,7 +117808,7 @@
     },
     {
       "id": 7443031288,
-      "name": "Weapon Buff: Saxxy — no self-inflicted blast damage",
+      "name": "Weapon Buff: All-Class Melee — no self-inflicted blast damage",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117851,7 +117816,7 @@
     },
     {
       "id": 7443031544,
-      "name": "Weapon Buff: Saxxy — drops a health pack on kill",
+      "name": "Weapon Buff: All-Class Melee — drops a health pack on kill",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117860,7 +117825,7 @@
     },
     {
       "id": 7443031800,
-      "name": "Weapon Buff: Saxxy — slows enemies on hit",
+      "name": "Weapon Buff: All-Class Melee — slows enemies on hit",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117869,7 +117834,7 @@
     },
     {
       "id": 7443032056,
-      "name": "Weapon Buff: Saxxy — +50% gesture and consumable speed",
+      "name": "Weapon Buff: All-Class Melee — +50% gesture and consumable speed",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117878,7 +117843,7 @@
     },
     {
       "id": 7443032312,
-      "name": "Weapon Buff: Saxxy — +2 health regenerated while active",
+      "name": "Weapon Buff: All-Class Melee — +2 health regenerated while active",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117888,7 +117853,7 @@
     },
     {
       "id": 7443032568,
-      "name": "Weapon Buff: Saxxy — +20% deploy speed",
+      "name": "Weapon Buff: All-Class Melee — +20% deploy speed",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117898,7 +117863,7 @@
     },
     {
       "id": 7443032824,
-      "name": "Weapon Buff: Saxxy — +20% meter recharge speed",
+      "name": "Weapon Buff: All-Class Melee — +20% meter recharge speed",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117907,7 +117872,7 @@
     },
     {
       "id": 7443033080,
-      "name": "Weapon Buff: Saxxy — +1 ammo on hit",
+      "name": "Weapon Buff: All-Class Melee — +1 ammo on hit",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117917,7 +117882,7 @@
     },
     {
       "id": 7443033336,
-      "name": "Weapon Buff: Saxxy — 3 seconds of mini-crits on kill",
+      "name": "Weapon Buff: All-Class Melee — 3 seconds of mini-crits on kill",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117927,7 +117892,7 @@
     },
     {
       "id": 7443033592,
-      "name": "Weapon Buff: Saxxy — +10% healing received while active",
+      "name": "Weapon Buff: All-Class Melee — +10% healing received while active",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117936,7 +117901,7 @@
     },
     {
       "id": 7443033848,
-      "name": "Weapon Buff: Saxxy — +25% rocket-jump damage resistance",
+      "name": "Weapon Buff: All-Class Melee — +25% rocket-jump damage resistance",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117945,7 +117910,7 @@
     },
     {
       "id": 7443034104,
-      "name": "Weapon Buff: Saxxy — +15% self-damage launch force",
+      "name": "Weapon Buff: All-Class Melee — +15% self-damage launch force",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117954,7 +117919,7 @@
     },
     {
       "id": 7443034360,
-      "name": "Weapon Buff: Saxxy — +15% minigun spin-up speed",
+      "name": "Weapon Buff: All-Class Melee — +15% minigun spin-up speed",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117963,7 +117928,7 @@
     },
     {
       "id": 7443034616,
-      "name": "Weapon Buff: Saxxy — -15% airblast ammo cost",
+      "name": "Weapon Buff: All-Class Melee — -15% airblast ammo cost",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117972,7 +117937,7 @@
     },
     {
       "id": 7443034872,
-      "name": "Weapon Buff: Saxxy — +1 second of ÜberCharge duration",
+      "name": "Weapon Buff: All-Class Melee — +1 second of ÜberCharge duration",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117981,7 +117946,7 @@
     },
     {
       "id": 7443035128,
-      "name": "Weapon Buff: Saxxy — reveals cloaked victims on hit",
+      "name": "Weapon Buff: All-Class Melee — reveals cloaked victims on hit",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117990,7 +117955,7 @@
     },
     {
       "id": 7443035384,
-      "name": "Weapon Buff: Saxxy — reveals disguised victims on hit",
+      "name": "Weapon Buff: All-Class Melee — reveals disguised victims on hit",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -117999,7 +117964,7 @@
     },
     {
       "id": 7443035640,
-      "name": "Weapon Buff: Saxxy — speed boost on hitting an enemy",
+      "name": "Weapon Buff: All-Class Melee — speed boost on hitting an enemy",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -118008,7 +117973,7 @@
     },
     {
       "id": 7443035896,
-      "name": "Weapon Buff: Saxxy — +50% base health on kill",
+      "name": "Weapon Buff: All-Class Melee — +50% base health on kill",
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
@@ -139401,8 +139366,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 10446,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443015702,
@@ -139411,8 +139375,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 10702,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443015958,
@@ -139457,8 +139420,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 11982,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443005190,
@@ -139467,8 +139429,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 190,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443017494,
@@ -139477,8 +139438,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 12494,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443017750,
@@ -139486,8 +139446,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 12750,
-      "eligible": true
+      "weapon_buff_id": 12750
     },
     {
       "id": 7443018006,
@@ -139513,8 +139472,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 13518,
-      "eligible": true
+      "weapon_buff_id": 13518
     },
     {
       "id": 7443018774,
@@ -139522,8 +139480,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 13774,
-      "eligible": true
+      "weapon_buff_id": 13774
     },
     {
       "id": 7443019030,
@@ -139531,8 +139488,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 14030,
-      "eligible": true
+      "weapon_buff_id": 14030
     },
     {
       "id": 7443019286,
@@ -139548,8 +139504,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 14542,
-      "eligible": true
+      "weapon_buff_id": 14542
     },
     {
       "id": 7443019798,
@@ -139583,8 +139538,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 15566,
-      "eligible": true
+      "weapon_buff_id": 15566
     },
     {
       "id": 7443020822,
@@ -139593,8 +139547,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 15822,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443021078,
@@ -139602,8 +139555,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 16078,
-      "eligible": true
+      "weapon_buff_id": 16078
     },
     {
       "id": 7443021334,
@@ -139621,8 +139573,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 16590,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443021846,
@@ -139631,8 +139582,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 16846,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443022102,
@@ -139749,8 +139699,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 20174,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443025430,
@@ -139767,8 +139716,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 20686,
-      "eligible": true
+      "weapon_buff_id": 20686
     },
     {
       "id": 7443025942,
@@ -139794,8 +139742,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 21454,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443026710,
@@ -139903,8 +139850,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 24526,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443029782,
@@ -139956,8 +139902,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 26062,
-      "eligible": true
+      "weapon_buff_id": 26062
     },
     {
       "id": 7443031318,
@@ -139973,8 +139918,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 26574,
-      "eligible": true
+      "weapon_buff_id": 26574
     },
     {
       "id": 7443031830,
@@ -139982,8 +139926,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 26830,
-      "eligible": true
+      "weapon_buff_id": 26830
     },
     {
       "id": 7443032086,
@@ -140001,8 +139944,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 27342,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443032598,
@@ -140011,8 +139953,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 27598,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443032854,
@@ -140030,8 +139971,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 28110,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443033366,
@@ -140040,8 +139980,7 @@
       "classification": "useful",
       "count": 0,
       "weapon_buff_id": 28366,
-      "stackable": true,
-      "eligible": true
+      "stackable": true
     },
     {
       "id": 7443033622,
@@ -140103,8 +140042,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 30158,
-      "eligible": true
+      "weapon_buff_id": 30158
     },
     {
       "id": 7443035414,
@@ -140112,8 +140050,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 30414,
-      "eligible": true
+      "weapon_buff_id": 30414
     },
     {
       "id": 7443035670,
@@ -140121,8 +140058,7 @@
       "kind": "weapon_buff",
       "classification": "useful",
       "count": 0,
-      "weapon_buff_id": 30670,
-      "eligible": true
+      "weapon_buff_id": 30670
     },
     {
       "id": 7443035926,

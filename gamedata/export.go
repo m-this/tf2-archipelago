@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 )
 
@@ -116,6 +117,7 @@ type weaponClassesJSON struct {
 	Name    string   `json:"name"`
 	Classes []string `json:"classes"`
 	Icon    string   `json:"icon"`
+	Aliases []string `json:"aliases,omitempty"`
 }
 
 // Export writes the generated data files into dir, replacing what is there.
@@ -244,15 +246,33 @@ func buildWeaponClassesFile() weaponClassesFile {
 		}
 		classes := weaponClassNames(weapon.Name, weapon.DefIndexes)
 		if len(classes) != 0 {
+			displayName := weapon.DisplayName()
 			file.Weapons = append(file.Weapons, weaponClassesJSON{
-				Name: weapon.Name, Classes: classes, Icon: trackerItemIconPath(weapon.Name),
+				Name: displayName, Classes: classes, Icon: trackerItemIconPath(displayName),
+				Aliases: weaponFamilyAliases(weapon.Name),
 			})
 		}
 	}
 	return file
 }
 
+func weaponFamilyAliases(canonical string) []string {
+	for _, family := range weaponFamilies {
+		if family[0] != canonical {
+			continue
+		}
+		// A renamed family needs its internal canonical name exposed as an alias;
+		// normally only the remaining, equivalent item definitions are aliases.
+		if canonical == allClassMeleeName {
+			return slices.Clone(family)
+		}
+		return slices.Clone(family[1:])
+	}
+	return nil
+}
+
 var tfWikiItemIconNames = map[string]string{
+	"All-Class Melee":  "Conscientious Objector",
 	"Construction PDA": "PDA Build",
 	"Destruction PDA":  "PDA Destroy",
 	"Force-a-Nature":   "Force-A-Nature",

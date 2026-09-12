@@ -32,6 +32,10 @@ export function sampleSource(host: string): TrackerSource {
     [7_443_005_006, 'Weapon Buff: Air Strike — +10% damage'],
     [7_443_005_007, 'Weapon Buff: Air Strike — +15% reload speed'],
     [7_443_005_008, 'Weapon Buff: Minigun — +15 health on kill'],
+    [7_443_005_009, 'Weapon Buff: All-Class Melee — +10% damage'],
+    [7_443_005_010, 'Weapon Buff: All-Class Melee — +15 health on kill'],
+    [7_443_005_011, 'Weapon Buff: Three-Rune Blade — inflicts 3 seconds of bleed'],
+    [7_443_005_012, 'Weapon Buff: Bootlegger — +15 max health while active'],
     [7_443_007_001, 'Grappling Hook'],
     [7_443_004_001, 'Cash Bundle'],
   ]);
@@ -41,7 +45,8 @@ export function sampleSource(host: string): TrackerSource {
     7_443_005_002, 7_443_005_002, 7_443_005_002, 7_443_005_003, 7_443_005_004, 7_443_005_004,
     7_443_005_004, 7_443_005_005, 7_443_005_005, 7_443_005_005, 7_443_005_005, 7_443_005_005,
     7_443_005_005, 7_443_005_006, 7_443_005_006, 7_443_005_006, 7_443_005_007, 7_443_005_008,
-    7_443_005_008, 7_443_007_001, 7_443_004_001, 7_443_004_001, 7_443_004_001,
+    7_443_005_008, 7_443_005_009, 7_443_005_009, 7_443_005_010, 7_443_005_011, 7_443_005_011,
+    7_443_005_012, 7_443_007_001, 7_443_004_001, 7_443_004_001, 7_443_004_001,
   ];
   const weapons = [
     weapon('Air Strike', ['Soldier'], 'f87faf790afc0d04056479f1566f09f1.png'),
@@ -49,6 +54,30 @@ export function sampleSource(host: string): TrackerSource {
     weapon('Mad Milk', ['Scout'], '56b94729a6e2f3fa8f0992d6fc8c1895.png'),
     weapon("Crusader's Crossbow", ['Medic'], '9c40cbf4c4717626e8e02f0fcfbea19d.png'),
     weapon('Grenade Launcher', ['Demoman'], 'e62935cf06f65a239f52541c2fd9472f.png'),
+    weapon("Ali Baba's Wee Booties", ['Demoman'], 'a4e0f4a0d6af7480aa80dd8fc05f6028.png', [
+      'Bootlegger',
+    ]),
+    weapon('Boston Basher', ['Scout'], 'b5d85af732f93216889c5563e54cbe16.png', [
+      'Three-Rune Blade',
+    ]),
+    weapon(
+      'All-Class Melee',
+      ['Scout', 'Soldier', 'Pyro', 'Demoman', 'Heavy', 'Engineer', 'Medic', 'Sniper', 'Spy'],
+      'cb6c1fb553e24bdf3d885d5c07a9a1cc.png',
+      [
+        'Saxxy',
+        'Bat Outta Hell',
+        'Conscientious Objector',
+        'Crossing Guard',
+        'Freedom Staff',
+        'Frying Pan',
+        'Golden Frying Pan',
+        'Ham Shank',
+        'Memory Maker',
+        'Necro Smasher',
+        'Prinny Machete',
+      ],
+    ),
   ];
   return {
     mode: 'demo',
@@ -92,10 +121,16 @@ function mission(id: number, pop: string, name: string, difficulty: string, wave
   return { pop_file: pop, name, difficulty, locations };
 }
 
-function weapon(name: string, classes: readonly string[], filename: string): Weapon {
+function weapon(
+  name: string,
+  classes: readonly string[],
+  filename: string,
+  aliases: readonly string[] = [],
+): Weapon {
   return {
     name,
     classes,
     icon: `assets/tf2/items/${filename}`,
+    aliases,
   };
 }

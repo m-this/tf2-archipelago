@@ -70,7 +70,7 @@ func writeBuffs(out *strings.Builder) {
 func writeNamesAndEffectText(out *strings.Builder) {
 	weaponNames := make([]string, 0, len(gamedata.BuffWeapons))
 	for _, weapon := range gamedata.BuffWeapons {
-		weaponNames = append(weaponNames, weapon.Name)
+		weaponNames = append(weaponNames, weapon.DisplayName())
 	}
 	writeStrings(out, "g_WeaponNames", weaponNames)
 
