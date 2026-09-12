@@ -200,11 +200,24 @@ func (s *Supervisor) launchProcesses(ctx context.Context, current settings.Setti
 	   launcher down with the server it is supervising. guard turns that into a
 	   line in the log a debug bundle carries. */
 	bridgeErr, srcdsErr := make(chan error, 1), make(chan error, 1)
+	navigationRefresh := make(chan struct{}, 1)
+	srcdsSink := func(line Line) {
+		s.sink(line)
+		if isMVMMapChange(line) {
+			select {
+			case navigationRefresh <- struct{}{}:
+			default:
+			}
+		}
+	}
 	go Guard("the bridge", s.emit, func() {
 		bridgeErr <- bridge.Run(ctx, cfg, s.bridgeLogger())
 	})
 	go Guard("the game server", s.emit, func() {
-		srcdsErr <- runSrcdsWithSink(ctx, current, s.logger, s.sink)
+		srcdsErr <- runSrcdsWithSink(ctx, current, s.logger, srcdsSink)
+	})
+	go Guard("the defender navigation refresher", s.emit, func() {
+		s.watchNavigationRefresh(ctx, current, navigationRefresh)
 	})
 	go Guard("the SourceMod error watcher", s.emit, func() {
 		watchSourcemodErrors(ctx, filepath.Join(current.InstallRoot, "tf-dedicated"), s.sink)
