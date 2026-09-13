@@ -500,6 +500,16 @@ func substanceSourceFunction(t *testing.T, signature string) string {
 }
 
 func TestWeaponBuffSubstancesUseTheSharedHitPath(t *testing.T) {
+	manual := substanceSourceFunction(t, "static bool WeaponBuffs_IsManualHitEffect")
+	for _, effect := range []string{
+		"BleedEffect", "IgniteEffect", "MadMilkEffect", "GasolineEffect",
+		"MarkForDeathEffect", "JarateEffect",
+	} {
+		if !strings.Contains(manual, "effect == "+effect) {
+			t.Fatalf("manual hit-effect classifier does not include %s", effect)
+		}
+	}
+
 	apply := substanceSourceFunction(t, "static void WeaponBuffs_ApplyHitEffects")
 	for _, effect := range []string{
 		"TF2_MakeBleed", "TF2_IgnitePlayer", "TFCond_Milked", "TFCond_Gas",
@@ -517,6 +527,7 @@ func TestWeaponBuffSubstancesUseTheSharedHitPath(t *testing.T) {
 
 	damage := substanceSourceFunction(t, "public void WeaponBuffs_OnTakeDamagePost")
 	for _, guard := range []string{
+		"victim == attacker",
 		"GetClientTeam(victim) == GetClientTeam(attacker)",
 		"WeaponBuffs_IsDamageOverTime(attacker, inflictor, damagecustom)",
 		"WeaponBuffs_IsSubstanceProjectile(inflictorClass)",
@@ -528,6 +539,11 @@ func TestWeaponBuffSubstancesUseTheSharedHitPath(t *testing.T) {
 	if !strings.Contains(damage, "WeaponBuffs_ForEntity(weapon)") ||
 		!strings.Contains(damage, "WeaponBuffs_ApplyHitEffects(victim, attacker, catalog)") {
 		t.Fatal("direct hits do not resolve the canonical weapon and apply its hit effects")
+	}
+
+	provider := substanceSourceFunction(t, "void WeaponBuffs_Apply(int client)")
+	if !strings.Contains(provider, "if (WeaponBuffs_IsManualHitEffect(effect))") {
+		t.Fatal("generic provider can apply hostile hit effects before the guarded hit path")
 	}
 }
 

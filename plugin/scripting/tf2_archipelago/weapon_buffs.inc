@@ -959,6 +959,16 @@ static void WeaponBuffs_ApplyKillRewards(int attacker, int weapon)
 // Item attributes implement these effects for only some of the weapons they
 // can be awarded to. Apply the reward from the resolved catalogue entry on a
 // confirmed enemy hit so bullets, projectiles and jars all use the same rules.
+static bool WeaponBuffs_IsManualHitEffect(int effect)
+{
+    return effect == BleedEffect
+        || effect == IgniteEffect
+        || effect == MadMilkEffect
+        || effect == GasolineEffect
+        || effect == MarkForDeathEffect
+        || effect == JarateEffect;
+}
+
 static void WeaponBuffs_ApplyHitEffects(int victim, int attacker, int weapon)
 {
     int bleed = g_WeaponEffectLevels[weapon][BleedEffect];
@@ -2801,6 +2811,14 @@ void WeaponBuffs_Apply(int client)
         // player's real, modified maximum rather than the schema attribute's
         // negative-damage heal, which emits a popup and changes no health.
         if (WeaponBuffs_IsPassiveEffect(effect))
+        {
+            continue;
+        }
+        // The shared confirmed-enemy-hit path applies these. Installing their
+        // schema attributes on the player-owned provider also lets TF2 apply
+        // them to self-inflicted blast damage (a Rocket Jumper can bleed and
+        // ignite its owner), before our victim/attacker guards ever run.
+        if (WeaponBuffs_IsManualHitEffect(effect))
         {
             continue;
         }
