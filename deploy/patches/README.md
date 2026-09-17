@@ -23,6 +23,7 @@ generated-code check failed on it.
 | Patch | Why |
 | --- | --- |
 | `cbasenpc/0001-refresh-tools-nav-cache-on-map-start.patch` | Only for a from-source build of the extension. Rebuilds CBaseNPC's tools-side navigation cache after every map activates, so Defender Bots do not receive an empty area list on community-map changelevels. |
+| `metamod/0001-sourcehook-read-clang-cl-vcall-thunks.patch` | Only for the Windows CBaseNPC built by `deploy/bots/build-cbasenpc-windows.sh`. SourceHook finds a virtual function's slot by reading the compiler's vcall thunk and knows only MSVC's; clang-cl's thunk loads the slot into a register first. Without it every `VCall<>::Init(&Class::Method)` throws and the server shuts down at map start. |
 | `tf2attributes/0001-drop-pragma-unused-before-declaration.patch` | `#pragma unused` sits above the function it names, and spcomp 1.12 resolves it before the declaration exists. Nothing compiles without this. |
 | `actions/0001-drop-libudis86-and-asm-sources.patch` | Only for a from-source build of the extension. SourceMod removed `public/libudis86` and `public/asm` in commit `e07c120c`; the AMBuilder still lists them. |
 | `actions/0002-do-not-treat-sdk-warnings-as-errors.patch` | Only for a from-source build. `-Werror` against the current hl2sdk fails on `#pragma warning` blocks in `vstdlib/random.h`. |

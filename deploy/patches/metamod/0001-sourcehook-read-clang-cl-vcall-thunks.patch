@@ -1,0 +1,110 @@
+diff --git a/core/sourcehook/sh_memfuncinfo.h b/core/sourcehook/sh_memfuncinfo.h
+index f83bf69..c971683 100644
+--- a/core/sourcehook/sh_memfuncinfo.h
++++ b/core/sourcehook/sh_memfuncinfo.h
+@@ -84,6 +84,94 @@ namespace SourceHook
+ 
+ 	namespace
+ 	{
++		// clang-cl's thunks read the slot into a register and jump through it,
++		// where MSVC's jump through the slot. With /Oy- they also keep a frame.
++		//
++		//   55                 push ebp              /Oy- only
++		//   89 E5              mov  ebp,esp          /Oy- only
++		//   8B 01              mov  eax,[ecx]
++		//   8B 00|40 xx|80 xxxxxxxx  mov eax,[eax(+disp)]
++		//   5D                 pop  ebp              /Oy- only
++		//   FF E0              jmp  eax
++		//
++		// With varargs `this` is the first argument and the slot goes through
++		// ecx instead:
++		//
++		//   8B 44 24 04        mov  eax,[esp+4]      or 8B 45 08, mov eax,[ebp+8]
++		//   8B 08              mov  ecx,[eax]
++		//   8B 09|49 xx|89 xxxxxxxx  mov ecx,[ecx(+disp)]
++		//   89 44 24 04        mov  [esp+4],eax      or 89 45 08, mov [ebp+8],eax
++		//   FF E1              jmp  ecx
++		int MFI_GetClangVtblOffset(unsigned char *addr)
++		{
++			bool frame = addr[0] == 0x55 && addr[1] == 0x89 && addr[2] == 0xE5;
++			if (frame)
++				addr += 3;
++
++			static const unsigned char vararg_esp[] = {0x8B, 0x44, 0x24, 0x04, 0x8B, 0x08};
++			static const unsigned char vararg_ebp[] = {0x8B, 0x45, 0x08, 0x8B, 0x08};
++			const unsigned char *load = frame ? vararg_ebp : vararg_esp;
++			size_t load_size = frame ? sizeof(vararg_ebp) : sizeof(vararg_esp);
++
++			size_t matched = 0;
++			while (matched < load_size && addr[matched] == load[matched])
++				matched++;
++
++			unsigned char reg;
++			if (matched == load_size)
++			{
++				addr += load_size;
++				reg = 0x09;
++			}
++			else if (addr[0] == 0x8B && addr[1] == 0x01)
++			{
++				addr += 2;
++				reg = 0x00;
++			}
++			else
++				return -1;
++
++			if (addr[0] != 0x8B)
++				return -1;
++			unsigned int offset;
++			if (addr[1] == reg)
++			{
++				offset = 0;
++				addr += 2;
++			}
++			else if (addr[1] == (0x40 | reg))
++			{
++				offset = addr[2];
++				addr += 3;
++			}
++			else if (addr[1] == (0x80 | reg))
++			{
++				offset = *(unsigned int*)(addr + 2);
++				addr += 6;
++			}
++			else
++				return -1;
++
++			if (reg == 0x09)
++			{
++				if (frame && addr[0] == 0x89 && addr[1] == 0x45 && addr[2] == 0x08)
++					addr += 3;
++				else if (!frame && addr[0] == 0x89 && addr[1] == 0x44 && addr[2] == 0x24 && addr[3] == 0x04)
++					addr += 4;
++				else
++					return -1;
++			}
++			if (frame)
++			{
++				if (addr[0] != 0x5D)
++					return -1;
++				addr++;
++			}
++			if (addr[0] != 0xFF || addr[1] != (reg == 0x09 ? 0xE1 : 0xE0))
++				return -1;
++			return offset / SH_PTRSIZE;
++		}
++
+ 		int MFI_GetVtblOffset(void *mfp)
+ 		{
+ 			unsigned char *addr = (unsigned char*)mfp;
+@@ -113,6 +201,10 @@ namespace SourceHook
+ 			
+ 			// With varargs, the this pointer is passed as if it was the first argument
+ 
++			int clang_offset = MFI_GetClangVtblOffset(addr);
++			if (clang_offset >= 0)
++				return clang_offset;
++
+ 			bool ok = false;
+ 			if (addr[0] == 0x8B && addr[1] == 0x44 && addr[2] == 0x24 && addr[3] == 0x04 &&
+ 				addr[4] == 0x8B && addr[5] == 0x00)
