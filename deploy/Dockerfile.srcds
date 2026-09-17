@@ -53,6 +53,38 @@ RUN CGO_ENABLED=0 go build -trimpath -o /rcon ./launcher/cmd/rcon \
 	&& CGO_ENABLED=0 go build -trimpath -o /botfiles ./launcher/cmd/botfiles
 
 
+# CBaseNPC and Actions, compiled, so the image carries the patches in
+# deploy/patches/cbasenpc. The released CBaseNPC can leave its tools-side
+# navigation cache empty after a changelevel.
+#
+# A minute and a half of fetching and compiling, so this stage sees nothing
+# that does not change its output, and CI keeps its layers between runs. The
+# pins arrive through a stage of their own that keeps only the extension lines
+# of versions.env: COPY --from is keyed on the content it copies, so bumping
+# any other pin leaves the build below cached.
+FROM debian:stable-slim AS extension-pins
+
+COPY deploy/env/versions.env /versions.env
+RUN grep -E '^(HL2SDK|SOURCEMOD_SRC|METAMOD_SRC|AMBUILD|CBASENPC|ACTIONS)_' \
+	/versions.env >/extension-pins.env
+
+
+FROM debian:stable-slim AS extensions
+
+RUN apt-get update \
+	&& apt-get install --yes --no-install-recommends \
+		git ca-certificates python3 clang gcc-multilib g++-multilib \
+	&& rm -rf /var/lib/apt/lists/*
+
+WORKDIR /repo
+COPY --from=extension-pins /extension-pins.env deploy/env/versions.env
+COPY deploy/patches/cbasenpc deploy/patches/cbasenpc
+COPY deploy/patches/actions deploy/patches/actions
+COPY deploy/bots/build-extensions.sh deploy/bots/build-extensions.sh
+RUN BOTS_OUT=/extensions sh deploy/bots/build-extensions.sh \
+	&& rm -rf deploy/bots/build
+
+
 # The MvM defender bots: the mod that fills RED so a wave tuned for six players
 # is winnable alone. Its own stage so a plugin edit does not refetch it, and so
 # the tree it stages can be copied whole.
@@ -63,8 +95,7 @@ RUN CGO_ENABLED=0 go build -trimpath -o /rcon ./launcher/cmd/rcon \
 FROM golang:1.27 AS bots
 
 RUN apt-get update \
-	&& apt-get install --yes --no-install-recommends \
-		git curl ca-certificates unzip python3-pip clang gcc-multilib g++-multilib \
+	&& apt-get install --yes --no-install-recommends git curl ca-certificates unzip \
 	&& rm -rf /var/lib/apt/lists/*
 
 WORKDIR /repo
@@ -76,10 +107,11 @@ COPY deploy/bots deploy/bots
 # every start, but the package carries it so a server it has never configured
 # still has names rather than six bots called "You forgot to give me a name!".
 COPY launcher/internal/botnames launcher/internal/botnames
-# CBaseNPC's released binary can leave its tools-side navigation cache empty
-# after a changelevel. Build the Linux extensions here so the in-tree lifecycle
-# patch is present in Docker instead of hot-reloading a live extension.
-RUN BOTS_BUILD_EXTENSIONS=1 sh deploy/bots/build.sh
+# build.sh stages the released extensions for both platforms. This image is
+# Linux and carries the ones built above instead.
+RUN sh deploy/bots/build.sh \
+	&& rm deploy/bots/build/package/addons/sourcemod/extensions/*.ext.2.tf2.dll
+COPY --from=extensions /extensions/addons deploy/bots/build/package/addons
 
 
 FROM cm2network/tf2:sourcemod

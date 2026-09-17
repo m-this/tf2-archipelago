@@ -480,9 +480,9 @@ plugin:
 bots:
 	./deploy/bots/build.sh
 
-# The same, but compiling the two extensions here instead of downloading them.
-# Needs clang and a 32-bit toolchain. Linux only, and only worth it when a TF2
-# update breaks CBaseNPC and the fix has to be ours.
+# The same, but compiling the two extensions here instead of downloading them,
+# with the patches in deploy/patches, as the image does. Needs clang and a
+# 32-bit toolchain, and Linux.
 bots-from-source:
 	BOTS_BUILD_EXTENSIONS=1 ./deploy/bots/build.sh
 

@@ -12,9 +12,9 @@
 #   - The two compiled extensions (CBaseNPC, Actions) are downloaded from the
 #     pinned upstream releases, 32-bit for Linux and Windows. TF2's dedicated
 #     server is 32-bit on both. Building them needs a C++ toolchain and several
-#     CPU-minutes; nothing we change is in them. BOTS_BUILD_EXTENSIONS=1 builds
-#     them from source instead, which is the path to take when a TF2 update
-#     moves a signature and the fix has to be ours. See build-extensions.sh.
+#     CPU-minutes. BOTS_BUILD_EXTENSIONS=1 builds them from source instead,
+#     with the patches in deploy/patches; the Docker image does that in a
+#     stage of its own. See build-extensions.sh.
 #
 #   - The four SourcePawn plugins are compiled here, always. They are bytecode,
 #     so one build serves both platforms, spcomp takes seconds, and compiling

@@ -73,10 +73,28 @@ jobs:
             -t "$IMAGE/admin:nightly" .
           deploy/push-image.sh "$IMAGE/admin:nightly"
 
+      # The srcds image compiles CBaseNPC and Actions, most of its build time,
+      # and their stage changes only with their pins, patches and script. The
+      # GitHub Actions cache keeps its layers between runs, and a tag reads
+      # main's cache, so a release reuses what the nightly compiled.
+      #
+      # The gha cache needs a docker-container builder and the runtime token
+      # only a JavaScript action can see. `use: false` keeps every other
+      # `docker build` here on the daemon, where push-image.sh finds its image.
+      - uses: docker/setup-buildx-action@v4
+        id: buildx
+        with:
+          use: false
+
+      - uses: crazy-max/ghaction-github-runtime@v4
+
       - name: build and push the srcds image
         run: |
           . deploy/env/versions.env
-          docker build -f deploy/Dockerfile.srcds \
+          docker buildx build --builder "${{ steps.buildx.outputs.name }}" --load \
+            -f deploy/Dockerfile.srcds \
+            --cache-from type=gha,scope=srcds \
+            --cache-to type=gha,scope=srcds,mode=max \
             --build-arg "RIPEXT_VERSION=$RIPEXT_VERSION" \
             --build-arg "SIGSEGV_MVM_VERSION=$SIGSEGV_MVM_VERSION" \
             --build-arg "SIGSEGV_MVM_SHA256=$SIGSEGV_MVM_SHA256" \
