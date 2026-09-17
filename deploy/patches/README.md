@@ -29,10 +29,10 @@ generated-code check failed on it.
 | `actions/0002-do-not-treat-sdk-warnings-as-errors.patch` | Only for a from-source build. `-Werror` against the current hl2sdk fails on `#pragma warning` blocks in `vstdlib/random.h`. |
 | `actions/0003-terminate-handle-instead-of-assigning-index.patch` | Only for a from-source build. `CBaseHandle::operator=` takes an `IHandleEntity*`, not an index. |
 
-The CBaseNPC and three Actions patches matter only with
-`BOTS_BUILD_EXTENSIONS=1`. The Docker image uses that path for the CBaseNPC
-map-lifecycle fix. The normal build downloads the two extensions from their
-releases.
+The CBaseNPC and three Actions patches matter only to
+`build-extensions.sh`, which the Docker image runs in a stage of its own for
+the CBaseNPC map-lifecycle fix and `BOTS_BUILD_EXTENSIONS=1` runs on a laptop.
+The normal build downloads the two extensions from their releases.
 
 Two more facts the build depends on, explained in the scripts. The defender
 mod compiles with SourceMod 1.12.0-git7164's `spcomp`, and git7246's segfaults
