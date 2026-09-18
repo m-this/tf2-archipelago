@@ -22,6 +22,10 @@ in the release notes, so this file is the only place to write it.
 
 ### Fixed
 
+- **A bot is no longer called "// Managed by tf2ap. Edits here".** The names
+  file the launcher writes starts with a managed-file comment, and the mod read
+  that line as a name and let the game cut it at 31 characters. Reported with a
+  screenshot by Cowser the Khelinace.
 - **Adding a bot name works again.** Typing a name on the Bots page and pressing
   Add this name answered `settings action "bots.name_add" is not wired` and
   added nothing. Reported by Cowser the Khelinace.
