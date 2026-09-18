@@ -214,13 +214,21 @@ func (a *App) Dispatch(id string) error {
 	s := *a.draft
 	a.mu.Unlock()
 
+	// form.Act owns every button whose answer is a State and nothing else, and
+	// it says which those are. Naming them here as well is what broke
+	// bots.name_add: it was in wiredActions, so the test that compares the two
+	// lists passed, and it was missing from the switch below, so the browser
+	// got "settings action \"bots.name_add\" is not wired" and no name was
+	// ever added. One list, and it is form.Act's.
+	if next, said, ok := form.Act(s, id); ok {
+		a.mutateDraft(func(state *form.State) { *state = next })
+		a.Notify(said)
+		return nil
+	}
+
 	switch id {
 	case "missions.pool_all", "missions.pool_none":
 		a.setPool(id == "missions.pool_all")
-	case "bots.save_team", "bots.remove_team", "loadout.save":
-		next, said, _ := form.Act(s, id)
-		a.mutateDraft(func(state *form.State) { *state = next })
-		a.Notify(said)
 	case "missions.check_selection":
 		a.checkMissionSelection(s.Settings)
 	case "missions.download_packs":

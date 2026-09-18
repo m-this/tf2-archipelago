@@ -364,3 +364,25 @@ func TestSteamJoinWaitsForThePublishedAddress(t *testing.T) {
 		t.Fatalf("Join did not use Steam's published address: %q", got)
 	}
 }
+
+// Every button form.Act answers has to reach it through Dispatch. The pair of
+// lists this used to keep, one in wiredActions and one in Dispatch's switch,
+// drifted apart: bots.name_add was in the first and not the second, so the
+// test above passed and the browser answered "is not wired" to anybody who
+// typed a bot name. Ask Dispatch, not a list.
+func TestEveryStateOnlyActionReachesFormAct(t *testing.T) {
+	app := New(settings.Defaults(), nil)
+	app.OpenSettings("")
+	state := form.NewState(settings.Defaults())
+	for _, spec := range form.Specs(state, form.Env{}) {
+		if spec.Kind != form.Action && spec.Kind != form.Confirm {
+			continue
+		}
+		if _, _, ok := form.Act(state, spec.ID); !ok {
+			continue
+		}
+		if err := app.Dispatch(spec.ID); err != nil && strings.Contains(err.Error(), "is not wired") {
+			t.Errorf("form.Act answers %q and Dispatch does not route it: %v", spec.ID, err)
+		}
+	}
+}

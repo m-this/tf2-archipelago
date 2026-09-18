@@ -22,6 +22,10 @@ in the release notes, so this file is the only place to write it.
 
 ### Fixed
 
+- **Adding a bot name works again.** Typing a name on the Bots page and pressing
+  Add this name answered `settings action "bots.name_add" is not wired` and
+  added nothing. Reported by Cowser the Khelinace.
+
 - **Defender bots ready up again after a map change.** A per-client
   ready-command deadline kept the previous map's game clock, so the bots
   stopped pressing F4 until the new map's clock had caught up with it. On a
