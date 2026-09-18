@@ -60,6 +60,10 @@ char g_PlannedPopFile[64];
 char g_SwitchingPopFile[64];
 float g_SwitchingUntil;
 
+// Popfiles this server tried to read and could not, by name. Session-lived on
+// purpose: installing the mod the file needs means a restart anyway.
+StringMap g_RefusedPopFiles;
+
 // How long to wait for a switch before believing it will not happen. A map
 // change plus the popfile that follows it is a few seconds; a minute is the
 // point at which something else went wrong and the guard should have the
@@ -68,6 +72,8 @@ float g_SwitchingUntil;
 
 void Missions_Init()
 {
+    g_RefusedPopFiles = new StringMap();
+    Missions_HookPopulationParse();
     g_CvarStartMission = CreateConVar("tf2ap_start_mission", "",
         "The mission the server starts on, as a popfile name. Blank keeps the map's own.");
     g_CvarNextMissionDelay = CreateConVar("tf2ap_next_mission_delay", "30",
@@ -184,7 +190,8 @@ static bool Missions_Next(const char[] current, Mission next, bool &fresh)
         }
         // A mission whose file this server does not have would load the map and
         // never start a wave, so it is not a mission to move anybody to.
-        if (!Missions_PopFileInstalled(candidate.popFile))
+        if (!Missions_PopFileInstalled(candidate.popFile)
+            || Missions_PopFileRefused(candidate.popFile))
         {
             continue;
         }
@@ -409,8 +416,140 @@ static bool Missions_PopFileInstalled(const char[] popFile)
     return FileExists(path, true);
 }
 
+/* A file the server has and the game will not read.
+ *
+ * CPopulationManager::Parse returns false when it meets a populator it does not
+ * know, and the whole file is dropped: the map stays up with no waves in it and
+ * the team sits on wave 0. Doctor Pyro reported it on Breaking Walls, whose file
+ * opens with ItemBlacklist, a SigMod populator that stock TF2 rejects. The only
+ * thing the plugin said was that a wave jump "never took", which is the symptom.
+ *
+ * The engine prints `Invalid populator '<name>'` immediately before it gives up,
+ * so the console already names what it refused; what was missing was anything
+ * tying that to the mission, and any reason not to sit there.
+ */
+static void Missions_HookPopulationParse()
+{
+    GameData data = LoadGameConfigFile("tf2_archipelago");
+    if (data == null)
+    {
+        return;
+    }
+    DynamicDetour parse = DynamicDetour.FromConf(data, "CPopulationManager::Parse");
+    if (parse == null || !parse.Enable(Hook_Post, Missions_PopulationParsed))
+    {
+        // Debug, not an error: the signature is Linux-only, so every Windows
+        // server would carry this line on every map for a report it was never
+        // going to get. Those servers keep the old silent wave 0 until the
+        // Windows signature exists.
+        AP_Debug("A refused mission file will not be reported: CPopulationManager::Parse could not be hooked.");
+    }
+    delete parse;
+    delete data;
+}
+
+public MRESReturn Missions_PopulationParsed(Address populationManager, DHookReturn result)
+{
+    if (result.Value)
+    {
+        return MRES_Ignored;
+    }
+    char popFile[64];
+    if (!MvM_PopFile(popFile, sizeof(popFile)) || popFile[0] == '\0')
+    {
+        return MRES_Ignored;
+    }
+    // Not here: this runs inside the parse that is failing, and the answer to
+    // it is a changelevel. Next frame, once the game has finished giving up.
+    if (g_RefusedPopFiles != null)
+    {
+        int seen;
+        if (g_RefusedPopFiles.GetValue(popFile, seen))
+        {
+            return MRES_Ignored;
+        }
+        g_RefusedPopFiles.SetValue(popFile, 1);
+        DataPack pack = new DataPack();
+        pack.WriteString(popFile);
+        RequestFrame(Missions_ReportRefused, pack);
+    }
+    return MRES_Ignored;
+}
+
+public void Missions_ReportRefused(DataPack pack)
+{
+    char popFile[64];
+    pack.Reset();
+    pack.ReadString(popFile, sizeof(popFile));
+    delete pack;
+    Missions_NoteRefused(popFile);
+}
+
+/* Say it once per file, and keep it out of the pool for the rest of the session.
+ *
+ * Once, because the game re-parses on every wave restart and the same failure
+ * would otherwise scroll past a dozen times; the hook records it before asking
+ * for this. Out of the pool, because a mission this server cannot read is not
+ * one to move anybody to next either.
+ */
+static void Missions_NoteRefused(const char[] popFile)
+{
+    char name[64];
+    Mission mission;
+    if (Missions_Find(popFile, mission))
+    {
+        strcopy(name, sizeof(name), mission.name);
+    }
+    else
+    {
+        strcopy(name, sizeof(name), popFile);
+    }
+    // Several short lines rather than one long one: AP_Error cuts at
+    // ChatLineMax, and the first draft of this lost its own last sentence.
+    AP_Error("%s cannot be played here: the server refused %s.pop, so this map has no waves.",
+        name, popFile);
+    AP_Error("The console line above names the populator it did not know.");
+    if (FindConVar("sig_pop_popmgr_extensions") == null)
+    {
+        AP_Error("SigMod is not loaded here, and that is where those populators come from.");
+        AP_Error("Turn SigMod on in the launcher, or leave %s out of the run.", name);
+    }
+    Missions_LeaveRefused(popFile);
+}
+
+/* Move off the mission that was refused, if the run has somewhere else to go.
+ *
+ * Reported rather than silent is the point of this, but leaving the team on a
+ * map with no waves is still leaving them stuck, and the next mission is chosen
+ * the same way a clear chooses one.
+ */
+static void Missions_LeaveRefused(const char[] popFile)
+{
+    Mission next;
+    bool fresh;
+    if (!Missions_Next(popFile, next, fresh))
+    {
+        AP_Error("Nothing else in the run is playable, so the server stays here.");
+        AP_Error("Pick one with sm_ap_mission once there is one.");
+        return;
+    }
+    AP_Announce("Moving on to %s.", next.name);
+    Missions_Load(next);
+}
+
+static bool Missions_PopFileRefused(const char[] popFile)
+{
+    int seen;
+    return g_RefusedPopFiles != null && g_RefusedPopFiles.GetValue(popFile, seen);
+}
+
 static void Missions_Load(Mission mission)
 {
+    if (Missions_PopFileRefused(mission.popFile))
+    {
+        AP_Error("%s cannot be played here: this server already refused its population file once.", mission.name);
+        return;
+    }
     if (!Missions_PopFileInstalled(mission.popFile))
     {
         AP_Error("%s cannot be played here: %s.pop is not on this server, so the game would keep the map's own mission and never start a wave. Install the community pack that carries it, or leave the mission out of the run.",
@@ -462,7 +601,8 @@ void Missions_List(int client)
         }
         AP_PrintToClient(client, "%d. %s (%s), %d waves%s%s%s",
             index + 1, mission.name, mission.popFile, mission.waves,
-            Missions_PopFileInstalled(mission.popFile) ? (Missions_Playable(mission) ? "" : " [locked]") : " [not installed]",
+            Missions_PopFileRefused(mission.popFile) ? " [refused by this server]"
+                : (Missions_PopFileInstalled(mission.popFile) ? (Missions_Playable(mission) ? "" : " [locked]") : " [not installed]"),
             mission.cleared ? " [cleared]" : "",
             StrEqual(mission.popFile, current) ? " [playing]" : "");
     }

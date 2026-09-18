@@ -142,13 +142,43 @@ class TestVictoryCaches(TF2MvMTestBase):
 
 
 class TestMilestoneChecks(TF2MvMTestBase):
-    options: ClassVar[dict[str, Any]] = {"milestone_checks": True, "mission_count": 3}
+    options: ClassVar[dict[str, Any]] = {"milestone_checks": True, "mission_count": 8}
 
-    def test_every_milestone_is_a_check_open_from_the_start(self) -> None:
+    def test_every_milestone_is_a_check(self) -> None:
         self.assertTrue(self.world.fill_slot_data()["milestone_checks"])
         self.assertEqual(15, len(data.MILESTONES))
         for milestone in data.MILESTONES:
             self.assertEqual(milestone.id, self.world.get_location(milestone.name).address)
+
+    def test_the_first_tally_of_each_kind_is_open_from_the_start(self) -> None:
+        for kind in {milestone.kind for milestone in data.MILESTONES}:
+            first = min(
+                (one for one in data.MILESTONES if one.kind == kind),
+                key=lambda one: one.threshold,
+            )
+            self.assertTrue(self.can_reach_location(first.name), first.name)
+
+    def test_the_longest_tally_of_each_kind_waits_for_the_run(self) -> None:
+        """The bug this covers cost somebody a multiworld.
+
+        Every tally used to sit in sphere 0, so a progression item could be
+        placed behind "40 Tanks Destroyed" on the first move, and the only way
+        forward was replaying the one reachable mission with tanks until forty
+        tanks had died. Reachable is not the same as reasonable: the long ones
+        have to wait for most of the run.
+        """
+        for kind in {milestone.kind for milestone in data.MILESTONES}:
+            last = max(
+                (one for one in data.MILESTONES if one.kind == kind),
+                key=lambda one: one.threshold,
+            )
+            self.assertFalse(self.can_reach_location(last.name), last.name)
+
+    def test_every_milestone_is_reachable_with_the_whole_pool(self) -> None:
+        """Deeper, and still not out of reach: a gate nothing opens is a lock."""
+        for item in self.multiworld.get_items():
+            self.collect(item)
+        for milestone in data.MILESTONES:
             self.assertTrue(self.can_reach_location(milestone.name), milestone.name)
 
 

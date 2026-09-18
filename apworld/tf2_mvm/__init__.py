@@ -393,7 +393,8 @@ class TF2MvMWorld(World):
             self.multiworld.regions.append(region)
             menu.connect(region, f"Deploy to {mission.name}", self._deploy_rule(mission))
         # Any open mission progresses a milestone, and the start mission is
-        # always open, so the region needs no rule of its own.
+        # always open, so the region needs no rule of its own. The milestones
+        # themselves do: see _milestone_rule.
         if self.options.milestone_checks.value:
             grind = Region("Milestones", self.player, self.multiworld)
             grind.add_locations(
@@ -401,6 +402,10 @@ class TF2MvMWorld(World):
             )
             self.multiworld.regions.append(grind)
             menu.connect(grind, "Grind")
+            for location in grind.locations:
+                rule = self._milestone_rule(location.name)
+                if rule is not None:
+                    location.access_rule = rule
 
     def create_items(self) -> None:
         for name in self.start_items:
@@ -591,6 +596,48 @@ class TF2MvMWorld(World):
         if self.options.weapon_buff_importance.current_key == "progression":
             unlocks += max(BUFF_REQUIREMENTS.values())
         return unlocks - self._check_count(missions)
+
+    def _milestone_rule(self, name: str) -> Callable[[CollectionState], bool] | None:
+        """How many missions a tally has to wait for.
+
+        Every milestone used to sit in sphere 0, so a progression item could be
+        placed behind "40 Tanks Destroyed" on the first move. Roseburst reported
+        what that costs: a multiworld held up while one player replayed Village
+        Vanguard ten times, because the only tanks they could reach were there.
+
+        The tally is still reachable the moment the run starts, so this is not
+        about possibility, it is about depth. The k-th tally of its kind waits
+        for its share of the run's mission tickets, so the long ones sit behind
+        most of the run and nothing early can hide behind them.
+
+        Tickets that are not progression cannot gate anything, and that setting
+        already asks for a shallower run, so it keeps the old behaviour.
+        """
+        if self.options.mission_ticket_importance.current_key == "useful":
+            return None
+        kind = next((one.kind for one in data.MILESTONES if one.name == name), None)
+        if kind is None:
+            return None
+        ranked = sorted(
+            (one for one in data.MILESTONES if one.kind == kind), key=lambda one: one.threshold
+        )
+        rank = next(index for index, one in enumerate(ranked) if one.name == name)
+        # The smallest of each kind stays where it was, open from the first
+        # mission: a hundred robots die in one wave. The largest waits for all
+        # but one of the tickets, and never the whole run, since the last one
+        # may be the goal's own.
+        if len(ranked) < 2:
+            return None
+        share = rank / (len(ranked) - 1)
+        wanted = round(share * (len(self.missions) - 1))
+        if wanted <= 0:
+            return None
+        player = self.player
+
+        def reached(state: CollectionState) -> bool:
+            return state.has_group("Mission Tickets", player, wanted)
+
+        return reached
 
     def _deploy_rule(self, mission: data.Mission) -> Callable[[CollectionState], bool]:
         ticket = data.TICKET_NAMES[mission.id]

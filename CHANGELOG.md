@@ -4,6 +4,23 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
+## Unreleased
+
+### Fixed
+
+- **A mission file the server cannot read now says so, and the run moves on.**
+  A community mission whose file uses syntax stock TF2 rejects left the map up
+  with no waves in it and the team on wave 0, with nothing saying why. The
+  server now names the mission, points at the console line that names what it
+  refused, says when SigMod is the missing piece, and moves to the next mission
+  in the run. Reported by Doctor Pyro on Breaking Walls.
+- **A long kill tally can no longer hold up a multiworld.** Every tally was
+  reachable from the first mission, so an item somebody else needed could be
+  placed behind "40 Tanks Destroyed" and the only way to it was replaying one
+  mission ten times over. The first tally of each kind still counts from the
+  start; the longer ones now wait for their share of the run. Reported by
+  Roseburst.
+
 ## v1.17.0
 
 ### Two new mission modifiers
