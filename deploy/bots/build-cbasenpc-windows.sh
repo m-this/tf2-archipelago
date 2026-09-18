@@ -42,15 +42,18 @@ JOBS="${JOBS:-$(nproc)}"
 # matters: CBaseNPC's AddCDetour expects the CDetour built on SafetyHook, and a
 # SourceMod older than that one references asm.c's copy_bytes instead. The SDK
 # comes from a full checkout, since that build's sparse one leaves out lib/public/x86.
-if [ ! -d "$SM" ]; then
-	git clone --quiet --depth 1 --branch "$SOURCEMOD_SRC_BRANCH" \
-		https://github.com/alliedmodders/sourcemod "$SM"
-	git -C "$SM" submodule update --init --recursive --depth 1 --quiet
-fi
-if [ ! -d "$MMS" ]; then
-	git clone --quiet --depth 1 --branch "$METAMOD_SRC_BRANCH" \
-		https://github.com/alliedmodders/metamod-source "$MMS"
-fi
+# By commit, the way build-extensions.sh takes them: a branch name here would
+# build a different DLL from the same commit of this repository.
+fetch_commit() {
+	[ -d "$2" ] && return 0
+	git init --quiet "$2"
+	git -C "$2" remote add origin "https://github.com/$1"
+	git -C "$2" fetch --quiet --depth 1 origin "$3"
+	git -C "$2" checkout --quiet FETCH_HEAD
+}
+fetch_commit alliedmodders/sourcemod "$SM" "$SOURCEMOD_SRC_COMMIT"
+git -C "$SM" submodule update --init --recursive --depth 1 --quiet
+fetch_commit alliedmodders/metamod-source "$MMS" "$METAMOD_SRC_COMMIT"
 
 for path in "$src/extension" "$src/third_party/safetyhook/src" "$SDK/lib/public/x86" \
 	"$SM/public/CDetour" "$MMS/core" "$XWIN/crt/lib/x86"; do
