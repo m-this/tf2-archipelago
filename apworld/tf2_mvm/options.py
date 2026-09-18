@@ -109,8 +109,9 @@ class ServerMods(OptionSet):
 
     Some community missions need a mod the stock server does not have. The
     run draws those only when the mod is named here, so a seed never asks a
-    server for a mission it cannot run. sigsegv-mvm is SigMod, which upstream
-    ships for Linux servers only.
+    server for a mission it cannot run. sigsegv-mvm is SigMod: upstream ships
+    a Linux server build, and the Windows launcher installs this project's
+    port of it.
     """
 
     display_name = "Server Mods"

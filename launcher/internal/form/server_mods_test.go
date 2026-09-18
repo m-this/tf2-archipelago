@@ -68,11 +68,16 @@ func TestSigmodMissionExplainsAndEnforcesSetup(t *testing.T) {
 	}
 }
 
-func TestSigmodIsUnavailableOnWindows(t *testing.T) {
+// The Windows build is this project's port rather than upstream's release, and
+// a player who is about to download a binary should be told whose it is.
+func TestSigmodOnWindowsOffersThePortAndSaysSo(t *testing.T) {
 	state := NewState(settings.Defaults())
 	field, ok := Build(state, Env{Platform: "windows"}).Field("missions.mod.sigsegv-mvm")
-	if !ok || !field.Disabled || !strings.Contains(field.Reason, "no Windows server build") {
+	if !ok || field.Disabled {
 		t.Fatalf("Windows SigMod field = %+v, found=%t", field, ok)
+	}
+	if !strings.Contains(field.Help, "sigsegv-mvm-win") {
+		t.Errorf("Windows SigMod help does not name the port it installs: %q", field.Help)
 	}
 }
 

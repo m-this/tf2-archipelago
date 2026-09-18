@@ -13,6 +13,7 @@ package assets
 import (
 	_ "embed"
 	"fmt"
+	"runtime"
 )
 
 //go:embed embedded/tf2_archipelago.smx
@@ -42,6 +43,12 @@ var (
 	ArchipelagoVersion = ""
 	SigsegvMVMVersion  = ""
 	SigsegvMVMSHA256   = ""
+
+	// The Windows SigMod build is a separate project with its own numbering,
+	// because upstream publishes a Linux package only. SigsegvMVM picks the
+	// pair this platform installs.
+	SigsegvMVMWindowsVersion = ""
+	SigsegvMVMWindowsSHA256  = ""
 
 	// LauncherVersion is this build of the launcher itself: the release it
 	// belongs to and the commit it was built from. The commit is the useful
@@ -87,15 +94,26 @@ func PluginConfig() []byte { return pluginConfig }
 // srcdsconfig for the fields it expects.
 func ServerCfgTemplate() string { return serverCfgTemplate }
 
+// SigsegvMVM is the SigMod release this platform installs: the version and the
+// checksum of the package to download. Nothing above this asks which platform
+// it is on, so a Windows launcher cannot reach for the Linux package.
+func SigsegvMVM() (version, checksum string) {
+	if runtime.GOOS == "windows" {
+		return SigsegvMVMWindowsVersion, SigsegvMVMWindowsSHA256
+	}
+	return SigsegvMVMVersion, SigsegvMVMSHA256
+}
+
 // Versions reports the pinned tool versions, for display and for refusing to
 // install when the binary was built without them.
 func Versions() map[string]string {
+	sigsegvMVMVersion, _ := SigsegvMVM()
 	return map[string]string{
 		"sourcemod":    SourcemodVersion,
 		"metamod":      MetamodVersion,
 		"ripext":       RipextVersion,
 		"archipelago":  ArchipelagoVersion,
-		"sigsegv-mvm":  SigsegvMVMVersion,
+		"sigsegv-mvm":  sigsegvMVMVersion,
 		"defenderbots": DefenderbotsVersion,
 		"launcher":     LauncherVersion,
 	}
@@ -124,7 +142,7 @@ func RequireVersions() error {
 			return fmt.Errorf("asset version %s is empty: build with `make launcher` so -ldflags injects it from deploy/env/versions.env", name)
 		}
 	}
-	if SigsegvMVMSHA256 == "" {
+	if _, checksum := SigsegvMVM(); checksum == "" {
 		return fmt.Errorf("asset version sigsegv-mvm checksum is empty: build with `make launcher` so -ldflags injects it from deploy/env/versions.env")
 	}
 	return nil

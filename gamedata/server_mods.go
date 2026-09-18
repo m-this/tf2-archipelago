@@ -9,17 +9,20 @@ import "slices"
 type ServerMod struct {
 	Key  string
 	Name string
-	// Linux and Windows say which dedicated servers upstream ships a build
-	// for. The Windows launcher cannot offer a mission whose mod has no
-	// Windows build, however the operator asks.
+	// Linux and Windows say which dedicated servers there is a build for. The
+	// launcher cannot offer a mission whose mod has no build for the platform
+	// it runs on, however the operator asks.
 	Linux   bool
 	Windows bool
 }
 
 // ServerMods is the catalog. Versions and checksums live in
 // deploy/env/versions.env, which is where every pin of this project lives.
+//
+// SigMod's Windows build is not upstream's: rafradek publishes Linux only, and
+// m-this/sigsegv-mvm-win carries the port the Windows launcher downloads.
 var ServerMods = []ServerMod{
-	{Key: "sigsegv-mvm", Name: "SigMod", Linux: true, Windows: false},
+	{Key: "sigsegv-mvm", Name: "SigMod", Linux: true, Windows: true},
 }
 
 // noNavRequirement marks a mission whose map ships no bot navigation mesh.
@@ -115,9 +118,6 @@ func RequirementLabel(requirement string) string {
 	mod, known := ServerModByKey(requirement)
 	if !known {
 		return "Needs " + requirement
-	}
-	if !mod.Windows {
-		return "Needs " + mod.Name + " (Linux server only)"
 	}
 	return "Needs " + mod.Name
 }

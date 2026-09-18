@@ -33,7 +33,7 @@ func TestRequirementLabels(t *testing.T) {
 	for requirement, want := range map[string]string{
 		"":            "Ready",
 		"no_nav":      "Missing bot .nav",
-		"sigsegv-mvm": "Needs SigMod (Linux server only)",
+		"sigsegv-mvm": "Needs SigMod",
 	} {
 		if got := RequirementLabel(requirement); got != want {
 			t.Errorf("RequirementLabel(%q) = %q, want %q", requirement, got, want)

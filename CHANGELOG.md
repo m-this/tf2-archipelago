@@ -4,6 +4,33 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
+## Unreleased
+
+### SigMod missions on a Windows server
+
+- **The 99 community missions that need SigMod now run on Windows.** They were
+  listed and locked there because rafradek publishes a Linux server build only.
+  The extension is now cross-compiled for Windows in `m-this/sigsegv-mvm-win`,
+  and the launcher downloads and verifies it the same way it does the Linux one.
+- Turn on **SigMod** on the Missions page and press **Download / set up
+  selected server mods**, exactly as on Linux. Nothing installs it otherwise:
+  it is only needed by missions that ask for it, and a run without one never
+  downloads it.
+
+### Fixed
+
+- **Defender bots ready up again after a map change.** A per-client
+  ready-command deadline kept the previous map's game clock, so the bots
+  stopped pressing F4 until the new map's clock had caught up with it. On a
+  mission switch that could leave the team standing in the spawn room.
+- **A bot is no longer called "// Managed by tf2ap. Edits here".** The names
+  file the launcher writes starts with a managed-file comment, and the mod read
+  that line as a name and let the game cut it at 31 characters. Reported with a
+  screenshot by Cowser the Khelinace.
+- **Adding a bot name works again.** Typing a name on the Bots page and pressing
+  Add this name answered `settings action "bots.name_add" is not wired` and
+  added nothing. Reported by Cowser the Khelinace.
+
 ## v1.16.2
 
 ### Fixed
@@ -17,23 +44,6 @@ in the release notes, so this file is the only place to write it.
   Its row used to be locked, so it could not be taken out of the pool.
 - All in the pool no longer puts community missions back while Community
   missions is off.
-
-## Unreleased
-
-### Fixed
-
-- **A bot is no longer called "// Managed by tf2ap. Edits here".** The names
-  file the launcher writes starts with a managed-file comment, and the mod read
-  that line as a name and let the game cut it at 31 characters. Reported with a
-  screenshot by Cowser the Khelinace.
-- **Adding a bot name works again.** Typing a name on the Bots page and pressing
-  Add this name answered `settings action "bots.name_add" is not wired` and
-  added nothing. Reported by Cowser the Khelinace.
-
-- **Defender bots ready up again after a map change.** A per-client
-  ready-command deadline kept the previous map's game clock, so the bots
-  stopped pressing F4 until the new map's clock had caught up with it. On a
-  mission switch that could leave the team standing in the spawn room.
 
 ## v1.16.1
 

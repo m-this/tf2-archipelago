@@ -321,7 +321,7 @@ func missionSpecs(s State, env Env) []Spec {
 			}),
 
 		serverModSpec("sigsegv-mvm", "SigMod", env),
-		serverModInstallSpec(env),
+		serverModInstallSpec(),
 
 		press("missions.download_packs", tab, "Download Selected Community Assets",
 			"Download only the checked full-with-maps community packs. Live progress remains visible on this page. Start never downloads community content."),
@@ -370,8 +370,11 @@ func activeServerMods(s State, env Env) []string {
 }
 
 func serverModSpec(key, label string, env Env) Spec {
-	spec := toggle("missions.mod."+key, "Missions", label+" (Linux server only)",
-		"Required by missions that use SigMod population extensions. Turning this off removes those missions from the pool. Start downloads, verifies and installs the pinned release automatically when this is selected.",
+	help := "Required by missions that use SigMod population extensions, and used by nothing else. Turning this off removes those missions from the pool. Start downloads, verifies and installs the pinned release automatically when this is selected."
+	if env.Platform == "windows" {
+		help += " Upstream publishes no Windows server build; this installs the port in m-this/sigsegv-mvm-win."
+	}
+	spec := toggle("missions.mod."+key, "Missions", label, help,
 		"selected for this server",
 		func(s State) bool { return slices.Contains(s.Settings.SrcdsMods, key) },
 		func(s State, v bool) State {
@@ -383,11 +386,6 @@ func serverModSpec(key, label string, env Env) Spec {
 			}
 			return clearIneligibleStart(s)
 		})
-	if env.Platform == "windows" {
-		spec.Unavailable = func(State, Env) string {
-			return "SigMod has no Windows server build; use the Linux launcher/server for these missions"
-		}
-	}
 	return spec
 }
 
@@ -405,13 +403,9 @@ func excludePoolMissions(s State, match func(gamedata.Mission) bool) State {
 	return s
 }
 
-func serverModInstallSpec(env Env) Spec {
-	spec := press("missions.install_mods", "Missions", "Download / set up selected server mods",
+func serverModInstallSpec() Spec {
+	return press("missions.install_mods", "Missions", "Download / set up selected server mods",
 		"The native launcher downloads verified pinned releases and installs their SourceMod extension. Docker already includes them: Save the selection and recreate the containers. On a new native setup this also installs TF2 and SourceMod; Start performs the same setup automatically.")
-	if env.Platform == "windows" {
-		spec.Unavailable = func(State, Env) string { return "no supported Windows server mods are available" }
-	}
-	return spec
 }
 
 // packSpec is one community asset pack, on or off. Off is not "absent": the
@@ -509,8 +503,8 @@ func missionRequirementSpec(spec Spec, mission gamedata.Mission, help string) Sp
 				return ""
 			}
 			mod, _ := gamedata.ServerModByKey(key)
-			if env.Platform == "windows" {
-				return mod.Name + " has no Windows server build; use Linux for this mission"
+			if (env.Platform == "windows" && !mod.Windows) || (env.Platform == "linux" && !mod.Linux) {
+				return mod.Name + " has no " + env.Platform + " server build, so this mission cannot run here"
 			}
 			if !slices.Contains(settings.ServerModKeys(s.Settings), key) {
 				return "turn on " + mod.Name + " above, then press Download / set up selected server mods"

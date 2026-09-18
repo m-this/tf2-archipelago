@@ -508,6 +508,8 @@ LAUNCHER_LDFLAGS := -X github.com/m-this/tf2-archipelago/launcher/internal/asset
 	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.ArchipelagoVersion=$(ARCHIPELAGO_VERSION) \
 	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.SigsegvMVMVersion=$(SIGSEGV_MVM_VERSION) \
 	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.SigsegvMVMSHA256=$(SIGSEGV_MVM_SHA256) \
+	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.SigsegvMVMWindowsVersion=$(SIGSEGV_MVM_WINDOWS_VERSION) \
+	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.SigsegvMVMWindowsSHA256=$(SIGSEGV_MVM_WINDOWS_SHA256) \
 	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.DefenderbotsVersion=$(DEFENDERBOTS_VERSION) \
 	-X github.com/m-this/tf2-archipelago/launcher/internal/assets.LauncherVersion=$(LAUNCHER_VERSION)
 

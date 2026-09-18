@@ -633,14 +633,14 @@ func disableSourceModMapRotation(modDir string) error {
 // so a stale config cannot claim that a missing extension is available.
 func ReadyServerMods(installRoot string) []string {
 	modDir := filepath.Join(installRoot, "tf-dedicated", "tf")
-	if runtime.GOOS == "linux" && sigmodReady(modDir) {
+	if sigmodReady(modDir) {
 		return []string{sigmodKey}
 	}
 	return nil
 }
 
 func sigmodReady(modDir string) bool {
-	if assets.SigsegvMVMVersion == "" || assets.SigsegvMVMSHA256 == "" {
+	if version, checksum := assets.SigsegvMVM(); version == "" || checksum == "" {
 		return false
 	}
 	if firstMissing(modDir, sourcemodFiles(runtime.GOOS)) != "" {
@@ -654,18 +654,39 @@ func sigmodReady(modDir string) bool {
 	return err == nil && string(stamp) == want
 }
 
-var sigmodFiles = []string{
-	"addons/sourcemod/extensions/sigsegv.ext.2.tf2.so",
-	"addons/sourcemod/extensions/x64/sigsegv.ext.2.tf2.so",
-	"addons/sourcemod/extensions/sigsegv.autoload",
-	"addons/sourcemod/gamedata/sigsegv/population.txt",
-	"cfg/sigsegv_convars.cfg",
+/*
+The files an install is judged by, per platform. They are hashed into the
+stamp, so a package that unpacked short of one of them is not "installed".
+
+The Windows package has no x64 extension: the port is a 32-bit DLL, which is
+the only srcds.exe Valve ships. It adds gamedata/sigsegv/windows.txt, the
+address table the Linux build has no use for and the Windows one cannot find a
+single function without.
+*/
+func sigmodFiles(goos string) []string {
+	if goos == "windows" {
+		return []string{
+			"addons/sourcemod/extensions/sigsegv.ext.2.tf2.dll",
+			"addons/sourcemod/extensions/sigsegv.autoload",
+			"addons/sourcemod/gamedata/sigsegv/population.txt",
+			"addons/sourcemod/gamedata/sigsegv/windows.txt",
+			"cfg/sigsegv_convars.cfg",
+		}
+	}
+	return []string{
+		"addons/sourcemod/extensions/sigsegv.ext.2.tf2.so",
+		"addons/sourcemod/extensions/x64/sigsegv.ext.2.tf2.so",
+		"addons/sourcemod/extensions/sigsegv.autoload",
+		"addons/sourcemod/gamedata/sigsegv/population.txt",
+		"cfg/sigsegv_convars.cfg",
+	}
 }
 
 func sigmodStamp(modDir string) (string, error) {
 	var stamp strings.Builder
-	fmt.Fprintf(&stamp, "%s\n%s\n", assets.SigsegvMVMVersion, assets.SigsegvMVMSHA256)
-	for _, relative := range sigmodFiles {
+	version, checksum := assets.SigsegvMVM()
+	fmt.Fprintf(&stamp, "%s\n%s\n", version, checksum)
+	for _, relative := range sigmodFiles(runtime.GOOS) {
 		body, err := os.ReadFile(filepath.Join(modDir, filepath.FromSlash(relative)))
 		if err != nil {
 			return "", err
@@ -685,11 +706,12 @@ func installServerMods(ctx context.Context, installRoot, modDir string, requeste
 			return fmt.Errorf("%s has no %s server build; deselect it or run the server on a supported platform", mod.Name, runtime.GOOS)
 		}
 		if key == sigmodKey {
+			version, _ := assets.SigsegvMVM()
 			if sigmodReady(modDir) {
-				logf("SigMod %s is already installed and verified", assets.SigsegvMVMVersion)
+				logf("SigMod %s is already installed and verified", version)
 				continue
 			}
-			logf("downloading and installing SigMod %s", assets.SigsegvMVMVersion)
+			logf("downloading and installing SigMod %s", version)
 			data, err := cachedSigmod(ctx, installRoot)
 			if err != nil {
 				return err
@@ -718,16 +740,17 @@ func installServerMods(ctx context.Context, installRoot, modDir string, requeste
 
 func cachedSigmod(ctx context.Context, installRoot string) ([]byte, error) {
 	cacheDir := filepath.Join(installRoot, "downloads")
-	path := filepath.Join(cacheDir, "sigsegv-mvm-"+assets.SigsegvMVMVersion+"-linux.zip")
+	version, _ := assets.SigsegvMVM()
+	path := filepath.Join(cacheDir, "sigsegv-mvm-"+version+"-"+runtime.GOOS+".zip")
 	if data, err := os.ReadFile(path); err == nil && validSigmodPackage(data) {
 		return data, nil
 	}
-	data, err := fetch(ctx, sigmodURL())
+	data, err := fetch(ctx, sigmodURL(runtime.GOOS, version))
 	if err != nil {
 		return nil, fmt.Errorf("cannot download SigMod: %w", err)
 	}
 	if !validSigmodPackage(data) {
-		return nil, fmt.Errorf("SigMod download checksum does not match the pinned %s release", assets.SigsegvMVMVersion)
+		return nil, fmt.Errorf("SigMod download checksum does not match the pinned %s release", version)
 	}
 	if err := os.MkdirAll(cacheDir, 0o755); err != nil {
 		return nil, err
@@ -743,7 +766,8 @@ func cachedSigmod(ctx context.Context, installRoot string) ([]byte, error) {
 }
 
 func validSigmodPackage(data []byte) bool {
-	return fmt.Sprintf("%x", sha256.Sum256(data)) == strings.ToLower(assets.SigsegvMVMSHA256)
+	_, checksum := assets.SigsegvMVM()
+	return fmt.Sprintf("%x", sha256.Sum256(data)) == strings.ToLower(checksum)
 }
 
 /*

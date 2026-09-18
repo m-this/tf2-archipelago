@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"testing"
 
@@ -283,7 +284,7 @@ func TestInstallServerModsUsesVerifiedCacheAndDetectsTheInstall(t *testing.T) {
 
 func TestComposeSigmodStampMatchesLauncherReceipt(t *testing.T) {
 	root := t.TempDir()
-	for _, relative := range sigmodFiles {
+	for _, relative := range sigmodFiles(runtime.GOOS) {
 		path := filepath.Join(root, filepath.FromSlash(relative))
 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 			t.Fatal(err)
@@ -557,6 +558,31 @@ func TestTheLoaderFilesDecideWhetherToReinstall(t *testing.T) {
 		}
 		if got := firstMissing(modDir, sourcemodFiles(goos)); got != sourcemodFiles(goos)[0] {
 			t.Errorf("%s: a missing loader reports %q", goos, got)
+		}
+	}
+}
+
+// Upstream's SigMod release has no Windows binary in it, so a Windows launcher
+// that fell back to package-linux.zip would download 30 MB and install nothing
+// SourceMod can load. The pins are separate releases of separate repositories.
+func TestSigmodPackageIsPerPlatform(t *testing.T) {
+	windows := sigmodURL("windows", "20260918")
+	linux := sigmodURL("linux", "20250703")
+	if !strings.Contains(windows, "sigsegv-mvm-win/releases/download/20260918/package-windows.zip") {
+		t.Errorf("Windows SigMod URL = %q", windows)
+	}
+	if !strings.Contains(linux, "rafradek/sigsegv-mvm/releases/download/20250703/package-linux.zip") {
+		t.Errorf("Linux SigMod URL = %q", linux)
+	}
+	if slices.Contains(sigmodFiles("windows"), "addons/sourcemod/extensions/x64/sigsegv.ext.2.tf2.so") {
+		t.Error("the Windows install is judged by a Linux extension")
+	}
+	for _, want := range []string{
+		"addons/sourcemod/extensions/sigsegv.ext.2.tf2.dll",
+		"addons/sourcemod/gamedata/sigsegv/windows.txt",
+	} {
+		if !slices.Contains(sigmodFiles("windows"), want) {
+			t.Errorf("the Windows install does not require %s", want)
 		}
 	}
 }

@@ -72,14 +72,18 @@ remain visible as unavailable and cannot be drawn by a seed. The launcher
 strips the archive's `tf/download/` prefix so assets arrive under the correct
 TF2 game directory on Windows and Linux.
 
-On Linux, turn on **SigMod** and press **Download / set up selected server
-mods**. The launcher downloads the release pinned in `deploy/env/versions.env`,
-verifies its package checksum, installs it with SourceMod, and records hashes
-for its critical installed files. **Start** performs the same setup
-automatically. A SigMod mission cannot be ticked or chosen as the start until
-that inspection passes; its Compatibility cell says whether to turn SigMod on
-or run setup. SigMod has no supported Windows server build, so those missions
-remain visible and locked in the Windows launcher.
+Turn on **SigMod** and press **Download / set up selected server mods**. The
+launcher downloads the release pinned in `deploy/env/versions.env`, verifies its
+package checksum, installs it with SourceMod, and records hashes for its
+critical installed files. **Start** performs the same setup automatically. A
+SigMod mission cannot be ticked or chosen as the start until that inspection
+passes; its Compatibility cell says whether to turn SigMod on or run setup.
+
+Both platforms work, from different releases. rafradek publishes a Linux
+package; the Windows extension is cross-compiled in `m-this/sigsegv-mvm-win`
+and pinned separately, so a Windows launcher can never reach for the Linux
+one. Nothing installs SigMod on its own: it arrives only when it is turned on,
+and it is turned on only for missions that declare `requires: "sigsegv-mvm"`.
 
 ## Build a new Windows launcher
 
@@ -248,9 +252,9 @@ docker compose --project-directory . \
   `gamedata/server_mods.go`. Today that is `sigsegv-mvm` (SigMod). The
   Docker image stages the pinned release from `deploy/env/versions.env` and
   installs it when `SRCDS_MODS` names it; `make seed` passes the same list as
-  the apworld's `server_mods` option. The native Linux launcher downloads and
-  verifies the same pin when SigMod is selected. Both paths let the seed draw
-  those missions only for a server configured to load the mod. The Windows
-  launcher lists them locked because upstream ships no Windows build.
+  the apworld's `server_mods` option. The native launcher downloads and
+  verifies the same pin when SigMod is selected, taking the Linux package or
+  the Windows one by the platform it runs on. Every path lets the seed draw
+  those missions only for a server configured to load the mod.
 - A mission that needs a mod the catalog does not know is not accepted by
   `community.json`. Add the mod to the catalog and pin it first.
