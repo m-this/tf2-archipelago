@@ -133,6 +133,9 @@ stock bool MvM_IsSentryBuster(int client)
 }
 
 // UNVERIFIED m_iszMvMPopfileName: scripts/population/mvm_decoy.pop, trimmed to mvm_decoy.
+#define CaliginousCaperID "mvm_ghost_town_666"
+#define CaliginousCaperRuntimePop "mvm_ghost_town_ap_caliginous_caper"
+
 stock bool MvM_PopFile(char[] buffer, int maxlength)
 {
     buffer[0] = '\0';
@@ -150,6 +153,12 @@ stock bool MvM_PopFile(char[] buffer, int maxlength)
     if (buffer[0] == '\0')
     {
         GetCurrentMap(buffer, maxlength);
+    }
+    // The repaired _666 popfile has a selectable runtime alias. Keep the
+    // original ID for saved seeds and checks when the game reports its alias.
+    if (StrEqual(buffer, CaliginousCaperRuntimePop, false))
+    {
+        strcopy(buffer, maxlength, CaliginousCaperID);
     }
     return buffer[0] != '\0';
 }

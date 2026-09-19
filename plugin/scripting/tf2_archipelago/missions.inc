@@ -104,7 +104,11 @@ void Missions_OnConfigsExecuted()
 static void Missions_ApplyPopFile(const char[] popFile, const char[] map)
 {
     char commandName[64];
-    if (StrEqual(popFile, map, false))
+    if (StrEqual(popFile, CaliginousCaperID, false))
+    {
+        strcopy(commandName, sizeof(commandName), "ap_caliginous_caper");
+    }
+    else if (StrEqual(popFile, map, false))
     {
         strcopy(commandName, sizeof(commandName), "normal");
     }
@@ -412,7 +416,14 @@ static Action Timer_LoadPlanned(Handle timer)
 static bool Missions_PopFileInstalled(const char[] popFile)
 {
     char path[PLATFORM_MAX_PATH];
-    Format(path, sizeof(path), "scripts/population/%s.pop", popFile);
+    if (StrEqual(popFile, CaliginousCaperID, false))
+    {
+        Format(path, sizeof(path), "scripts/population/%s.pop", CaliginousCaperRuntimePop);
+    }
+    else
+    {
+        Format(path, sizeof(path), "scripts/population/%s.pop", popFile);
+    }
     return FileExists(path, true);
 }
 

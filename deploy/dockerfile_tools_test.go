@@ -11,7 +11,7 @@ import (
 )
 
 /*
-The tools stage copies every package its two commands need.
+The tools stage copies every package its commands need.
 
 That stage lists the tree it copies rather than taking the repository whole,
 because the launcher's embedded assets are a third of a gigabyte and are
@@ -32,7 +32,7 @@ func TestTheToolsStageCopiesWhatItsCommandsImport(t *testing.T) {
 		t.Fatal("Dockerfile.srcds has no runtime stage to read up to")
 	}
 
-	for _, command := range []string{"./launcher/cmd/rcon", "./launcher/cmd/botfiles"} {
+	for _, command := range []string{"./launcher/cmd/rcon", "./launcher/cmd/botfiles", "./deploy/stockpop"} {
 		// From the repository root: the package paths are relative to it, and
 		// this test lives a directory down.
 		list := exec.Command("go", "list", "-deps", command)

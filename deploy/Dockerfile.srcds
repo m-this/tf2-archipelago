@@ -42,6 +42,7 @@ COPY go.mod go.sum ./
 COPY gamedata gamedata
 COPY launcher/cmd/rcon launcher/cmd/rcon
 COPY launcher/cmd/botfiles launcher/cmd/botfiles
+COPY deploy/stockpop deploy/stockpop
 COPY launcher/internal/rcon launcher/internal/rcon
 COPY launcher/internal/botfiles launcher/internal/botfiles
 COPY launcher/internal/botlive launcher/internal/botlive
@@ -50,7 +51,8 @@ COPY launcher/internal/botnames launcher/internal/botnames
 COPY launcher/internal/runshape launcher/internal/runshape
 COPY launcher/internal/settings launcher/internal/settings
 RUN CGO_ENABLED=0 go build -trimpath -o /rcon ./launcher/cmd/rcon \
-	&& CGO_ENABLED=0 go build -trimpath -o /botfiles ./launcher/cmd/botfiles
+	&& CGO_ENABLED=0 go build -trimpath -o /botfiles ./launcher/cmd/botfiles \
+	&& CGO_ENABLED=0 go build -trimpath -o /stockpop ./deploy/stockpop
 
 
 # CBaseNPC and Actions, compiled, so the image carries the patches in
@@ -193,6 +195,7 @@ COPY deploy/srcds-entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY deploy/srcds-launch.sh /usr/local/bin/tf2ap-srcds-launch.sh
 COPY --from=tools /rcon /usr/local/bin/rcon
 COPY --from=tools /botfiles /usr/local/bin/tf2ap-botfiles
+COPY --from=tools /stockpop /usr/local/bin/tf2ap-stockpop
 
 RUN chown -R steam:steam /opt/tf2-archipelago /opt/tf2-mods \
 	&& chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/tf2ap-srcds-launch.sh

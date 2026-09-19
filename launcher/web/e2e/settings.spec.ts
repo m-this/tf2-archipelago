@@ -225,9 +225,9 @@ test.describe('the mission table', () => {
     const rows = await table.getByRole('row').count();
     const ticks = await table.getByRole('checkbox').count();
     expect(ticks).toBe(rows - 1);
-    // The four ticks above the table are the packs, community toggle and
-    // managed SigMod toggle, not missions.
-    expect(await page.getByRole('checkbox').count()).toBe(ticks + 4);
+    // The three ticks above the table are the two packs and community
+    // toggle. SigMod is a three-way choice, not a checkbox.
+    expect(await page.getByRole('checkbox').count()).toBe(ticks + 3);
   });
 
   test('says why a mission is not ready rather than hiding it', async ({ page }) => {
