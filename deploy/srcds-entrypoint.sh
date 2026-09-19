@@ -201,6 +201,16 @@ install_mods() {
 			continue
 		fi
 		sync_tree "$MODS/$key" "$GAME"
+		if [ "$key" = sigsegv-mvm ]; then
+			# SigMod's stock setting counts RED defender TFBots toward the
+			# invader limit and kicks them first when a wave fills it. The
+			# defender manager then adds one back every second. Keep the
+			# robot limit for BLU, but leave RED to its own team-size limit.
+			convars="$GAME/cfg/sigsegv_convars.cfg"
+			if [ -f "$convars" ] && grep -Eq '^sig_mvm_robot_limit_fix_red[[:space:]]+"1"' "$convars"; then
+				sed -i 's/^sig_mvm_robot_limit_fix_red[[:space:]]*"1"/sig_mvm_robot_limit_fix_red "0"/' "$convars"
+			fi
+		fi
 	done
 }
 
@@ -230,6 +240,10 @@ install_server_cfg() {
 	if [ -n "$download_url" ]; then
 		download_cfg="sv_downloadurl \"${download_url}\""
 	fi
+	sigmod_red_limit_cfg=""
+	case " $(printf '%s' "${SRCDS_MODS:-}" | tr ',' ' ') " in
+	*' sigsegv-mvm '*) sigmod_red_limit_cfg="sig_mvm_robot_limit_fix_red 0" ;;
+	esac
 
 	staged=$(mktemp)
 	cat >"$staged" <<-CFG
@@ -252,6 +266,10 @@ install_server_cfg() {
 	// late is not a reason for the evening to stall, and it is what lets one
 	// player start a wave alone.
 	tf_mvm_min_players_to_start 1
+	// SigMod's RED robot-limit fix treats defender TFBots as invaders and
+	// repeatedly kicks the last defender during crowded waves. Its BLU
+	// robot limit remains enabled.
+	${sigmod_red_limit_cfg}
 
 	// Team Fortress 2 moves an idle player to spectator after
 	// mp_idlemaxtime minutes. On a public server that frees a slot; here it

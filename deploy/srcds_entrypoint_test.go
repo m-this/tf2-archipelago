@@ -142,3 +142,32 @@ echo "convar=$bot_custom_loadouts"`)
 		t.Fatalf("a failed render did not leave the convar off:\n%s", output)
 	}
 }
+
+func TestSigModDoesNotCountREDDefendersAsInvaders(t *testing.T) {
+	t.Parallel()
+	root := t.TempDir()
+	cfgDir := filepath.Join(root, "tf", "cfg")
+	if err := os.MkdirAll(cfgDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	command := exec.Command("bash", "-c", `. deploy/srcds-entrypoint.sh
+install_server_cfg`)
+	command.Dir = ".."
+	command.Env = append(os.Environ(),
+		"TF2AP_ENTRYPOINT_LIBRARY=1",
+		"STEAMAPPDIR="+root,
+		"STEAMAPP=tf",
+		"SRCDS_RCONPW=test",
+		"SRCDS_MODS=sigsegv-mvm",
+	)
+	if output, err := command.CombinedOutput(); err != nil {
+		t.Fatalf("entrypoint test: %v\n%s", err, output)
+	}
+	config, err := os.ReadFile(filepath.Join(cfgDir, "server.cfg"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(config), "sig_mvm_robot_limit_fix_red 0\n") {
+		t.Fatalf("RED defenders still count toward the invader limit:\n%s", config)
+	}
+}
