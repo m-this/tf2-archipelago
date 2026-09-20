@@ -509,8 +509,16 @@ func TestGitHubSplitArchiveReassemblesAndFallsBackToPotato(t *testing.T) {
 	}
 	parts[0] = bytes.Clone(parts[0])
 	parts[0][0] ^= 1
-	if err := downloadCommunityArchive(context.Background(), path, func(string, ...any) {}); err != nil {
+	var warnings []string
+	if err := downloadCommunityArchive(context.Background(), path, func(format string, args ...any) {
+		warnings = append(warnings, fmt.Sprintf(format, args...))
+	}); err != nil {
 		t.Fatal(err)
+	}
+	if !slices.ContainsFunc(warnings, func(line string) bool {
+		return strings.Contains(line, "SHA-256 mismatch") && strings.Contains(line, "trying Potato mirror")
+	}) {
+		t.Fatalf("missing fallback reason in log: %v", warnings)
 	}
 	got, err = os.ReadFile(path)
 	if err != nil || !bytes.Equal(got, data) || !fallback {

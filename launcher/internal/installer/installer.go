@@ -364,9 +364,6 @@ func downloadCommunityArchive(ctx context.Context, path string, logf func(string
 	var lastErr error
 	var mismatchErr *CommunityArchiveHashMismatchError
 	for i, parts := range sources {
-		if i > 0 {
-			logf("trying Potato mirror for %s after GitHub download failed", name)
-		}
 		err := downloadCommunityArchiveParts(ctx, path, parts, logf)
 		if err == nil {
 			_ = os.Remove(path + communityMismatchSuffix)
@@ -379,7 +376,11 @@ func downloadCommunityArchive(ctx context.Context, path string, logf func(string
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-		logf("WARNING: %v", err)
+		if i == 0 && len(sources) > 1 {
+			logf("WARNING: GitHub snapshot for %s failed validation or download: %v; trying Potato mirror", name, err)
+		} else {
+			logf("WARNING: Potato mirror for %s failed: %v", name, err)
+		}
 	}
 	if mismatchErr != nil {
 		return mismatchErr

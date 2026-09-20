@@ -4,6 +4,8 @@ The launcher expects these **complete ZIP files, including maps and NAV files**.
 
 The launcher downloads these snapshots from the [community assets GitHub release](https://github.com/m-this/tf2-archipelago/releases/tag/community-assets-2026-09-20) first. The original Potato endpoints below are fallback mirrors. The Potato ZIP exceeds GitHub's per-file limit, so its release assets are raw byte chunks. Concatenate them in numbered order to restore the ZIP; do not unzip either part separately.
 
+The release tag is pinned deliberately: a new snapshot needs a new release, reviewed full and part hashes, and a launcher update. If the pinned release is unavailable or its bytes fail verification, the launcher logs the reason and tries Potato. It still checks the final ZIP against the pinned hash before installation.
+
 | Pack | Source | Bytes | SHA-256 |
 | --- | --- | ---: | --- |
 | Potato `archive-assets.zip` | `https://dlarchive.potato.tf/archive-assets.zip` | 2,594,253,886 | `e7e54f3167b97341d11cf1a1b30f437bf0651fec40e4e1d25232b883cf44bb69` |
