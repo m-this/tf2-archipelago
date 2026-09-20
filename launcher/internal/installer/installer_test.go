@@ -350,7 +350,7 @@ func TestDownloadCommunityArchivesDownloadsOnlyTheSelectedPack(t *testing.T) {
 	data := zipWith(t, map[string]string{
 		"tf/download/maps/mvm_example.bsp": "map",
 	})
-	withCommunityArchivePin(t, "archive-assets.zip", data)
+	withPotatoArchivePin(t, data)
 	withoutGitHubParts(t, "archive-assets.zip")
 	requests := 0
 	oldClient := communityHTTPClient
@@ -380,18 +380,18 @@ func TestDownloadCommunityArchivesDownloadsOnlyTheSelectedPack(t *testing.T) {
 	}
 }
 
-func withCommunityArchivePin(t *testing.T, name string, data []byte) {
+func withPotatoArchivePin(t *testing.T, data []byte) {
 	t.Helper()
-	old := communityArchiveSHA256[name]
+	old := communityArchiveSHA256["archive-assets.zip"]
 	digest := sha256.Sum256(data)
-	communityArchiveSHA256[name] = fmt.Sprintf("%x", digest)
-	t.Cleanup(func() { communityArchiveSHA256[name] = old })
+	communityArchiveSHA256["archive-assets.zip"] = fmt.Sprintf("%x", digest)
+	t.Cleanup(func() { communityArchiveSHA256["archive-assets.zip"] = old })
 }
 
 func TestCommunityArchiveMismatchNeedsExplicitApprovalForExactBytes(t *testing.T) {
 	wanted := zipWith(t, map[string]string{"tf/download/maps/map.bsp": "expected"})
 	changed := zipWith(t, map[string]string{"tf/download/maps/map.bsp": "changed"})
-	withCommunityArchivePin(t, "archive-assets.zip", wanted)
+	withPotatoArchivePin(t, wanted)
 	withoutGitHubParts(t, "archive-assets.zip")
 	oldClient := communityHTTPClient
 	communityHTTPClient = &http.Client{Transport: roundTripFunc(func(*http.Request) (*http.Response, error) {
@@ -433,7 +433,7 @@ func withoutGitHubParts(t *testing.T, name string) {
 
 func TestGitHubSplitArchiveReassemblesAndFallsBackToPotato(t *testing.T) {
 	data := zipWith(t, map[string]string{"tf/download/maps/map.bsp": "map"})
-	withCommunityArchivePin(t, "archive-assets.zip", data)
+	withPotatoArchivePin(t, data)
 	cut := len(data) / 2
 	parts := [][]byte{data[:cut], data[cut:]}
 	old := communityGitHubParts["archive-assets.zip"]
@@ -542,7 +542,7 @@ func TestAvailableCommunityArchivesRequiresAValidLocalZIP(t *testing.T) {
 	data := zipWith(t, map[string]string{
 		"tf/download/maps/mvm_example.bsp": "map",
 	})
-	withCommunityArchivePin(t, "archive-assets.zip", data)
+	withPotatoArchivePin(t, data)
 	if err := os.WriteFile(missing, data, 0o644); err != nil {
 		t.Fatal(err)
 	}
