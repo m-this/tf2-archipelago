@@ -373,8 +373,7 @@ func downloadCommunityArchive(ctx context.Context, path string, logf func(string
 			return nil
 		}
 		lastErr = err
-		var mismatch *CommunityArchiveHashMismatchError
-		if errors.As(err, &mismatch) {
+		if mismatch, ok := errors.AsType[*CommunityArchiveHashMismatchError](err); ok {
 			mismatchErr = mismatch
 		}
 		if ctx.Err() != nil {
@@ -402,38 +401,9 @@ func downloadCommunityArchiveParts(ctx context.Context, path string, parts []com
 	fullHash := sha256.New()
 	var written int64
 	for _, part := range parts {
-		logf("downloading %s from %s (the full pack includes maps)", name, part.URL)
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, part.URL, nil)
+		count, err := downloadCommunityPart(ctx, part, name, io.MultiWriter(tmp, fullHash), logf)
 		if err != nil {
 			return err
-		}
-		req.Header.Set("User-Agent", "tf2-archipelago-launcher")
-		resp, err := communityHTTPClient.Do(req)
-		if err != nil {
-			return fmt.Errorf("%s: %w", part.URL, err)
-		}
-		if resp.StatusCode != http.StatusOK {
-			_ = resp.Body.Close()
-			return fmt.Errorf("%s answered %d", part.URL, resp.StatusCode)
-		}
-		partHash := sha256.New()
-		progress := &communityDownloadWriter{Writer: io.MultiWriter(tmp, fullHash, partHash), name: name, total: resp.ContentLength, next: communityProgressInterval, logf: logf}
-		count, copyErr := io.Copy(progress, resp.Body)
-		closeErr := resp.Body.Close()
-		if copyErr != nil {
-			return copyErr
-		}
-		if closeErr != nil {
-			return closeErr
-		}
-		if resp.ContentLength >= 0 && count != resp.ContentLength {
-			return fmt.Errorf("%s: downloaded %d bytes, expected %d", part.URL, count, resp.ContentLength)
-		}
-		if part.Size > 0 && count != part.Size {
-			return fmt.Errorf("%s: downloaded %d bytes, expected %d", part.URL, count, part.Size)
-		}
-		if part.SHA256 != "" && fmt.Sprintf("%x", partHash.Sum(nil)) != part.SHA256 {
-			return fmt.Errorf("%s: SHA-256 mismatch", part.URL)
 		}
 		written += count
 	}
@@ -462,6 +432,39 @@ func downloadCommunityArchiveParts(ctx context.Context, path string, parts []com
 	}
 	logf("downloaded %s (%.1f GB) into %s", name, float64(written)/float64(gigabyte), filepath.Dir(path))
 	return nil
+}
+
+func downloadCommunityPart(ctx context.Context, part communityPart, name string, target io.Writer, logf func(string, ...any)) (int64, error) {
+	logf("downloading %s from %s (the full pack includes maps)", name, part.URL)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, part.URL, nil)
+	if err != nil {
+		return 0, err
+	}
+	req.Header.Set("User-Agent", "tf2-archipelago-launcher")
+	resp, err := communityHTTPClient.Do(req)
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", part.URL, err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf("%s answered %d", part.URL, resp.StatusCode)
+	}
+	partHash := sha256.New()
+	progress := &communityDownloadWriter{Writer: io.MultiWriter(target, partHash), name: name, total: resp.ContentLength, next: communityProgressInterval, logf: logf}
+	count, err := io.Copy(progress, resp.Body)
+	if err != nil {
+		return 0, err
+	}
+	if resp.ContentLength >= 0 && count != resp.ContentLength {
+		return 0, fmt.Errorf("%s: downloaded %d bytes, expected %d", part.URL, count, resp.ContentLength)
+	}
+	if part.Size > 0 && count != part.Size {
+		return 0, fmt.Errorf("%s: downloaded %d bytes, expected %d", part.URL, count, part.Size)
+	}
+	if part.SHA256 != "" && fmt.Sprintf("%x", partHash.Sum(nil)) != part.SHA256 {
+		return 0, fmt.Errorf("%s: SHA-256 mismatch", part.URL)
+	}
+	return count, nil
 }
 
 type communityDownloadWriter struct {
