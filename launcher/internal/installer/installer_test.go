@@ -507,7 +507,8 @@ func TestGitHubSplitArchiveReassemblesAndFallsBackToPotato(t *testing.T) {
 	if err := os.Remove(path); err != nil {
 		t.Fatal(err)
 	}
-	parts[0] = []byte("wrong")
+	parts[0] = bytes.Clone(parts[0])
+	parts[0][0] ^= 1
 	if err := downloadCommunityArchive(context.Background(), path, func(string, ...any) {}); err != nil {
 		t.Fatal(err)
 	}
