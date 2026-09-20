@@ -349,62 +349,96 @@ func AvailableCommunityArchives(archives []string) []string {
 // download.
 func downloadCommunityArchive(ctx context.Context, path string, logf func(string, ...any)) error {
 	name := filepath.Base(path)
-	url, known := communityArchiveURLs[name]
+	backupURL, known := communityArchiveURLs[name]
 	if !known {
 		return fmt.Errorf("%s is not a recognized Potato asset pack", name)
 	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
-
-	logf("downloading %s from %s (the full pack includes maps)", name, url)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return err
+	sources := [][]communityPart{}
+	if parts := communityGitHubParts[name]; len(parts) > 0 {
+		sources = append(sources, parts)
 	}
-	req.Header.Set("User-Agent", "tf2-archipelago-launcher")
-	resp, err := communityHTTPClient.Do(req)
-	if err != nil {
-		return err
+	sources = append(sources, []communityPart{{URL: backupURL}})
+	var lastErr error
+	var mismatchErr *CommunityArchiveHashMismatchError
+	for i, parts := range sources {
+		if i > 0 {
+			logf("trying Potato mirror for %s after GitHub download failed", name)
+		}
+		err := downloadCommunityArchiveParts(ctx, path, parts, logf)
+		if err == nil {
+			_ = os.Remove(path + communityMismatchSuffix)
+			return nil
+		}
+		lastErr = err
+		var mismatch *CommunityArchiveHashMismatchError
+		if errors.As(err, &mismatch) {
+			mismatchErr = mismatch
+		}
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		logf("WARNING: %v", err)
 	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("%s answered %d", url, resp.StatusCode)
+	if mismatchErr != nil {
+		return mismatchErr
 	}
-	return saveCommunityArchiveResponse(path, resp.Body, resp.ContentLength, logf)
+	return lastErr
 }
 
-func saveCommunityArchiveResponse(path string, body io.Reader, contentLength int64, logf func(string, ...any)) error {
+func downloadCommunityArchiveParts(ctx context.Context, path string, parts []communityPart, logf func(string, ...any)) error {
 	name := filepath.Base(path)
 	tmp, err := os.CreateTemp(filepath.Dir(path), "."+name+"-*.partial")
 	if err != nil {
 		return err
 	}
 	tmpPath := tmp.Name()
-	keep := false
 	defer func() {
 		_ = tmp.Close()
-		if !keep {
-			_ = os.Remove(tmpPath)
-		}
+		_ = os.Remove(tmpPath)
 	}()
-	hash := sha256.New()
-	progress := &communityDownloadWriter{
-		Writer: io.MultiWriter(tmp, hash),
-		name:   name,
-		total:  contentLength,
-		next:   communityProgressInterval,
-		logf:   logf,
+	fullHash := sha256.New()
+	var written int64
+	for _, part := range parts {
+		logf("downloading %s from %s (the full pack includes maps)", name, part.URL)
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, part.URL, nil)
+		if err != nil {
+			return err
+		}
+		req.Header.Set("User-Agent", "tf2-archipelago-launcher")
+		resp, err := communityHTTPClient.Do(req)
+		if err != nil {
+			return fmt.Errorf("%s: %w", part.URL, err)
+		}
+		if resp.StatusCode != http.StatusOK {
+			_ = resp.Body.Close()
+			return fmt.Errorf("%s answered %d", part.URL, resp.StatusCode)
+		}
+		partHash := sha256.New()
+		progress := &communityDownloadWriter{Writer: io.MultiWriter(tmp, fullHash, partHash), name: name, total: resp.ContentLength, next: communityProgressInterval, logf: logf}
+		count, copyErr := io.Copy(progress, resp.Body)
+		closeErr := resp.Body.Close()
+		if copyErr != nil {
+			return copyErr
+		}
+		if closeErr != nil {
+			return closeErr
+		}
+		if resp.ContentLength >= 0 && count != resp.ContentLength {
+			return fmt.Errorf("%s: downloaded %d bytes, expected %d", part.URL, count, resp.ContentLength)
+		}
+		if part.Size > 0 && count != part.Size {
+			return fmt.Errorf("%s: downloaded %d bytes, expected %d", part.URL, count, part.Size)
+		}
+		if part.SHA256 != "" && fmt.Sprintf("%x", partHash.Sum(nil)) != part.SHA256 {
+			return fmt.Errorf("%s: SHA-256 mismatch", part.URL)
+		}
+		written += count
 	}
-	written, copyErr := io.Copy(progress, body)
-	if closeErr := tmp.Close(); copyErr == nil {
-		copyErr = closeErr
-	}
-	if copyErr != nil {
-		return copyErr
-	}
-	if contentLength >= 0 && written != contentLength {
-		return fmt.Errorf("downloaded %d bytes, expected %d", written, contentLength)
+	if err := tmp.Close(); err != nil {
+		return err
 	}
 	reader, err := zip.OpenReader(tmpPath)
 	if err != nil {
@@ -413,18 +447,19 @@ func saveCommunityArchiveResponse(path string, body io.Reader, contentLength int
 	if err := reader.Close(); err != nil {
 		return err
 	}
-	actual := fmt.Sprintf("%x", hash.Sum(nil))
+	actual := fmt.Sprintf("%x", fullHash.Sum(nil))
 	if expected := communityArchiveSHA256[name]; actual != expected {
+		if err := os.Remove(path + communityMismatchSuffix); err != nil && !errors.Is(err, os.ErrNotExist) {
+			return err
+		}
 		if err := os.Rename(tmpPath, path+communityMismatchSuffix); err != nil {
 			return fmt.Errorf("cannot hold mismatched %s: %w", name, err)
 		}
-		keep = true
 		return &CommunityArchiveHashMismatchError{name, expected, actual}
 	}
 	if err := os.Rename(tmpPath, path); err != nil {
 		return err
 	}
-	keep = true
 	logf("downloaded %s (%.1f GB) into %s", name, float64(written)/float64(gigabyte), filepath.Dir(path))
 	return nil
 }
