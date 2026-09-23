@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"hash/crc32"
 	"os"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -34,6 +35,11 @@ type options struct {
 	failFast   bool
 	includeSig bool
 	plan       bool
+	defenders  bool
+	waves      int
+	maps       string
+	onePerMap  bool
+	pops       string
 }
 
 type probeStatus struct {
@@ -93,6 +99,31 @@ type result struct {
 	Debug       string               `json:"debug_snapshot,omitempty"`
 	Timeline    []sample             `json:"timeline,omitempty"`
 	Changelevel *changelevelEvidence `json:"changelevel,omitempty"`
+	Defenders   []defender           `json:"defenders,omitempty"`
+	StartedUTC  string               `json:"started_utc,omitempty"`
+	EndedUTC    string               `json:"ended_utc,omitempty"`
+}
+
+// defender is how one RED bot moved during a wave, in game seconds since the
+// probe first saw it. Left is -1 for a bot that never left its spawn room.
+type defender struct {
+	Name         string     `json:"name"`
+	Class        int        `json:"class"`
+	Alive        bool       `json:"alive"`
+	Seen         float64    `json:"seen_seconds"`
+	Left         float64    `json:"left_spawn_seconds"`
+	Lives        int        `json:"lives"`
+	LeftMax      float64    `json:"left_spawn_max_seconds"`
+	SpawnNow     float64    `json:"in_spawn_this_life_seconds"`
+	InSpawn      bool       `json:"in_spawn_at_end"`
+	StillMax     float64    `json:"still_max_seconds"`
+	StillInSpawn bool       `json:"still_max_in_spawn"`
+	StillNow     float64    `json:"still_at_end_seconds"`
+	StillAt      [3]float64 `json:"still_max_at"`
+	At           [3]float64 `json:"at_end"`
+	HatchMin     float64    `json:"hatch_min"`
+	HatchNow     float64    `json:"hatch_at_end"`
+	Teleports    int        `json:"teleports"`
 }
 
 type changelevelEvidence struct {
@@ -164,6 +195,11 @@ func main() {
 	flag.BoolVar(&opt.failFast, "fail-fast", false, "stop after the first failed wave")
 	flag.BoolVar(&opt.includeSig, "include-sigmod", true, "test SigMod missions")
 	flag.BoolVar(&opt.plan, "plan", false, "print planned wave tests without connecting to a server")
+	flag.BoolVar(&opt.defenders, "defenders", false, "record how the RED defender bots move in each wave")
+	flag.IntVar(&opt.waves, "waves", 0, "test only the first N waves of each mission (0 means all)")
+	flag.BoolVar(&opt.onePerMap, "one-per-map", false, "test only the first mission of each map")
+	flag.StringVar(&opt.pops, "pops", "", "file listing the installed population files, one name per line (empty keeps every mission)")
+	flag.StringVar(&opt.maps, "maps", "", "comma-separated maps to keep when -mission is all (empty keeps every map)")
 	flag.Parse()
 	if err := run(opt); err != nil {
 		fmt.Fprintln(os.Stderr, "waveprobe:", err)
@@ -180,6 +216,9 @@ func run(opt options) error {
 	}
 	if opt.timeout <= 0 || opt.loadWait <= 0 {
 		return errors.New("time limits must be positive")
+	}
+	if opt.waves < 0 {
+		return errors.New("waves must not be negative")
 	}
 	if opt.mission == "all" && (opt.startWave != 1 || opt.endWave != 0) {
 		return errors.New("wave range requires one named mission")
@@ -249,6 +288,13 @@ func (s *server) prepare(opt options) error {
 	if _, err := s.exec(fmt.Sprintf("host_timescale %d", opt.speed)); err != nil {
 		return err
 	}
+	// Bots that cannot die never respawn, and the spawn exit after a death is
+	// half of what a defender run is for.
+	if opt.defenders {
+		if _, err := s.exec("sm_waveprobe_protect_bots 0"); err != nil {
+			return err
+		}
+	}
 	if reply, err := s.exec("host_timescale"); err != nil {
 		return fmt.Errorf("read host_timescale: %w", err)
 	} else if !timescaleMatches(reply, opt.speed) {
@@ -305,6 +351,9 @@ func (s *server) runWaves(opt options, mapName string, mission gamedata.Mission,
 	if opt.endWave > 0 {
 		last = opt.endWave
 	}
+	if opt.waves > 0 {
+		last = min(last, first+opt.waves-1)
+	}
 	if first > 1 {
 		if _, err := s.exec(fmt.Sprintf("tf_mvm_jump_to_wave %d 1", first)); err != nil {
 			return 0, err
@@ -341,6 +390,7 @@ func (s *server) runWaves(opt options, mapName string, mission gamedata.Mission,
 func (s *server) recordWave(opt options, mapName string, mission gamedata.Mission, mode string, wave int) error {
 	started := time.Now()
 	status, timeline, err := s.testWave(mission, wave, opt.seed, opt.timeout, opt.loadWait)
+	ended := time.Now()
 	row := result{
 		Mission: mission.PopFile, Map: mapName, Mode: mode,
 		Wave: wave, Seed: opt.seed, State: status.State, Bots: status.Bots,
@@ -349,6 +399,11 @@ func (s *server) recordWave(opt options, mapName string, mission gamedata.Missio
 		Progress: status.Progress, Seconds: time.Since(started).Seconds(), GameSeconds: status.Elapsed,
 	}
 	row.Outcome = classifyWave(status, err)
+	if opt.defenders {
+		row.StartedUTC = started.UTC().Format(time.RFC3339)
+		row.EndedUTC = ended.UTC().Format(time.RFC3339)
+		row.Defenders, row.Error = s.defenders(row.Error)
+	}
 	if row.Outcome != "passed" {
 		row.State = "failed"
 		if err != nil {
@@ -394,6 +449,16 @@ func classifyWave(status probeStatus, err error) string {
 }
 
 func selectMissions(opt options) ([]gamedata.Mission, error) {
+	installed := map[string]bool{}
+	if opt.pops != "" {
+		body, err := os.ReadFile(opt.pops)
+		if err != nil {
+			return nil, err
+		}
+		for line := range strings.Lines(string(body)) {
+			installed[strings.TrimSuffix(strings.TrimSpace(line), ".pop")] = true
+		}
+	}
 	if opt.mission != "all" {
 		mission, ok := gamedata.MissionByPopFile(opt.mission)
 		if !ok {
@@ -414,6 +479,15 @@ func selectMissions(opt options) ([]gamedata.Mission, error) {
 		if crc32.ChecksumIEEE([]byte(mission.PopFile))%uint32(opt.shards) != uint32(opt.shard) {
 			continue
 		}
+		if opt.pops != "" && gamedata.IsCommunityMission(mission.ID) && !installed[mission.PopFile] {
+			continue
+		}
+		if opt.maps != "" {
+			played, ok := gamedata.MapByID(mission.Map)
+			if !ok || !slices.Contains(strings.Split(opt.maps, ","), played.Name) {
+				continue
+			}
+		}
 		selected = append(selected, mission)
 	}
 	sort.Slice(selected, func(i, j int) bool {
@@ -424,6 +498,11 @@ func selectMissions(opt options) ([]gamedata.Mission, error) {
 		}
 		return left.Name < right.Name
 	})
+	if opt.onePerMap {
+		selected = slices.CompactFunc(selected, func(left, right gamedata.Mission) bool {
+			return left.Map == right.Map
+		})
+	}
 	return selected, nil
 }
 
@@ -822,4 +901,90 @@ func (s *server) stopWave(mission gamedata.Mission) {
 	// a queued map change. Reset the population manager before leaving it.
 	_, _ = s.exec("tf_mvm_popfile " + mission.PopFile)
 	_, _ = s.exec("sm_waveprobe_reset")
+}
+
+// defenders reads the probe's per-bot movement record. A failure to read it is
+// kept in the row's error rather than dropping the wave's result.
+func (s *server) defenders(rowErr string) ([]defender, string) {
+	reply, err := s.exec("sm_waveprobe_defenders")
+	if err == nil {
+		var rows []defender
+		rows, err = parseDefenders(reply)
+		if err == nil {
+			return rows, rowErr
+		}
+	}
+	return nil, strings.TrimSpace(rowErr + "; defender record unavailable: " + err.Error())
+}
+
+func parseDefenders(reply string) ([]defender, error) {
+	var rows []defender
+	for line := range strings.Lines(reply) {
+		rest, ok := strings.CutPrefix(strings.TrimSpace(line), "WAVEPROBE_DEF ")
+		if !ok {
+			continue
+		}
+		fieldsPart, name, ok := strings.Cut(rest, " name=")
+		if !ok {
+			return nil, fmt.Errorf("defender line without a name: %q", line)
+		}
+		fields := map[string]string{}
+		for token := range strings.FieldsSeq(fieldsPart) {
+			key, value, found := strings.Cut(token, "=")
+			if found {
+				fields[key] = value
+			}
+		}
+		row := defender{Name: name}
+		var err error
+		ints := []struct {
+			key  string
+			dest *int
+		}{{"class", &row.Class}, {"teleports", &row.Teleports}, {"lives", &row.Lives}}
+		for _, field := range ints {
+			if *field.dest, err = strconv.Atoi(fields[field.key]); err != nil {
+				return nil, fmt.Errorf("invalid %s in %q: %w", field.key, line, err)
+			}
+		}
+		floats := []struct {
+			key  string
+			dest *float64
+		}{
+			{"seen", &row.Seen}, {"left", &row.Left}, {"stillmax", &row.StillMax},
+			{"leftmax", &row.LeftMax}, {"spawnnow", &row.SpawnNow},
+			{"stillnow", &row.StillNow}, {"hatchmin", &row.HatchMin}, {"hatchnow", &row.HatchNow},
+		}
+		for _, field := range floats {
+			if *field.dest, err = strconv.ParseFloat(fields[field.key], 64); err != nil {
+				return nil, fmt.Errorf("invalid %s in %q: %w", field.key, line, err)
+			}
+		}
+		bools := []struct {
+			key  string
+			dest *bool
+		}{{"alive", &row.Alive}, {"inspawn", &row.InSpawn}, {"stillspawn", &row.StillInSpawn}}
+		for _, field := range bools {
+			*field.dest = fields[field.key] == "1"
+		}
+		points := []struct {
+			key  string
+			dest *[3]float64
+		}{{"still", &row.StillAt}, {"at", &row.At}}
+		for _, field := range points {
+			parts := strings.Split(fields[field.key], ",")
+			if len(parts) != 3 {
+				return nil, fmt.Errorf("invalid %s in %q", field.key, line)
+			}
+			for axis, part := range parts {
+				if field.dest[axis], err = strconv.ParseFloat(part, 64); err != nil {
+					return nil, fmt.Errorf("invalid %s in %q: %w", field.key, line, err)
+				}
+			}
+		}
+		rows = append(rows, row)
+	}
+	if !strings.Contains(reply, "WAVEPROBE_DEF_END") {
+		return nil, fmt.Errorf("truncated defender record: %q", reply)
+	}
+	return rows, nil
 }

@@ -58,6 +58,33 @@ float g_TankDeadline[PROBE_MAX_TANKS];
 float g_ArmedAt;
 float g_StartedAt;
 
+// The RED bots under test. Movement shorter than DEF_STILL_RADIUS is standing
+// still; a jump longer than DEF_TELEPORT_JUMP within one tick is a teleport,
+// since no class covers it on foot in PROBE_TICK.
+#define DEF_STILL_RADIUS 72.0
+#define DEF_TELEPORT_JUMP 500.0
+
+// Off lets the RED bots die, so every respawn is another spawn exit to watch.
+bool g_ProtectBots = true;
+int g_DefUserId[MAXPLAYERS + 1];
+float g_DefFirstAt[MAXPLAYERS + 1];
+float g_DefLeftAt[MAXPLAYERS + 1];
+bool g_DefAlive[MAXPLAYERS + 1];
+int g_DefLives[MAXPLAYERS + 1];
+float g_DefLifeAt[MAXPLAYERS + 1];
+bool g_DefLifeLeft[MAXPLAYERS + 1];
+float g_DefLeftMax[MAXPLAYERS + 1];
+float g_DefAnchor[MAXPLAYERS + 1][3];
+float g_DefAnchorAt[MAXPLAYERS + 1];
+float g_DefStillMax[MAXPLAYERS + 1];
+float g_DefStillAt[MAXPLAYERS + 1][3];
+bool g_DefStillInSpawn[MAXPLAYERS + 1];
+float g_DefLast[MAXPLAYERS + 1][3];
+int g_DefTeleports[MAXPLAYERS + 1];
+float g_DefHatchMin[MAXPLAYERS + 1];
+float g_HatchCenter[3];
+bool g_HasHatch;
+
 public void OnPluginStart()
 {
     RegAdminCmd("sm_waveprobe_arm", Command_Arm, ADMFLAG_ROOT,
@@ -70,6 +97,10 @@ public void OnPluginStart()
         "Stop the wave test, retaining its fake player client");
     RegAdminCmd("sm_waveprobe_wake", Command_Wake, ADMFLAG_ROOT,
         "Create a fake player: sm_waveprobe_wake <red|blue>");
+    RegAdminCmd("sm_waveprobe_defenders", Command_Defenders, ADMFLAG_ROOT,
+        "Print how each RED bot moved since the test was armed");
+    RegAdminCmd("sm_waveprobe_protect_bots", Command_ProtectBots, ADMFLAG_ROOT,
+        "Whether RED bots other than the fake player are spared damage: sm_waveprobe_protect_bots <0|1>");
     HookEvent("mvm_begin_wave", Event_BeginWave);
     HookEvent("mvm_wave_complete", Event_WaveComplete);
     HookEvent("mvm_wave_failed", Event_WaveFailed);
@@ -132,6 +163,11 @@ static void ResetProbe()
         g_TankKillPending[i] = false;
         g_TankDeadline[i] = 0.0;
     }
+    for (int client = 1; client <= MaxClients; client++)
+    {
+        g_DefUserId[client] = 0;
+    }
+    g_HasHatch = false;
 }
 
 public Action Command_Arm(int client, int argc)
@@ -246,7 +282,8 @@ public Action DefenderDamage(int victim, int &attacker, int &inflictor,
     // authored escort NPCs such as Remedic's Chief Medic alive while we kill
     // BLU robots, so a survival objective does not invalidate that measure.
     if ((g_State == Probe_Armed || g_State == Probe_Running)
-        && IsClientInGame(victim) && GetClientTeam(victim) == g_PlayerTeam)
+        && IsClientInGame(victim) && GetClientTeam(victim) == g_PlayerTeam
+        && (g_ProtectBots || victim == g_Defender))
     {
         return Plugin_Handled;
     }
@@ -559,6 +596,7 @@ public Action Timer_Probe(Handle timer)
     {
         TF2_RespawnPlayer(g_Defender);
     }
+    SampleDefenders();
     if (g_State != Probe_Running)
     {
         return Plugin_Continue;
@@ -598,4 +636,209 @@ public Action Timer_Probe(Handle timer)
         }
     }
     return Plugin_Continue;
+}
+
+static bool IsDefenderBot(int client)
+{
+    return client != g_Defender && IsClientInGame(client) && IsFakeClient(client)
+        && !IsClientSourceTV(client) && GetClientTeam(client) == g_PlayerTeam;
+}
+
+static bool EntityBounds(int entity, float mins[3], float maxs[3])
+{
+    if (!HasEntProp(entity, Prop_Data, "m_vecMins") || !HasEntProp(entity, Prop_Data, "m_vecMaxs"))
+    {
+        return false;
+    }
+    float origin[3];
+    GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", origin);
+    GetEntPropVector(entity, Prop_Data, "m_vecMins", mins);
+    GetEntPropVector(entity, Prop_Data, "m_vecMaxs", maxs);
+    AddVectors(mins, origin, mins);
+    AddVectors(maxs, origin, maxs);
+    return true;
+}
+
+// The same rooms the defender mod's spawn-exit watch reads: enabled
+// func_respawnroom brushes owned by the bots' team or by nobody.
+static bool InDefenderSpawn(const float point[3])
+{
+    int room = -1;
+    while ((room = FindEntityByClassname(room, "func_respawnroom")) != -1)
+    {
+        int team = GetEntProp(room, Prop_Send, "m_iTeamNum");
+        if (team != 0 && team != g_PlayerTeam) continue;
+        if (HasEntProp(room, Prop_Data, "m_bDisabled") && GetEntProp(room, Prop_Data, "m_bDisabled") != 0) continue;
+        float mins[3], maxs[3];
+        if (!EntityBounds(room, mins, maxs)) continue;
+        if (point[0] >= mins[0] && point[0] <= maxs[0] && point[1] >= mins[1] && point[1] <= maxs[1]
+            && point[2] >= mins[2] && point[2] <= maxs[2])
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+// The hatch: where the invaders deliver the bomb.
+static void FindHatch()
+{
+    int zone = -1;
+    while ((zone = FindEntityByClassname(zone, "func_capturezone")) != -1)
+    {
+        int team = GetEntProp(zone, Prop_Send, "m_iTeamNum");
+        if (team != 0 && team != g_EnemyTeam) continue;
+        float mins[3], maxs[3];
+        if (!EntityBounds(zone, mins, maxs)) continue;
+        for (int axis = 0; axis < 3; axis++)
+        {
+            g_HatchCenter[axis] = (mins[axis] + maxs[axis]) * 0.5;
+        }
+        g_HasHatch = true;
+        return;
+    }
+}
+
+static float FlatDistance(const float a[3], const float b[3])
+{
+    float dx = a[0] - b[0];
+    float dy = a[1] - b[1];
+    return SquareRoot(dx * dx + dy * dy);
+}
+
+static void SampleDefenders()
+{
+    if (!g_HasHatch) FindHatch();
+    float now = GetGameTime();
+    for (int bot = 1; bot <= MaxClients; bot++)
+    {
+        if (!IsDefenderBot(bot)) continue;
+        if (!IsPlayerAlive(bot))
+        {
+            g_DefAlive[bot] = false;
+            continue;
+        }
+        float here[3];
+        GetClientAbsOrigin(bot, here);
+        float center[3];
+        center = here;
+        center[2] += 40.0;
+        bool inSpawn = InDefenderSpawn(center);
+        int userid = GetClientUserId(bot);
+        if (g_DefUserId[bot] != userid)
+        {
+            g_DefUserId[bot] = userid;
+            g_DefFirstAt[bot] = now;
+            g_DefLeftAt[bot] = -1.0;
+            g_DefAnchor[bot] = here;
+            g_DefAnchorAt[bot] = now;
+            g_DefStillMax[bot] = 0.0;
+            g_DefStillAt[bot] = here;
+            g_DefStillInSpawn[bot] = inSpawn;
+            g_DefLast[bot] = here;
+            g_DefTeleports[bot] = 0;
+            g_DefHatchMin[bot] = -1.0;
+            g_DefAlive[bot] = false;
+            g_DefLives[bot] = 0;
+            g_DefLeftMax[bot] = 0.0;
+        }
+        if (!g_DefAlive[bot])
+        {
+            g_DefAlive[bot] = true;
+            g_DefLives[bot]++;
+            g_DefLifeAt[bot] = now;
+            g_DefLifeLeft[bot] = false;
+            g_DefLast[bot] = here;
+            g_DefAnchor[bot] = here;
+            g_DefAnchorAt[bot] = now;
+        }
+        if (g_DefLeftAt[bot] < 0.0 && !inSpawn)
+        {
+            g_DefLeftAt[bot] = now;
+        }
+        if (!g_DefLifeLeft[bot] && !inSpawn)
+        {
+            g_DefLifeLeft[bot] = true;
+            g_DefLeftMax[bot] = FloatMax(g_DefLeftMax[bot], now - g_DefLifeAt[bot]);
+        }
+        if (GetVectorDistance(here, g_DefLast[bot]) > DEF_TELEPORT_JUMP)
+        {
+            g_DefTeleports[bot]++;
+            g_DefAnchor[bot] = here;
+            g_DefAnchorAt[bot] = now;
+        }
+        g_DefLast[bot] = here;
+        if (g_HasHatch)
+        {
+            float hatch = GetVectorDistance(here, g_HatchCenter);
+            if (g_DefHatchMin[bot] < 0.0 || hatch < g_DefHatchMin[bot]) g_DefHatchMin[bot] = hatch;
+        }
+        // Standing still only counts once the wave runs: before it, waiting at
+        // the front is the job.
+        if (g_State != Probe_Running || FlatDistance(here, g_DefAnchor[bot]) > DEF_STILL_RADIUS)
+        {
+            g_DefAnchor[bot] = here;
+            g_DefAnchorAt[bot] = now;
+            continue;
+        }
+        float still = now - g_DefAnchorAt[bot];
+        if (still > g_DefStillMax[bot])
+        {
+            g_DefStillMax[bot] = still;
+            g_DefStillAt[bot] = g_DefAnchor[bot];
+            g_DefStillInSpawn[bot] = inSpawn;
+        }
+    }
+}
+
+// One line per RED bot, times in game seconds since the bot was first seen.
+// left is -1 for a bot that never left its spawn room.
+public Action Command_Defenders(int client, int argc)
+{
+    float now = GetGameTime();
+    for (int bot = 1; bot <= MaxClients; bot++)
+    {
+        if (!IsDefenderBot(bot) || g_DefUserId[bot] != GetClientUserId(bot)) continue;
+        float here[3];
+        GetClientAbsOrigin(bot, here);
+        float center[3];
+        center = here;
+        center[2] += 40.0;
+        char name[64];
+        GetClientName(bot, name, sizeof(name));
+        ReplyToCommand(client,
+            "WAVEPROBE_DEF client=%d class=%d alive=%d seen=%.1f left=%.1f lives=%d leftmax=%.1f spawnnow=%.1f inspawn=%d stillmax=%.1f stillspawn=%d stillnow=%.1f still=%.0f,%.0f,%.0f at=%.0f,%.0f,%.0f hatchmin=%.0f hatchnow=%.0f teleports=%d name=%s",
+            bot, view_as<int>(TF2_GetPlayerClass(bot)), IsPlayerAlive(bot),
+            now - g_DefFirstAt[bot],
+            g_DefLeftAt[bot] < 0.0 ? -1.0 : g_DefLeftAt[bot] - g_DefFirstAt[bot],
+            g_DefLives[bot], g_DefLeftMax[bot],
+            IsPlayerAlive(bot) && !g_DefLifeLeft[bot] ? now - g_DefLifeAt[bot] : 0.0,
+            InDefenderSpawn(center), g_DefStillMax[bot], g_DefStillInSpawn[bot],
+            g_State == Probe_Running ? now - g_DefAnchorAt[bot] : 0.0,
+            g_DefStillAt[bot][0], g_DefStillAt[bot][1], g_DefStillAt[bot][2],
+            here[0], here[1], here[2],
+            g_DefHatchMin[bot], g_HasHatch ? GetVectorDistance(here, g_HatchCenter) : -1.0,
+            g_DefTeleports[bot], name);
+    }
+    ReplyToCommand(client, "WAVEPROBE_DEF_END hatch=%d", g_HasHatch);
+    return Plugin_Handled;
+}
+
+static float FloatMax(float a, float b)
+{
+    return a > b ? a : b;
+}
+
+public Action Command_ProtectBots(int client, int argc)
+{
+    if (argc < 1)
+    {
+        ReplyToCommand(client, "WAVEPROBE protect_bots=%d", g_ProtectBots);
+        return Plugin_Handled;
+    }
+    char arg[8];
+    GetCmdArg(1, arg, sizeof(arg));
+    g_ProtectBots = StringToInt(arg) != 0;
+    ReplyToCommand(client, "WAVEPROBE protect_bots=%d", g_ProtectBots);
+    return Plugin_Handled;
 }

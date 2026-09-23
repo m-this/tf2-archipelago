@@ -1,0 +1,9 @@
+speed=4
+waves=1
+mission=all
+timeout=240s
+bots_smx=/home/mathis/projects/tf2-archipelago/deploy/bots/build/package/addons/sourcemod/plugins/tf2_defenderbots.smx
+bots_sha256=a33f109caad4af9ebe0c956aeaf2677da7158b6f199fad9a13ff9e6489cf7465
+image=tf2ap-srcds:v117
+started_utc=2026-09-23T11:36:48Z
+source_commit=ed261386ef51cf6a77b51dd981ea51ee2c1d56bf

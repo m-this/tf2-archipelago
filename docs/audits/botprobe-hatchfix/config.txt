@@ -1,0 +1,9 @@
+speed=4
+waves=1
+mission=all
+timeout=240s
+bots_smx=/tmp/mvm-hatchfix/package/addons/sourcemod/plugins/tf2_defenderbots.smx
+bots_sha256=7decfbb2a43a357ee3832f106734d2967379d58f71b6bda4726ed82e785feef2
+image=tf2ap-srcds:v117
+started_utc=2026-09-23T13:38:53Z
+source_commit=ed261386ef51cf6a77b51dd981ea51ee2c1d56bf

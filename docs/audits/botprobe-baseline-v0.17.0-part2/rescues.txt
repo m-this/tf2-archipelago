@@ -1,0 +1,532 @@
+L 09/11/2026 - 19:33:58: [tf2_defenderbots.smx] Stuck: HI THERE (engineer) at 285 142 356, stuck #1, wedge #1, MainAction < TacticalMonitor < DefenderBuildTeleporter < DefenderEngineerIdle < ScenarioMonitor < MvMEngineerBuildSentryGun < MvMEngineerIdle
+L 09/11/2026 - 19:41:33: [tf2_defenderbots.smx] Stuck: Zepheniah Mann (engineer) at 322 177 356, stuck #1, wedge #1, MainAction < TacticalMonitor < DefenderBuildTeleporter < DefenderEngineerIdle < ScenarioMonitor
+L 09/11/2026 - 19:41:35: [tf2_defenderbots.smx] Stuck: IvanTheSpaceBiker (engineer) at -236 679 366, stuck #2, wedge #1, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor
+L 09/11/2026 - 19:45:30: [tf2_defenderbots.smx] SpawnNavRecovery: Zepheniah Mann made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 19:45:30: [tf2_defenderbots.smx] SpawnNavRecovery: IvanTheSpaceBiker made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 19:45:36: [tf2_defenderbots.smx] SpawnNavRecovery: IvanTheSpaceBiker made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 19:45:42: [tf2_defenderbots.smx] SpawnNavRecovery: IvanTheSpaceBiker made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 19:46:22: [tf2_defenderbots.smx] SpawnNavRecovery: The G-Man made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 19:46:22: [tf2_defenderbots.smx] SpawnNavRecovery: H@XX0RZ made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 19:46:28: [tf2_defenderbots.smx] SpawnNavRecovery: H@XX0RZ made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 19:47:38: [tf2_defenderbots.smx] Stuck: The G-Man (engineer) at 107 -169 362, stuck #2, wedge #1, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor
+L 09/11/2026 - 19:50:13: [tf2_defenderbots.smx] SpawnNavRecovery: Crazed Gunman exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 19:51:19: [tf2_defenderbots.smx] SpawnNavRecovery: Zepheniah Mann exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 19:51:22: [tf2_defenderbots.smx] SpawnNavRecovery: Crazed Gunman exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 19:52:54: [tf2_defenderbots.smx] SpawnNavRecovery: Kill Me exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 19:52:54: [tf2_defenderbots.smx] SpawnNavRecovery: Crazed Gunman exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 19:52:54: [tf2_defenderbots.smx] SpawnNavRecovery: Zepheniah Mann exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 19:54:24: [tf2_defenderbots.smx] SpawnNavRecovery: Zepheniah Mann exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 19:56:30: [tf2_defenderbots.smx] SpawnNavRecovery: Zepheniah Mann made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 19:59:38: [tf2_defenderbots.smx] SpawnNavRecovery: Crazed Gunman made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 19:59:44: [tf2_defenderbots.smx] SpawnNavRecovery: Crazed Gunman made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 20:02:55: [tf2_defenderbots.smx] SpawnNavRecovery: Zepheniah Mann exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 20:03:32: [tf2_defenderbots.smx] SpawnNavRecovery: Kill Me exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 20:03:52: [tf2_defenderbots.smx] SpawnNavRecovery: Zepheniah Mann exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 20:11:39: [tf2_defenderbots.smx] SpawnNavRecovery: Crazed Gunman made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 20:14:37: [tf2_defenderbots.smx] SpawnNavRecovery: Zepheniah Mann exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 20:28:10: [tf2_defenderbots.smx] SpawnNavRecovery: Crazed Gunman exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 20:28:10: [tf2_defenderbots.smx] SpawnNavRecovery: Zepheniah Mann exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 20:28:22: [tf2_defenderbots.smx] SpawnNavRecovery: Kill Me exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 20:28:23: [tf2_defenderbots.smx] SpawnNavRecovery: Crazed Gunman exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 20:34:28: [tf2_defenderbots.smx] SpawnNavRecovery: Zepheniah Mann exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 20:34:34: [tf2_defenderbots.smx] SpawnNavRecovery: Kill Me exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 20:34:58: [tf2_defenderbots.smx] SpawnNavRecovery: Crazed Gunman made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 20:34:59: [tf2_defenderbots.smx] SpawnNavRecovery: Zepheniah Mann made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 20:35:32: [tf2_defenderbots.smx] SpawnNavRecovery: Someone Else made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 20:35:48: [tf2_defenderbots.smx] SpawnNavRecovery: Someone Else made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 20:35:48: [tf2_defenderbots.smx] SpawnNavRecovery: The Freeman exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 20:35:54: [tf2_defenderbots.smx] SpawnNavRecovery: Someone Else made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 20:36:22: [tf2_defenderbots.smx] Stuck: Someone Else (engineer) at 329 465 363, stuck #3, wedge #1, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor
+L 09/11/2026 - 20:37:15: [tf2_defenderbots.smx] SpawnNavRecovery: Someone Else exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 20:38:28: [tf2_defenderbots.smx] SpawnNavRecovery: The Freeman made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 20:38:28: [tf2_defenderbots.smx] SpawnNavRecovery: Someone Else made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 20:40:19: [tf2_defenderbots.smx] SpawnNavRecovery: The Freeman exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 20:40:46: [tf2_defenderbots.smx] SpawnNavRecovery: Someone Else exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 20:41:36: [tf2_defenderbots.smx] Stuck: Gentlemanne of Leisure (engineer) at 322 183 356, stuck #1, wedge #1, MainAction < TacticalMonitor < DefenderBuildTeleporter < DefenderEngineerIdle < ScenarioMonitor
+L 09/11/2026 - 20:43:34: [tf2_defenderbots.smx] Stuck: Gentlemanne of Leisure (engineer) at 294 189 356, stuck #2, wedge #2, MainAction < TacticalMonitor < DefenderBuildTeleporter < DefenderEngineerIdle < ScenarioMonitor
+L 09/11/2026 - 20:43:53: [tf2_defenderbots.smx] Stuck: CEDA (engineer) at 207 193 355, stuck #3, wedge #1, MainAction < TacticalMonitor < DefenderBuildTeleporter < DefenderEngineerIdle < ScenarioMonitor
+L 09/11/2026 - 20:55:22: [tf2_defenderbots.smx] Stuck: H@XX0RZ (engineer) at 292 179 356, stuck #4, wedge #1, MainAction < TacticalMonitor < DefenderBuildTeleporter < DefenderEngineerIdle < ScenarioMonitor
+L 09/11/2026 - 20:57:48: [tf2_defenderbots.smx] Stuck: H@XX0RZ (engineer) at 115 222 355, stuck #5, wedge #1, MainAction < TacticalMonitor < DefenderBuildTeleporter < DefenderEngineerIdle < ScenarioMonitor
+L 09/11/2026 - 21:01:00: [tf2_defenderbots.smx] Stuck: H@XX0RZ (engineer) at 305 181 356, stuck #6, wedge #1, MainAction < TacticalMonitor < DefenderBuildTeleporter < DefenderEngineerIdle < ScenarioMonitor
+L 09/11/2026 - 21:01:49: [tf2_defenderbots.smx] SpawnNavRecovery: TAAAAANK! made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 21:03:16: [tf2_defenderbots.smx] SpawnNavRecovery: Freakin' Unbelievable exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 21:03:16: [tf2_defenderbots.smx] SpawnNavRecovery: H@XX0RZ exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 21:05:43: [tf2_defenderbots.smx] SpawnNavRecovery: Freakin' Unbelievable made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 21:05:43: [tf2_defenderbots.smx] SpawnNavRecovery: H@XX0RZ made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 21:05:49: [tf2_defenderbots.smx] SpawnNavRecovery: H@XX0RZ made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 21:06:56: [tf2_defenderbots.smx] SpawnNavRecovery: Me made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 21:07:02: [tf2_defenderbots.smx] SpawnNavRecovery: Me made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 21:17:28: [tf2_defenderbots.smx] SpawnNavRecovery: Crazed Gunman made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 21:17:42: [tf2_defenderbots.smx] SpawnNavRecovery: 0xDEADBEEF made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 21:17:43: [tf2_defenderbots.smx] SpawnNavRecovery: Crazed Gunman exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 21:18:01: [tf2_defenderbots.smx] SpawnNavRecovery: Crazed Gunman exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 21:18:28: [tf2_defenderbots.smx] SpawnNavRecovery: 0xDEADBEEF exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 21:23:22: [tf2_defenderbots.smx] SpawnNavRecovery: Screamin' Eagles exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 21:25:23: [tf2_defenderbots.smx] SpawnNavRecovery: Mentlegen exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 21:35:31: [tf2_defenderbots.smx] SpawnNavRecovery: Companion Cube made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 21:37:54: [tf2_defenderbots.smx] SpawnNavRecovery: Big Mean Muther Hubbard made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 21:38:05: [tf2_defenderbots.smx] SpawnNavRecovery: Companion Cube exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/11/2026 - 21:43:09: [tf2_defenderbots.smx] SpawnNavRecovery: Mann Co. made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 21:43:54: [tf2_defenderbots.smx] SpawnNavRecovery: Chell made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/11/2026 - 21:44:00: [tf2_defenderbots.smx] SpawnNavRecovery: Chell made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/13/2026 - 10:06:11: [tf2_defenderbots.smx] SpawnNavRecovery: MindlessElectrons made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/13/2026 - 10:06:12: [tf2_defenderbots.smx] SpawnNavRecovery: DeadHead made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/13/2026 - 10:06:12: [tf2_defenderbots.smx] SpawnNavRecovery: BoomerBile made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/13/2026 - 10:06:12: [tf2_defenderbots.smx] SpawnNavRecovery: Aperture Science Prototype XR7 made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/13/2026 - 10:11:55: [tf2_defenderbots.smx] SpawnNavRecovery: Hostage exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/13/2026 - 10:13:36: [tf2_defenderbots.smx] SpawnNavRecovery: The Combine made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/13/2026 - 10:13:43: [tf2_defenderbots.smx] SpawnNavRecovery: TAAAAANK! exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/13/2026 - 10:13:50: [tf2_defenderbots.smx] SpawnNavRecovery: The Combine exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/13/2026 - 10:13:52: [tf2_defenderbots.smx] SpawnNavRecovery: Hostage exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/13/2026 - 10:13:54: [tf2_defenderbots.smx] SpawnNavRecovery: The Freeman exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/13/2026 - 10:13:55: [tf2_defenderbots.smx] SpawnNavRecovery: Zepheniah Mann exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/13/2026 - 10:14:01: [tf2_defenderbots.smx] SpawnNavRecovery: Hostage made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/13/2026 - 10:14:08: [tf2_defenderbots.smx] SpawnNavRecovery: Hostage made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/13/2026 - 10:14:16: [tf2_defenderbots.smx] SpawnNavRecovery: Hostage made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/13/2026 - 10:19:19: [tf2_defenderbots.smx] SpawnNavRecovery: Glorified Toaster with Legs exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/13/2026 - 10:23:11: [tf2_defenderbots.smx] SpawnNavRecovery: The G-Man exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 11:34:05: [tf2_defenderbots.smx] SpawnNavRecovery: Grim Bloody Fable made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:34:06: [tf2_defenderbots.smx] SpawnNavRecovery: Grim Bloody Fable made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:34:08: [tf2_defenderbots.smx] SpawnNavRecovery: MoreGun made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:34:10: [tf2_defenderbots.smx] SpawnNavRecovery: Grim Bloody Fable made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:34:11: [tf2_defenderbots.smx] SpawnNavRecovery: MoreGun exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 11:34:14: [tf2_defenderbots.smx] SpawnNavRecovery: Grim Bloody Fable made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:34:16: [tf2_defenderbots.smx] SpawnNavRecovery: Grim Bloody Fable made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:34:25: [tf2_defenderbots.smx] SpawnNavRecovery: TAAAAANK! exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 11:38:17: [tf2_defenderbots.smx] SpawnNavRecovery: The Administrator made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:38:17: [tf2_defenderbots.smx] SpawnNavRecovery: GutsAndGlory! made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:38:18: [tf2_defenderbots.smx] SpawnNavRecovery: RageQuit made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:38:18: [tf2_defenderbots.smx] SpawnNavRecovery: LOS LOS LOS made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:38:19: [tf2_defenderbots.smx] SpawnNavRecovery: CrySomeMore made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:38:19: [tf2_defenderbots.smx] SpawnNavRecovery: The Administrator made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:38:20: [tf2_defenderbots.smx] SpawnNavRecovery: LOS LOS LOS made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:38:20: [tf2_defenderbots.smx] SpawnNavRecovery: CrySomeMore made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:38:20: [tf2_defenderbots.smx] SpawnNavRecovery: GutsAndGlory! exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 11:38:21: [tf2_defenderbots.smx] SpawnNavRecovery: RageQuit made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:38:22: [tf2_defenderbots.smx] SpawnNavRecovery: CrySomeMore made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:38:22: [tf2_defenderbots.smx] SpawnNavRecovery: GutsAndGlory! made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:38:24: [tf2_defenderbots.smx] SpawnNavRecovery: LOS LOS LOS exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 11:38:25: [tf2_defenderbots.smx] SpawnNavRecovery: RageQuit made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:38:30: [tf2_defenderbots.smx] SpawnNavRecovery: The Administrator exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 11:38:32: [tf2_defenderbots.smx] SpawnNavRecovery: RageQuit made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:38:33: [tf2_defenderbots.smx] SpawnNavRecovery: The Administrator exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 11:38:34: [tf2_defenderbots.smx] SpawnNavRecovery: LOS LOS LOS exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 11:38:36: [tf2_defenderbots.smx] SpawnNavRecovery: RageQuit exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 11:38:46: [tf2_defenderbots.smx] SpawnNavRecovery: Grim Bloody Fable exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 11:38:46: [tf2_defenderbots.smx] SpawnNavRecovery: GutsAndGlory! exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 11:38:49: [tf2_defenderbots.smx] SpawnNavRecovery: RageQuit made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:39:12: [tf2_defenderbots.smx] SpawnNavRecovery: Aperture Science Prototype XR7 has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 11:39:12: [tf2_defenderbots.smx] SpawnNavRecovery: CryBaby has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 11:39:12: [tf2_defenderbots.smx] SpawnNavRecovery: GutsAndGlory! has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 11:39:12: [tf2_defenderbots.smx] SpawnNavRecovery: SomeDude has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 11:39:12: [tf2_defenderbots.smx] SpawnNavRecovery: Poopy Joe has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 11:39:12: [tf2_defenderbots.smx] SpawnNavRecovery: LOS LOS LOS has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 11:40:23: [tf2_defenderbots.smx] SpawnNavRecovery: Aperture Science Prototype XR7 has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 11:40:26: [tf2_defenderbots.smx] SpawnNavRecovery: SomeDude has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 11:40:38: [tf2_defenderbots.smx] SpawnNavRecovery: LOS LOS LOS has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 11:40:52: [tf2_defenderbots.smx] SpawnNavRecovery: Aperture Science Prototype XR7 has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 11:40:59: [tf2_defenderbots.smx] SpawnNavRecovery: LOS LOS LOS has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 11:41:01: [tf2_defenderbots.smx] SpawnNavRecovery: SomeDude has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 11:42:11: [tf2_defenderbots.smx] SpawnNavRecovery: Hat-Wearing MAN exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 11:42:11: [tf2_defenderbots.smx] SpawnNavRecovery: CreditToTeam exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 11:42:12: [tf2_defenderbots.smx] SpawnNavRecovery: It's Filthy in There! exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 11:42:12: [tf2_defenderbots.smx] SpawnNavRecovery: The G-Man made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:42:15: [tf2_defenderbots.smx] SpawnNavRecovery: The G-Man made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:42:17: [tf2_defenderbots.smx] SpawnNavRecovery: Hat-Wearing MAN made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:43:30: [tf2_defenderbots.smx] SpawnNavRecovery: BoomerBile made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:44:26: [tf2_defenderbots.smx] SpawnNavRecovery: GutsAndGlory! made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:44:34: [tf2_defenderbots.smx] SpawnNavRecovery: SomeDude made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:44:54: [tf2_defenderbots.smx] SpawnNavRecovery: GutsAndGlory! made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:46:21: [tf2_defenderbots.smx] SpawnNavRecovery: GutsAndGlory! made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:46:47: [tf2_defenderbots.smx] Stuck: SMELLY UNFORTUNATE (scout) at -987 2011 -242, stuck #1, wedge #1, MainAction < TacticalMonitor < DefenderCollectMoney < ScenarioMonitor
+L 09/23/2026 - 11:49:27: [tf2_defenderbots.smx] SpawnNavRecovery: The Freeman made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:51:42: [tf2_defenderbots.smx] SpawnNavRecovery: Mann Co. made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:51:43: [tf2_defenderbots.smx] SpawnNavRecovery: Tiny Baby Man made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:51:45: [tf2_defenderbots.smx] SpawnNavRecovery: 0xDEADBEEF made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:51:50: [tf2_defenderbots.smx] SpawnNavRecovery: 0xDEADBEEF made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:51:55: [tf2_defenderbots.smx] SpawnNavRecovery: 0xDEADBEEF made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:52:17: [tf2_defenderbots.smx] SpawnNavRecovery: LOS LOS LOS has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:52:17: [tf2_defenderbots.smx] SpawnNavRecovery: ThatGuy has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:52:17: [tf2_defenderbots.smx] SpawnNavRecovery: AimBot has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:52:17: [tf2_defenderbots.smx] SpawnNavRecovery: ZAWMBEEZ has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:52:17: [tf2_defenderbots.smx] SpawnNavRecovery: Still Alive has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:52:17: [tf2_defenderbots.smx] SpawnNavRecovery: Headful of Eyeballs has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:52:32: [tf2_defenderbots.smx] SpawnNavRecovery: LOS LOS LOS has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:52:36: [tf2_defenderbots.smx] SpawnNavRecovery: ZAWMBEEZ has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:52:37: [tf2_defenderbots.smx] SpawnNavRecovery: AimBot has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:52:44: [tf2_defenderbots.smx] SpawnNavRecovery: ThatGuy has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:52:49: [tf2_defenderbots.smx] SpawnNavRecovery: Still Alive has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:52:49: [tf2_defenderbots.smx] SpawnNavRecovery: ZAWMBEEZ has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:52:53: [tf2_defenderbots.smx] SpawnNavRecovery: Headful of Eyeballs has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:52:53: [tf2_defenderbots.smx] SpawnNavRecovery: Still Alive has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:52:53: [tf2_defenderbots.smx] SpawnNavRecovery: ThatGuy has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:52:53: [tf2_defenderbots.smx] SpawnNavRecovery: LOS LOS LOS has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:52:54: [tf2_defenderbots.smx] SpawnNavRecovery: AimBot has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:52:54: [tf2_defenderbots.smx] SpawnNavRecovery: ZAWMBEEZ has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:52:59: [tf2_defenderbots.smx] SpawnNavRecovery: ZAWMBEEZ has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:53:02: [tf2_defenderbots.smx] SpawnNavRecovery: LOS LOS LOS has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:53:07: [tf2_defenderbots.smx] SpawnNavRecovery: Headful of Eyeballs has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:53:11: [tf2_defenderbots.smx] SpawnNavRecovery: AimBot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:53:13: [tf2_defenderbots.smx] SpawnNavRecovery: Headful of Eyeballs has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:53:13: [tf2_defenderbots.smx] SpawnNavRecovery: Still Alive has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:53:23: [tf2_defenderbots.smx] SpawnNavRecovery: Still Alive has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:53:41: [tf2_defenderbots.smx] SpawnNavRecovery: Still Alive has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:53:41: [tf2_defenderbots.smx] SpawnNavRecovery: Headful of Eyeballs has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 11:55:45: [tf2_defenderbots.smx] SpawnNavRecovery: Hat-Wearing MAN made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:56:06: [tf2_defenderbots.smx] Stuck: HI THERE (engineer) at 951 -1027 8, stuck #1, wedge #1, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor < MvMEngineerBuildSentryGun < MvMEngineerIdle
+L 09/23/2026 - 11:57:16: [tf2_defenderbots.smx] SpawnNavRecovery: Hostage made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:57:25: [tf2_defenderbots.smx] SpawnNavRecovery: Hostage made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:57:37: [tf2_defenderbots.smx] Stuck: THEM (engineer) at 763 -1469 0, stuck #2, wedge #1, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor < MvMEngineerBuildSentryGun < MvMEngineerIdle
+L 09/23/2026 - 11:57:44: [tf2_defenderbots.smx] SpawnNavRecovery: Hostage made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:57:45: [tf2_defenderbots.smx] SpawnNavRecovery: Numnutz made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:57:59: [tf2_defenderbots.smx] SpawnNavRecovery: Numnutz made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:58:02: [tf2_defenderbots.smx] SpawnNavRecovery: Hostage made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:58:16: [tf2_defenderbots.smx] SpawnNavRecovery: Numnutz made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 11:58:25: [tf2_defenderbots.smx] SpawnNavRecovery: Hostage exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 11:58:30: [tf2_defenderbots.smx] SpawnNavRecovery: Numnutz made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 12:02:03: [tf2_defenderbots.smx] SpawnNavRecovery: AimBot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 12:02:03: [tf2_defenderbots.smx] SpawnNavRecovery: Numnutz made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 12:02:05: [tf2_defenderbots.smx] SpawnNavRecovery: The Combine made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 12:02:07: [tf2_defenderbots.smx] SpawnNavRecovery: GLaDOS exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:02:07: [tf2_defenderbots.smx] SpawnNavRecovery: THEM exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:02:09: [tf2_defenderbots.smx] SpawnNavRecovery: The Combine made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 12:02:15: [tf2_defenderbots.smx] SpawnNavRecovery: AimBot exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:02:17: [tf2_defenderbots.smx] SpawnNavRecovery: THEM exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:02:21: [tf2_defenderbots.smx] SpawnNavRecovery: Numnutz exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:02:25: [tf2_defenderbots.smx] SpawnNavRecovery: AimBot exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:02:34: [tf2_defenderbots.smx] SpawnNavRecovery: Numnutz exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:02:35: [tf2_defenderbots.smx] SpawnNavRecovery: AimBot exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:02:44: [tf2_defenderbots.smx] SpawnNavRecovery: Numnutz exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:02:54: [tf2_defenderbots.smx] SpawnNavRecovery: Numnutz exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:06:10: [tf2_defenderbots.smx] SpawnNavRecovery: Chell made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 12:06:12: [tf2_defenderbots.smx] SpawnNavRecovery: Me exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:06:16: [tf2_defenderbots.smx] SpawnNavRecovery: Delicious Cake exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:06:17: [tf2_defenderbots.smx] SpawnNavRecovery: Still Alive made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 12:06:25: [tf2_defenderbots.smx] SpawnNavRecovery: Still Alive made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 12:06:27: [tf2_defenderbots.smx] SpawnNavRecovery: Chell made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 12:06:45: [tf2_defenderbots.smx] SpawnNavRecovery: Chell made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 12:21:09: [tf2_defenderbots.smx] SpawnNavRecovery: Poopy Joe made no spawn-exit progress for six seconds; moved them using bomb-target NAV
+L 09/23/2026 - 12:21:18: [tf2_defenderbots.smx] Stuck: Crowbar (engineer) at -433 -2457 256, stuck #1, wedge #1, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor < MvMEngineerIdle
+L 09/23/2026 - 12:21:20: [tf2_defenderbots.smx] Stuck: RageQuit (engineer) at -433 -2505 256, stuck #2, wedge #1, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor < MvMEngineerIdle
+L 09/23/2026 - 12:21:36: [tf2_defenderbots.smx] Stuck: Crowbar (engineer) at -433 -2457 256, stuck #2, wedge #2, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 12:21:37: [tf2_defenderbots.smx] Stuck: RageQuit (engineer) at -433 -2518 256, stuck #3, wedge #2, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 12:21:53: [tf2_defenderbots.smx] Stuck: Crowbar (engineer) at -433 -2457 256, stuck #3, wedge #3, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 12:21:54: [tf2_defenderbots.smx] Stuck: Crowbar was wedged at -433 -2457 256, moved to -430 -2540 266
+L 09/23/2026 - 12:21:55: [tf2_defenderbots.smx] Stuck: RageQuit (engineer) at -433 -2492 256, stuck #4, wedge #3, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 12:21:55: [tf2_defenderbots.smx] Stuck: RageQuit was wedged at -433 -2492 256, moved to -442 -2574 266
+L 09/23/2026 - 12:22:06: [tf2_defenderbots.smx] SpawnNavRecovery: Crowbar made no spawn-exit progress for six seconds; moved them using bomb-target NAV
+L 09/23/2026 - 12:22:25: [tf2_defenderbots.smx] SpawnNavRecovery: RageQuit made no spawn-exit progress for six seconds; moved them using bomb-target NAV
+L 09/23/2026 - 12:22:53: [tf2_defenderbots.smx] Stuck: RageQuit (engineer) at 3901 -1325 640, stuck #5, wedge #1, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 12:23:24: [tf2_defenderbots.smx] Stuck: RageQuit (engineer) at 4004 -1324 640, stuck #6, wedge #1, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 12:24:42: [tf2_defenderbots.smx] SpawnNavRecovery: Archimedes! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:24:42: [tf2_defenderbots.smx] SpawnNavRecovery: Divide by Zero has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:24:43: [tf2_defenderbots.smx] SpawnNavRecovery: LOS LOS LOS has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:24:43: [tf2_defenderbots.smx] SpawnNavRecovery: I LIVE! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:24:43: [tf2_defenderbots.smx] SpawnNavRecovery: RageQuit has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:24:43: [tf2_defenderbots.smx] SpawnNavRecovery: CrySomeMore has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:24:47: [tf2_defenderbots.smx] SpawnNavRecovery: LOS LOS LOS made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 12:25:13: [tf2_defenderbots.smx] SpawnNavRecovery: Archimedes! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:25:35: [tf2_defenderbots.smx] SpawnNavRecovery: LOS LOS LOS has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:25:35: [tf2_defenderbots.smx] SpawnNavRecovery: RageQuit has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:25:40: [tf2_defenderbots.smx] SpawnNavRecovery: Archimedes! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:26:20: [tf2_defenderbots.smx] SpawnNavRecovery: RageQuit has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:27:48: [tf2_defenderbots.smx] SpawnNavRecovery: CreditToTeam has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:27:48: [tf2_defenderbots.smx] SpawnNavRecovery: It's Filthy in There! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:27:48: [tf2_defenderbots.smx] SpawnNavRecovery: The G-Man has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:27:48: [tf2_defenderbots.smx] SpawnNavRecovery: Hat-Wearing MAN has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:27:48: [tf2_defenderbots.smx] SpawnNavRecovery: Black Mesa has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:27:48: [tf2_defenderbots.smx] SpawnNavRecovery: HI THERE has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:28:08: [tf2_defenderbots.smx] Stuck: HI THERE (engineer) at -334 -1727 1280, stuck #7, wedge #1, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor < MvMEngineerBuildSentryGun < MvMEngineerIdle
+L 09/23/2026 - 12:28:13: [tf2_defenderbots.smx] Stuck: Black Mesa (engineer) at 317 -1543 1088, stuck #4, wedge #1, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor < MvMEngineerBuildSentryGun < MvMEngineerIdle
+L 09/23/2026 - 12:28:15: [tf2_defenderbots.smx] Stuck: HI THERE (engineer) at -334 -1727 1280, stuck #8, wedge #2, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 12:28:16: [tf2_defenderbots.smx] SpawnNavRecovery: It's Filthy in There! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:28:25: [tf2_defenderbots.smx] Stuck: HI THERE (engineer) at -334 -1727 1280, stuck #9, wedge #3, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 12:28:25: [tf2_defenderbots.smx] Stuck: HI THERE was wedged at -334 -1727 1280, moved to -381 -1800 1290
+L 09/23/2026 - 12:28:27: [tf2_defenderbots.smx] SpawnNavRecovery: The G-Man has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:28:32: [tf2_defenderbots.smx] SpawnNavRecovery: The G-Man made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 12:28:35: [tf2_defenderbots.smx] Stuck: HI THERE (engineer) at -381 -1800 1280, stuck #10, wedge #1, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 12:28:35: [tf2_defenderbots.smx] SpawnNavRecovery: CreditToTeam has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:28:37: [tf2_defenderbots.smx] SpawnNavRecovery: The G-Man made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 12:28:41: [tf2_defenderbots.smx] SpawnNavRecovery: CreditToTeam made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 12:28:45: [tf2_defenderbots.smx] Stuck: HI THERE (engineer) at -381 -1800 1280, stuck #11, wedge #2, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 12:28:49: [tf2_defenderbots.smx] SpawnNavRecovery: It's Filthy in There! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:28:57: [tf2_defenderbots.smx] Stuck: HI THERE (engineer) at -381 -1800 1280, stuck #12, wedge #3, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 12:28:57: [tf2_defenderbots.smx] Stuck: HI THERE was wedged at -381 -1800 1280, moved to -385 -1688 1290
+L 09/23/2026 - 12:29:09: [tf2_defenderbots.smx] Stuck: HI THERE (engineer) at -385 -1688 1280, stuck #13, wedge #1, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 12:29:14: [tf2_defenderbots.smx] SpawnNavRecovery: The G-Man has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:29:15: [tf2_defenderbots.smx] SpawnNavRecovery: It's Filthy in There! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:29:16: [tf2_defenderbots.smx] Stuck: HI THERE (engineer) at -385 -1688 1280, stuck #14, wedge #2, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 12:29:24: [tf2_defenderbots.smx] Stuck: HI THERE (engineer) at -385 -1688 1280, stuck #15, wedge #3, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 12:29:24: [tf2_defenderbots.smx] Stuck: HI THERE was wedged at -385 -1688 1280, moved to -341 -1802 1290
+L 09/23/2026 - 12:29:36: [tf2_defenderbots.smx] Stuck: HI THERE (engineer) at -341 -1802 1280, stuck #16, wedge #1, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 12:29:37: [tf2_defenderbots.smx] SpawnNavRecovery: The G-Man has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:29:38: [tf2_defenderbots.smx] SpawnNavRecovery: It's Filthy in There! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:29:44: [tf2_defenderbots.smx] SpawnNavRecovery: CreditToTeam has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:30:01: [tf2_defenderbots.smx] SpawnNavRecovery: It's Filthy in There! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:30:11: [tf2_defenderbots.smx] SpawnNavRecovery: CreditToTeam has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:30:15: [tf2_defenderbots.smx] SpawnNavRecovery: Hat-Wearing MAN has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:30:16: [tf2_defenderbots.smx] SpawnNavRecovery: The G-Man has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:30:17: [tf2_defenderbots.smx] SpawnNavRecovery: It's Filthy in There! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:30:39: [tf2_defenderbots.smx] SpawnNavRecovery: HI THERE has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:30:56: [tf2_defenderbots.smx] SpawnNavRecovery: It's Filthy in There! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:30:56: [tf2_defenderbots.smx] SpawnNavRecovery: The G-Man has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:31:15: [tf2_defenderbots.smx] SpawnNavRecovery: The G-Man has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:31:24: [tf2_defenderbots.smx] SpawnNavRecovery: It's Filthy in There! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:31:24: [tf2_defenderbots.smx] SpawnNavRecovery: Black Mesa has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:31:25: [tf2_defenderbots.smx] SpawnNavRecovery: The G-Man has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:31:26: [tf2_defenderbots.smx] SpawnNavRecovery: CreditToTeam has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:31:29: [tf2_defenderbots.smx] SpawnNavRecovery: Hat-Wearing MAN has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:31:38: [tf2_defenderbots.smx] SpawnNavRecovery: CreditToTeam has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:31:38: [tf2_defenderbots.smx] SpawnNavRecovery: It's Filthy in There! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:31:39: [tf2_defenderbots.smx] SpawnNavRecovery: The G-Man has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:31:41: [tf2_defenderbots.smx] SpawnNavRecovery: Hat-Wearing MAN has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:31:41: [tf2_defenderbots.smx] SpawnNavRecovery: Black Mesa has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:32:16: [tf2_defenderbots.smx] SpawnNavRecovery: H@XX0RZ exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:33:07: [tf2_defenderbots.smx] SpawnNavRecovery: H@XX0RZ exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:33:34: [tf2_defenderbots.smx] SpawnNavRecovery: BeepBeepBoop exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:36:48: [tf2_defenderbots.smx] Stuck: HI THERE (engineer) at -517 -1052 64, stuck #17, wedge #1, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor < MvMEngineerBuildSentryGun < MvMEngineerIdle
+L 09/23/2026 - 12:39:02: [tf2_defenderbots.smx] SpawnNavRecovery: It's Filthy in There! exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:41:12: [tf2_defenderbots.smx] SpawnNavRecovery: Nom Nom Nom made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 12:41:15: [tf2_defenderbots.smx] SpawnNavRecovery: SomeDude exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:41:15: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:42:19: [tf2_defenderbots.smx] SpawnNavRecovery: Me exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:42:22: [tf2_defenderbots.smx] SpawnNavRecovery: Nom Nom Nom exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:43:12: [tf2_defenderbots.smx] SpawnNavRecovery: Chucklenuts made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 12:43:12: [tf2_defenderbots.smx] SpawnNavRecovery: Glorified Toaster with Legs made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 12:43:13: [tf2_defenderbots.smx] SpawnNavRecovery: trigger_hurt made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 12:43:14: [tf2_defenderbots.smx] SpawnNavRecovery: Chucklenuts made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 12:43:14: [tf2_defenderbots.smx] SpawnNavRecovery: Glorified Toaster with Legs made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 12:43:17: [tf2_defenderbots.smx] SpawnNavRecovery: trigger_hurt exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:43:17: [tf2_defenderbots.smx] SpawnNavRecovery: THEM exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 12:44:18: [tf2_defenderbots.smx] SpawnNavRecovery: Kill Me made no spawn-exit progress for six seconds; moved them using capture trigger
+L 09/23/2026 - 12:44:47: [tf2_defenderbots.smx] SpawnNavRecovery: A Professional With Standards made no spawn-exit progress for six seconds; moved them using capture trigger
+L 09/23/2026 - 12:46:10: [tf2_defenderbots.smx] SpawnNavRecovery: Kill Me made no spawn-exit progress for six seconds; moved them using capture trigger
+L 09/23/2026 - 12:56:37: [tf2_defenderbots.smx] SpawnNavRecovery: Target Practice has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:56:37: [tf2_defenderbots.smx] SpawnNavRecovery: Chucklenuts has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:56:37: [tf2_defenderbots.smx] SpawnNavRecovery: CrySomeMore has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:56:37: [tf2_defenderbots.smx] SpawnNavRecovery: Archimedes! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:56:37: [tf2_defenderbots.smx] SpawnNavRecovery: LOS LOS LOS has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:56:37: [tf2_defenderbots.smx] SpawnNavRecovery: RageQuit has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:56:58: [tf2_defenderbots.smx] SpawnNavRecovery: Archimedes! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:57:05: [tf2_defenderbots.smx] SpawnNavRecovery: CrySomeMore has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:57:11: [tf2_defenderbots.smx] SpawnNavRecovery: Target Practice has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:57:19: [tf2_defenderbots.smx] SpawnNavRecovery: Chucklenuts has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:57:29: [tf2_defenderbots.smx] SpawnNavRecovery: Archimedes! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:57:41: [tf2_defenderbots.smx] SpawnNavRecovery: CrySomeMore has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:57:56: [tf2_defenderbots.smx] SpawnNavRecovery: Chucklenuts has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:58:01: [tf2_defenderbots.smx] SpawnNavRecovery: Target Practice has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:58:05: [tf2_defenderbots.smx] SpawnNavRecovery: Archimedes! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:58:12: [tf2_defenderbots.smx] SpawnNavRecovery: LOS LOS LOS has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:58:12: [tf2_defenderbots.smx] SpawnNavRecovery: RageQuit has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:58:19: [tf2_defenderbots.smx] SpawnNavRecovery: CrySomeMore has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:58:31: [tf2_defenderbots.smx] SpawnNavRecovery: Chucklenuts has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:58:45: [tf2_defenderbots.smx] SpawnNavRecovery: Target Practice has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:58:57: [tf2_defenderbots.smx] SpawnNavRecovery: CrySomeMore has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:59:18: [tf2_defenderbots.smx] SpawnNavRecovery: Archimedes! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:59:22: [tf2_defenderbots.smx] SpawnNavRecovery: Chucklenuts has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:59:23: [tf2_defenderbots.smx] SpawnNavRecovery: Target Practice has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:59:26: [tf2_defenderbots.smx] SpawnNavRecovery: CrySomeMore has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:59:29: [tf2_defenderbots.smx] SpawnNavRecovery: LOS LOS LOS has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 12:59:54: [tf2_defenderbots.smx] SpawnNavRecovery: LOS LOS LOS has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:00:07: [tf2_defenderbots.smx] SpawnNavRecovery: RageQuit has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:00:18: [tf2_defenderbots.smx] SpawnNavRecovery: Archimedes! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:06:34: [tf2_defenderbots.smx] SpawnNavRecovery: Numnutz made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:06:38: [tf2_defenderbots.smx] SpawnNavRecovery: C++ exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 13:06:41: [tf2_defenderbots.smx] SpawnNavRecovery: C++ made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:06:41: [tf2_defenderbots.smx] SpawnNavRecovery: trigger_hurt made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:06:43: [tf2_defenderbots.smx] SpawnNavRecovery: trigger_hurt made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:08:21: [tf2_defenderbots.smx] SpawnNavRecovery: MindlessElectrons made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:08:24: [tf2_defenderbots.smx] SpawnNavRecovery: MindlessElectrons made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:08:26: [tf2_defenderbots.smx] SpawnNavRecovery: MindlessElectrons made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:16: [tf2_defenderbots.smx] SpawnNavRecovery: MindlessElectrons made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:17: [tf2_defenderbots.smx] SpawnNavRecovery: trigger_hurt made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:17: [tf2_defenderbots.smx] SpawnNavRecovery: MindlessElectrons made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:17: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 13:09:17: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 13:09:19: [tf2_defenderbots.smx] SpawnNavRecovery: MindlessElectrons made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:20: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:20: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:20: [tf2_defenderbots.smx] SpawnNavRecovery: MindlessElectrons made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:22: [tf2_defenderbots.smx] SpawnNavRecovery: MindlessElectrons made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:23: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 13:09:23: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 13:09:23: [tf2_defenderbots.smx] SpawnNavRecovery: MindlessElectrons made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:25: [tf2_defenderbots.smx] SpawnNavRecovery: MindlessElectrons made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:26: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:26: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 13:09:26: [tf2_defenderbots.smx] SpawnNavRecovery: MindlessElectrons made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:28: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:28: [tf2_defenderbots.smx] SpawnNavRecovery: MindlessElectrons made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:29: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:31: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 13:09:32: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 13:09:33: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:34: [tf2_defenderbots.smx] Stuck: H@XX0RZ (spy) at -110 2376 -95, stuck #1, wedge #1, MainAction < TacticalMonitor < DefenderSpyLurk < ScenarioMonitor < SpyLeaveSpawnRoom
+L 09/23/2026 - 13:09:35: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:36: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:38: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:38: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:41: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:41: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:44: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:44: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 13:09:46: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:46: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:48: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:49: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:51: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:51: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:53: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:54: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:55: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:57: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:58: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:09:59: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:00: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:02: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:02: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:04: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:04: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:06: [tf2_defenderbots.smx] SpawnNavRecovery: MindlessElectrons made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:06: [tf2_defenderbots.smx] Stuck: H@XX0RZ (spy) at -98 2376 -39, stuck #2, wedge #2, MainAction < TacticalMonitor < DefenderSpyLurk < ScenarioMonitor
+L 09/23/2026 - 13:10:07: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:08: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:09: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:10: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:11: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:13: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:14: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:15: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:16: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:18: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:18: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:20: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:21: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:23: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:23: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:25: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:26: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:28: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:29: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:30: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:31: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:32: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:33: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:35: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:36: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:37: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:39: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:40: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:42: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:42: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:43: [tf2_defenderbots.smx] SpawnNavRecovery: MindlessElectrons made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:45: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:45: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:48: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:48: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:51: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:52: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:55: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:55: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:58: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:10:59: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:11:01: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:11:02: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:11:04: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:11:06: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:11:07: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:11:10: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:11:10: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:11:14: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:11:14: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:11:17: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:11:18: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:11:20: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:11:22: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:11:23: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:11:25: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:11:26: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:11:28: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:11:29: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:11:31: [tf2_defenderbots.smx] SpawnNavRecovery: Soulless made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:11:32: [tf2_defenderbots.smx] SpawnNavRecovery: Totally Not A Bot made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:14:17: [tf2_defenderbots.smx] Stuck: The Administrator (engineer) at 196 -1190 -63, stuck #1, wedge #1, MainAction < TacticalMonitor < DefenderBuildSentrygun < DefenderEngineerIdle < ScenarioMonitor < MvMEngineerBuildSentryGun < MvMEngineerIdle
+L 09/23/2026 - 13:14:22: [tf2_defenderbots.smx] Stuck: The Administrator (engineer) at 197 -1186 -63, stuck #2, wedge #2, MainAction < TacticalMonitor < DefenderBuildSentrygun < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 13:14:24: [tf2_defenderbots.smx] Stuck: 0xDEADBEEF (heavyweapons) at -1575 -1879 62, stuck #1, wedge #1, MainAction < TacticalMonitor < DefenderCampBomb < ScenarioMonitor < AttackFlagDefenders < FetchFlag
+L 09/23/2026 - 13:14:26: [tf2_defenderbots.smx] Stuck: The Administrator (engineer) at 197 -1186 -63, stuck #3, wedge #3, MainAction < TacticalMonitor < DefenderBuildSentrygun < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 13:14:26: [tf2_defenderbots.smx] Stuck: The Administrator was wedged at 197 -1186 -63, moved to 220 -1106 -53
+L 09/23/2026 - 13:14:33: [tf2_defenderbots.smx] Stuck: The Administrator (engineer) at 195 -1214 -63, stuck #4, wedge #1, MainAction < TacticalMonitor < DefenderBuildSentrygun < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 13:14:39: [tf2_defenderbots.smx] Stuck: The Administrator (engineer) at 195 -1214 -63, stuck #5, wedge #2, MainAction < TacticalMonitor < DefenderBuildSentrygun < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 13:14:44: [tf2_defenderbots.smx] Stuck: The Administrator (engineer) at 195 -1214 -63, stuck #6, wedge #3, MainAction < TacticalMonitor < DefenderBuildSentrygun < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 13:14:44: [tf2_defenderbots.smx] Stuck: The Administrator was wedged at 195 -1214 -63, moved to 203 -1289 -48
+L 09/23/2026 - 13:14:49: [tf2_defenderbots.smx] Stuck: The Administrator (engineer) at 199 -1219 -63, stuck #7, wedge #1, MainAction < TacticalMonitor < DefenderBuildSentrygun < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 13:14:53: [tf2_defenderbots.smx] Stuck: The Administrator (engineer) at 199 -1219 -63, stuck #8, wedge #2, MainAction < TacticalMonitor < DefenderBuildSentrygun < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 13:14:56: [tf2_defenderbots.smx] Stuck: The Administrator (engineer) at 199 -1219 -63, stuck #9, wedge #3, MainAction < TacticalMonitor < DefenderBuildSentrygun < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 13:14:56: [tf2_defenderbots.smx] Stuck: The Administrator was wedged at 199 -1219 -63, moved to 241 -1133 -53
+L 09/23/2026 - 13:14:59: [tf2_defenderbots.smx] Stuck: The Administrator (engineer) at 212 -1221 -63, stuck #10, wedge #1, MainAction < TacticalMonitor < DefenderBuildSentrygun < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 13:15:02: [tf2_defenderbots.smx] Stuck: Glorified Toaster with Legs (pyro) at -1575 -1879 62, stuck #1, wedge #1, MainAction < TacticalMonitor < DefenderCampBomb < ScenarioMonitor < AttackFlagDefenders < FetchFlag
+L 09/23/2026 - 13:15:05: [tf2_defenderbots.smx] Stuck: The Administrator (engineer) at 212 -1221 -63, stuck #11, wedge #2, MainAction < TacticalMonitor < DefenderBuildSentrygun < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 13:15:10: [tf2_defenderbots.smx] Stuck: The Administrator (engineer) at 212 -1221 -63, stuck #12, wedge #3, MainAction < TacticalMonitor < DefenderBuildSentrygun < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 13:15:10: [tf2_defenderbots.smx] Stuck: The Administrator was wedged at 212 -1221 -63, moved to 247 -1287 -51
+L 09/23/2026 - 13:15:13: [tf2_defenderbots.smx] Stuck: The Administrator (engineer) at 204 -1195 -63, stuck #13, wedge #1, MainAction < TacticalMonitor < DefenderBuildSentrygun < DefenderEngineerIdle < ScenarioMonitor
+L 09/23/2026 - 13:16:02: [tf2_defenderbots.smx] Stuck: Poopy Joe (engineer) at 1104 563 257, stuck #1, wedge #1, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor < MvMEngineerIdle
+L 09/23/2026 - 13:16:18: [tf2_defenderbots.smx] Stuck: Me (heavyweapons) at 259 2190 202, stuck #2, wedge #1, MainAction < TacticalMonitor < DefenderAttack < ScenarioMonitor < FetchFlag
+L 09/23/2026 - 13:16:19: [tf2_defenderbots.smx] SpawnNavRecovery: The Combine made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:16:21: [tf2_defenderbots.smx] SpawnNavRecovery: The Combine made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:18:44: [tf2_defenderbots.smx] SpawnNavRecovery: Kaboom! made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:19:01: [tf2_defenderbots.smx] SpawnNavRecovery: The Freeman made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:21:03: [tf2_defenderbots.smx] SpawnNavRecovery: The Freeman made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:23:07: [tf2_defenderbots.smx] SpawnNavRecovery: Poopy Joe made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:23:08: [tf2_defenderbots.smx] SpawnNavRecovery: ThatGuy exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 13:23:11: [tf2_defenderbots.smx] SpawnNavRecovery: ThatGuy made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:23:31: [tf2_defenderbots.smx] SpawnNavRecovery: I LIVE! made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:23:34: [tf2_defenderbots.smx] SpawnNavRecovery: Saxton Hale exceeded the configured time for leaving spawn; moved them using func_capturezone
+L 09/23/2026 - 13:24:02: [tf2_defenderbots.smx] SpawnNavRecovery: Hat-Wearing MAN made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:24:02: [tf2_defenderbots.smx] SpawnNavRecovery: CreditToTeam made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:28:22: [tf2_defenderbots.smx] SpawnNavRecovery: H@XX0RZ made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:28:22: [tf2_defenderbots.smx] SpawnNavRecovery: trigger_hurt made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:28:22: [tf2_defenderbots.smx] SpawnNavRecovery: Ribs Grow Back made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:28:23: [tf2_defenderbots.smx] SpawnNavRecovery: MindlessElectrons made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:28:23: [tf2_defenderbots.smx] SpawnNavRecovery: H@XX0RZ made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:28:23: [tf2_defenderbots.smx] SpawnNavRecovery: Ribs Grow Back made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:28:24: [tf2_defenderbots.smx] SpawnNavRecovery: MindlessElectrons made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:28:25: [tf2_defenderbots.smx] SpawnNavRecovery: H@XX0RZ made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:28:25: [tf2_defenderbots.smx] SpawnNavRecovery: Ribs Grow Back made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:28:26: [tf2_defenderbots.smx] SpawnNavRecovery: H@XX0RZ made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:28:28: [tf2_defenderbots.smx] SpawnNavRecovery: H@XX0RZ made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:29:32: [tf2_defenderbots.smx] SpawnNavRecovery: MindlessElectrons made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:29:55: [tf2_defenderbots.smx] SpawnNavRecovery: Archimedes! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:29:55: [tf2_defenderbots.smx] SpawnNavRecovery: Divide by Zero has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:29:55: [tf2_defenderbots.smx] SpawnNavRecovery: RageQuit has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:29:55: [tf2_defenderbots.smx] SpawnNavRecovery: LOS LOS LOS has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:29:55: [tf2_defenderbots.smx] SpawnNavRecovery: CrySomeMore has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:29:55: [tf2_defenderbots.smx] SpawnNavRecovery: I LIVE! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:30:32: [tf2_defenderbots.smx] SpawnNavRecovery: LOS LOS LOS has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:30:37: [tf2_defenderbots.smx] SpawnNavRecovery: Divide by Zero has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:30:38: [tf2_defenderbots.smx] SpawnNavRecovery: Archimedes! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:30:40: [tf2_defenderbots.smx] SpawnNavRecovery: RageQuit has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:30:47: [tf2_defenderbots.smx] SpawnNavRecovery: I LIVE! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:31:08: [tf2_defenderbots.smx] SpawnNavRecovery: Divide by Zero has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:31:36: [tf2_defenderbots.smx] SpawnNavRecovery: CRITRAWKETS made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:33:11: [tf2_defenderbots.smx] SpawnNavRecovery: Tiny Baby Man has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 13:33:11: [tf2_defenderbots.smx] SpawnNavRecovery: Poopy Joe has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 13:33:11: [tf2_defenderbots.smx] SpawnNavRecovery: Humans Are Weak has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 13:33:12: [tf2_defenderbots.smx] SpawnNavRecovery: Cannon Fodder has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 13:33:12: [tf2_defenderbots.smx] SpawnNavRecovery: Force of Nature has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 13:33:12: [tf2_defenderbots.smx] SpawnNavRecovery: Kill Me has no route out of spawn; no room to stand in the capture trigger area, so they stay
+L 09/23/2026 - 13:33:12: [tf2_defenderbots.smx] SpawnNavRecovery: Kill Me has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 13:33:34: [tf2_defenderbots.smx] SpawnNavRecovery: Cannon Fodder has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 13:33:35: [tf2_defenderbots.smx] SpawnNavRecovery: Poopy Joe has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 13:33:59: [tf2_defenderbots.smx] SpawnNavRecovery: Poopy Joe has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 13:34:08: [tf2_defenderbots.smx] SpawnNavRecovery: Cannon Fodder has no route out of spawn; moved them using capture trigger
+L 09/23/2026 - 13:34:51: [tf2_defenderbots.smx] Stuck: Black Mesa (engineer) at -108 -2736 304, stuck #1, wedge #1, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor < MvMEngineerBuildSentryGun < MvMEngineerIdle
+L 09/23/2026 - 13:35:11: [tf2_defenderbots.smx] Stuck: HI THERE (engineer) at -786 -2250 304, stuck #1, wedge #1, MainAction < TacticalMonitor < DefenderEngineerIdle < ScenarioMonitor < MvMEngineerBuildSentryGun < MvMEngineerIdle
+L 09/23/2026 - 13:36:38: [tf2_defenderbots.smx] SpawnNavRecovery: Saxton Hale has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:36:38: [tf2_defenderbots.smx] SpawnNavRecovery: Still Alive has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:36:38: [tf2_defenderbots.smx] SpawnNavRecovery: Archimedes! has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:36:38: [tf2_defenderbots.smx] SpawnNavRecovery: Dog has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:36:38: [tf2_defenderbots.smx] SpawnNavRecovery: Big Mean Muther Hubbard has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:36:38: [tf2_defenderbots.smx] SpawnNavRecovery: Hostage has no route out of spawn; moved them using func_capturezone
+L 09/23/2026 - 13:36:41: [tf2_defenderbots.smx] SpawnNavRecovery: Archimedes! made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:36:44: [tf2_defenderbots.smx] SpawnNavRecovery: Archimedes! made no spawn-exit progress for six seconds; moved them using func_capturezone
+L 09/23/2026 - 13:38:41: [tf2_defenderbots.smx] SpawnNavRecovery: Humans Are Weak made no spawn-exit progress for six seconds; moved them using capture trigger

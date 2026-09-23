@@ -1,0 +1,16 @@
+# Layered on compose.waveprobe.yml by run-botprobe.sh: the same disposable
+# server with the defender bots on, a bots build of the caller's choosing, and
+# a cap on what one server may take from the host.
+services:
+  srcds:
+    environment:
+      SRCDS_BOTS: 1
+    cpus: ${WAVEPROBE_CPUS:-1}
+    mem_limit: ${WAVEPROBE_MEMORY:-1536m}
+    volumes:
+      - ${WAVEPROBE_BOTS_SMX:?set the tf2_defenderbots.smx to test}:/opt/tf2-archipelago/addons/sourcemod/plugins/tf2_defenderbots.smx:ro
+
+volumes:
+  tf2game_waveprobe:
+    external: true
+    name: ${WAVEPROBE_GAME_VOLUME:?set an existing game volume}
