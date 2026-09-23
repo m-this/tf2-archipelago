@@ -121,3 +121,30 @@ func TestShardsPartitionCatalog(t *testing.T) {
 		}
 	}
 }
+
+func TestParseDefendersKeepsNamesWithSpaces(t *testing.T) {
+	reply := "WAVEPROBE_DEF client=3 class=9 alive=1 seen=80.0 left=-1.0 inspawn=1 stillmax=61.5 stillspawn=1 stillnow=61.5 still=10,-20,30 at=11,-21,31 hatchmin=2400 hatchnow=2410 teleports=0 lives=2 leftmax=61.5 spawnnow=61.5 name=One-Man Cheeseburger\n" +
+		"WAVEPROBE_DEF client=4 class=3 alive=1 seen=80.0 left=4.2 inspawn=0 stillmax=13.0 stillspawn=0 stillnow=0.0 still=1,2,3 at=4,5,6 hatchmin=300 hatchnow=900 teleports=1 lives=1 leftmax=4.2 spawnnow=0.0 name=THEM\n" +
+		"WAVEPROBE_DEF_END hatch=1\n"
+	rows, err := parseDefenders(reply)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rows) != 2 {
+		t.Fatalf("got %d rows, want 2", len(rows))
+	}
+	stuck := rows[0]
+	if stuck.Name != "One-Man Cheeseburger" || stuck.Left != -1 || !stuck.InSpawn || !stuck.StillInSpawn ||
+		stuck.StillAt != [3]float64{10, -20, 30} || stuck.Class != 9 {
+		t.Errorf("stuck engineer parsed as %+v", stuck)
+	}
+	if rows[1].Teleports != 1 || rows[1].Left != 4.2 || rows[1].InSpawn {
+		t.Errorf("second bot parsed as %+v", rows[1])
+	}
+}
+
+func TestParseDefendersRefusesATruncatedRecord(t *testing.T) {
+	if _, err := parseDefenders("WAVEPROBE_DEF client=3 class=9"); err == nil {
+		t.Fatal("a record without its end line was accepted")
+	}
+}

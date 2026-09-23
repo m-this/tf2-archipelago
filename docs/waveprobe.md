@@ -110,3 +110,43 @@ done < docs/audits/waveprobe-YYYYMMDD-HHMMSS/projects.txt
 
 Keep the pristine `tf2-archipelago-waveprobe_tf2game_waveprobe` source volume
 until you no longer need new sweeps. It is never used as a shard volume.
+
+## Defender bot runs
+
+`deploy/run-botprobe.sh` runs the same probe on one server with the defender
+bots on, and records how each RED bot moved: when it left its spawn room in
+each life, its longest time standing still once the wave runs and where, how
+close it came to the hatch, and its teleports. The bots can die in this mode,
+so every respawn is another spawn exit. The mod's own spawn and wedge rescue
+lines are copied from the SourceMod log and matched to each wave.
+
+It uses an existing game volume in place rather than copying one, and caps the
+server at `WAVEPROBE_CPUS` (default 1) and `WAVEPROBE_MEMORY` (default 1536m):
+
+```sh
+export WAVEPROBE_RCONPW="$(openssl rand -hex 24)"
+WAVEPROBE_GAME_VOLUME=tf2-archipelago_tf2game \
+WAVEPROBE_SRCDS_IMAGE=tf2ap-srcds:v117 \
+WAVEPROBE_ONE_PER_MAP=1 \
+WAVEPROBE_BOTS_SMX=/path/to/tf2_defenderbots.smx \
+    bash deploy/run-botprobe.sh
+```
+
+`WAVEPROBE_BOTS_SMX` defaults to the pinned build from `make bots`. Point it at
+a build from a tf2-mvm-bots-go branch to measure that branch. Only maps the
+volume holds are run, and only community missions whose popfile it holds.
+`WAVEPROBE_MAPS` restricts the run to a comma-separated list, `WAVEPROBE_WAVES`
+(default 1) is how many waves of each mission to play, and `WAVEPROBE_ONE_PER_MAP`
+plays the first installed mission of each map.
+
+`REPORT.md` lists the bots that never left spawn, took over 20 seconds to, or
+stood still 30 seconds away from spawn, and the rescues per wave. Two runs
+compare map by map with:
+
+```sh
+python3 deploy/botprobe-compare.py docs/audits/<run-a> docs/audits/<run-b>
+```
+
+A server that cannot keep up with `WAVEPROBE_SPEED` times out waves that pass
+on a quiet host. Compare arms run under the same load, and rerun a map whose
+game seconds fall well short of its wall seconds times the speed.
