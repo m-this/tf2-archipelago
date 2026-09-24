@@ -243,6 +243,9 @@ type Settings struct {
 	MvmWeaponSlotImportance    string `json:"mvm_weapon_slot_importance"`
 	MvmWeaponBuffImportance    string `json:"mvm_weapon_buff_importance"`
 	MvmCashRewards             bool   `json:"mvm_cash_rewards"`
+	MvmBotCards                bool   `json:"mvm_bot_cards"`
+	MvmStartingBotCards        int    `json:"mvm_starting_bot_cards"`
+	MvmStartingBotCardMode     string `json:"mvm_starting_bot_card_mode"`
 	MvmWeaponBuffPct           int    `json:"mvm_weapon_buff_percentage"`
 	MvmWeaponBuffStackChance   int    `json:"mvm_weapon_buff_stack_chance"`
 
@@ -302,6 +305,7 @@ func Defaults() Settings {
 		MvmClassUnlockImportance:   "progression",
 		MvmWeaponSlotImportance:    "progression",
 		MvmWeaponBuffImportance:    "useful",
+		MvmStartingBotCardMode:     "draw_random",
 		MvmWeaponBuffPct:           75,
 		MvmWeaponBuffStackChance:   25,
 		MvmTrapPct:                 1,
@@ -636,6 +640,9 @@ func (s Settings) withDefaults() Settings {
 	}
 	if s.MvmWeaponBuffImportance == "" {
 		s.MvmWeaponBuffImportance = d.MvmWeaponBuffImportance
+	}
+	if s.MvmStartingBotCardMode == "" {
+		s.MvmStartingBotCardMode = d.MvmStartingBotCardMode
 	}
 	return withListenerDefaults(s, d)
 }
