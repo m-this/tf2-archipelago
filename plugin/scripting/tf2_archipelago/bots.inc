@@ -537,7 +537,7 @@ void Bots_MakeRoom()
     }
     int size = DefenderTeamSize();
     int onRed = 0;
-    int bot = 0;
+    bool leaving[MAXPLAYERS + 1];
     for (int client = 1; client <= MaxClients; client++)
     {
         if (!IsClientInGame(client) || GetClientTeam(client) != TeamRed)
@@ -545,17 +545,77 @@ void Bots_MakeRoom()
             continue;
         }
         onRed++;
-        if (IsFakeClient(client))
-        {
-            bot = client;
-        }
     }
+    int bot = Bots_LowestPriorityBot(leaving);
     if (onRed < size || bot == 0)
     {
         return;
     }
     AP_Debug("RED is full at %d. A bot leaves for the player who arrived.", onRed);
     KickClient(bot, "Making room for a player");
+}
+
+// The launcher writes the selected card order into numbered defender seats.
+// A bot without a pinned name is expendable before any selected card. Reading
+// the file here also makes a saved reorder effective without a plugin reload.
+static int Bots_LowestPriorityBot(bool[] leaving)
+{
+    char path[PLATFORM_MAX_PATH];
+    BuildPath(Path_SM, path, sizeof(path), "configs/defenderbots/loadout.cfg");
+    KeyValues lineup = new KeyValues("loadout");
+    if (!lineup.ImportFromFile(path))
+    {
+        delete lineup;
+        lineup = null;
+    }
+
+    int chosen = 0;
+    int lowest = -1;
+    for (int client = 1; client <= MaxClients; client++)
+    {
+        if (leaving[client] || !IsClientInGame(client) || !IsFakeClient(client)
+            || IsClientSourceTV(client) || GetClientTeam(client) != TeamRed)
+        {
+            continue;
+        }
+        int rank = Bots_SeatRank(client, lineup);
+        if (rank > lowest || (rank == lowest && client > chosen))
+        {
+            chosen = client;
+            lowest = rank;
+        }
+    }
+    delete lineup;
+    return chosen;
+}
+
+static int Bots_SeatRank(int client, KeyValues lineup)
+{
+    if (lineup == null || !lineup.JumpToKey("seats"))
+    {
+        return 100;
+    }
+    char botName[128], seatKey[8], seatName[128];
+    GetClientName(client, botName, sizeof(botName));
+    int rank = 100;
+    for (int seat = 1; seat <= DefenderTeamSize(); seat++)
+    {
+        IntToString(seat, seatKey, sizeof(seatKey));
+        if (!lineup.JumpToKey(seatKey))
+        {
+            continue;
+        }
+        seatName[0] = '\0';
+        lineup.GetString("name", seatName, sizeof(seatName));
+        lineup.GoBack();
+        if (seatName[0] != '\0' && StrEqual(botName, seatName, false))
+        {
+            rank = seat;
+            break;
+        }
+    }
+    lineup.GoBack();
+    return rank;
 }
 
 // How many seats RED holds. The game's own number, and six when it will not say.
@@ -803,7 +863,7 @@ static void Bots_Fill()
  * the same way, and this is the one rule that covers both. It is also where
  * Bots_MakeRoom already lives: whose seat it is, is this plugin's question.
  *
- * Bots only, newest first. A human is never in the surplus.
+ * Bots only, lowest selected priority first. A human is never in the surplus.
  */
 void Bots_TrimSurplus()
 {
@@ -831,15 +891,15 @@ void Bots_TrimSurplus()
             onRed++;
         }
     }
-    // Highest index last in, near enough: the game hands out the lowest free
-    // slot, so the bots that arrived last hold the highest numbers.
-    for (int client = MaxClients; client >= 1 && onRed > size; client--)
+    bool leaving[MAXPLAYERS + 1];
+    while (onRed > size)
     {
-        if (!IsClientInGame(client) || !IsFakeClient(client) || IsClientSourceTV(client)
-            || GetClientTeam(client) != TeamRed)
+        int client = Bots_LowestPriorityBot(leaving);
+        if (client == 0)
         {
-            continue;
+            break;
         }
+        leaving[client] = true;
         AP_Debug("RED holds %d of %d. %N leaves.", onRed, size, client);
         KickClient(client, "RED is full");
         onRed--;
