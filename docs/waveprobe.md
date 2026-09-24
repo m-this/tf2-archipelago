@@ -140,7 +140,11 @@ volume holds are run, and only community missions whose popfile it holds.
 plays the first installed mission of each map.
 
 `REPORT.md` lists the bots that never left spawn, took over 20 seconds to, or
-stood still 30 seconds away from spawn, and the rescues per wave. Two runs
+stood idle for 30 seconds, and the rescues per wave. Idle means standing still
+and not attacking while a robot or a tank is within 1500 units. Standing still
+alone is not idle here. The probe kills each robot 15 to 25 game seconds after
+it appears, so most never reach the front, and a bot that holds its post there
+has nothing to shoot. `still_max_seconds` keeps the raw stillness. Two runs
 compare map by map with:
 
 ```sh

@@ -58,7 +58,12 @@ def faults(bot):
         found.append(f"a spawn exit took {bot.get('left_spawn_max_seconds', 0):.0f}s over {bot.get('lives', 1)} lives")
     if bot.get("in_spawn_this_life_seconds", 0) > LEFT_LIMIT:
         found.append(f"in spawn for {bot['in_spawn_this_life_seconds']:.0f}s at the end")
-    if kind not in PARKED and bot["still_max_seconds"] >= STILL_LIMIT and not bot["still_max_in_spawn"]:
+    # Runs before idle_max_seconds existed only have the raw stillness.
+    if "idle_max_seconds" in bot:
+        if kind not in PARKED and bot["idle_max_seconds"] >= STILL_LIMIT:
+            at = ",".join(f"{v:.0f}" for v in bot["idle_max_at"])
+            found.append(f"idle {bot['idle_max_seconds']:.0f}s with a robot in reach at {at}")
+    elif kind not in PARKED and bot["still_max_seconds"] >= STILL_LIMIT and not bot["still_max_in_spawn"]:
         at = ",".join(f"{v:.0f}" for v in bot["still_max_at"])
         found.append(f"still {bot['still_max_seconds']:.0f}s at {at}")
     if bot["teleports"]:

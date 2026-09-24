@@ -63,6 +63,10 @@ float g_StartedAt;
 // since no class covers it on foot in PROBE_TICK.
 #define DEF_STILL_RADIUS 72.0
 #define DEF_TELEPORT_JUMP 500.0
+// Idle is standing still, not attacking, with a robot or a tank this close. The
+// probe kills robots before most reach the front, so a bot holding its post
+// with nothing in reach is waiting, not idle.
+#define DEF_IDLE_REACH 1500.0
 
 // Off lets the RED bots die, so every respawn is another spawn exit to watch.
 bool g_ProtectBots = true;
@@ -78,6 +82,9 @@ float g_DefAnchor[MAXPLAYERS + 1][3];
 float g_DefAnchorAt[MAXPLAYERS + 1];
 float g_DefStillMax[MAXPLAYERS + 1];
 float g_DefStillAt[MAXPLAYERS + 1][3];
+float g_DefIdleFrom[MAXPLAYERS + 1];
+float g_DefIdleMax[MAXPLAYERS + 1];
+float g_DefIdleAt[MAXPLAYERS + 1][3];
 bool g_DefStillInSpawn[MAXPLAYERS + 1];
 float g_DefLast[MAXPLAYERS + 1][3];
 int g_DefTeleports[MAXPLAYERS + 1];
@@ -735,6 +742,9 @@ static void SampleDefenders()
             g_DefStillMax[bot] = 0.0;
             g_DefStillAt[bot] = here;
             g_DefStillInSpawn[bot] = inSpawn;
+            g_DefIdleFrom[bot] = now;
+            g_DefIdleMax[bot] = 0.0;
+            g_DefIdleAt[bot] = here;
             g_DefLast[bot] = here;
             g_DefTeleports[bot] = 0;
             g_DefHatchMin[bot] = -1.0;
@@ -751,6 +761,7 @@ static void SampleDefenders()
             g_DefLast[bot] = here;
             g_DefAnchor[bot] = here;
             g_DefAnchorAt[bot] = now;
+            g_DefIdleFrom[bot] = now;
         }
         if (g_DefLeftAt[bot] < 0.0 && !inSpawn)
         {
@@ -766,6 +777,7 @@ static void SampleDefenders()
             g_DefTeleports[bot]++;
             g_DefAnchor[bot] = here;
             g_DefAnchorAt[bot] = now;
+            g_DefIdleFrom[bot] = now;
         }
         g_DefLast[bot] = here;
         if (g_HasHatch)
@@ -779,6 +791,7 @@ static void SampleDefenders()
         {
             g_DefAnchor[bot] = here;
             g_DefAnchorAt[bot] = now;
+            g_DefIdleFrom[bot] = now;
             continue;
         }
         float still = now - g_DefAnchorAt[bot];
@@ -788,7 +801,37 @@ static void SampleDefenders()
             g_DefStillAt[bot] = g_DefAnchor[bot];
             g_DefStillInSpawn[bot] = inSpawn;
         }
+        if ((GetClientButtons(bot) & (IN_ATTACK | IN_ATTACK2)) != 0 || !EnemyInReach(here))
+        {
+            g_DefIdleFrom[bot] = now;
+            continue;
+        }
+        float idle = now - g_DefIdleFrom[bot];
+        if (idle > g_DefIdleMax[bot])
+        {
+            g_DefIdleMax[bot] = idle;
+            g_DefIdleAt[bot] = here;
+        }
     }
+}
+
+static bool EnemyInReach(const float here[3])
+{
+    float there[3];
+    for (int enemy = 1; enemy <= MaxClients; enemy++)
+    {
+        if (!IsClientInGame(enemy) || GetClientTeam(enemy) != g_EnemyTeam || !IsPlayerAlive(enemy)) continue;
+        GetClientAbsOrigin(enemy, there);
+        if (GetVectorDistance(here, there) <= DEF_IDLE_REACH) return true;
+    }
+    for (int i = 0; i < PROBE_MAX_TANKS; i++)
+    {
+        int tank = EntRefToEntIndex(g_TankRef[i]);
+        if (tank == INVALID_ENT_REFERENCE || tank <= 0) continue;
+        GetEntPropVector(tank, Prop_Data, "m_vecAbsOrigin", there);
+        if (GetVectorDistance(here, there) <= DEF_IDLE_REACH) return true;
+    }
+    return false;
 }
 
 // One line per RED bot, times in game seconds since the bot was first seen.
@@ -807,7 +850,7 @@ public Action Command_Defenders(int client, int argc)
         char name[64];
         GetClientName(bot, name, sizeof(name));
         ReplyToCommand(client,
-            "WAVEPROBE_DEF client=%d class=%d alive=%d seen=%.1f left=%.1f lives=%d leftmax=%.1f spawnnow=%.1f inspawn=%d stillmax=%.1f stillspawn=%d stillnow=%.1f still=%.0f,%.0f,%.0f at=%.0f,%.0f,%.0f hatchmin=%.0f hatchnow=%.0f teleports=%d name=%s",
+            "WAVEPROBE_DEF client=%d class=%d alive=%d seen=%.1f left=%.1f lives=%d leftmax=%.1f spawnnow=%.1f inspawn=%d stillmax=%.1f stillspawn=%d stillnow=%.1f still=%.0f,%.0f,%.0f idlemax=%.1f idle=%.0f,%.0f,%.0f at=%.0f,%.0f,%.0f hatchmin=%.0f hatchnow=%.0f teleports=%d name=%s",
             bot, view_as<int>(TF2_GetPlayerClass(bot)), IsPlayerAlive(bot),
             now - g_DefFirstAt[bot],
             g_DefLeftAt[bot] < 0.0 ? -1.0 : g_DefLeftAt[bot] - g_DefFirstAt[bot],
@@ -816,6 +859,7 @@ public Action Command_Defenders(int client, int argc)
             InDefenderSpawn(center), g_DefStillMax[bot], g_DefStillInSpawn[bot],
             g_State == Probe_Running ? now - g_DefAnchorAt[bot] : 0.0,
             g_DefStillAt[bot][0], g_DefStillAt[bot][1], g_DefStillAt[bot][2],
+            g_DefIdleMax[bot], g_DefIdleAt[bot][0], g_DefIdleAt[bot][1], g_DefIdleAt[bot][2],
             here[0], here[1], here[2],
             g_DefHatchMin[bot], g_HasHatch ? GetVectorDistance(here, g_HatchCenter) : -1.0,
             g_DefTeleports[bot], name);
