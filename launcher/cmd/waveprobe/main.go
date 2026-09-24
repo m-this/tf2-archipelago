@@ -106,6 +106,9 @@ type result struct {
 
 // defender is how one RED bot moved during a wave, in game seconds since the
 // probe first saw it. Left is -1 for a bot that never left its spawn room.
+// StillMax counts any standing still; IdleMax only the time a robot or a tank
+// was in reach and the bot was not attacking, because the probe kills robots
+// before most of them reach the front.
 type defender struct {
 	Name         string     `json:"name"`
 	Class        int        `json:"class"`
@@ -120,6 +123,8 @@ type defender struct {
 	StillInSpawn bool       `json:"still_max_in_spawn"`
 	StillNow     float64    `json:"still_at_end_seconds"`
 	StillAt      [3]float64 `json:"still_max_at"`
+	IdleMax      float64    `json:"idle_max_seconds"`
+	IdleAt       [3]float64 `json:"idle_max_at"`
 	At           [3]float64 `json:"at_end"`
 	HatchMin     float64    `json:"hatch_min"`
 	HatchNow     float64    `json:"hatch_at_end"`
@@ -935,51 +940,9 @@ func parseDefenders(reply string) ([]defender, error) {
 				fields[key] = value
 			}
 		}
-		row := defender{Name: name}
-		var err error
-		ints := []struct {
-			key  string
-			dest *int
-		}{{"class", &row.Class}, {"teleports", &row.Teleports}, {"lives", &row.Lives}}
-		for _, field := range ints {
-			if *field.dest, err = strconv.Atoi(fields[field.key]); err != nil {
-				return nil, fmt.Errorf("invalid %s in %q: %w", field.key, line, err)
-			}
-		}
-		floats := []struct {
-			key  string
-			dest *float64
-		}{
-			{"seen", &row.Seen}, {"left", &row.Left}, {"stillmax", &row.StillMax},
-			{"leftmax", &row.LeftMax}, {"spawnnow", &row.SpawnNow},
-			{"stillnow", &row.StillNow}, {"hatchmin", &row.HatchMin}, {"hatchnow", &row.HatchNow},
-		}
-		for _, field := range floats {
-			if *field.dest, err = strconv.ParseFloat(fields[field.key], 64); err != nil {
-				return nil, fmt.Errorf("invalid %s in %q: %w", field.key, line, err)
-			}
-		}
-		bools := []struct {
-			key  string
-			dest *bool
-		}{{"alive", &row.Alive}, {"inspawn", &row.InSpawn}, {"stillspawn", &row.StillInSpawn}}
-		for _, field := range bools {
-			*field.dest = fields[field.key] == "1"
-		}
-		points := []struct {
-			key  string
-			dest *[3]float64
-		}{{"still", &row.StillAt}, {"at", &row.At}}
-		for _, field := range points {
-			parts := strings.Split(fields[field.key], ",")
-			if len(parts) != 3 {
-				return nil, fmt.Errorf("invalid %s in %q", field.key, line)
-			}
-			for axis, part := range parts {
-				if field.dest[axis], err = strconv.ParseFloat(part, 64); err != nil {
-					return nil, fmt.Errorf("invalid %s in %q: %w", field.key, line, err)
-				}
-			}
+		row, err := parseDefender(name, fields)
+		if err != nil {
+			return nil, fmt.Errorf("%w in %q", err, line)
 		}
 		rows = append(rows, row)
 	}
@@ -987,4 +950,60 @@ func parseDefenders(reply string) ([]defender, error) {
 		return nil, fmt.Errorf("truncated defender record: %q", reply)
 	}
 	return rows, nil
+}
+
+func parseDefender(name string, fields map[string]string) (defender, error) {
+	row := defender{Name: name}
+	var err error
+	ints := []struct {
+		key  string
+		dest *int
+	}{{"class", &row.Class}, {"teleports", &row.Teleports}, {"lives", &row.Lives}}
+	for _, field := range ints {
+		if *field.dest, err = strconv.Atoi(fields[field.key]); err != nil {
+			return defender{}, fmt.Errorf("invalid %s: %w", field.key, err)
+		}
+	}
+	floats := []struct {
+		key  string
+		dest *float64
+	}{
+		{"seen", &row.Seen},
+		{"left", &row.Left},
+		{"stillmax", &row.StillMax},
+		{"leftmax", &row.LeftMax},
+		{"spawnnow", &row.SpawnNow},
+		{"idlemax", &row.IdleMax},
+		{"stillnow", &row.StillNow},
+		{"hatchmin", &row.HatchMin},
+		{"hatchnow", &row.HatchNow},
+	}
+	for _, field := range floats {
+		if *field.dest, err = strconv.ParseFloat(fields[field.key], 64); err != nil {
+			return defender{}, fmt.Errorf("invalid %s: %w", field.key, err)
+		}
+	}
+	bools := []struct {
+		key  string
+		dest *bool
+	}{{"alive", &row.Alive}, {"inspawn", &row.InSpawn}, {"stillspawn", &row.StillInSpawn}}
+	for _, field := range bools {
+		*field.dest = fields[field.key] == "1"
+	}
+	points := []struct {
+		key  string
+		dest *[3]float64
+	}{{"still", &row.StillAt}, {"idle", &row.IdleAt}, {"at", &row.At}}
+	for _, field := range points {
+		parts := strings.Split(fields[field.key], ",")
+		if len(parts) != 3 {
+			return defender{}, fmt.Errorf("invalid %s", field.key)
+		}
+		for axis, part := range parts {
+			if field.dest[axis], err = strconv.ParseFloat(part, 64); err != nil {
+				return defender{}, fmt.Errorf("invalid %s: %w", field.key, err)
+			}
+		}
+	}
+	return row, nil
 }

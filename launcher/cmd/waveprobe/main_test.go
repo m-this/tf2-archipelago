@@ -123,8 +123,8 @@ func TestShardsPartitionCatalog(t *testing.T) {
 }
 
 func TestParseDefendersKeepsNamesWithSpaces(t *testing.T) {
-	reply := "WAVEPROBE_DEF client=3 class=9 alive=1 seen=80.0 left=-1.0 inspawn=1 stillmax=61.5 stillspawn=1 stillnow=61.5 still=10,-20,30 at=11,-21,31 hatchmin=2400 hatchnow=2410 teleports=0 lives=2 leftmax=61.5 spawnnow=61.5 name=One-Man Cheeseburger\n" +
-		"WAVEPROBE_DEF client=4 class=3 alive=1 seen=80.0 left=4.2 inspawn=0 stillmax=13.0 stillspawn=0 stillnow=0.0 still=1,2,3 at=4,5,6 hatchmin=300 hatchnow=900 teleports=1 lives=1 leftmax=4.2 spawnnow=0.0 name=THEM\n" +
+	reply := "WAVEPROBE_DEF client=3 class=9 alive=1 seen=80.0 left=-1.0 inspawn=1 stillmax=61.5 stillspawn=1 stillnow=61.5 still=10,-20,30 idlemax=0.0 idle=0,0,0 at=11,-21,31 hatchmin=2400 hatchnow=2410 teleports=0 lives=2 leftmax=61.5 spawnnow=61.5 name=One-Man Cheeseburger\n" +
+		"WAVEPROBE_DEF client=4 class=3 alive=1 seen=80.0 left=4.2 inspawn=0 stillmax=13.0 stillspawn=0 stillnow=0.0 still=1,2,3 idlemax=12.5 idle=7,8,9 at=4,5,6 hatchmin=300 hatchnow=900 teleports=1 lives=1 leftmax=4.2 spawnnow=0.0 name=THEM\n" +
 		"WAVEPROBE_DEF_END hatch=1\n"
 	rows, err := parseDefenders(reply)
 	if err != nil {
@@ -138,7 +138,8 @@ func TestParseDefendersKeepsNamesWithSpaces(t *testing.T) {
 		stuck.StillAt != [3]float64{10, -20, 30} || stuck.Class != 9 {
 		t.Errorf("stuck engineer parsed as %+v", stuck)
 	}
-	if rows[1].Teleports != 1 || rows[1].Left != 4.2 || rows[1].InSpawn {
+	if rows[1].Teleports != 1 || rows[1].Left != 4.2 || rows[1].InSpawn ||
+		rows[1].IdleMax != 12.5 || rows[1].IdleAt != [3]float64{7, 8, 9} {
 		t.Errorf("second bot parsed as %+v", rows[1])
 	}
 }
