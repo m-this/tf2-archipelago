@@ -131,24 +131,30 @@ func randomCardForm() string {
 }
 
 func cardForm(s State, id string) string {
-	if slices.Contains(s.Settings.SrcdsBotGiantCards, id) {
-		return cardGiant
+	switch form := s.Settings.SrcdsBotCardForms[id]; form {
+	case cardHuman, cardGiant:
+		return form
+	default:
+		return cardRobot
 	}
-	if slices.Contains(s.Settings.SrcdsBotHumanCards, id) {
-		return cardHuman
-	}
-	return cardRobot
 }
 
 func setCardForm(s State, id, form string) State {
-	s.Settings.SrcdsBotGiantCards = slices.DeleteFunc(slices.Clone(s.Settings.SrcdsBotGiantCards), func(other string) bool { return other == id })
-	s.Settings.SrcdsBotHumanCards = slices.DeleteFunc(slices.Clone(s.Settings.SrcdsBotHumanCards), func(other string) bool { return other == id })
-	switch form {
-	case cardGiant:
-		s.Settings.SrcdsBotGiantCards = append(s.Settings.SrcdsBotGiantCards, id)
-	case cardHuman:
-		s.Settings.SrcdsBotHumanCards = append(s.Settings.SrcdsBotHumanCards, id)
+	// A robot is the absence of an entry, so one state has one spelling and
+	// setting a card to what it already is changes nothing.
+	forms := maps.Clone(s.Settings.SrcdsBotCardForms)
+	if form == cardHuman || form == cardGiant {
+		if forms == nil {
+			forms = map[string]string{}
+		}
+		forms[id] = form
+	} else {
+		delete(forms, id)
 	}
+	if len(forms) == 0 {
+		forms = nil
+	}
+	s.Settings.SrcdsBotCardForms = forms
 	return s
 }
 

@@ -56,7 +56,7 @@ func TestCardSeatCarriesRobotGiantAndDistinctStackedInnates(t *testing.T) {
 		SrcdsBotTeamComp:     []string{"medic"},
 		SrcdsBotSeatNames:    []string{"Herr Doktor"},
 		SrcdsBotSeatLoadouts: []string{"kritz"},
-		SrcdsBotGiantCards:   []string{"herr-doktor"},
+		SrcdsBotCardForms:    map[string]string{"herr-doktor": "giant"},
 	}
 	seats := SeatsOf(s)
 	if !seats[0].Robot || !seats[0].Giant || seats[0].Tier != 3 || !seats[0].Unusual || seats[0].UnusualEffect != 13 || seats[0].Cosmetic != 315 || len(seats[0].Innates) != 3 {
@@ -80,7 +80,7 @@ func TestCardSeatCarriesRobotGiantAndDistinctStackedInnates(t *testing.T) {
 		}
 	}
 	normal := s
-	normal.SrcdsBotGiantCards = nil
+	normal.SrcdsBotCardForms = nil
 	if got := Commands(normal, s); !contains(got, `sm_ap_botcards_evict "Herr Doktor"`) || contains(got, "sm_redbots_reseat") {
 		t.Errorf("turning Giant on should replace only Herr Doktor: %v", got)
 	}
@@ -92,7 +92,7 @@ func TestAPCardUsesReceivedTierAndNeedsAReceivedRoll(t *testing.T) {
 		SrcdsBotTeamComp:     []string{"scout"},
 		SrcdsBotSeatNames:    []string{"Chucklenuts"},
 		SrcdsBotSeatLoadouts: []string{"stock"},
-		SrcdsBotGiantCards:   []string{"stock-scout"},
+		SrcdsBotCardForms:    map[string]string{"stock-scout": "giant"},
 	}
 	if SeatsOf(s)[0].Card {
 		t.Fatal("unreceived card got card buffs")
@@ -149,7 +149,7 @@ func TestHumanCardKeepsTierInnatesWithoutRobotModel(t *testing.T) {
 		SrcdsBotTeamComp:     []string{"scout"},
 		SrcdsBotSeatNames:    []string{"CreditToTeam"},
 		SrcdsBotSeatLoadouts: []string{"milk"},
-		SrcdsBotHumanCards:   []string{"credit-to-team"},
+		SrcdsBotCardForms:    map[string]string{"credit-to-team": "human"},
 	}
 	seat := SeatsOf(s)[0]
 	if !seat.Card || seat.Robot || seat.Giant || seat.Tier != 1 || seat.Cosmetic != 111 || seat.Unusual || seat.UnusualEffect != 0 || len(seat.Innates) != 1 {

@@ -26,8 +26,7 @@ var EnvNames = []string{
 	"SRCDS_BLU_HEALTH_PCT",
 	"SRCDS_BOT_TEAM_COMP",
 	"SRCDS_BOT_SEAT_LOADOUTS",
-	"SRCDS_BOT_GIANT_CARDS",
-	"SRCDS_BOT_HUMAN_CARDS",
+	"SRCDS_BOT_CARD_FORMS",
 	"SRCDS_BOT_HATS",
 	"SRCDS_BOT_BUY_ANYWHERE",
 	"SRCDS_BOT_HAT_EFFECTS",
@@ -73,8 +72,7 @@ func applyBotEnv(s Settings) Settings {
 	seatList(&s.SrcdsBotSeatNames, "SRCDS_BOT_SEAT_NAMES")
 	seatList(&s.SrcdsBotTeamComp, "SRCDS_BOT_TEAM_COMP")
 	seatList(&s.SrcdsBotSeatLoadouts, "SRCDS_BOT_SEAT_LOADOUTS")
-	list(&s.SrcdsBotGiantCards, "SRCDS_BOT_GIANT_CARDS")
-	list(&s.SrcdsBotHumanCards, "SRCDS_BOT_HUMAN_CARDS")
+	pairs(&s.SrcdsBotCardForms, "SRCDS_BOT_CARD_FORMS")
 	fromJSON(&s.SrcdsBotCardRolls, "SRCDS_BOT_CARD_ROLLS")
 	boolean(&s.SrcdsBotHats, "SRCDS_BOT_HATS")
 	boolean(&s.SrcdsBotBuyAnywhere, "SRCDS_BOT_BUY_ANYWHERE")

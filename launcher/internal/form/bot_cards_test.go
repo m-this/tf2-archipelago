@@ -3,7 +3,6 @@ package form
 import (
 	"fmt"
 	"reflect"
-	"slices"
 	"testing"
 
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
@@ -143,7 +142,7 @@ func TestGiantChoiceStaysWithCardAcrossPriorityAndSavedTeams(t *testing.T) {
 	}
 	team := settings.BotTeamOf(s.Settings)
 	restored := settings.WithBotTeam(settings.Defaults(), team)
-	if got := restored.SrcdsBotGiantCards; !slices.Contains(got, "herr-doktor") {
+	if got := restored.SrcdsBotCardForms; got["herr-doktor"] != "giant" {
 		t.Fatalf("saved Giant cards = %v", got)
 	}
 	if got := cardForm(NewState(restored), "chell"); got != cardHuman {

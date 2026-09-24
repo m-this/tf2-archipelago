@@ -14,7 +14,7 @@ func TestForgetOldRoomCardsPreservesManualSeats(t *testing.T) {
 	before.SrcdsBotSeatNames = []string{"HandPicked", "Mentlegen", "Herr Doktor"}
 	before.SrcdsBotSeatLoadouts = []string{"stock", "diamondback", "kritz"}
 	before.SrcdsBotCardRolls = map[string]string{"mentlegen": "Bot: Mentlegen | Legendary | Robot"}
-	before.SrcdsBotGiantCards = []string{"mentlegen"}
+	before.SrcdsBotCardForms = map[string]string{"mentlegen": "giant"}
 	next := before
 	next.APPort++
 	forgetOldRoomCards(before, &next)
@@ -23,7 +23,7 @@ func TestForgetOldRoomCardsPreservesManualSeats(t *testing.T) {
 		!reflect.DeepEqual(next.SrcdsBotSeatLoadouts, []string{"stock"}) {
 		t.Fatalf("new-room seats = %v / %v / %v", next.SrcdsBotTeamComp, next.SrcdsBotSeatNames, next.SrcdsBotSeatLoadouts)
 	}
-	if next.SrcdsBotCardRolls != nil || next.SrcdsBotGiantCards != nil {
+	if next.SrcdsBotCardRolls != nil || next.SrcdsBotCardForms != nil {
 		t.Fatalf("new room retained card rewards: %+v", next)
 	}
 	if before.SrcdsBotSeatNames[1] != "Mentlegen" {

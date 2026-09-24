@@ -127,7 +127,7 @@ player is in by the time those rows matter.
 func populated() State {
 	s := NewState(settings.Defaults())
 	s.Settings.SrcdsBotTeamComp = []string{"engineer", "medic"}
-	s.Settings.SrcdsBotGiantCards = []string{"credit-to-team"}
+	s.Settings.SrcdsBotCardForms = map[string]string{"credit-to-team": "giant"}
 	s.Settings.SrcdsBotCustomLoadouts = map[string]botloadout.Built{
 		"gas runner": StockLoadout("engineer"),
 	}
