@@ -45,37 +45,70 @@ func (tier Tier) Stacks() int {
 	}
 }
 
-// Cards use names from the defender name list and loadouts the mod knows.
-var Cards = []Card{
-	{ID: "stock-scout", Name: "Chucklenuts", Class: "scout", Loadout: "stock", Tier: Common, Cosmetic: 116, StockDef: 13, BuffIDs: []uint16{161}},
-	{ID: "stock-soldier", Name: "Maggot", Class: "soldier", Loadout: "stock", Tier: Common, Cosmetic: 116, StockDef: 18, BuffIDs: []uint16{156}},
-	{ID: "stock-pyro", Name: "BeepBeepBoop", Class: "pyro", Loadout: "stock", Tier: Common, Cosmetic: 116, StockDef: 21, BuffIDs: []uint16{75}},
-	{ID: "stock-demoman", Name: "Kaboom!", Class: "demoman", Loadout: "stock", Tier: Common, Cosmetic: 116, StockDef: 19, BuffIDs: []uint16{87}},
-	{ID: "stock-heavy", Name: "Nom Nom Nom", Class: "heavyweapons", Loadout: "stock", Tier: Common, Cosmetic: 116, StockDef: 15, BuffIDs: []uint16{123}},
-	{ID: "stock-engineer", Name: "MoreGun", Class: "engineer", Loadout: "stock", Tier: Common, Cosmetic: 116, StockDef: 9, BuffIDs: []uint16{173}},
-	{ID: "stock-medic", Name: "Archimedes!", Class: "medic", Loadout: "stock", Tier: Common, Cosmetic: 116, StockDef: 17, BuffIDs: []uint16{187}},
-	{ID: "stock-sniper", Name: "A Professional With Standards", Class: "sniper", Loadout: "stock", Tier: Common, Cosmetic: 116, StockDef: 14, BuffIDs: []uint16{10433}},
-	{ID: "stock-spy", Name: "Gentlemanne of Leisure", Class: "spy", Loadout: "stock", Tier: Common, Cosmetic: 116, StockDef: 24, BuffIDs: []uint16{152}}, //nolint:misspell // A deliberate BOT-list name.
-	{
-		ID: "credit-to-team", Name: "CreditToTeam", Class: "scout", Loadout: "milk", Tier: Common, Cosmetic: 111,
-		BuffIDs: []uint16{10434},
-	}, // Soda Popper damage
-	{
-		ID: "screamin-eagles", Name: "Screamin' Eagles", Class: "soldier", Loadout: "beggar", Tier: Elite, Cosmetic: 378,
-		BuffIDs: []uint16{10275, 10577},
-	}, // Beggar damage, Escape Plan firing speed
-	{
-		ID: "ivan", Name: "IvanTheSpaceBiker", Class: "heavyweapons", Loadout: "brass", Tier: Elite, Cosmetic: 185,
-		BuffIDs: []uint16{10542, 11093},
-	}, // Brass Beast firing speed, Family Business clip size
-	{ID: "herr-doktor", Name: "Herr Doktor", Class: "medic", Loadout: "kritz", Tier: Legendary, Cosmetic: 315, UnusualEffect: 13, // Burning Flames
-		BuffIDs: []uint16{10305, 17531, 10718}}, // Crossbow damage, Kritz Über rate, Übersaw firing speed
-	{
-		ID: "chell", Name: "Chell", Class: "engineer", Loadout: "ranger", Tier: Common, Cosmetic: 484,
-		BuffIDs: []uint16{10406},
-	}, // Rescue Ranger damage
-	{ID: "mentlegen", Name: "Mentlegen", Class: "spy", Loadout: "diamondback", Tier: Legendary, Cosmetic: 55, UnusualEffect: 14, // Scorching Flames
-		BuffIDs: []uint16{10313, 10532, 18212}}, // Diamondback damage, Big Earner firing speed and armor
+/*
+Cards is every card, in the order the seed draws them.
+
+Who a card is (its name, its class, whether it carries the stock loadout) is
+gamedata.BotCardTemplates, the list the apworld places items from, and nowhere
+else. What the launcher needs beyond that is details, found by the card's name.
+A template with no details stops the launcher at start rather than seating a
+card with no weapons, and the test says so before that.
+*/
+var Cards = build()
+
+// details is what a card is beyond who it is. Loadout is empty for a stock card,
+// whose loadout is the class's stock one.
+type details struct {
+	ID            string
+	Loadout       string
+	Tier          Tier
+	Cosmetic      int
+	UnusualEffect int
+	BuffIDs       []uint16
+	StockDef      int
+}
+
+var byName = map[string]details{
+	"Chucklenuts":                   {ID: "stock-scout", Tier: Common, Cosmetic: 116, StockDef: 13, BuffIDs: []uint16{161}},
+	"Maggot":                        {ID: "stock-soldier", Tier: Common, Cosmetic: 116, StockDef: 18, BuffIDs: []uint16{156}},
+	"BeepBeepBoop":                  {ID: "stock-pyro", Tier: Common, Cosmetic: 116, StockDef: 21, BuffIDs: []uint16{75}},
+	"Kaboom!":                       {ID: "stock-demoman", Tier: Common, Cosmetic: 116, StockDef: 19, BuffIDs: []uint16{87}},
+	"Nom Nom Nom":                   {ID: "stock-heavy", Tier: Common, Cosmetic: 116, StockDef: 15, BuffIDs: []uint16{123}},
+	"MoreGun":                       {ID: "stock-engineer", Tier: Common, Cosmetic: 116, StockDef: 9, BuffIDs: []uint16{173}},
+	"Archimedes!":                   {ID: "stock-medic", Tier: Common, Cosmetic: 116, StockDef: 17, BuffIDs: []uint16{187}},
+	"A Professional With Standards": {ID: "stock-sniper", Tier: Common, Cosmetic: 116, StockDef: 14, BuffIDs: []uint16{10433}},
+	"Gentlemanne of Leisure":        {ID: "stock-spy", Tier: Common, Cosmetic: 116, StockDef: 24, BuffIDs: []uint16{152}}, //nolint:misspell // A deliberate BOT-list name.
+	// Soda Popper damage.
+	"CreditToTeam": {ID: "credit-to-team", Loadout: "milk", Tier: Common, Cosmetic: 111, BuffIDs: []uint16{10434}},
+	// Beggar damage, Escape Plan firing speed.
+	"Screamin' Eagles": {ID: "screamin-eagles", Loadout: "beggar", Tier: Elite, Cosmetic: 378, BuffIDs: []uint16{10275, 10577}},
+	// Brass Beast firing speed, Family Business clip size.
+	"IvanTheSpaceBiker": {ID: "ivan", Loadout: "brass", Tier: Elite, Cosmetic: 185, BuffIDs: []uint16{10542, 11093}},
+	// Crossbow damage, Kritz Über rate, Übersaw firing speed. Burning Flames.
+	"Herr Doktor": {ID: "herr-doktor", Loadout: "kritz", Tier: Legendary, Cosmetic: 315, UnusualEffect: 13, BuffIDs: []uint16{10305, 17531, 10718}},
+	// Rescue Ranger damage.
+	"Chell": {ID: "chell", Loadout: "ranger", Tier: Common, Cosmetic: 484, BuffIDs: []uint16{10406}},
+	// Diamondback damage, Big Earner firing speed and armor. Scorching Flames.
+	"Mentlegen": {ID: "mentlegen", Loadout: "diamondback", Tier: Legendary, Cosmetic: 55, UnusualEffect: 14, BuffIDs: []uint16{10313, 10532, 18212}},
+}
+
+func build() []Card {
+	cards := make([]Card, 0, len(gamedata.BotCardTemplates))
+	for _, template := range gamedata.BotCardTemplates {
+		d, ok := byName[template.Name]
+		if !ok {
+			panic("botcards: gamedata has a card named " + template.Name + " and this package has no details for it")
+		}
+		loadout := d.Loadout
+		if template.Stock {
+			loadout = "stock"
+		}
+		cards = append(cards, Card{
+			ID: d.ID, Name: template.Name, Class: template.Class, Loadout: loadout, Tier: d.Tier,
+			Cosmetic: d.Cosmetic, UnusualEffect: d.UnusualEffect, BuffIDs: d.BuffIDs, StockDef: d.StockDef,
+		})
+	}
+	return cards
 }
 
 // ParseItemName returns the seed's immutable roll for one AP reward.

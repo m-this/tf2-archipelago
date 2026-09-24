@@ -219,8 +219,9 @@ func SeatsOf(s settings.Settings) []botloadout.Seat {
 		if valid && rolled.ID == card.ID {
 			tier = rolledTier
 		}
-		seats[i].Giant = slices.Contains(s.SrcdsBotGiantCards, card.ID)
-		seats[i].Robot = seats[i].Giant || !slices.Contains(s.SrcdsBotHumanCards, card.ID)
+		form := s.SrcdsBotCardForms[card.ID]
+		seats[i].Giant = form == "giant"
+		seats[i].Robot = form != "human"
 		seats[i].Card = true
 		seats[i].Tier = tier.Stacks()
 		seats[i].Cosmetic = card.Cosmetic
@@ -272,8 +273,7 @@ drift apart.
 func WithoutTeam(s settings.Settings) settings.Settings {
 	s.SrcdsBotTeamComp = nil
 	s.SrcdsBotSeatLoadouts = nil
-	s.SrcdsBotGiantCards = nil
-	s.SrcdsBotHumanCards = nil
+	s.SrcdsBotCardForms = nil
 	s.SrcdsBotLoadouts = nil
 	s.SrcdsBotClassBlacklist = nil
 	s.SrcdsBotTeamSize = 0

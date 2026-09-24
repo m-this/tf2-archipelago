@@ -16,8 +16,7 @@ func forgetOldRoomCards(before settings.Settings, next *settings.Settings) {
 		return
 	}
 	next.SrcdsBotCardRolls = nil
-	next.SrcdsBotGiantCards = nil
-	next.SrcdsBotHumanCards = nil
+	next.SrcdsBotCardForms = nil
 	next.SrcdsBotTeamComp = slices.Clone(next.SrcdsBotTeamComp)
 	next.SrcdsBotSeatNames = slices.Clone(next.SrcdsBotSeatNames)
 	next.SrcdsBotSeatLoadouts = slices.Clone(next.SrcdsBotSeatLoadouts)

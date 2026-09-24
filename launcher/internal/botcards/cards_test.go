@@ -83,19 +83,22 @@ func TestEverySeedTierHasItsOwnEligibleInnates(t *testing.T) {
 	}
 }
 
-// gamedata names the cards a seed can hold and this package says what each one
-// is. They are two lists of the same fifteen identities, so a card added to one
-// and not the other is an item the launcher cannot seat, or a seat no seed can
-// ever unlock.
-func TestTheCatalogueMatchesTheSeedsCards(t *testing.T) {
-	if len(Cards) != len(gamedata.BotCardTemplates) {
-		t.Fatalf("%d cards here, %d in gamedata", len(Cards), len(gamedata.BotCardTemplates))
+// Every entry in byName is a card the seed can hold, and a stock card names no
+// loadout of its own: gamedata says which cards are stock, and a second answer
+// here could only disagree with it.
+func TestDetailsDescribeOnlyTheSeedsCards(t *testing.T) {
+	templates := map[string]bool{}
+	for _, template := range gamedata.BotCardTemplates {
+		templates[template.Name] = template.Stock
 	}
-	for i, card := range Cards {
-		seed := gamedata.BotCardTemplates[i]
-		if card.Name != seed.Name || card.Class != seed.Class || (card.Loadout == "stock") != seed.Stock {
-			t.Errorf("card %d is %s/%s/%s here and %s/%s/stock=%t in gamedata",
-				i, card.Name, card.Class, card.Loadout, seed.Name, seed.Class, seed.Stock)
+	for name, d := range byName {
+		stock, known := templates[name]
+		if !known {
+			t.Errorf("%q has details and gamedata has no such card", name)
+			continue
+		}
+		if stock != (d.Loadout == "") {
+			t.Errorf("%q is stock=%t in gamedata and names loadout %q here", name, stock, d.Loadout)
 		}
 	}
 }
