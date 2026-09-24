@@ -480,97 +480,13 @@ public Action Command_BotCardsEvict(int client, int args)
     return Plugin_Handled;
 }
 
-public Action Command_BotCardsEvictUnselected(int client, int args)
-{
-    int onRed;
-    for (int bot = 1; bot <= MaxClients; bot++)
-    {
-        if (IsClientInGame(bot) && GetClientTeam(bot) == 2 && !IsClientSourceTV(bot)) onRed++;
-    }
-    ConVar size = FindConVar("sm_redbots_manager_defender_team_size");
-    if (size == null || onRed < size.IntValue)
-    {
-        ReplyToCommand(client, "[AP cards] RED has an open seat; no bot evicted.");
-        return Plugin_Handled;
-    }
-    char path[PLATFORM_MAX_PATH];
-    BuildPath(Path_SM, path, sizeof(path), "configs/defenderbots/loadout.cfg");
-    KeyValues lineup = new KeyValues("loadout");
-    if (!lineup.ImportFromFile(path))
-    {
-        delete lineup;
-        ReplyToCommand(client, "[AP cards] Cannot read the new lineup; no bot evicted.");
-        return Plugin_Handled;
-    }
-    int lowest;
-    for (int bot = 1; bot <= MaxClients; bot++)
-    {
-        if (!IsClientInGame(bot) || !IsFakeClient(bot) || GetClientTeam(bot) != 2) continue;
-        char botName[128];
-        GetClientName(bot, botName, sizeof(botName));
-        bool selected;
-        lineup.Rewind();
-        if (lineup.JumpToKey("seats"))
-        {
-            for (int seat = 1; seat <= size.IntValue; seat++)
-            {
-                char key[8], name[128];
-                IntToString(seat, key, sizeof(key));
-                if (!lineup.JumpToKey(key)) continue;
-                lineup.GetString("name", name, sizeof(name));
-                lineup.GoBack();
-                if (name[0] != '\0' && StrEqual(name, botName, false))
-                {
-                    selected = true;
-                    break;
-                }
-            }
-        }
-        if (!selected) lowest = bot;
-    }
-    if (lowest > 0)
-    {
-        char name[128];
-        GetClientName(lowest, name, sizeof(name));
-        BotCards_Evict(lowest);
-        ReplyToCommand(client, "[AP cards] Freed unselected bot %s for the new card.", name);
-    }
-    else
-    {
-        ReplyToCommand(client, "[AP cards] Every bot is selected; no extra eviction.");
-    }
-    delete lineup;
-    return Plugin_Handled;
-}
-
-// A card's priority in the new file. Name and class must both match: a card
-// moved to a different class needs a new bot, not an old bot renamed in place.
-int BotCards_CardPriority(KeyValues lineup, int bot, int teamSize)
-{
-    char current[128], actualClass[32];
-    GetClientName(bot, current, sizeof(current));
-    BotCards_ClassKey(TF2_GetPlayerClass(bot), actualClass, sizeof(actualClass));
-    for (int seat = 1; seat <= teamSize; seat++)
-    {
-        char key[8], name[128], wantedClass[32];
-        IntToString(seat, key, sizeof(key));
-        lineup.Rewind();
-        if (!lineup.JumpToKey("seats") || !lineup.JumpToKey(key)) continue;
-        lineup.GetString("name", name, sizeof(name));
-        lineup.GetString("class", wantedClass, sizeof(wantedClass));
-        if (lineup.GetNum("card", 0) == 1 && StrEqual(name, current, false)
-            && StrEqual(wantedClass, actualClass, false))
-        {
-            lineup.Rewind();
-            return seat;
-        }
-    }
-    lineup.Rewind();
-    return 0;
-}
-
-// Reloading the file rebinds surviving bots, but does not itself make a bot
-// below the human-adjusted priority cutoff yield to a newly higher card.
+// After the launcher has rebound surviving bots to their seats
+// (sm_redbots_rebind_seats) and replaced the changed ones, a card now inside
+// the seats RED can hold may still have no bot, because a bot below the cut
+// holds its place. This frees exactly as many of those as there are named
+// seats waiting, cards or not, since a named seat is what the mod keeps. Who is
+// below the cut, and who of them leaves first, is the defender mod's rank
+// (Bots_SeatRank); the file only says how many named seats are wanted.
 public Action Command_BotCardsReconcile(int client, int args)
 {
     ConVar size = FindConVar("sm_redbots_manager_defender_team_size");
@@ -605,14 +521,14 @@ public Action Command_BotCardsReconcile(int client, int args)
         lineup.Rewind();
         if (!lineup.JumpToKey("seats") || !lineup.JumpToKey(key)) continue;
         lineup.GetString("name", name, sizeof(name));
-        if (lineup.GetNum("card", 0) == 1 && name[0] != '\0') desired++;
+        if (name[0] != '\0') desired++;
     }
+    delete lineup;
     int present;
     for (int bot = 1; bot <= MaxClients; bot++)
     {
         if (!IsClientInGame(bot) || !IsFakeClient(bot) || GetClientTeam(bot) != 2) continue;
-        int rank = BotCards_CardPriority(lineup, bot, size.IntValue);
-        if (rank > 0 && rank <= capacity) present++;
+        if (Bots_SeatRank(bot) <= capacity) present++;
     }
     int toEvict = desired - present - (capacity - bots);
     int evicted;
@@ -624,10 +540,9 @@ public Action Command_BotCardsReconcile(int client, int args)
         {
             if (chosen[bot] || !IsClientInGame(bot) || !IsFakeClient(bot)
                 || GetClientTeam(bot) != 2) continue;
-            int rank = BotCards_CardPriority(lineup, bot, size.IntValue);
-            if (rank > 0 && rank <= capacity) continue;
-            if (rank == 0) rank = size.IntValue + 1;
-            if (rank > lowest)
+            int rank = Bots_SeatRank(bot);
+            if (rank <= capacity) continue;
+            if (rank > lowest || (rank == lowest && bot > victim))
             {
                 victim = bot;
                 lowest = rank;
@@ -639,8 +554,7 @@ public Action Command_BotCardsReconcile(int client, int args)
         evicted++;
         toEvict--;
     }
-    delete lineup;
-    ReplyToCommand(client, "[AP cards] Priority reconciled: %d bot(s) replaced for %d live card seat(s).",
+    ReplyToCommand(client, "[AP cards] Priority reconciled: %d bot(s) replaced for %d named seat(s).",
         evicted, desired);
     return Plugin_Handled;
 }

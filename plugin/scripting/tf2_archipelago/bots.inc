@@ -59,6 +59,9 @@ float g_NextVillaEscort[MAXPLAYERS + 1];
 #define VillaRecalledPop "mvm_villa_b13f_adv_recalled_to_life"
 #define VillaRoofDestinationName "roof_player_destination"
 #define VillaEscortInterval 2.0
+// Where a bot nobody ranked stands in line: behind every seat, as the defender
+// mod puts a seat nobody named.
+#define BotsUnrankedSeat 1000
 #define VillaRoomMinX -9900.0
 #define VillaRoomMaxX -7400.0
 #define VillaRoomMinY 2500.0
@@ -555,20 +558,13 @@ void Bots_MakeRoom()
     KickClient(bot, "Making room for a player");
 }
 
-// The launcher writes the selected card order into numbered defender seats.
-// A bot without a pinned name is expendable before any selected card. Reading
-// the file here also makes a saved reorder effective without a plugin reload.
+// The bot that leaves first, among those not already leaving. Who that is,
+// is the defender mod's rule (named seats kept, the last named seat first), so
+// this asks it rather than reading the loadout file a second time. Between
+// equals the newest bot goes: the game hands out the lowest free slot, so the
+// bot that arrived last holds the highest number.
 static int Bots_LowestPriorityBot(bool[] leaving)
 {
-    char path[PLATFORM_MAX_PATH];
-    BuildPath(Path_SM, path, sizeof(path), "configs/defenderbots/loadout.cfg");
-    KeyValues lineup = new KeyValues("loadout");
-    if (!lineup.ImportFromFile(path))
-    {
-        delete lineup;
-        lineup = null;
-    }
-
     int chosen = 0;
     int lowest = -1;
     for (int client = 1; client <= MaxClients; client++)
@@ -578,44 +574,27 @@ static int Bots_LowestPriorityBot(bool[] leaving)
         {
             continue;
         }
-        int rank = Bots_SeatRank(client, lineup);
+        int rank = Bots_SeatRank(client);
         if (rank > lowest || (rank == lowest && client > chosen))
         {
             chosen = client;
             lowest = rank;
         }
     }
-    delete lineup;
     return chosen;
 }
 
-static int Bots_SeatRank(int client, KeyValues lineup)
+// How late in line this bot stands when somebody has to leave, as the defender
+// mod ranks it. A bot the mod does not answer for, or a mod too old to have the
+// native, ranks behind every seat, so every bot is equal and the newest leaves.
+int Bots_SeatRank(int client)
 {
-    if (lineup == null || !lineup.JumpToKey("seats"))
+    if (GetFeatureStatus(FeatureType_Native, "Defenderbots_GetSeatRank") != FeatureStatus_Available)
     {
-        return 100;
+        return BotsUnrankedSeat;
     }
-    char botName[128], seatKey[8], seatName[128];
-    GetClientName(client, botName, sizeof(botName));
-    int rank = 100;
-    for (int seat = 1; seat <= DefenderTeamSize(); seat++)
-    {
-        IntToString(seat, seatKey, sizeof(seatKey));
-        if (!lineup.JumpToKey(seatKey))
-        {
-            continue;
-        }
-        seatName[0] = '\0';
-        lineup.GetString("name", seatName, sizeof(seatName));
-        lineup.GoBack();
-        if (seatName[0] != '\0' && StrEqual(botName, seatName, false))
-        {
-            rank = seat;
-            break;
-        }
-    }
-    lineup.GoBack();
-    return rank;
+    int rank = Defenderbots_GetSeatRank(client);
+    return rank < 0 ? BotsUnrankedSeat : rank;
 }
 
 // How many seats RED holds. The game's own number, and six when it will not say.
