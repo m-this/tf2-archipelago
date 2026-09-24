@@ -115,7 +115,7 @@ func TestCardPriorityDragKeepsExistingBotsAndRebindsSeats(t *testing.T) {
 	after.SrcdsBotSeatNames = []string{"IvanTheSpaceBiker", "Herr Doktor"}
 	after.SrcdsBotSeatLoadouts = []string{"brass", "kritz"}
 	got := Commands(before, after)
-	if !contains(got, "sm_redbots_reload_cards") || !contains(got, "sm_ap_botcards_reconcile") || contains(got, "sm_redbots_reseat") {
+	if !contains(got, "sm_redbots_rebind_seats") || !contains(got, "sm_ap_botcards_reconcile") || contains(got, "sm_redbots_reseat") {
 		t.Fatalf("card reorder did not preserve the team: %v", got)
 	}
 	if got[len(got)-1] != "say "+Announcement {

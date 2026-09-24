@@ -52,7 +52,7 @@ func Commands(before, after settings.Settings) []string {
 	if (len(oldCards) > 0 || len(newCards) > 0) && !manualSeatsMoved(before, after) {
 		// Reload first, while each surviving bot still has its old name. The
 		// mod rebinds that name to the card's new priority seat without a kick.
-		out = append(out, "sm_redbots_reload_cards")
+		out = append(out, "sm_redbots_rebind_seats")
 		oldSeats := SeatsOf(before)
 		for _, seat := range slices.Backward(oldSeats) {
 			name := seat.Name

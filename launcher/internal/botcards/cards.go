@@ -2,8 +2,6 @@
 // A card is an identity, not a bot client: its seat is rebuilt after map changes.
 package botcards
 
-//go:generate go run ../../cmd/botcardpreview ../../web/src/bot-cards/innates.generated.ts
-
 import (
 	"slices"
 	"strings"
@@ -56,16 +54,24 @@ var Cards = []Card{
 	{ID: "stock-medic", Name: "Archimedes!", Class: "medic", Loadout: "stock", Tier: Common, Cosmetic: 116, StockDef: 17, BuffIDs: []uint16{187}},
 	{ID: "stock-sniper", Name: "A Professional With Standards", Class: "sniper", Loadout: "stock", Tier: Common, Cosmetic: 116, StockDef: 14, BuffIDs: []uint16{10433}},
 	{ID: "stock-spy", Name: "Gentlemanne of Leisure", Class: "spy", Loadout: "stock", Tier: Common, Cosmetic: 116, StockDef: 24, BuffIDs: []uint16{152}}, //nolint:misspell // A deliberate BOT-list name.
-	{ID: "credit-to-team", Name: "CreditToTeam", Class: "scout", Loadout: "milk", Tier: Common, Cosmetic: 111,
-		BuffIDs: []uint16{10434}}, // Soda Popper damage
-	{ID: "screamin-eagles", Name: "Screamin' Eagles", Class: "soldier", Loadout: "beggar", Tier: Elite, Cosmetic: 378,
-		BuffIDs: []uint16{10275, 10577}}, // Beggar damage, Escape Plan firing speed
-	{ID: "ivan", Name: "IvanTheSpaceBiker", Class: "heavyweapons", Loadout: "brass", Tier: Elite, Cosmetic: 185,
-		BuffIDs: []uint16{10542, 11093}}, // Brass Beast firing speed, Family Business clip size
+	{
+		ID: "credit-to-team", Name: "CreditToTeam", Class: "scout", Loadout: "milk", Tier: Common, Cosmetic: 111,
+		BuffIDs: []uint16{10434},
+	}, // Soda Popper damage
+	{
+		ID: "screamin-eagles", Name: "Screamin' Eagles", Class: "soldier", Loadout: "beggar", Tier: Elite, Cosmetic: 378,
+		BuffIDs: []uint16{10275, 10577},
+	}, // Beggar damage, Escape Plan firing speed
+	{
+		ID: "ivan", Name: "IvanTheSpaceBiker", Class: "heavyweapons", Loadout: "brass", Tier: Elite, Cosmetic: 185,
+		BuffIDs: []uint16{10542, 11093},
+	}, // Brass Beast firing speed, Family Business clip size
 	{ID: "herr-doktor", Name: "Herr Doktor", Class: "medic", Loadout: "kritz", Tier: Legendary, Cosmetic: 315, UnusualEffect: 13, // Burning Flames
 		BuffIDs: []uint16{10305, 17531, 10718}}, // Crossbow damage, Kritz Über rate, Übersaw firing speed
-	{ID: "chell", Name: "Chell", Class: "engineer", Loadout: "ranger", Tier: Common, Cosmetic: 484,
-		BuffIDs: []uint16{10406}}, // Rescue Ranger damage
+	{
+		ID: "chell", Name: "Chell", Class: "engineer", Loadout: "ranger", Tier: Common, Cosmetic: 484,
+		BuffIDs: []uint16{10406},
+	}, // Rescue Ranger damage
 	{ID: "mentlegen", Name: "Mentlegen", Class: "spy", Loadout: "diamondback", Tier: Legendary, Cosmetic: 55, UnusualEffect: 14, // Scorching Flames
 		BuffIDs: []uint16{10313, 10532, 18212}}, // Diamondback damage, Big Earner firing speed and armor
 }

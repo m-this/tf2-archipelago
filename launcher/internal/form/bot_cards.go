@@ -156,8 +156,12 @@ func cardFormSpec(card botcards.Card) Spec {
 	return openChoice("bots.card."+card.ID+".form", "Bots", card.Name+" form",
 		"A card draws Human, RED robot or RED robot Giant when recruited. This choice stays with it across maps; change or reroll it here.",
 		func(State, Env) []Option {
-			return []Option{{Value: cardHuman, Label: "Human"}, {Value: cardRobot, Label: "RED robot"},
-				{Value: cardGiant, Label: "RED robot Giant"}, {Value: "reroll", Label: "Reroll at random"}}
+			return []Option{
+				{Value: cardHuman, Label: "Human"},
+				{Value: cardRobot, Label: "RED robot"},
+				{Value: cardGiant, Label: "RED robot Giant"},
+				{Value: "reroll", Label: "Reroll at random"},
+			}
 		},
 		func(s State) string { return cardForm(s, card.ID) },
 		func(s State, form string) State {
