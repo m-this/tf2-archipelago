@@ -7,19 +7,23 @@ import (
 	"github.com/m-this/tf2-archipelago/gamedata"
 )
 
+// oldestFormatVersion is the oldest seed this bridge still reads. Version 6
+// predates the bot cards and shares every id it has with version 7, so a room
+// generated the week before the cards keeps running.
+const oldestFormatVersion = 6
+
 // validate rejects a seed from an apworld this binary may disagree with about what an id means.
-// Version 6 predates optional bot-card items but shares every preexisting ID.
 func (s SlotData) validate() error {
-	if s.FormatVersion < 6 || s.FormatVersion > gamedata.FormatVersion {
+	if s.FormatVersion < oldestFormatVersion || s.FormatVersion > gamedata.FormatVersion {
 		// Two numbers and no action was what this used to say, and two people
 		// a week apart asked the same question in Discord about it. The
 		// numbers are the evidence; the sentence after them is the fix.
 		return fmt.Errorf(
-			"seed has data format version %d, this bridge reads 6 through %d: "+
+			"seed has data format version %d, this bridge reads %d through %d: "+
 				"the seed was generated with a different tf2_mvm apworld. "+
 				"Regenerate it with the apworld that came with this launcher, "+
 				"or run the launcher the seed was made for",
-			s.FormatVersion, gamedata.FormatVersion,
+			s.FormatVersion, oldestFormatVersion, gamedata.FormatVersion,
 		)
 	}
 	if len(s.Missions) == 0 {
