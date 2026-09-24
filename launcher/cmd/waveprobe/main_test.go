@@ -121,3 +121,18 @@ func TestShardsPartitionCatalog(t *testing.T) {
 		}
 	}
 }
+
+func TestOnlySigModSelectsTheSigModMissionsAndNothingElse(t *testing.T) {
+	missions, err := selectMissions(options{mission: "all", shards: 1, includeSig: true, onlySig: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(missions) == 0 {
+		t.Fatal("no SigMod missions selected")
+	}
+	for _, mission := range missions {
+		if requirement := gamedata.MissionRequirement(mission.ID); requirement != "sigsegv-mvm" {
+			t.Errorf("%s requires %q, not SigMod", mission.PopFile, requirement)
+		}
+	}
+}

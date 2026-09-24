@@ -180,6 +180,16 @@ func bridgeConfig(s settings.Settings) (config.Config, error) {
 	return cfg, nil
 }
 
+// RunServer starts the game server alone, with the configuration Run would
+// write and no bridge or room beside it. It is what the unattended wave probe
+// plays against: the plugin finds no bridge and stays out of the way.
+func RunServer(ctx context.Context, s settings.Settings, logger *slog.Logger) error {
+	if err := srcdsconfig.Install(s); err != nil {
+		return err
+	}
+	return runSrcds(ctx, s, logger)
+}
+
 func runSrcds(ctx context.Context, s settings.Settings, logger *slog.Logger) error {
 	return runSrcdsWithSink(ctx, s, logger, nil)
 }

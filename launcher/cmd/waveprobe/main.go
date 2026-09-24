@@ -33,6 +33,7 @@ type options struct {
 	endWave    int
 	failFast   bool
 	includeSig bool
+	onlySig    bool
 	plan       bool
 }
 
@@ -163,6 +164,7 @@ func main() {
 	flag.IntVar(&opt.endWave, "end-wave", 0, "last wave to test (0 means mission end)")
 	flag.BoolVar(&opt.failFast, "fail-fast", false, "stop after the first failed wave")
 	flag.BoolVar(&opt.includeSig, "include-sigmod", true, "test SigMod missions")
+	flag.BoolVar(&opt.onlySig, "only-sigmod", false, "test SigMod missions and nothing else")
 	flag.BoolVar(&opt.plan, "plan", false, "print planned wave tests without connecting to a server")
 	flag.Parse()
 	if err := run(opt); err != nil {
@@ -408,7 +410,8 @@ func selectMissions(opt options) ([]gamedata.Mission, error) {
 	var selected []gamedata.Mission
 	for _, mission := range gamedata.Missions {
 		requirement := gamedata.MissionRequirement(mission.ID)
-		if requirement == "no_nav" || (requirement == "sigsegv-mvm" && !opt.includeSig) {
+		if requirement == "no_nav" || (requirement == "sigsegv-mvm" && !opt.includeSig) ||
+			(requirement != "sigsegv-mvm" && opt.onlySig) {
 			continue
 		}
 		if crc32.ChecksumIEEE([]byte(mission.PopFile))%uint32(opt.shards) != uint32(opt.shard) {
