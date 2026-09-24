@@ -2,6 +2,7 @@ package botlive
 
 import (
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -47,6 +48,115 @@ func TestOnlyAWeaponChangeRecyclesTheTeam(t *testing.T) {
 	if last := got[len(got)-1]; last != "sm_redbots_reseat" {
 		// Last, because the mod reads the loadout file when the recycle runs.
 		t.Errorf("last command = %q, want the recycle", last)
+	}
+}
+
+func TestCardSeatCarriesRobotGiantAndDistinctStackedInnates(t *testing.T) {
+	s := settings.Settings{
+		SrcdsBotTeamComp:     []string{"medic"},
+		SrcdsBotSeatNames:    []string{"Herr Doktor"},
+		SrcdsBotSeatLoadouts: []string{"kritz"},
+		SrcdsBotGiantCards:   []string{"herr-doktor"},
+	}
+	seats := SeatsOf(s)
+	if !seats[0].Robot || !seats[0].Giant || seats[0].Tier != 3 || !seats[0].Unusual || seats[0].UnusualEffect != 13 || seats[0].Cosmetic != 315 || len(seats[0].Innates) != 3 {
+		t.Fatalf("card data missing: %+v", seats[0])
+	}
+	for _, innate := range seats[0].Innates {
+		if innate.Stacks != 3 {
+			t.Errorf("innate stacks = %d, want 3", innate.Stacks)
+		}
+	}
+	file := loadoutFile(s)
+	for _, field := range []string{`"robot"`, `"giant"`, `"tier"`, "\"cosmetic\"\t\"315\"", "\"unusual\"\t\"1\"", "\"unusual_effect\"\t\"13\"", `"innate_1"`, `"innate_2"`, `"innate_3"`} {
+		if !strings.Contains(file, field) {
+			t.Errorf("card file missing %s", field)
+		}
+	}
+	for _, innate := range seats[0].Innates {
+		pair := `"` + strconv.Itoa(innate.Effect) + `,` + strconv.Itoa(innate.Stacks) + `"`
+		if !strings.Contains(file, pair) {
+			t.Errorf("card file missing all-weapon innate %s", pair)
+		}
+	}
+	normal := s
+	normal.SrcdsBotGiantCards = nil
+	if got := Commands(normal, s); !contains(got, `sm_ap_botcards_evict "Herr Doktor"`) || contains(got, "sm_redbots_reseat") {
+		t.Errorf("turning Giant on should replace only Herr Doktor: %v", got)
+	}
+}
+
+func TestAPCardUsesReceivedTierAndNeedsAReceivedRoll(t *testing.T) {
+	s := settings.Settings{
+		MvmBotCards:          true,
+		SrcdsBotTeamComp:     []string{"scout"},
+		SrcdsBotSeatNames:    []string{"Chucklenuts"},
+		SrcdsBotSeatLoadouts: []string{"stock"},
+		SrcdsBotGiantCards:   []string{"stock-scout"},
+	}
+	if SeatsOf(s)[0].Card {
+		t.Fatal("unreceived card got card buffs")
+	}
+	s.SrcdsBotCardRolls = map[string]string{"stock-scout": "Bot: Chucklenuts | Legendary | Giant"}
+	seat := SeatsOf(s)[0]
+	if !seat.Card || seat.Tier != 3 || !seat.Giant || !seat.Unusual || seat.UnusualEffect != 13 || len(seat.Innates) != 3 {
+		t.Fatalf("received Legendary Giant = %+v", seat)
+	}
+}
+
+func TestCardPriorityDragKeepsExistingBotsAndRebindsSeats(t *testing.T) {
+	before := settings.Settings{
+		SrcdsBotTeamComp:     []string{"medic", "heavyweapons"},
+		SrcdsBotSeatNames:    []string{"Herr Doktor", "IvanTheSpaceBiker"},
+		SrcdsBotSeatLoadouts: []string{"kritz", "brass"},
+	}
+	after := before
+	after.SrcdsBotTeamComp = []string{"heavyweapons", "medic"}
+	after.SrcdsBotSeatNames = []string{"IvanTheSpaceBiker", "Herr Doktor"}
+	after.SrcdsBotSeatLoadouts = []string{"brass", "kritz"}
+	got := Commands(before, after)
+	if !contains(got, "sm_redbots_reload_cards") || !contains(got, "sm_ap_botcards_reconcile") || contains(got, "sm_redbots_reseat") {
+		t.Fatalf("card reorder did not preserve the team: %v", got)
+	}
+	if got[len(got)-1] != "say "+Announcement {
+		t.Fatalf("card update announced before reconciliation: %v", got)
+	}
+	for _, command := range got {
+		if strings.HasPrefix(command, "sm_ap_botcards_evict") {
+			t.Fatalf("dragging priority evicted a bot: %v", got)
+		}
+	}
+}
+
+func TestAddingCardReplacesLowestUnselectedBot(t *testing.T) {
+	before := settings.Settings{
+		SrcdsBotTeamComp:     []string{"medic", "soldier"},
+		SrcdsBotSeatNames:    []string{"Herr Doktor", ""},
+		SrcdsBotSeatLoadouts: []string{"kritz", "banner"},
+	}
+	after := before
+	after.SrcdsBotTeamComp = []string{"medic", "engineer"}
+	after.SrcdsBotSeatNames = []string{"Herr Doktor", "Chell"}
+	after.SrcdsBotSeatLoadouts = []string{"kritz", "ranger"}
+	got := Commands(before, after)
+	if !contains(got, "sm_ap_botcards_reconcile") || contains(got, "sm_redbots_reseat") {
+		t.Errorf("new card should replace the unselected bot: %v", got)
+	}
+}
+
+func TestHumanCardKeepsTierInnatesWithoutRobotModel(t *testing.T) {
+	s := settings.Settings{
+		SrcdsBotTeamComp:     []string{"scout"},
+		SrcdsBotSeatNames:    []string{"CreditToTeam"},
+		SrcdsBotSeatLoadouts: []string{"milk"},
+		SrcdsBotHumanCards:   []string{"credit-to-team"},
+	}
+	seat := SeatsOf(s)[0]
+	if !seat.Card || seat.Robot || seat.Giant || seat.Tier != 1 || seat.Cosmetic != 111 || seat.Unusual || seat.UnusualEffect != 0 || len(seat.Innates) != 1 {
+		t.Fatalf("human card data = %+v", seat)
+	}
+	if file := loadoutFile(s); !strings.Contains(file, `"card"`) || strings.Contains(file, `"robot"`) {
+		t.Fatalf("human card file has wrong form: %s", file)
 	}
 }
 

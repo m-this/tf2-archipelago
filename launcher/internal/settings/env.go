@@ -26,6 +26,8 @@ var EnvNames = []string{
 	"SRCDS_BLU_HEALTH_PCT",
 	"SRCDS_BOT_TEAM_COMP",
 	"SRCDS_BOT_SEAT_LOADOUTS",
+	"SRCDS_BOT_GIANT_CARDS",
+	"SRCDS_BOT_HUMAN_CARDS",
 	"SRCDS_BOT_HATS",
 	"SRCDS_BOT_HAT_EFFECTS",
 	"TF2AP_BOT_UPGRADES_CHAT",
@@ -39,7 +41,10 @@ var EnvNames = []string{
 	"MVM_START_MISSION", "MVM_START_CLASS", "MVM_COMMUNITY_MISSIONS",
 	"MVM_MISSION_TICKET_IMPORTANCE", "MVM_CLASS_UNLOCK_IMPORTANCE",
 	"MVM_WEAPON_SLOT_IMPORTANCE", "MVM_WEAPON_BUFF_IMPORTANCE",
-	"MVM_CASH_REWARDS", "MVM_WEAPON_BUFF_PERCENTAGE", "MVM_WEAPON_BUFF_STACK_CHANCE",
+	"MVM_CASH_REWARDS", "MVM_BOT_CARDS", "MVM_STARTING_BOT_CARDS",
+	"MVM_STARTING_BOT_CARD_MODE",
+	"SRCDS_BOT_CARD_ROLLS",
+	"MVM_WEAPON_BUFF_PERCENTAGE", "MVM_WEAPON_BUFF_STACK_CHANCE",
 	"MVM_TRAP_PERCENTAGE",
 	"BRIDGE_METRICS_PORT",
 }
@@ -67,6 +72,9 @@ func applyBotEnv(s Settings) Settings {
 	seatList(&s.SrcdsBotSeatNames, "SRCDS_BOT_SEAT_NAMES")
 	seatList(&s.SrcdsBotTeamComp, "SRCDS_BOT_TEAM_COMP")
 	seatList(&s.SrcdsBotSeatLoadouts, "SRCDS_BOT_SEAT_LOADOUTS")
+	list(&s.SrcdsBotGiantCards, "SRCDS_BOT_GIANT_CARDS")
+	list(&s.SrcdsBotHumanCards, "SRCDS_BOT_HUMAN_CARDS")
+	fromJSON(&s.SrcdsBotCardRolls, "SRCDS_BOT_CARD_ROLLS")
 	boolean(&s.SrcdsBotHats, "SRCDS_BOT_HATS")
 	boolean(&s.SrcdsBotHatEffects, "SRCDS_BOT_HAT_EFFECTS")
 	boolean(&s.BotUpgradesChat, "TF2AP_BOT_UPGRADES_CHAT")
@@ -172,6 +180,9 @@ func applyRewardEnv(s *Settings) {
 	str(&s.MvmWeaponSlotImportance, "MVM_WEAPON_SLOT_IMPORTANCE")
 	str(&s.MvmWeaponBuffImportance, "MVM_WEAPON_BUFF_IMPORTANCE")
 	boolean(&s.MvmCashRewards, "MVM_CASH_REWARDS")
+	boolean(&s.MvmBotCards, "MVM_BOT_CARDS")
+	num(&s.MvmStartingBotCards, "MVM_STARTING_BOT_CARDS")
+	str(&s.MvmStartingBotCardMode, "MVM_STARTING_BOT_CARD_MODE")
 	num(&s.MvmWeaponBuffPct, "MVM_WEAPON_BUFF_PERCENTAGE")
 	num(&s.MvmWeaponBuffStackChance, "MVM_WEAPON_BUFF_STACK_CHANCE")
 	num(&s.MvmTrapPct, "MVM_TRAP_PERCENTAGE")

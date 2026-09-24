@@ -45,7 +45,7 @@ func Install(root string, s settings.Settings) (bool, error) {
 	}
 
 	library := botlive.LibraryOf(s)
-	seats := botloadout.Seats(s.SrcdsBotTeamComp, s.SrcdsBotSeatLoadouts, s.SrcdsBotSeatNames)
+	seats := botlive.SeatsOf(s)
 
 	// Weapons decide the convar; a name only decides that the file has to be
 	// there, because the mod reads a seat's name out of it whatever the convar
@@ -59,6 +59,17 @@ func Install(root string, s settings.Settings) (bool, error) {
 		return false, err
 	}
 	return weapons, nil
+}
+
+// StageForLive always writes the managed loadout file, including the empty
+// version when the last card is removed. The game copies this overlay file
+// over its previous live file; leaving an old file in place would resurrect
+// cards after clearing the team.
+func StageForLive(root string, s settings.Settings) error {
+	if _, err := Install(root, s); err != nil {
+		return err
+	}
+	return write(LoadoutPath(root), []byte(botlive.LibraryOf(s).Render(s.SrcdsBotLoadouts, botlive.SeatsOf(s))))
 }
 
 // LoadoutPath and NamesPath are where the mod looks for them, under a game tree

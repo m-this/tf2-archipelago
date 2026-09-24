@@ -254,6 +254,12 @@ func fakeSession(running bool) session.Snapshot {
 			{PopFile: "mvm_bigrock_advanced1", Name: "Broken Parts", Map: "Big Rock", Waves: 7, Source: "Valve"},
 		},
 		Unlocks: []session.Unlock{
+			{Kind: "Bot card", Name: "Bot: CreditToTeam | Common | Human"},
+			{Kind: "Bot card", Name: "Bot: Screamin' Eagles | Elite | Robot"},
+			{Kind: "Bot card", Name: "Bot: IvanTheSpaceBiker | Elite | Human"},
+			{Kind: "Bot card", Name: "Bot: Herr Doktor | Legendary | Giant"},
+			{Kind: "Bot card", Name: "Bot: Chell | Common | Robot"},
+			{Kind: "Bot card", Name: "Bot: Mentlegen | Legendary | Giant"},
 			{Kind: "Class", Name: "Scout"},
 			{Kind: "Class", Name: "Soldier"},
 			{Kind: "Weapon slot", Name: "Soldier, secondary"},

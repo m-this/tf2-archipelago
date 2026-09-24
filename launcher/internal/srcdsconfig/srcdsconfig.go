@@ -35,7 +35,7 @@ func Install(s settings.Settings) error {
 		return err
 	}
 	if err := installBotLoadout(gameDir, botlive.LibraryOf(s), s.SrcdsBotLoadouts,
-		botloadout.Seats(s.SrcdsBotTeamComp, s.SrcdsBotSeatLoadouts, s.SrcdsBotSeatNames)); err != nil {
+		botlive.SeatsOf(s)); err != nil {
 		return err
 	}
 	if err := installBotNames(gameDir, s); err != nil {
@@ -75,7 +75,7 @@ func RenderServerCfg(s settings.Settings) (string, error) {
 		"BotClassBlacklist": botloadout.Blacklist(s.SrcdsBotClassBlacklist),
 		"BotTeamComp":       botloadout.Composition(s.SrcdsBotTeamComp, s.SrcdsBotClassBlacklist),
 		"BotCustomLoadouts": boolToInt(botlive.LibraryOf(s).Anything(s.SrcdsBotLoadouts,
-			botloadout.Seats(s.SrcdsBotTeamComp, s.SrcdsBotSeatLoadouts, s.SrcdsBotSeatNames))),
+			botlive.SeatsOf(s))),
 		"BotUpgradesChat": boolToInt(s.BotUpgradesChat),
 		"BluHealth":       scaleOf(s.SrcdsBluHealthPct),
 		"BotHats":         boolToInt(s.SrcdsBotHats),
