@@ -78,9 +78,10 @@ test('recruits and previews a full six-card team', async ({ page }) => {
   await expect(squad.locator('.trading-card[data-rarity="common"]')).toHaveCount(2);
   await expect(squad.locator('.trading-card[data-rarity="elite"]')).toHaveCount(2);
   await expect(squad.locator('.trading-card[data-rarity="legendary"]')).toHaveCount(2);
-  await expect(squad.locator('.trading-card').filter({ hasText: 'Herr Doktor' })).toContainText(
-    '0.10s',
-  );
+  // A Legendary Medic carries twice the class's 150.
+  await expect(
+    squad.locator('.trading-card').filter({ hasText: 'Herr Doktor' }).locator('.stat-cell'),
+  ).toContainText('300');
   await expect(
     squad.locator('.trading-card').filter({ hasText: 'Herr Doktor' }).locator('.perk li'),
   ).toHaveCount(3);
@@ -112,10 +113,6 @@ test('recruits and previews a full six-card team', async ({ page }) => {
   await expect(
     squad.locator('.trading-card').filter({ hasText: 'Mentlegen' }).locator('.stat-cell').first(),
   ).toContainText('225');
-  const aims = await squad
-    .locator('.stat-cell[aria-label^="Preview aim accuracy"]')
-    .allTextContents();
-  expect(aims.every((aim) => Number(aim.match(/\d+/)?.[0] ?? 101) <= 100)).toBe(true);
   const statOverflow = await squad
     .locator('.stats')
     .evaluateAll((stats) => stats.some((stat) => stat.scrollWidth > stat.clientWidth + 1));

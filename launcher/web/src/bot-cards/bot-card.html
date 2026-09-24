@@ -69,22 +69,5 @@
       <b>{{ form() === 'giant' ? card().giantHealth : card().health }}</b
       ><small>HP</small>
     </span>
-    <span
-      class="stat-cell"
-      [attr.aria-label]="'Preview aim accuracy ' + card().aim + ' percent'"
-      title="Preview aim accuracy, capped at 100%"
-    >
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="7" />
-        <circle cx="12" cy="12" r="2" />
-        <path d="M12 1v4m0 14v4M1 12h4m14 0h4" />
-      </svg>
-      <b>{{ card().aim }}%</b><small>AIM</small>
-    </span>
-    <span class="stat-cell" [attr.aria-label]="'Reaction time ' + card().reaction">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 13h7l-1 9 10-12h-7l2-8Z" /></svg>
-      <b>{{ card().reaction }}</b
-      ><small>REACT</small>
-    </span>
   </div>
 </article>

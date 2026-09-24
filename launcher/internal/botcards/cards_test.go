@@ -82,3 +82,20 @@ func TestEverySeedTierHasItsOwnEligibleInnates(t *testing.T) {
 		}
 	}
 }
+
+// gamedata names the cards a seed can hold and this package says what each one
+// is. They are two lists of the same fifteen identities, so a card added to one
+// and not the other is an item the launcher cannot seat, or a seat no seed can
+// ever unlock.
+func TestTheCatalogueMatchesTheSeedsCards(t *testing.T) {
+	if len(Cards) != len(gamedata.BotCardTemplates) {
+		t.Fatalf("%d cards here, %d in gamedata", len(Cards), len(gamedata.BotCardTemplates))
+	}
+	for i, card := range Cards {
+		seed := gamedata.BotCardTemplates[i]
+		if card.Name != seed.Name || card.Class != seed.Class || (card.Loadout == "stock") != seed.Stock {
+			t.Errorf("card %d is %s/%s/%s here and %s/%s/stock=%t in gamedata",
+				i, card.Name, card.Class, card.Loadout, seed.Name, seed.Class, seed.Stock)
+		}
+	}
+}

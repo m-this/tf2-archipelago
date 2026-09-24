@@ -1,6 +1,5 @@
-/* eslint-disable max-lines -- one catalog keeps the nine stock classes and six named cards together */
 import { Mercenary, robotIcons } from '@app/ui/tf2-art';
-import { cardInnates } from './innates.generated';
+import { CardIdentity, CardTier, cardIdentities, cardInnates } from './cards.generated';
 
 export type BotForm = 'human' | 'robot' | 'giant';
 
@@ -18,306 +17,111 @@ export interface BotCard {
   readonly innates: readonly string[];
   readonly health: number;
   readonly giantHealth: number;
-  readonly loadoutHealthDelta: number;
-  readonly aim: number;
-  readonly reaction: string;
   readonly model: string;
 }
 
-// Curated test-mode prototypes. Each innate is a distinct AP-eligible effect
-// found through an item this class can equip; it applies across the card's kit.
-// Keep these per-stack values aligned with gamedata/weapon_effects.go. AP
-// percentage bonuses compose linearly, so the card shows the resulting bonus.
-const innatePercentPerStack = {
-  Damage: 10,
-  'Firing speed': 10,
-  'Clip size': 25,
-  'ÜberCharge rate': 10,
-  'Armor piercing': 25,
-} as const;
+/* Who a card is, what it carries and which innates it has come from the
+ * launcher's Go catalogue through cards.generated.ts. What is left here is how a
+ * card looks: the names of the items its loadout and cosmetic ids stand for. A
+ * card the Go side has and this table does not is refused at load, rather than
+ * drawn with blanks. */
+interface Look {
+  readonly weapons: readonly [string, string, string];
+  readonly cosmetic: string;
+  readonly unusualEffect?: string;
+  // An equipped item that changes max health, as Big Earner's -25 does.
+  readonly healthDelta?: number;
+}
 
-type InnateName = keyof typeof innatePercentPerStack;
+const looks: Readonly<Record<string, Look>> = {
+  'stock-scout': { weapons: ['Scattergun', 'Pistol', 'Bat'], cosmetic: 'Ghastly Gibus' },
+  'stock-soldier': { weapons: ['Rocket Launcher', 'Shotgun', 'Shovel'], cosmetic: 'Ghastly Gibus' },
+  'stock-pyro': { weapons: ['Flame Thrower', 'Shotgun', 'Fire Axe'], cosmetic: 'Ghastly Gibus' },
+  'stock-demoman': {
+    weapons: ['Grenade Launcher', 'Stickybomb Launcher', 'Bottle'],
+    cosmetic: 'Ghastly Gibus',
+  },
+  'stock-heavy': { weapons: ['Minigun', 'Shotgun', 'Fists'], cosmetic: 'Ghastly Gibus' },
+  'stock-engineer': { weapons: ['Shotgun', 'Pistol', 'Wrench'], cosmetic: 'Ghastly Gibus' },
+  'stock-medic': { weapons: ['Syringe Gun', 'Medi Gun', 'Bonesaw'], cosmetic: 'Ghastly Gibus' },
+  'stock-sniper': { weapons: ['Sniper Rifle', 'SMG', 'Kukri'], cosmetic: 'Ghastly Gibus' },
+  'stock-spy': { weapons: ['Revolver', 'Sapper', 'Knife'], cosmetic: 'Ghastly Gibus' },
+  'credit-to-team': {
+    weapons: ['Soda Popper', 'Mad Milk', 'Fan O’War'],
+    cosmetic: 'Baseball Bill’s Sports Shine',
+  },
+  'screamin-eagles': {
+    weapons: ['Beggar’s Bazooka', 'Buff Banner', 'Escape Plan'],
+    cosmetic: 'Team Captain',
+  },
+  ivan: { weapons: ['Brass Beast', 'Family Business', 'Fists of Steel'], cosmetic: 'Heavy Do-rag' },
+  'herr-doktor': {
+    weapons: ['Crusader’s Crossbow', 'Kritzkrieg', 'Übersaw'],
+    cosmetic: 'Blighted Beak',
+    unusualEffect: 'Burning Flames',
+  },
+  chell: { weapons: ['Rescue Ranger', 'Wrangler', 'Jag'], cosmetic: 'Prairie Heel Biters' },
+  mentlegen: {
+    weapons: ['Diamondback', 'Red-Tape Recorder', 'Big Earner'],
+    cosmetic: 'Fancy Fedora',
+    unusualEffect: 'Scorching Flames',
+    healthDelta: -25,
+  },
+};
 
-export const botCards: readonly BotCard[] = [
-  card(
-    'stock-scout',
-    'Chucklenuts',
-    'Scout',
-    'scout',
-    'stock',
-    'COMMON',
-    ['Scattergun', 'Pistol', 'Bat'],
-    'Ghastly Gibus',
-    ['Damage'],
-    125,
-    56,
-    0.18,
-  ),
-  card(
-    'stock-soldier',
-    'Maggot',
-    'Soldier',
-    'soldier',
-    'stock',
-    'COMMON',
-    ['Rocket Launcher', 'Shotgun', 'Shovel'],
-    'Ghastly Gibus',
-    ['Damage'],
-    200,
-    59,
-    0.26,
-  ),
-  card(
-    'stock-pyro',
-    'BeepBeepBoop',
-    'Pyro',
-    'pyro',
-    'stock',
-    'COMMON',
-    ['Flame Thrower', 'Shotgun', 'Fire Axe'],
-    'Ghastly Gibus',
-    ['Damage'],
-    175,
-    55,
-    0.24,
-  ),
-  card(
-    'stock-demoman',
-    'Kaboom!',
-    'Demoman',
-    'demoman',
-    'stock',
-    'COMMON',
-    ['Grenade Launcher', 'Stickybomb Launcher', 'Bottle'],
-    'Ghastly Gibus',
-    ['Damage'],
-    175,
-    55,
-    0.25,
-  ),
-  card(
-    'stock-heavy',
-    'Nom Nom Nom',
-    'Heavy',
-    'heavyweapons',
-    'stock',
-    'COMMON',
-    ['Minigun', 'Shotgun', 'Fists'],
-    'Ghastly Gibus',
-    ['Damage'],
-    300,
-    53,
-    0.31,
-  ),
-  card(
-    'stock-engineer',
-    'MoreGun',
-    'Engineer',
-    'engineer',
-    'stock',
-    'COMMON',
-    ['Shotgun', 'Pistol', 'Wrench'],
-    'Ghastly Gibus',
-    ['Damage'],
-    125,
-    54,
-    0.24,
-  ),
-  card(
-    'stock-medic',
-    'Archimedes!',
-    'Medic',
-    'medic',
-    'stock',
-    'COMMON',
-    ['Syringe Gun', 'Medi Gun', 'Bonesaw'],
-    'Ghastly Gibus',
-    ['Damage'],
-    150,
-    48,
-    0.2,
-  ),
-  card(
-    'stock-sniper',
-    'A Professional With Standards',
-    'Sniper',
-    'sniper',
-    'stock',
-    'COMMON',
-    ['Sniper Rifle', 'SMG', 'Kukri'],
-    'Ghastly Gibus',
-    ['Damage'],
-    125,
-    49,
-    0.2,
-  ),
-  card(
-    'stock-spy',
-    'Gentlemanne of Leisure',
-    'Spy',
-    'spy',
-    'stock',
-    'COMMON',
-    ['Revolver', 'Sapper', 'Knife'],
-    'Ghastly Gibus',
-    ['Damage'],
-    125,
-    49,
-    0.16,
-  ),
-  card(
-    'credit-to-team',
-    'CreditToTeam',
-    'Scout',
-    'scout',
-    'milk',
-    'COMMON',
-    ['Soda Popper', 'Mad Milk', 'Fan O’War'],
-    'Baseball Bill’s Sports Shine',
-    ['Damage'],
-    125,
-    56,
-    0.18,
-  ),
-  card(
-    'screamin-eagles',
-    "Screamin' Eagles",
-    'Soldier',
-    'soldier',
-    'beggar',
-    'ELITE',
-    ['Beggar’s Bazooka', 'Buff Banner', 'Escape Plan'],
-    'Team Captain',
-    ['Damage', 'Firing speed'],
-    200,
-    59,
-    0.26,
-  ),
-  card(
-    'ivan',
-    'IvanTheSpaceBiker',
-    'Heavy',
-    'heavyweapons',
-    'brass',
-    'ELITE',
-    ['Brass Beast', 'Family Business', 'Fists of Steel'],
-    'Heavy Do-rag',
-    ['Firing speed', 'Clip size'],
-    300,
-    53,
-    0.31,
-  ),
-  card(
-    'herr-doktor',
-    'Herr Doktor',
-    'Medic',
-    'medic',
-    'kritz',
-    'LEGENDARY',
-    ['Crusader’s Crossbow', 'Kritzkrieg', 'Übersaw'],
-    'Blighted Beak',
-    ['Damage', 'ÜberCharge rate', 'Firing speed'],
-    150,
-    48,
-    0.2,
-    0,
-    'Burning Flames',
-  ),
-  card(
-    'chell',
-    'Chell',
-    'Engineer',
-    'engineer',
-    'ranger',
-    'COMMON',
-    ['Rescue Ranger', 'Wrangler', 'Jag'],
-    'Prairie Heel Biters',
-    ['Damage'],
-    125,
-    54,
-    0.24,
-  ),
-  card(
-    'mentlegen',
-    'Mentlegen',
-    'Spy',
-    'spy',
-    'diamondback',
-    'LEGENDARY',
-    ['Diamondback', 'Red-Tape Recorder', 'Big Earner'],
-    'Fancy Fedora',
-    ['Damage', 'Firing speed', 'Armor piercing'],
-    125,
-    49,
-    0.16,
-    -25, // Big Earner's equipped -25 max-health penalty.
-    'Scorching Flames',
-  ),
-];
+const classes: Readonly<Record<string, { readonly name: Mercenary; readonly health: number }>> = {
+  scout: { name: 'Scout', health: 125 },
+  soldier: { name: 'Soldier', health: 200 },
+  pyro: { name: 'Pyro', health: 175 },
+  demoman: { name: 'Demoman', health: 175 },
+  heavyweapons: { name: 'Heavy', health: 300 },
+  engineer: { name: 'Engineer', health: 125 },
+  medic: { name: 'Medic', health: 150 },
+  sniper: { name: 'Sniper', health: 125 },
+  spy: { name: 'Spy', health: 125 },
+};
 
-// AP item names carry the two independent seed rolls. Rebuild the visible
-// stats from the base card so tracker and admin can show the received tier.
+const stars: Readonly<Record<CardTier, number>> = { common: 1, elite: 2, legendary: 3 };
+// The plugin's health bonus per tier: natural class health times this.
+const healthScale: Readonly<Record<CardTier, number>> = { common: 1, elite: 1.5, legendary: 2 };
+
+export const botCards: readonly BotCard[] = cardIdentities.map((identity) =>
+  build(identity, identity.tier),
+);
+
+// AP item names carry the seed's tier roll. Rebuild the card at that tier so
+// the tracker and the admin page show what the run actually received.
 export function rolledCard(base: BotCard, rarity: BotCard['rarity']): BotCard {
-  const oldScale = base.stars === 3 ? 2 : base.stars === 2 ? 1.5 : 1;
-  const stars = rarity === 'LEGENDARY' ? 3 : rarity === 'ELITE' ? 2 : 1;
-  const scale = stars === 3 ? 2 : stars === 2 ? 1.5 : 1;
-  return {
-    ...base,
-    rarity,
-    stars,
-    health: Math.round(
-      ((base.health - base.loadoutHealthDelta) / oldScale) * scale + base.loadoutHealthDelta,
-    ),
-    giantHealth: Math.round(
-      ((base.health - base.loadoutHealthDelta) / oldScale) * scale * 2 + base.loadoutHealthDelta,
-    ),
-    aim: Math.min(100, Math.round((base.aim / oldScale) * scale)),
-    reaction: `${((Number.parseFloat(base.reaction) * oldScale) / scale).toFixed(2)}s`,
-    innates: cardInnates[base.id]?.[rarity.toLowerCase()] ?? base.innates,
-    unusualEffect: rarity === 'LEGENDARY' ? (base.unusualEffect ?? 'Burning Flames') : undefined,
-  };
+  const identity = cardIdentities.find((entry) => entry.id === base.id);
+  return identity ? build(identity, rarity.toLowerCase() as CardTier) : base;
 }
 
 export function cardById(id: string): BotCard | undefined {
   return botCards.find((entry) => entry.id === id);
 }
 
-function card(
-  id: string,
-  name: string,
-  className: Mercenary,
-  classKey: string,
-  loadoutKey: string,
-  rarity: BotCard['rarity'],
-  weapons: BotCard['weapons'],
-  cosmetic: string,
-  innates: readonly InnateName[],
-  health: number,
-  baseAim: number,
-  baseReaction: number,
-  loadoutHealthDelta = 0,
-  unusualEffect?: string,
-): BotCard {
-  const multiplier = rarity === 'LEGENDARY' ? 2 : rarity === 'ELITE' ? 1.5 : 1;
-  const stacks = rarity === 'LEGENDARY' ? 3 : rarity === 'ELITE' ? 2 : 1;
+function build(identity: CardIdentity, tier: CardTier): BotCard {
+  const look = looks[identity.id];
+  const kind = classes[identity.classKey];
+  if (look === undefined || kind === undefined) {
+    throw new Error(`bot card ${identity.id} has no look or no class in catalog.ts`);
+  }
+  const health = kind.health * healthScale[tier];
+  const delta = look.healthDelta ?? 0;
   return {
-    id,
-    name,
-    className,
-    classKey,
-    loadoutKey,
-    rarity,
-    weapons,
-    cosmetic,
-    unusualEffect,
-    innates: innates.map((innate) => `${innate} +${innatePercentPerStack[innate] * stacks}%`),
-    stars: stacks,
-    health: Math.round(health * multiplier + loadoutHealthDelta),
-    giantHealth: Math.round(health * multiplier * 2 + loadoutHealthDelta),
-    loadoutHealthDelta,
-    // AIM is a bounded 0–100 accuracy preview, not an uncapped RPG rating.
-    aim: Math.min(100, Math.round(baseAim * multiplier)),
-    reaction: `${(baseReaction / multiplier).toFixed(2)}s`,
-    model: robotIcons[className],
+    id: identity.id,
+    name: identity.name,
+    className: kind.name,
+    classKey: identity.classKey,
+    loadoutKey: identity.loadoutKey,
+    rarity: tier.toUpperCase() as BotCard['rarity'],
+    stars: stars[tier],
+    weapons: look.weapons,
+    cosmetic: look.cosmetic,
+    unusualEffect: tier === 'legendary' ? (look.unusualEffect ?? 'Burning Flames') : undefined,
+    innates: cardInnates[identity.id]?.[tier] ?? [],
+    health: Math.round(health + delta),
+    giantHealth: Math.round(health * 2 + delta),
+    model: robotIcons[kind.name],
   };
 }
