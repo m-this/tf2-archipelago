@@ -308,7 +308,7 @@ void Bots_PublishDirective()
     {
         if (MvM_IsDefender(bot) && IsFakeClient(bot) && !IsClientSourceTV(bot))
         {
-            Defenderbots_SetDirective(bot, combat, goal, combat, villa);
+            Defenderbots_SetDirective(bot, combat, goal, combat, villa || BotCards_IsGiant(bot));
         }
     }
 }

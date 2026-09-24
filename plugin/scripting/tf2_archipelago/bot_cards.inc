@@ -29,6 +29,14 @@ void BotCards_Clear(int client)
     }
 }
 
+// A Giant card cannot walk back through a spawn door once it has grown, and
+// the upgrade station is usually behind one. The defender mod lets it buy
+// where it stands; Bots_PublishDirective asks for that.
+bool BotCards_IsGiant(int client)
+{
+    return BotCards_HasInnates(client) && g_CardGiant[client];
+}
+
 bool BotCards_HasInnates(int client)
 {
     return client > 0 && client <= MaxClients && g_CardSelected[client];
@@ -87,7 +95,9 @@ public Action Timer_BotCardsApply(Handle timer, any userid)
     char botName[128], seatKey[8], seatName[128], seatClass[32], actualClass[32], raw[48], fields[3][16];
     GetClientName(client, botName, sizeof(botName));
     BotCards_ClassKey(TF2_GetPlayerClass(client), actualClass, sizeof(actualClass));
-    for (int seat = 1; seat <= 6; seat++)
+    // Every seat the file could hold: RED is six by default and more under a
+    // larger team size, and a card in seat seven is still a card.
+    for (int seat = 1; seat <= MaxClients; seat++)
     {
         IntToString(seat, seatKey, sizeof(seatKey));
         if (!lineup.JumpToKey(seatKey))
