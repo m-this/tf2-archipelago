@@ -92,7 +92,7 @@ NPM := docker run --rm -u $$(id -u):$$(id -g) \
 # checkout of one must not be able to fail our own format check.
 GO_SRC := $$(find . -type f -name '*.go' -not -path './deploy/bots/build/*' -not -path './launcher/internal/gen/*' -not -path './launcher/web/*')
 
-.PHONY: help seed up down restart logs ps rcon community-catalog community-check \
+.PHONY: help seed up down restart logs ps rcon winbed community-catalog community-check \
         check fmt fmt-check vet lint lint-fix fix-check vuln compile test \
         test-fast export apworld-lint \
 		apworld-fmt apworld-test apworld-build apworld-package plugin bots bots-from-source \
@@ -580,6 +580,23 @@ launcher: launcher-assets web-build
 		-ldflags="-s -w -H windowsgui $(LAUNCHER_LDFLAGS)" \
 		-o $(DIST)/tf2ap.exe ./launcher/cmd/tf2ap
 	go run ./launcher/cmd/pechecksum $(DIST)/tf2ap.exe
+
+# The Windows wave-probe bed: winbed.exe prepares and runs a server the way the
+# launcher does, waveprobe.exe drives it, tf2_waveprobe.smx is the plugin they
+# test with. m-this/sigsegv-mvm-win's CI plays the SigMod missions with them on
+# a Windows runner. Never shipped to players.
+winbed: launcher-assets
+	mkdir -p $(DIST)/winbed
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath \
+		-ldflags="-s -w $(LAUNCHER_LDFLAGS)" \
+		-o $(DIST)/winbed/winbed.exe ./launcher/cmd/winbed
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath \
+		-o $(DIST)/winbed/waveprobe.exe ./launcher/cmd/waveprobe
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath \
+		-o $(DIST)/winbed/rcon.exe ./launcher/cmd/rcon
+	compiler=plugin/build/sourcemod-$(SOURCEMOD_VERSION)/addons/sourcemod/scripting/spcomp64; \
+	[ -x $$compiler ] || compiler=$${compiler%64}; \
+	$$compiler -E -o$(DIST)/winbed/tf2_waveprobe.smx plugin/scripting/tf2_waveprobe.sp
 
 # No window: walk is a Win32 binding, so the Linux build is the console flow
 # the compose stack already uses. Everything else is the same program.
