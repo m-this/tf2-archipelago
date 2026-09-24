@@ -14,6 +14,7 @@ const (
 	ItemServerSetting
 	ItemTrophy
 	ItemClassWeaponSlot
+	ItemBotCard
 )
 
 var itemKindKeys = [...]string{
@@ -26,13 +27,14 @@ var itemKindKeys = [...]string{
 	ItemServerSetting:   "server_setting",
 	ItemTrophy:          "trophy",
 	ItemClassWeaponSlot: "class_weapon_slot",
+	ItemBotCard:         "bot_card",
 }
 
 // ItemKinds is every kind that exists, in id order. The bridge walks it to
 // build the unlock set, so a kind added here needs no second list anywhere.
 var ItemKinds = []ItemKind{
 	ItemMissionTicket, ItemClass, ItemWeaponSlot, ItemCredits, ItemWeaponBuff, ItemTrap,
-	ItemServerSetting, ItemTrophy, ItemClassWeaponSlot,
+	ItemServerSetting, ItemTrophy, ItemClassWeaponSlot, ItemBotCard,
 }
 
 // Key is the string on the wire between the bridge and the plugin.
@@ -75,11 +77,51 @@ type Item struct {
 	WeaponBuff     uint16
 	Trap           TrapID
 	ServerSetting  ServerSettingID
+	BotName        string
+	BotTier        string
+	BotForm        string
+	BotStock       bool
 
 	// Slot is the loadout slot a named class slot item opens, and zero on
 	// every other item, progressive ones included: a progressive copy opens
 	// whichever slot is next, which is not a thing an item can carry.
 	Slot WeaponSlotID
+}
+
+// BotCardTemplates are unique identities. Stock cards use the stock loadout;
+// rarity and form are separate seed rolls, not properties of the name.
+var BotCardTemplates = []struct {
+	Name  string
+	Class string
+	Stock bool
+}{
+	{"Chucklenuts", "scout", true}, {"Maggot", "soldier", true},
+	{"BeepBeepBoop", "pyro", true}, {"Kaboom!", "demoman", true},
+	{"Nom Nom Nom", "heavyweapons", true}, {"MoreGun", "engineer", true},
+	{"Archimedes!", "medic", true}, {"A Professional With Standards", "sniper", true},
+	{"Gentlemanne of Leisure", "spy", true}, //nolint:misspell // A deliberate BOT-list name.
+	{"CreditToTeam", "scout", false}, {"Screamin' Eagles", "soldier", false},
+	{"IvanTheSpaceBiker", "heavyweapons", false}, {"Herr Doktor", "medic", false},
+	{"Chell", "engineer", false}, {"Mentlegen", "spy", false},
+}
+
+// Every possible roll has a stable AP item ID. A generated seed includes at
+// most one variant of each identity, so finding a card never duplicates it.
+func botCardItems() []Item {
+	items := make([]Item, 0, len(BotCardTemplates)*9)
+	for index, card := range BotCardTemplates {
+		for tierIndex, tier := range []string{"Common", "Elite", "Legendary"} {
+			for formIndex, form := range []string{"Human", "Robot", "Giant"} {
+				items = append(items, Item{
+					ID:   BaseID + itemSpaceOffset + itemBlockBotCard + int64(index*9+tierIndex*3+formIndex+1),
+					Name: "Bot: " + card.Name + " | " + tier + " | " + form,
+					Kind: ItemBotCard, Classification: Useful, Count: 1,
+					BotName: card.Name, BotTier: tier, BotForm: form, BotStock: card.Stock,
+				})
+			}
+		}
+	}
+	return items
 }
 
 // ProgressiveWeaponSlotName is the one item that unlocks loadout slots: copy n
@@ -219,6 +261,7 @@ func buildItems() []Item {
 			ServerSetting:  setting.ID,
 		})
 	}
+	all = append(all, botCardItems()...)
 	return append(all, trophyItems()...)
 }
 
