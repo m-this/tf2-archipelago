@@ -102,6 +102,7 @@ func TestEveryFieldHasAnEnvVar(t *testing.T) {
 		"SrcdsBotGiantCards":         "SRCDS_BOT_GIANT_CARDS",
 		"SrcdsBotHumanCards":         "SRCDS_BOT_HUMAN_CARDS",
 		"SrcdsBotHats":               "SRCDS_BOT_HATS",
+		"SrcdsBotBuyAnywhere":        "SRCDS_BOT_BUY_ANYWHERE",
 		"SrcdsBotHatEffects":         "SRCDS_BOT_HAT_EFFECTS",
 		"BotUpgradesChat":            "TF2AP_BOT_UPGRADES_CHAT",
 		"MvmMissionCount":            "MVM_MISSION_COUNT",

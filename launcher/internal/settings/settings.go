@@ -182,6 +182,9 @@ type Settings struct {
 	// BotUpgradesChat writes what the bots buy at the upgrade station to the
 	// chat. Off by default: it is a line per purchase.
 	BotUpgradesChat bool `json:"bot_upgrades_chat"`
+	// SrcdsBotBuyAnywhere lets every bot buy its upgrades where it stands
+	// instead of walking to a station. Off is how the mod has always played.
+	SrcdsBotBuyAnywhere bool `json:"srcds_bot_buy_anywhere"`
 
 	// What the bots look like, which changes nothing about how they play. A
 	// hat each is on and so is the unusual effect on it: six mercenaries in the

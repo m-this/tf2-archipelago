@@ -29,6 +29,7 @@ var EnvNames = []string{
 	"SRCDS_BOT_GIANT_CARDS",
 	"SRCDS_BOT_HUMAN_CARDS",
 	"SRCDS_BOT_HATS",
+	"SRCDS_BOT_BUY_ANYWHERE",
 	"SRCDS_BOT_HAT_EFFECTS",
 	"TF2AP_BOT_UPGRADES_CHAT",
 	"MVM_MISSION_COUNT", "MVM_DIFFICULTY", "MVM_GOAL",
@@ -76,6 +77,7 @@ func applyBotEnv(s Settings) Settings {
 	list(&s.SrcdsBotHumanCards, "SRCDS_BOT_HUMAN_CARDS")
 	fromJSON(&s.SrcdsBotCardRolls, "SRCDS_BOT_CARD_ROLLS")
 	boolean(&s.SrcdsBotHats, "SRCDS_BOT_HATS")
+	boolean(&s.SrcdsBotBuyAnywhere, "SRCDS_BOT_BUY_ANYWHERE")
 	boolean(&s.SrcdsBotHatEffects, "SRCDS_BOT_HAT_EFFECTS")
 	boolean(&s.BotUpgradesChat, "TF2AP_BOT_UPGRADES_CHAT")
 	return s

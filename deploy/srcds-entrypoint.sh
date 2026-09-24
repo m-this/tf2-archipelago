@@ -311,6 +311,9 @@ sig_mvm_robot_limit_fix_red 0" ;;
 	// What the bots look like, none of which changes how they play: a hat
 	// each, and an unusual effect on that hat.
 	sm_redbots_manager_bot_hats ${SRCDS_BOT_HATS:-1}
+	// Every bot buys its upgrades where it stands instead of walking to a
+	// station. 0 is how the mod has always played.
+	sm_redbots_manager_bot_buy_anywhere ${SRCDS_BOT_BUY_ANYWHERE:-0}
 	sm_redbots_manager_bot_hat_effects ${SRCDS_BOT_HAT_EFFECTS:-0}
 
 	// The mission the run starts on, how long a cleared mission stays on

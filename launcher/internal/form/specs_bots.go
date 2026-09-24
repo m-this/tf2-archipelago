@@ -54,6 +54,12 @@ func botSpecs(s State, env Env) []Spec {
 			func(s State) bool { return s.Settings.BotUpgradesChat },
 			func(s State, v bool) State { s.Settings.BotUpgradesChat = v; return s }),
 
+		toggle("bots.buy_anywhere", tab, "Shop where they stand",
+			"Every bot buys its upgrades where it is instead of walking to the station, so a bot that shops mid-wave stays in the fight. A Giant bot card always does.",
+			"no walk to the station",
+			func(s State) bool { return s.Settings.SrcdsBotBuyAnywhere },
+			func(s State, v bool) State { s.Settings.SrcdsBotBuyAnywhere = v; return s }),
+
 		// A team is worth naming once. The window has a menu and two buttons
 		// for this; the terminal has a list to load from and a name to save
 		// under. Both are these four rows.
@@ -95,7 +101,14 @@ func botSpecs(s State, env Env) []Spec {
 	specs = append(specs, nameSpecs(s)...)
 
 	// Last, because none of it changes a wave.
-	specs = append(specs, inGroup("Looks",
+	specs = append(specs, looksSpecs(tab)...)
+
+	return append(specs, loadoutSpecs(s)...)
+}
+
+// looksSpecs is what the bots look like, none of which changes how they play.
+func looksSpecs(tab string) []Spec {
+	return inGroup("Looks",
 		toggle("bots.hats", tab, "Cosmetic items",
 			"A random cosmetic item on every bot, hat or not, drawn from the ones its class can wear. It changes nothing about how they play.",
 			"one each",
@@ -107,9 +120,7 @@ func botSpecs(s State, env Env) []Spec {
 			"and an effect on it",
 			func(s State) bool { return s.Settings.SrcdsBotHatEffects },
 			func(s State, v bool) State { s.Settings.SrcdsBotHatEffects = v; return s }),
-	)...)
-
-	return append(specs, loadoutSpecs(s)...)
+	)
 }
 
 /*
