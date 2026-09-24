@@ -82,3 +82,23 @@ func TestEverySeedTierHasItsOwnEligibleInnates(t *testing.T) {
 		}
 	}
 }
+
+// Every entry in byName is a card the seed can hold, and a stock card names no
+// loadout of its own: gamedata says which cards are stock, and a second answer
+// here could only disagree with it.
+func TestDetailsDescribeOnlyTheSeedsCards(t *testing.T) {
+	templates := map[string]bool{}
+	for _, template := range gamedata.BotCardTemplates {
+		templates[template.Name] = template.Stock
+	}
+	for name, d := range byName {
+		stock, known := templates[name]
+		if !known {
+			t.Errorf("%q has details and gamedata has no such card", name)
+			continue
+		}
+		if stock != (d.Loadout == "") {
+			t.Errorf("%q is stock=%t in gamedata and names loadout %q here", name, stock, d.Loadout)
+		}
+	}
+}
