@@ -25,13 +25,7 @@
 				"library" "server"
 				"linux" "@_ZN16CObjectDispenser12DispenseAmmoEP9CTFPlayer"
 				"linux64" "@_ZN16CObjectDispenser12DispenseAmmoEP9CTFPlayer"
-			}
-
-			"CRobotDispenser::DispenseAmmo"
-			{
-				"library" "server"
-				"linux" "@_ZN15CRobotDispenser12DispenseAmmoEP9CTFPlayer"
-				"linux64" "@_ZN15CRobotDispenser12DispenseAmmoEP9CTFPlayer"
+				"windows" "\x55\x8B\xEC\x51\x53\x56\x57\x8B\x7D\x2A\x8B\xD9\x85\xFF\x0F\x2A\x2A\x2A\x2A\x2A"
 			}
 
 			"CPopulationManager::Parse"
@@ -258,21 +252,6 @@
 			"CObjectDispenser::DispenseAmmo"
 			{
 				"signature" "CObjectDispenser::DispenseAmmo"
-				"callconv" "thiscall"
-				"return" "bool"
-				"this" "entity"
-				"arguments"
-				{
-					"player"
-					{
-						"type" "cbaseentity"
-					}
-				}
-			}
-
-			"CRobotDispenser::DispenseAmmo"
-			{
-				"signature" "CRobotDispenser::DispenseAmmo"
 				"callconv" "thiscall"
 				"return" "bool"
 				"this" "entity"

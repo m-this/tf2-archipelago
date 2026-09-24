@@ -21,7 +21,9 @@ void Chamber_Init()
     if (data == null) return;
     bool ready = Chamber_Detour(data, "CTFPlayer::GetMaxAmmo", Hook_Post, Chamber_MaxAmmo);
     ready = Chamber_Detour(data, "CObjectDispenser::DispenseAmmo", Hook_Pre, Chamber_DispensePre) && ready;
-    ready = Chamber_Detour(data, "CRobotDispenser::DispenseAmmo", Hook_Pre, Chamber_DispensePre) && ready;
+    // CRobotDispenser::DispenseAmmo is `return false`, so a hook that can only
+    // hold a supply back has nothing to do there. On Windows it is also one
+    // stub MSVC shares with every other function that returns false.
     StartPrepSDKCall(SDKCall_Player);
     if (PrepSDKCall_SetFromConf(data, SDKConf_Signature, "CTFPlayer::GetMaxAmmo"))
     {
