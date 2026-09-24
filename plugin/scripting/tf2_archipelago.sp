@@ -25,6 +25,7 @@
 
 native bool Defenderbots_SetDirective(int client, bool rally, const float goal[3],
     bool seekEnemies, bool buyAnywhere);
+native int Defenderbots_GetSeatRank(int client);
 
 #include "tf2_archipelago/log.inc"
 #include "tf2_archipelago/mvm.inc"
@@ -103,6 +104,7 @@ public APLRes AskPluginLoad2(Handle self, bool late, char[] error, int length)
 {
     CreateNative("TF2AP_GetBundleCredits", Native_GetBundleCredits);
     MarkNativeAsOptional("Defenderbots_SetDirective");
+    MarkNativeAsOptional("Defenderbots_GetSeatRank");
     RegPluginLibrary("tf2_archipelago");
     return APLRes_Success;
 }
@@ -168,8 +170,6 @@ public void OnPluginStart()
         "Copy the admin's staged bot files into the running game");
     RegAdminCmd("sm_ap_botcards_evict", Command_BotCardsEvict, ADMFLAG_ROOT,
         "Replace one named bot after its card changes");
-    RegAdminCmd("sm_ap_botcards_evict_unselected", Command_BotCardsEvictUnselected, ADMFLAG_ROOT,
-        "Free a full team's lowest-priority unselected bot seat");
     RegAdminCmd("sm_ap_botcards_reconcile", Command_BotCardsReconcile, ADMFLAG_ROOT,
         "Make live RED bots match the highest-priority card seats");
     RegAdminCmd("sm_ap_report", Command_Report, ADMFLAG_ROOT,
