@@ -21,6 +21,9 @@
       ],
       "@tracker/*": [
         "./src/tracker/*"
+      ],
+      "@cards/*": [
+        "./src/bot-cards/*"
       ]
     }
   },
