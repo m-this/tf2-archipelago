@@ -860,6 +860,12 @@ static char[] GrantLabel(const char[] kind)
 // here rather than beside the unlock set it writes into.
 static bool Bridge_ApplyKind(const char[] kind, const char[] key)
 {
+    // Bot cards belong to the launcher roster. The game plugin only needs to
+    // acknowledge their grant so subsequent items are not held behind them.
+    if (StrEqual(kind, "bot_card"))
+    {
+        return true;
+    }
     if (StrEqual(kind, "class"))
     {
         Unlocks_GrantClass(key);

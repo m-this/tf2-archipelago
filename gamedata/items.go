@@ -95,14 +95,21 @@ var BotCardTemplates = []struct {
 	Class string
 	Stock bool
 }{
-	{"Chucklenuts", "scout", true}, {"Maggot", "soldier", true},
-	{"BeepBeepBoop", "pyro", true}, {"Kaboom!", "demoman", true},
-	{"Nom Nom Nom", "heavyweapons", true}, {"MoreGun", "engineer", true},
-	{"Archimedes!", "medic", true}, {"A Professional With Standards", "sniper", true},
+	{"Chucklenuts", "scout", true},
+	{"Maggot", "soldier", true},
+	{"BeepBeepBoop", "pyro", true},
+	{"Kaboom!", "demoman", true},
+	{"Nom Nom Nom", "heavyweapons", true},
+	{"MoreGun", "engineer", true},
+	{"Archimedes!", "medic", true},
+	{"A Professional With Standards", "sniper", true},
 	{"Gentlemanne of Leisure", "spy", true}, //nolint:misspell // A deliberate BOT-list name.
-	{"CreditToTeam", "scout", false}, {"Screamin' Eagles", "soldier", false},
-	{"IvanTheSpaceBiker", "heavyweapons", false}, {"Herr Doktor", "medic", false},
-	{"Chell", "engineer", false}, {"Mentlegen", "spy", false},
+	{"CreditToTeam", "scout", false},
+	{"Screamin' Eagles", "soldier", false},
+	{"IvanTheSpaceBiker", "heavyweapons", false},
+	{"Herr Doktor", "medic", false},
+	{"Chell", "engineer", false},
+	{"Mentlegen", "spy", false},
 }
 
 // Every possible roll has a stable AP item ID. A generated seed includes at
