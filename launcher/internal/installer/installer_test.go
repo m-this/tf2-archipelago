@@ -383,7 +383,7 @@ func TestDownloadCommunityArchivesDownloadsOnlyTheSelectedPack(t *testing.T) {
 		"tf/download/maps/mvm_example.bsp": "map",
 	})
 	withPotatoArchivePin(t, data)
-	withoutGitHubParts(t, "archive-assets.zip")
+	withoutPotatoGitHubParts(t)
 	requests := 0
 	oldClient := communityHTTPClient
 	communityHTTPClient = &http.Client{Transport: roundTripFunc(func(*http.Request) (*http.Response, error) {
@@ -424,7 +424,7 @@ func TestCommunityArchiveMismatchNeedsExplicitApprovalForExactBytes(t *testing.T
 	wanted := zipWith(t, map[string]string{"tf/download/maps/map.bsp": "expected"})
 	changed := zipWith(t, map[string]string{"tf/download/maps/map.bsp": "changed"})
 	withPotatoArchivePin(t, wanted)
-	withoutGitHubParts(t, "archive-assets.zip")
+	withoutPotatoGitHubParts(t)
 	oldClient := communityHTTPClient
 	communityHTTPClient = &http.Client{Transport: roundTripFunc(func(*http.Request) (*http.Response, error) {
 		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader(changed)), ContentLength: int64(len(changed))}, nil
@@ -456,11 +456,123 @@ func TestCommunityArchiveMismatchNeedsExplicitApprovalForExactBytes(t *testing.T
 	}
 }
 
-func withoutGitHubParts(t *testing.T, name string) {
+// Reported on 2026-09-24: Repair reset SteamCMD and mods but left the August
+// Potato ZIP (SHA-256 194b1c8c...) in place, so the same pin error recurred.
+func TestRepairRedownloadsOnlyMismatchedSelectedCommunityArchives(t *testing.T) {
+	wanted := zipWith(t, map[string]string{"tf/download/maps/map.bsp": "current"})
+	stale := zipWith(t, map[string]string{"tf/download/maps/map.bsp": "older"})
+	withPotatoArchivePin(t, wanted)
+	withoutPotatoGitHubParts(t)
+	requests := 0
+	oldClient := communityHTTPClient
+	communityHTTPClient = &http.Client{Transport: roundTripFunc(func(*http.Request) (*http.Response, error) {
+		requests++
+		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader(wanted)), ContentLength: int64(len(wanted))}, nil
+	})}
+	t.Cleanup(func() { communityHTTPClient = oldClient })
+	root := t.TempDir()
+	path := filepath.Join(root, "archive-assets.zip")
+	untouched := filepath.Join(root, "mlarchive-assets.zip")
+	if err := os.WriteFile(path, stale, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(untouched, stale, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	repaired, err := RepairMismatchedCommunityArchives(context.Background(), []string{path}, func(string, ...any) {})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Equal(repaired, []string{"archive-assets.zip"}) || requests != 1 {
+		t.Fatalf("repaired %v with %d requests", repaired, requests)
+	}
+	got, err := os.ReadFile(path)
+	if err != nil || !bytes.Equal(got, wanted) {
+		t.Fatalf("repaired archive differs from pin: %v", err)
+	}
+	got, err = os.ReadFile(untouched)
+	if err != nil || !bytes.Equal(got, stale) {
+		t.Fatalf("unselected pack changed: %v", err)
+	}
+}
+
+func TestRepairKeepsOldCommunityArchiveWhenDownloadFails(t *testing.T) {
+	wanted := zipWith(t, map[string]string{"tf/download/maps/map.bsp": "current"})
+	stale := zipWith(t, map[string]string{"tf/download/maps/map.bsp": "older"})
+	withPotatoArchivePin(t, wanted)
+	withoutPotatoGitHubParts(t)
+	oldClient := communityHTTPClient
+	communityHTTPClient = &http.Client{Transport: roundTripFunc(func(*http.Request) (*http.Response, error) {
+		return nil, errors.New("offline")
+	})}
+	t.Cleanup(func() { communityHTTPClient = oldClient })
+	path := filepath.Join(t.TempDir(), "archive-assets.zip")
+	if err := os.WriteFile(path, stale, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := RepairMismatchedCommunityArchives(context.Background(), []string{path}, func(string, ...any) {}); err == nil {
+		t.Fatal("offline repair succeeded")
+	}
+	got, err := os.ReadFile(path)
+	if err != nil || !bytes.Equal(got, stale) {
+		t.Fatalf("failed download changed old archive: %v", err)
+	}
+}
+
+func TestRepairReplacesPreviouslyHeldHashMismatch(t *testing.T) {
+	wanted := zipWith(t, map[string]string{"tf/download/maps/map.bsp": "current"})
+	stale := zipWith(t, map[string]string{"tf/download/maps/map.bsp": "older"})
+	withPotatoArchivePin(t, wanted)
+	withoutPotatoGitHubParts(t)
+	oldClient := communityHTTPClient
+	communityHTTPClient = &http.Client{Transport: roundTripFunc(func(*http.Request) (*http.Response, error) {
+		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader(wanted)), ContentLength: int64(len(wanted))}, nil
+	})}
+	t.Cleanup(func() { communityHTTPClient = oldClient })
+	path := filepath.Join(t.TempDir(), "archive-assets.zip")
+	if err := os.WriteFile(path+communityMismatchSuffix, stale, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	repaired, err := RepairMismatchedCommunityArchives(context.Background(), []string{path}, func(string, ...any) {})
+	if err != nil || !slices.Equal(repaired, []string{"archive-assets.zip"}) {
+		t.Fatalf("held mismatch not repaired: %v, %v", repaired, err)
+	}
+	got, err := os.ReadFile(path)
+	if err != nil || !bytes.Equal(got, wanted) {
+		t.Fatalf("replacement differs from pin: %v", err)
+	}
+	if _, err := os.Stat(path + communityMismatchSuffix); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("stale mismatch still awaiting approval: %v", err)
+	}
+}
+
+func TestRepairLeavesAnApprovedCommunityMismatchAlone(t *testing.T) {
+	wanted := zipWith(t, map[string]string{"tf/download/maps/map.bsp": "current"})
+	stale := zipWith(t, map[string]string{"tf/download/maps/map.bsp": "approved"})
+	withPotatoArchivePin(t, wanted)
+	path := filepath.Join(t.TempDir(), "archive-assets.zip")
+	if err := os.WriteFile(path, stale, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	digest := sha256.Sum256(stale)
+	if err := os.WriteFile(path+communityIgnoreSuffix, []byte(fmt.Sprintf("%x\n", digest)), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	repaired, err := RepairMismatchedCommunityArchives(context.Background(), []string{path}, func(string, ...any) {})
+	if err != nil || len(repaired) != 0 {
+		t.Fatalf("approved archive repaired: %v, %v", repaired, err)
+	}
+	got, err := os.ReadFile(path)
+	if err != nil || !bytes.Equal(got, stale) {
+		t.Fatalf("approved archive changed: %v", err)
+	}
+}
+
+func withoutPotatoGitHubParts(t *testing.T) {
 	t.Helper()
-	old := communityGitHubParts[name]
-	delete(communityGitHubParts, name)
-	t.Cleanup(func() { communityGitHubParts[name] = old })
+	old := communityGitHubParts["archive-assets.zip"]
+	delete(communityGitHubParts, "archive-assets.zip")
+	t.Cleanup(func() { communityGitHubParts["archive-assets.zip"] = old })
 }
 
 func TestGitHubSplitArchiveReassemblesAndFallsBackToPotato(t *testing.T) {

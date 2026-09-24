@@ -741,8 +741,8 @@ func serverSpecs() []Spec {
 			"Download the logs, settings without passwords and player file as one zip for whoever is helping you.")),
 
 		onBar(confirm("server.repair", tab, "Repair",
-			"Throw SteamCMD and the mods away and fetch them again. Keeps the game files and the run.",
-			"this stops the server, then removes SteamCMD, the mods and Steam's record of the download. No 14 GB again, no lost checks.")),
+			"Reset SteamCMD and the mods; also redownload selected community packs whose hashes do not match. Keeps the game files and the run.",
+			"this stops the server, removes SteamCMD and the mods, and redownloads any selected community ZIP with a hash mismatch. A large pack may use several GB while downloading. No 14 GB game download and no lost checks.")),
 
 		onBar(confirm("server.reset", tab, "Reset settings",
 			"Put every setting back to what a fresh install has. Keeps the game files and where they are.",

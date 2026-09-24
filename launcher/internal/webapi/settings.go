@@ -241,7 +241,7 @@ func (a *App) Dispatch(id string) error {
 	case "missions.install_mods":
 		go a.installSelectedMods(s.Settings)
 	case "server.repair":
-		go a.repair(s.Settings.InstallRoot)
+		go a.repair(s.Settings)
 	case "server.reset":
 		return a.resetSettings()
 	default:
@@ -457,10 +457,22 @@ func (a *App) reportSettingsActivity(format string, args ...any) {
 	a.Say("%s", message)
 }
 
-func (a *App) repair(root string) {
+func (a *App) repair(s settings.Settings) {
+	a.mu.Lock()
+	attached := a.attached
+	a.mu.Unlock()
+	if attached {
+		a.Notify("Docker Compose owns server repair; use the Compose deployment instead")
+		return
+	}
 	a.Stop()
-	_, _ = winproc.KillUnder(root)
-	removed, err := installer.Clean(root)
+	_, _ = winproc.KillUnder(s.InstallRoot)
+	ctx, done, ok := a.beginSettingsActivity("Repairing the server and checking selected community packs…")
+	if !ok {
+		return
+	}
+	defer done()
+	removed, err := installer.Clean(s.InstallRoot)
 	if err != nil {
 		a.Notify("repair: " + err.Error())
 		return
@@ -470,8 +482,16 @@ func (a *App) repair(root string) {
 	} else {
 		a.Notify("repair removed " + strings.Join(removed, ", "))
 	}
+	repaired, err := installer.RepairMismatchedCommunityArchives(ctx, settings.CommunityArchives(s), a.reportSettingsActivity)
+	if err != nil {
+		a.Notify("repair: " + err.Error())
+		return
+	}
+	if len(repaired) > 0 {
+		a.Notify("repair downloaded verified community pack(s): " + strings.Join(repaired, ", "))
+	}
 	a.mu.Lock()
-	a.serverMods = installer.ReadyServerMods(root)
+	a.serverMods = installer.ReadyServerMods(s.InstallRoot)
 	a.mu.Unlock()
 }
 
