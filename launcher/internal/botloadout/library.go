@@ -131,6 +131,9 @@ func (l Library) Anything(picks map[string]string, seats []Seat) bool {
 		}
 	}
 	for _, seat := range seats {
+		if seat.Card {
+			return true
+		}
 		class, found := ClassByKey(seat.Class)
 		if !found {
 			continue

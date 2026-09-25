@@ -162,6 +162,10 @@ type Settings struct {
 	// seat with no entry draws from the pool as it always did, which is every
 	// seat until somebody names one.
 	SrcdsBotSeatNames []string `json:"srcds_bot_seat_names,omitempty"`
+	// SrcdsBotCardForms is each card's form, "human" or "giant", keyed
+	// by card id rather than by seat, so reordering the squad never changes a
+	// card's form. A card with no entry is a robot.
+	SrcdsBotCardForms map[string]string `json:"srcds_bot_card_forms,omitempty"`
 
 	/* SrcdsBotCustomLoadouts is the loadouts the player has built, keyed by the
 	 * name they gave. A seat or a class names one with the custom: prefix, so a
@@ -246,8 +250,10 @@ type Settings struct {
 	MvmBotCards                bool   `json:"mvm_bot_cards"`
 	MvmStartingBotCards        int    `json:"mvm_starting_bot_cards"`
 	MvmStartingBotCardMode     string `json:"mvm_starting_bot_card_mode"`
-	MvmWeaponBuffPct           int    `json:"mvm_weapon_buff_percentage"`
-	MvmWeaponBuffStackChance   int    `json:"mvm_weapon_buff_stack_chance"`
+	// SrcdsBotCardRolls pins the AP reward variant selected for each named seat.
+	SrcdsBotCardRolls        map[string]string `json:"srcds_bot_card_rolls,omitempty"`
+	MvmWeaponBuffPct         int               `json:"mvm_weapon_buff_percentage"`
+	MvmWeaponBuffStackChance int               `json:"mvm_weapon_buff_stack_chance"`
 
 	// MvmTrapPct is how much of the run's spare space is traps. Zero is off,
 	// and a player who wrote zero keeps it: withAppearanceDefaults fills the
@@ -327,6 +333,7 @@ type BotTeam struct {
 	Comp          []string          `json:"comp,omitempty"`
 	SeatLoadouts  []string          `json:"seat_loadouts,omitempty"`
 	SeatNames     []string          `json:"seat_names,omitempty"`
+	CardForms     map[string]string `json:"card_forms,omitempty"`
 	ClassLoadouts map[string]string `json:"class_loadouts,omitempty"`
 	Blacklist     []string          `json:"blacklist,omitempty"`
 }
@@ -337,6 +344,7 @@ func BotTeamOf(s Settings) BotTeam {
 		Comp:          slices.Clone(s.SrcdsBotTeamComp),
 		SeatLoadouts:  slices.Clone(s.SrcdsBotSeatLoadouts),
 		SeatNames:     slices.Clone(s.SrcdsBotSeatNames),
+		CardForms:     maps.Clone(s.SrcdsBotCardForms),
 		ClassLoadouts: maps.Clone(s.SrcdsBotLoadouts),
 		Blacklist:     slices.Clone(s.SrcdsBotClassBlacklist),
 	}
@@ -347,6 +355,7 @@ func WithBotTeam(s Settings, team BotTeam) Settings {
 	s.SrcdsBotTeamComp = slices.Clone(team.Comp)
 	s.SrcdsBotSeatLoadouts = slices.Clone(team.SeatLoadouts)
 	s.SrcdsBotSeatNames = slices.Clone(team.SeatNames)
+	s.SrcdsBotCardForms = maps.Clone(team.CardForms)
 	s.SrcdsBotLoadouts = maps.Clone(team.ClassLoadouts)
 	s.SrcdsBotClassBlacklist = slices.Clone(team.Blacklist)
 	return s
