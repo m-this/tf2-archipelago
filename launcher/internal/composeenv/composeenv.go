@@ -133,6 +133,7 @@ func values(s settings.Settings) map[string]string {
 		"SRCDS_BOT_CARD_FORMS":        pairs(s.SrcdsBotCardForms),
 		"SRCDS_BOT_CARD_ROLLS":        asJSON(s.SrcdsBotCardRolls),
 		"SRCDS_BOT_HATS":              boolean(s.SrcdsBotHats),
+		"SRCDS_BOT_BUY_ANYWHERE":      boolean(s.SrcdsBotBuyAnywhere),
 		"SRCDS_BOT_HAT_EFFECTS":       boolean(s.SrcdsBotHatEffects),
 		"TF2AP_BOT_UPGRADES_CHAT":     boolean(s.BotUpgradesChat),
 	}

@@ -79,6 +79,7 @@ func RenderServerCfg(s settings.Settings) (string, error) {
 		"BotUpgradesChat": boolToInt(s.BotUpgradesChat),
 		"BluHealth":       scaleOf(s.SrcdsBluHealthPct),
 		"BotHats":         boolToInt(s.SrcdsBotHats),
+		"BotBuyAnywhere":  boolToInt(s.SrcdsBotBuyAnywhere),
 		"BotHatEffects":   boolToInt(s.SrcdsBotHatEffects),
 		"StartMission":    s.SrcdsStartMission,
 		"DownloadURL":     DownloadURL(s, lanaddr.Preferred()),
