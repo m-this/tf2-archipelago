@@ -7,6 +7,10 @@
   align-items: start;
 }
 
+:host > app-panel:first-child {
+  grid-column: 1 / -1;
+}
+
 @media (max-width: 900px) {
   :host {
     grid-template-columns: 1fr;

@@ -1,0 +1,130 @@
+:host {
+  display: block;
+}
+.intro {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.intro h3 {
+  margin: 0;
+  font: 28px var(--font-display);
+}
+.intro p {
+  margin: 3px 0;
+  color: var(--text-dim);
+}
+.intro > span {
+  flex: none;
+  color: var(--accent);
+  font: 700 13px var(--font-mono);
+}
+.eyebrow {
+  color: var(--accent) !important;
+  font: 700 10px var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(205px, 1fr));
+  gap: 16px;
+}
+.selected-grid {
+  margin: 14px 0 28px;
+}
+.entry {
+  min-width: 0;
+}
+.entry.cdk-drag {
+  cursor: grab;
+}
+.entry.cdk-drag.cdk-drag-dragging {
+  cursor: grabbing;
+  z-index: 20;
+}
+.cdk-drag-placeholder {
+  opacity: 0.22;
+}
+.cdk-drag-animating,
+.cdk-drop-list-dragging .entry:not(.cdk-drag-placeholder) {
+  transition: transform 180ms ease;
+}
+.selected-grid.cdk-drop-list-receiving {
+  outline: 2px dashed var(--accent);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 7px;
+}
+.drag-handle {
+  padding: 7px 3px;
+  color: var(--accent);
+  font: 700 11px var(--font-mono);
+  white-space: nowrap;
+  cursor: grab;
+  touch-action: none;
+}
+.actions button,
+.recruit {
+  padding: 7px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  color: var(--text);
+  cursor: pointer;
+}
+.actions button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.actions .reroll {
+  width: 100%;
+  white-space: nowrap;
+  border-color: #d5a948;
+  color: #f8ce72;
+}
+.form-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  color: var(--text-dim);
+  font: 700 11px var(--font-mono);
+}
+.form-control select {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  color: var(--text);
+}
+.recruit {
+  width: 100%;
+  margin-top: 7px;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.collection-heading {
+  margin: 20px 0 10px;
+  font: 22px var(--font-display);
+}
+.empty {
+  padding: 22px;
+  text-align: center;
+  border: 1px dashed var(--line);
+  color: var(--text-dim);
+}
+.feedback {
+  min-height: 18px;
+  color: var(--accent);
+  font-size: var(--text-sm);
+}
