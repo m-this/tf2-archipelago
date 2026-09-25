@@ -2,6 +2,8 @@
 // A card is an identity, not a bot client: its seat is rebuilt after map changes.
 package botcards
 
+//go:generate go run ../../cmd/botcardpreview ../../web/src/bot-cards/cards.generated.ts
+
 import (
 	"slices"
 	"strings"
