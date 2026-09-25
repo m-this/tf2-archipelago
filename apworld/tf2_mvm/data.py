@@ -12,7 +12,7 @@ import pkgutil
 from dataclasses import dataclass
 
 # A version mismatch is a hard stop: half-reading a moved table makes a seed wrong undetectably.
-FORMAT_VERSION = 6
+FORMAT_VERSION = 7
 
 
 class DataFormatError(Exception):
@@ -114,6 +114,10 @@ class Item:
     stackable: bool
     eligible: bool
     slot: str
+    bot_name: str
+    bot_tier: str
+    bot_form: str
+    bot_stock: bool
 
 
 def _read_missions() -> tuple[Mission, ...]:
@@ -161,6 +165,10 @@ def _read_items() -> tuple[Item, ...]:
             stackable=entry.get("stackable", False),
             eligible=entry.get("eligible", False),
             slot=entry.get("slot", ""),
+            bot_name=entry.get("bot_name", ""),
+            bot_tier=entry.get("bot_tier", ""),
+            bot_form=entry.get("bot_form", ""),
+            bot_stock=entry.get("bot_stock", False),
         )
         for entry in _load("items.json")["items"]
     )
@@ -193,6 +201,17 @@ LOCATION_NAME_TO_ID: dict[str, int] = {
 } | {milestone.name: milestone.id for milestone in MILESTONES}
 ITEM_NAME_TO_ID: dict[str, int] = {item.name: item.id for item in ITEMS}
 ITEMS_BY_NAME: dict[str, Item] = {item.name: item for item in ITEMS}
+BOT_CARD_VARIANTS: dict[tuple[str, str, str], str] = {
+    (item.bot_name, item.bot_tier, item.bot_form): item.name
+    for item in ITEMS
+    if item.kind == "bot_card"
+}
+BOT_CARD_BASES: tuple[str, ...] = tuple(
+    dict.fromkeys(item.bot_name for item in ITEMS if item.kind == "bot_card")
+)
+STOCK_BOT_CARD_BASES: tuple[str, ...] = tuple(
+    dict.fromkeys(item.bot_name for item in ITEMS if item.kind == "bot_card" and item.bot_stock)
+)
 
 TICKET_NAMES: dict[int, str] = {
     item.mission_id: item.name for item in ITEMS if item.kind == "mission_ticket"

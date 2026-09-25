@@ -211,7 +211,7 @@ func runFolderSpecs(tab string) []Spec {
 }
 
 func rewardSpecs() []Spec {
-	return []Spec{
+	return append([]Spec{
 		importance("rewards.mission_tickets", "Mission tickets",
 			"Required tickets gate deployment to each mission. Useful tickets leave all drawn missions available but still appear as rewards. Disabled unlocks all drawn missions from the start and removes their tickets from rewards.",
 			"Disabled - All Unlocked",
@@ -265,6 +265,26 @@ func rewardSpecs() []Spec {
 			"enabled", "disabled",
 			func(s State) bool { return s.Settings.MvmServerSettings },
 			func(s State, v bool) State { s.Settings.MvmServerSettings = v; return s }),
+	}, botCardRewardSpecs()...)
+}
+
+func botCardRewardSpecs() []Spec {
+	return []Spec{
+		twoWayToggle("rewards.bot_cards", "Rewards", "Unlockable bot cards",
+			"Add optional, useful bot-card rewards. Cards never gate a mission. Every distinct card not received at the start can appear on a spare check.",
+			"enabled", "disabled",
+			func(s State) bool { return s.Settings.MvmBotCards },
+			func(s State, v bool) State { s.Settings.MvmBotCards = v; return s }),
+		choice("rewards.bot_start_mode", "Rewards", "Starting card mode",
+			"Random starts with the count below. One stock card per class starts with nine stock-loadout cards and ignores the random count.",
+			options([]string{"draw_random", "stock_classes"}, []string{"Random cards", "One stock card per class"}),
+			func(s State) string { return s.Settings.MvmStartingBotCardMode },
+			func(s State, v string) State { s.Settings.MvmStartingBotCardMode = v; return s }),
+		number("rewards.bot_start_count", "Rewards", "Random starting cards",
+			"Distinct cards drawn at the start. Ignored in one-stock-card-per-class mode. Does not use checks.",
+			0, 15,
+			func(s State) int { return s.Settings.MvmStartingBotCards },
+			func(s State, v int) State { s.Settings.MvmStartingBotCards = v; return s }),
 	}
 }
 
