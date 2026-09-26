@@ -313,6 +313,39 @@ class CashRewards(Toggle):
     default = 0
 
 
+class BotCards(Toggle):
+    """Add useful, optional named bot cards to the reward pool. A bot card
+    never gates a mission. Off leaves the card system out of the seed.
+    """
+
+    display_name = "Unlockable Bot Cards"
+    default = 0
+
+
+class StartingBotCards(Range):
+    """Number of distinct random bot cards to start with. Ignored when the
+    starting-card mode is One Stock Card per Class. Starting cards do not use
+    checks from the maximum below.
+    """
+
+    display_name = "Starting Bot Cards"
+    range_start = 0
+    range_end = len(data.BOT_CARD_BASES)
+    default = 0
+
+
+class StartingBotCardMode(Choice):
+    """Random draws the requested number of starting cards. One Stock Card
+    per Class starts with nine stock-loadout cards, one for each mercenary;
+    the random starting count is ignored. Rarity and form still roll normally.
+    """
+
+    display_name = "Starting Bot Card Mode"
+    option_draw_random = 0
+    option_stock_classes = 1
+    default = 0
+
+
 class ServerSettings(Toggle):
     """Put the server-setting items in the pool.
 
@@ -437,6 +470,9 @@ class TF2MvMOptions(PerGameCommonOptions):
     weapon_slot_importance: WeaponSlotImportance
     weapon_buff_importance: WeaponBuffImportance
     cash_rewards: CashRewards
+    bot_cards: BotCards
+    starting_bot_cards: StartingBotCards
+    starting_bot_card_mode: StartingBotCardMode
     weapon_buff_percentage: WeaponBuffPercentage
     weapon_buff_stack_chance: WeaponBuffStackChance
     trap_percentage: TrapPercentage
@@ -486,6 +522,9 @@ option_groups = [
             WeaponSlotImportance,
             WeaponBuffImportance,
             CashRewards,
+            BotCards,
+            StartingBotCards,
+            StartingBotCardMode,
             WeaponBuffPercentage,
             WeaponBuffStackChance,
             TrapPercentage,

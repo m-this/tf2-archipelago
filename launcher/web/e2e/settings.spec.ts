@@ -122,6 +122,23 @@ test.describe('the settings screen', () => {
     await expect(page.getByLabel('Traps (%)')).toHaveValue('42');
   });
 
+  test('bot-card reward settings survive a page change', async ({ page }) => {
+    await settingsPages(page).getByRole('link', { name: 'Rewards', exact: true }).click();
+    await page.getByLabel('Unlockable bot cards').check();
+    await page.getByLabel('Starting card mode').selectOption('stock_classes');
+    await page.getByLabel('Random starting cards').fill('4');
+    await settingsPages(page).getByRole('link', { name: 'Balancing', exact: true }).click();
+    await settingsPages(page).getByRole('link', { name: 'Rewards', exact: true }).click();
+    await expect(page.getByLabel('Unlockable bot cards')).toBeChecked();
+    await expect(page.getByLabel('Starting card mode')).toHaveValue('stock_classes');
+    await expect(page.getByLabel('Random starting cards')).toHaveValue('4');
+    await expect(page.getByLabel('Maximum bot-card checks')).toHaveCount(0);
+    if (process.env['TF2AP_CAPTURE'] === '1') {
+      await page.getByLabel('Random starting cards').scrollIntoViewIfNeeded();
+      await page.screenshot({ path: '../../dist/botcards-rewards-demo.png' });
+    }
+  });
+
   test('a Confirm asks before it does anything', async ({ page }) => {
     await settingsPages(page).getByRole('link', { name: 'Game server', exact: true }).click();
     await page.getByRole('button', { name: 'Reset settings' }).click();

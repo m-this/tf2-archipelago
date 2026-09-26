@@ -61,6 +61,7 @@ const (
 	// Ten ids per class, so a class's named slots sit together and a slot id
 	// picks one. Past the progressive block above, which holds one per class.
 	itemBlockClassSlotNamed int64 = 9_100
+	itemBlockBotCard        int64 = 11_000
 )
 
 // Location ids: base + mission*100 + wave, or + 99 for the mission clear.

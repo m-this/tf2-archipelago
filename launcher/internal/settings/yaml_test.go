@@ -39,6 +39,9 @@ func TestPlayerYAMLHoldsTheRunShape(t *testing.T) {
 		"  weapon_slot_importance: progression",
 		"  weapon_buff_importance: useful",
 		"  cash_rewards: false",
+		"  bot_cards: false",
+		"  starting_bot_cards: 0",
+		"  starting_bot_card_mode: draw_random",
 		"  weapon_buff_percentage: 75",
 		"  weapon_buff_stack_chance: 25",
 	} {

@@ -3,6 +3,60 @@
   "retrieved_at": "2026-09-11",
   "images": [
     {
+      "path": "classes/Merc_engineer.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Engineer.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/d/d8/Engineer.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "retrieved_at": "2026-09-23",
+      "sha256": "583ecb205d96df7d340ae5c3bca35416a4552f1b5e55763ff767f1dbf0cf8794",
+      "bytes": 254366
+    },
+    {
+      "path": "classes/Merc_heavy.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Heavy.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/0/08/Heavy.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "retrieved_at": "2026-09-23",
+      "sha256": "3bbe47a520021d19d5b7083e1546b3ba349a55c22b5a97408b55cfe6296a5b5e",
+      "bytes": 369662
+    },
+    {
+      "path": "classes/Merc_medic.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Medic.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/2/26/Medic.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "retrieved_at": "2026-09-23",
+      "sha256": "6117513b32b22dcecb06e9de713b254f1837d5db7055dd4a5acef0eb8ceddcad",
+      "bytes": 230388
+    },
+    {
+      "path": "classes/Merc_scout.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Scout.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/6/69/Scout.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "retrieved_at": "2026-09-23",
+      "sha256": "9b8cdff64cd5749946ead59d7b333eae4e10e7e0562fea57059bccb5b2070772",
+      "bytes": 211425
+    },
+    {
+      "path": "classes/Merc_soldier.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Soldier.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/7/7b/Soldier.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "retrieved_at": "2026-09-23",
+      "sha256": "6ccd25a6e819ac8e3b023494d0b6292e201217684f47d818d57763019268471d",
+      "bytes": 250448
+    },
+    {
+      "path": "classes/Merc_spy.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Spy.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/3/36/Spy.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "retrieved_at": "2026-09-23",
+      "sha256": "5d38ae53856336c85ad11d7fe0589db9b4a7e38ce088eec87ecf1e07516b463a",
+      "bytes": 179848
+    },
+    {
       "path": "classes/Class_demored.png",
       "source_file_page": "https://wiki.teamfortress.com/wiki/File:Class_demored.png",
       "source_url": "https://wiki.teamfortress.com/w/images/e/e9/Class_demored.png",
@@ -73,6 +127,60 @@
       "wiki_license_template": "ExtractTF2",
       "sha256": "09cc5e9f8f8da200d8fdb94f4874758511d6ff055900920609d27b2e9efe3f48",
       "bytes": 47535
+    },
+    {
+      "path": "classes/Robot_engineer.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Engibot_Blue.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/f/f6/Engibot_Blue.png",
+      "wiki_license_template": "ScreenshotTF2",
+      "retrieved_at": "2026-09-23",
+      "sha256": "44b02d7641c5db8632cc7a55fa94676996067c1e97e2c1f75c71f6918352a56c",
+      "bytes": 277125
+    },
+    {
+      "path": "classes/Robot_heavy.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Main_menu_mvm_heavy_bot.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/9/98/Main_menu_mvm_heavy_bot.png",
+      "wiki_license_template": "ExtractTF2",
+      "retrieved_at": "2026-09-23",
+      "sha256": "5a7548a10558d4b8a0e7d4e5b6ec089d65854427b2ff4bb19a3c14c714090fed",
+      "bytes": 185204
+    },
+    {
+      "path": "classes/Robot_medic.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Main_menu_mvm_medic_bot.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/e/e8/Main_menu_mvm_medic_bot.png",
+      "wiki_license_template": "ExtractTF2",
+      "retrieved_at": "2026-09-23",
+      "sha256": "215e3a16401b2faff82cbf0d11fdce220686b9d3eaa0f5f2e1391a4e74794a15",
+      "bytes": 192206
+    },
+    {
+      "path": "classes/Robot_scout.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Main_menu_mvm_scout_bot.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/8/8e/Main_menu_mvm_scout_bot.png",
+      "wiki_license_template": "ExtractTF2",
+      "retrieved_at": "2026-09-23",
+      "sha256": "da3c78d2198b0f6978e8a06448659f24b21f0b95538e75def8e43fc918d71a76",
+      "bytes": 120135
+    },
+    {
+      "path": "classes/Robot_soldier.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Main_menu_mvm_soldier_bot.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/2/2d/Main_menu_mvm_soldier_bot.png",
+      "wiki_license_template": "ExtractTF2",
+      "retrieved_at": "2026-09-23",
+      "sha256": "002d85c2ff6c219a0b5bfada5a324097043f7389118d2820be00002936efcdd5",
+      "bytes": 161978
+    },
+    {
+      "path": "classes/Robot_spy.png",
+      "source_file_page": "https://wiki.teamfortress.com/wiki/File:Main_menu_mvm_spy_bot.png",
+      "source_url": "https://wiki.teamfortress.com/w/images/0/0e/Main_menu_mvm_spy_bot.png",
+      "wiki_license_template": "ExtractTF2",
+      "retrieved_at": "2026-09-23",
+      "sha256": "2743d0f5cf9eb8dfb0431b6543cf42b5388d6a53143990104015bf3a746d2eff",
+      "bytes": 102943
     },
     {
       "path": "items/f87faf790afc0d04056479f1566f09f1.png",

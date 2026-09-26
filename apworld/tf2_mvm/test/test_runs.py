@@ -34,6 +34,12 @@ class TestDefaults(TF2MvMTestBase):
         self.assertGreater(len(buffs), 0)
         self.assertFalse(cash)
 
+    def test_bot_cards_are_off_by_default(self) -> None:
+        self.assertFalse([name for name in self.world.start_items if name.startswith("Bot: ")])
+        self.assertFalse(
+            [item for item in self.multiworld.itempool if item.name.startswith("Bot: ")]
+        )
+
     def test_only_numeric_weapon_buffs_repeat(self) -> None:
         buffs = [
             item.name for item in self.multiworld.itempool if item.name in data.WEAPON_BUFF_NAMES
@@ -73,6 +79,50 @@ class TestDefaults(TF2MvMTestBase):
                 if location.index:
                     with self.assertRaises(KeyError, msg=location.name):
                         self.world.get_location(location.name)
+
+
+class TestRandomBotCards(TF2MvMTestBase):
+    options: ClassVar[dict[str, Any]] = {
+        "bot_cards": True,
+        "mission_count": 20,
+        "starting_bot_cards": 3,
+    }
+
+    def test_every_remaining_card_can_be_a_useful_reward(self) -> None:
+        held = [
+            data.ITEMS_BY_NAME[name] for name in self.world.start_items if name.startswith("Bot: ")
+        ]
+        rewards = [item for item in self.multiworld.itempool if item.name.startswith("Bot: ")]
+        self.assertEqual(3, len(held))
+        self.assertEqual(len(data.BOT_CARD_BASES) - len(held), len(rewards))
+        self.assertEqual(
+            len(held) + len(rewards),
+            len(
+                {data.ITEMS_BY_NAME[item.name].bot_name for item in rewards}
+                | {item.bot_name for item in held}
+            ),
+        )
+        self.assertTrue(all(item.classification == ItemClassification.useful for item in rewards))
+        self.assertTrue(all(item.bot_tier in {"Common", "Elite", "Legendary"} for item in held))
+        self.assertTrue(all(item.bot_form in {"Human", "Robot", "Giant"} for item in held))
+
+
+class TestStockStartingBotCards(TF2MvMTestBase):
+    options: ClassVar[dict[str, Any]] = {
+        "bot_cards": True,
+        "mission_count": 20,
+        "starting_bot_cards": 2,
+        "starting_bot_card_mode": "stock_classes",
+    }
+
+    def test_one_stock_card_per_class_ignores_random_count(self) -> None:
+        held = [
+            data.ITEMS_BY_NAME[name] for name in self.world.start_items if name.startswith("Bot: ")
+        ]
+        self.assertEqual(9, len(held))
+        self.assertTrue(all(item.bot_stock for item in held))
+        rewards = [item for item in self.multiworld.itempool if item.name.startswith("Bot: ")]
+        self.assertEqual(len(data.BOT_CARD_BASES) - len(held), len(rewards))
 
 
 class TestMissionModifiers(TF2MvMTestBase):

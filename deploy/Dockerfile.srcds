@@ -46,6 +46,7 @@ COPY launcher/cmd/sigmodpatch launcher/cmd/sigmodpatch
 COPY deploy/stockpop deploy/stockpop
 COPY launcher/internal/rcon launcher/internal/rcon
 COPY launcher/internal/botfiles launcher/internal/botfiles
+COPY launcher/internal/botcards launcher/internal/botcards
 COPY launcher/internal/botlive launcher/internal/botlive
 COPY launcher/internal/botloadout launcher/internal/botloadout
 COPY launcher/internal/botnames launcher/internal/botnames

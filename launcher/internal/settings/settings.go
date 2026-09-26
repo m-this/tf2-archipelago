@@ -162,6 +162,10 @@ type Settings struct {
 	// seat with no entry draws from the pool as it always did, which is every
 	// seat until somebody names one.
 	SrcdsBotSeatNames []string `json:"srcds_bot_seat_names,omitempty"`
+	// SrcdsBotCardForms is each card's form, "human" or "giant", keyed
+	// by card id rather than by seat, so reordering the squad never changes a
+	// card's form. A card with no entry is a robot.
+	SrcdsBotCardForms map[string]string `json:"srcds_bot_card_forms,omitempty"`
 
 	/* SrcdsBotCustomLoadouts is the loadouts the player has built, keyed by the
 	 * name they gave. A seat or a class names one with the custom: prefix, so a
@@ -176,6 +180,9 @@ type Settings struct {
 	// BotUpgradesChat writes what the bots buy at the upgrade station to the
 	// chat. Off by default: it is a line per purchase.
 	BotUpgradesChat bool `json:"bot_upgrades_chat"`
+	// SrcdsBotBuyAnywhere lets every bot buy its upgrades where it stands
+	// instead of walking to a station. Off is how the mod has always played.
+	SrcdsBotBuyAnywhere bool `json:"srcds_bot_buy_anywhere"`
 
 	// What the bots look like, which changes nothing about how they play. A
 	// hat each is on and so is the unusual effect on it: six mercenaries in the
@@ -243,8 +250,13 @@ type Settings struct {
 	MvmWeaponSlotImportance    string `json:"mvm_weapon_slot_importance"`
 	MvmWeaponBuffImportance    string `json:"mvm_weapon_buff_importance"`
 	MvmCashRewards             bool   `json:"mvm_cash_rewards"`
-	MvmWeaponBuffPct           int    `json:"mvm_weapon_buff_percentage"`
-	MvmWeaponBuffStackChance   int    `json:"mvm_weapon_buff_stack_chance"`
+	MvmBotCards                bool   `json:"mvm_bot_cards"`
+	MvmStartingBotCards        int    `json:"mvm_starting_bot_cards"`
+	MvmStartingBotCardMode     string `json:"mvm_starting_bot_card_mode"`
+	// SrcdsBotCardRolls pins the AP reward variant selected for each named seat.
+	SrcdsBotCardRolls        map[string]string `json:"srcds_bot_card_rolls,omitempty"`
+	MvmWeaponBuffPct         int               `json:"mvm_weapon_buff_percentage"`
+	MvmWeaponBuffStackChance int               `json:"mvm_weapon_buff_stack_chance"`
 
 	// MvmTrapPct is how much of the run's spare space is traps. Zero is off,
 	// and a player who wrote zero keeps it: withAppearanceDefaults fills the
@@ -302,6 +314,7 @@ func Defaults() Settings {
 		MvmClassUnlockImportance:   "progression",
 		MvmWeaponSlotImportance:    "progression",
 		MvmWeaponBuffImportance:    "useful",
+		MvmStartingBotCardMode:     "draw_random",
 		MvmWeaponBuffPct:           75,
 		MvmWeaponBuffStackChance:   25,
 		MvmTrapPct:                 1,
@@ -323,6 +336,7 @@ type BotTeam struct {
 	Comp          []string          `json:"comp,omitempty"`
 	SeatLoadouts  []string          `json:"seat_loadouts,omitempty"`
 	SeatNames     []string          `json:"seat_names,omitempty"`
+	CardForms     map[string]string `json:"card_forms,omitempty"`
 	ClassLoadouts map[string]string `json:"class_loadouts,omitempty"`
 	Blacklist     []string          `json:"blacklist,omitempty"`
 }
@@ -333,6 +347,7 @@ func BotTeamOf(s Settings) BotTeam {
 		Comp:          slices.Clone(s.SrcdsBotTeamComp),
 		SeatLoadouts:  slices.Clone(s.SrcdsBotSeatLoadouts),
 		SeatNames:     slices.Clone(s.SrcdsBotSeatNames),
+		CardForms:     maps.Clone(s.SrcdsBotCardForms),
 		ClassLoadouts: maps.Clone(s.SrcdsBotLoadouts),
 		Blacklist:     slices.Clone(s.SrcdsBotClassBlacklist),
 	}
@@ -343,6 +358,7 @@ func WithBotTeam(s Settings, team BotTeam) Settings {
 	s.SrcdsBotTeamComp = slices.Clone(team.Comp)
 	s.SrcdsBotSeatLoadouts = slices.Clone(team.SeatLoadouts)
 	s.SrcdsBotSeatNames = slices.Clone(team.SeatNames)
+	s.SrcdsBotCardForms = maps.Clone(team.CardForms)
 	s.SrcdsBotLoadouts = maps.Clone(team.ClassLoadouts)
 	s.SrcdsBotClassBlacklist = slices.Clone(team.Blacklist)
 	return s
@@ -636,6 +652,9 @@ func (s Settings) withDefaults() Settings {
 	}
 	if s.MvmWeaponBuffImportance == "" {
 		s.MvmWeaponBuffImportance = d.MvmWeaponBuffImportance
+	}
+	if s.MvmStartingBotCardMode == "" {
+		s.MvmStartingBotCardMode = d.MvmStartingBotCardMode
 	}
 	return withListenerDefaults(s, d)
 }

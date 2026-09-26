@@ -25,4 +25,28 @@ export const mercenaryIcons: Readonly<Record<Mercenary, string>> = {
   Spy: 'assets/tf2/classes/Class_spyred.png',
 };
 
+// Larger stock renders for the trading cards. The 256px class icons remain
+// appropriate for menu buttons but soften when cropped into tall portraits.
+export const mercenaryCardArt: Readonly<Record<Mercenary, string>> = {
+  ...mercenaryIcons,
+  Scout: 'assets/tf2/classes/Merc_scout.png',
+  Soldier: 'assets/tf2/classes/Merc_soldier.png',
+  Heavy: 'assets/tf2/classes/Merc_heavy.png',
+  Engineer: 'assets/tf2/classes/Merc_engineer.png',
+  Medic: 'assets/tf2/classes/Merc_medic.png',
+  Spy: 'assets/tf2/classes/Merc_spy.png',
+};
+
+// Stock Wiki robot renders retain their original BLU/metal colors; RED on the
+// trading card names the bot's team, not a custom-painted model.
+export const robotIcons: Readonly<Record<Mercenary, string>> = {
+  ...mercenaryIcons,
+  Scout: 'assets/tf2/classes/Robot_scout.png',
+  Soldier: 'assets/tf2/classes/Robot_soldier.png',
+  Heavy: 'assets/tf2/classes/Robot_heavy.png',
+  Engineer: 'assets/tf2/classes/Robot_engineer.png',
+  Medic: 'assets/tf2/classes/Robot_medic.png',
+  Spy: 'assets/tf2/classes/Robot_spy.png',
+};
+
 export const grapplingHookIcon = 'assets/tf2/items/eadba6f0e8dc08e8e734a4454705b006.png';

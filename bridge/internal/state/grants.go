@@ -169,6 +169,9 @@ func grantFor(item gamedata.Item, slotsGranted, classSlotsGranted int) (Grant, b
 		}
 		return Grant{Kind: item.Kind.Key(), Key: setting.Key, Name: item.Name}, true
 
+	case gamedata.ItemBotCard:
+		return Grant{Kind: item.Kind.Key(), Key: item.Name, Name: item.Name}, true
+
 	default:
 		return Grant{}, false
 	}
