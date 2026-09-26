@@ -950,9 +950,14 @@ func parseDefenders(reply string) ([]defender, error) {
 			key  string
 			dest *float64
 		}{
-			{"seen", &row.Seen}, {"left", &row.Left}, {"stillmax", &row.StillMax},
-			{"leftmax", &row.LeftMax}, {"spawnnow", &row.SpawnNow},
-			{"stillnow", &row.StillNow}, {"hatchmin", &row.HatchMin}, {"hatchnow", &row.HatchNow},
+			{"seen", &row.Seen},
+			{"left", &row.Left},
+			{"stillmax", &row.StillMax},
+			{"leftmax", &row.LeftMax},
+			{"spawnnow", &row.SpawnNow},
+			{"stillnow", &row.StillNow},
+			{"hatchmin", &row.HatchMin},
+			{"hatchnow", &row.HatchNow},
 		}
 		for _, field := range floats {
 			if *field.dest, err = strconv.ParseFloat(fields[field.key], 64); err != nil {
