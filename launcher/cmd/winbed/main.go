@@ -101,7 +101,7 @@ func bedSettings(opt options) settings.Settings {
 
 func install(opt options, s settings.Settings, logger *slog.Logger) error {
 	ctx := context.Background()
-	logf := func(format string, args ...any) { logger.Info(fmt.Sprintf(format, args...)) }
+	logf := func(format string, args ...any) { logger.Info("install", "step", fmt.Sprintf(format, args...)) }
 	archives := settings.CommunityArchives(s)
 	if err := os.MkdirAll(s.CommunityContentDir, 0o755); err != nil {
 		return err
@@ -152,7 +152,7 @@ func unzip(path, dir string) error {
 	if err != nil {
 		return err
 	}
-	defer archive.Close()
+	defer func() { _ = archive.Close() }()
 	for _, file := range archive.File {
 		target := filepath.Join(dir, filepath.FromSlash(file.Name))
 		if !strings.HasPrefix(target, filepath.Clean(dir)+string(os.PathSeparator)) {
@@ -179,13 +179,13 @@ func extract(file *zip.File, target string) error {
 	if err != nil {
 		return err
 	}
-	defer in.Close()
+	defer func() { _ = in.Close() }()
 	out, err := os.Create(target)
 	if err != nil {
 		return err
 	}
 	if _, err := io.Copy(out, in); err != nil {
-		out.Close()
+		_ = out.Close()
 		return err
 	}
 	return out.Close()
