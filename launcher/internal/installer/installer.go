@@ -310,6 +310,77 @@ func DownloadCommunityArchives(ctx context.Context, archives []string, logf func
 	return ValidateCommunityArchives(archives, logf)
 }
 
+// RepairMismatchedCommunityArchives refreshes only selected packs whose
+// existing bytes fail the catalog pin. Repair downloads to a sibling directory
+// first, so a failed or interrupted download leaves the old ZIP untouched.
+// An explicitly approved mismatch remains a deliberate choice and is skipped.
+func RepairMismatchedCommunityArchives(ctx context.Context, archives []string, logf func(string, ...any)) ([]string, error) {
+	var repaired []string
+	for _, path := range archives {
+		_, err := validateCommunityArchive(path)
+		if err == nil {
+			continue
+		}
+		if _, mismatch := errors.AsType[*CommunityArchiveHashMismatchError](err); !mismatch {
+			if !errors.Is(err, os.ErrNotExist) {
+				return repaired, err
+			}
+			if _, pendingErr := os.Stat(path + communityMismatchSuffix); errors.Is(pendingErr, os.ErrNotExist) {
+				continue
+			} else if pendingErr != nil {
+				return repaired, pendingErr
+			}
+		}
+		if err := replaceMismatchedCommunityArchive(ctx, path, logf); err != nil {
+			return repaired, fmt.Errorf("cannot repair community pack %s: %w", filepath.Base(path), err)
+		}
+		repaired = append(repaired, filepath.Base(path))
+	}
+	return repaired, nil
+}
+
+func replaceMismatchedCommunityArchive(ctx context.Context, path string, logf func(string, ...any)) error {
+	name := filepath.Base(path)
+	tmpDir, err := os.MkdirTemp(filepath.Dir(path), "."+name+"-repair-*")
+	if err != nil {
+		return err
+	}
+	keepBackup := false
+	defer func() {
+		if !keepBackup {
+			_ = os.RemoveAll(tmpDir)
+		}
+	}()
+	replacement := filepath.Join(tmpDir, name)
+	if err := downloadCommunityArchive(ctx, replacement, logf); err != nil {
+		return err
+	}
+	backup := filepath.Join(tmpDir, "previous-"+name)
+	hadOld := false
+	if _, err := os.Stat(path); err == nil {
+		if err := os.Rename(path, backup); err != nil {
+			return fmt.Errorf("move old archive aside: %w", err)
+		}
+		hadOld = true
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	if err := os.Rename(replacement, path); err != nil {
+		if hadOld {
+			if restoreErr := os.Rename(backup, path); restoreErr != nil {
+				keepBackup = true
+				return fmt.Errorf("install replacement: %w; old archive remains at %s after restore failed: %w", err, backup, restoreErr)
+			}
+		}
+		return fmt.Errorf("install replacement: %w", err)
+	}
+	if err := os.Remove(path + communityMismatchSuffix); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("remove obsolete hash-mismatch copy: %w", err)
+	}
+	logf("repaired community pack %s with a verified download", name)
+	return nil
+}
+
 // ValidateCommunityArchives accepts only existing, readable ZIPs and performs
 // no network access. Ensure uses this before installing selected local packs.
 func ValidateCommunityArchives(archives []string, logf func(string, ...any)) error {
