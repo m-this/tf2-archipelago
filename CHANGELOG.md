@@ -10,6 +10,11 @@ in the release notes, so this file is the only place to write it.
 
 - **Make it Count works on a Windows server.** It switched itself off there,
   because the plugin could not find the dispenser's ammo function on Windows.
+- **A server whose bridge stops answering no longer runs out of memory.** The
+  plugin sent every check it was still holding again every five seconds, so
+  each giant and tank killed while the bridge was down made the traffic grow,
+  until the server stopped with "Out of memory" a few missions later. It now
+  retries the oldest check alone until the bridge answers, then sends the rest.
 
 ## v1.17.3
 

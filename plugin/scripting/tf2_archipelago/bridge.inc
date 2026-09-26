@@ -151,6 +151,20 @@ bool g_PollingDeaths;
 int g_DeathSeq = -1;
 
 int g_NextObjectiveID = 1;
+
+// Whether the last objective post failed, and how many posts are out. Every
+// queued objective used to go again every RetryInterval whatever happened to
+// the last round, so a bridge that did not answer grew the queue and the
+// traffic with every kill until the server ran out of memory in the HTTP
+// extension. While it fails, only the oldest goes; the rest follow once it
+// answers, and a round does not start while the last one is out. A round
+// whose answers never came is over after ObjectiveRoundLimit seconds of
+// engine time, three times a request's own timeout.
+#define ObjectiveRoundLimit 30.0
+bool g_ObjectivesFailing;
+int g_ObjectivesInFlight;
+float g_ObjectivesSentAt;
+
 bool g_PollingGrants;
 bool g_FetchingUnlocks;
 int g_GrantSeq;
@@ -413,6 +427,8 @@ static void Bridge_SendObjective(Objective objective)
 
     HTTPRequest request = BridgeRequest("/objective");
     request.Timeout = 10;
+    g_ObjectivesInFlight++;
+    g_ObjectivesSentAt = GetEngineTime();
     request.Post(body, OnObjectivePosted, objective.id);
     delete body;
 }
@@ -434,6 +450,13 @@ static int Bridge_FindPending(int id)
 // Dequeued only once the bridge has it on disk; it is idempotent, so a needless retry is free.
 static void OnObjectivePosted(HTTPResponse response, any value, const char[] error)
 {
+    if (g_ObjectivesInFlight > 0)
+    {
+        g_ObjectivesInFlight--;
+    }
+    g_ObjectivesFailing = !StrEqual(error, "")
+        || (response.Status != HTTPStatus_NoContent && response.Status != HTTPStatus_BadRequest);
+
     int index = Bridge_FindPending(value);
     if (index == -1)
     {
@@ -503,8 +526,14 @@ static Action Timer_DrainPending(Handle timer)
     {
         return Plugin_Continue;
     }
-    AP_Debug("The plugin sends %d queued objective(s) again.", g_Pending.Length);
-    for (int index = 0; index < g_Pending.Length; index++)
+    if (g_ObjectivesInFlight > 0 && GetEngineTime() < g_ObjectivesSentAt + ObjectiveRoundLimit)
+    {
+        return Plugin_Continue;
+    }
+    g_ObjectivesInFlight = 0;
+    int resend = g_ObjectivesFailing ? 1 : g_Pending.Length;
+    AP_Debug("The plugin sends %d of %d queued objective(s) again.", resend, g_Pending.Length);
+    for (int index = 0; index < resend; index++)
     {
         Objective objective;
         g_Pending.GetArray(index, objective);
