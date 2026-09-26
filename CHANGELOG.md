@@ -15,6 +15,10 @@ in the release notes, so this file is the only place to write it.
   each giant and tank killed while the bridge was down made the traffic grow,
   until the server stopped with "Out of memory" a few missions later. It now
   retries the oldest check alone until the bridge answers, then sends the rest.
+- **Bots are no longer put back on the hatch over and over.** A bot that was
+  slow to leave spawn got moved to the hatch, and because the hatch sits next
+  to RED's spawn on most maps, it was moved there again a few seconds later.
+  Engineers who built near the hatch were carried off before they could finish.
 
 ## v1.17.3
 
