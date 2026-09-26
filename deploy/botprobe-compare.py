@@ -51,6 +51,8 @@ def measure(wave, events):
         "spawn exits over 20s": sum(1 for b in bots if b["left_spawn_max_seconds"] > 20 or b["left_spawn_seconds"] < 0),
         "still 30s+ away from spawn": sum(1 for b in bots if b["class"] not in PARKED
                                           and b["still_max_seconds"] >= 30 and not b["still_max_in_spawn"]),
+        "idle 30s+ with a robot in reach": sum(1 for b in bots if b["class"] not in PARKED
+                                               and b.get("idle_max_seconds", 0) >= 30),
         "left": [b["left_spawn_seconds"] for b in bots if b["left_spawn_seconds"] >= 0],
     }
 
@@ -61,7 +63,7 @@ def main(a_dirs, b_dirs):
     print(f"{len(common)} maps with bot records in both arms.\n")
     keys = ["passed", "lives", "no-route recoveries", "timer/progress recoveries", "bots recovered twice or more",
             "stuck catches", "local wedge moves", "moves to the goal", "spawn exits over 20s",
-            "still 30s+ away from spawn"]
+            "still 30s+ away from spawn", "idle 30s+ with a robot in reach"]
     totals = {"A": {k: 0 for k in keys}, "B": {k: 0 for k in keys}}
     left = {"A": [], "B": []}
     rows = []
