@@ -20,6 +20,8 @@ build="$root/build"
 toolchain="$build/sourcemod-$SOURCEMOD_VERSION"
 ripext="$build/ripext-$RIPEXT_VERSION"
 tf2attributes="$build/tf2attributes-$TF2ATTRIBUTES_VERSION"
+tf_econ_data="$build/tf-econ-data-$TFECONDATA_VERSION"
+tf2utils="$build/tf2utils-$TF2UTILS_VERSION"
 
 mkdir -p "$build"
 
@@ -46,6 +48,20 @@ if [ ! -d "$tf2attributes" ]; then
 		tar xz -C "$tf2attributes" --strip-components=1
 fi
 
+if [ ! -d "$tf_econ_data" ]; then
+	echo "fetching TF2 Econ Data $TFECONDATA_VERSION includes"
+	mkdir -p "$tf_econ_data"
+	curl -fsSL "https://github.com/nosoop/SM-TFEconData/archive/refs/tags/$TFECONDATA_VERSION.tar.gz" |
+		tar xz -C "$tf_econ_data" --strip-components=1
+fi
+
+if [ ! -d "$tf2utils" ]; then
+	echo "fetching TF2Utils $TF2UTILS_VERSION includes"
+	mkdir -p "$tf2utils"
+	curl -fsSL "https://github.com/nosoop/SM-TFUtils/archive/refs/heads/$TF2UTILS_VERSION.tar.gz" |
+		tar xz -C "$tf2utils" --strip-components=1
+fi
+
 spcomp="$toolchain/addons/sourcemod/scripting/spcomp64"
 [ -x "$spcomp" ] || spcomp="$toolchain/addons/sourcemod/scripting/spcomp"
 
@@ -54,6 +70,8 @@ exec "$spcomp" \
 	-i"$toolchain/addons/sourcemod/scripting/include" \
 	-i"$ripext/addons/sourcemod/scripting/include" \
 	-i"$tf2attributes/scripting/include" \
+	-i"$tf_econ_data/scripting/include" \
+	-i"$tf2utils/scripting/include" \
 	-E \
 	-o"$build/tf2_archipelago.smx" \
 	tf2_archipelago.sp

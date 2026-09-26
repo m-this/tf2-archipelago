@@ -1,0 +1,86 @@
+<div class="intro">
+  <div>
+    <p class="eyebrow">Defender collection</p>
+    <h3>Your squad</h3>
+    <p>Drag to rank your team. The lowest-ranked defender makes room first when a human joins.</p>
+  </div>
+  <span>{{ selected().length }} / 6 selected</span>
+</div>
+
+@if (selected().length === 0) {
+  <div class="empty">No named defenders selected yet. Recruit from the collection below.</div>
+} @else {
+  <div
+    class="grid selected-grid"
+    role="region"
+    aria-label="Selected bot priority"
+    cdkDropList
+    cdkDropListOrientation="mixed"
+    [cdkDropListData]="selected()"
+    (cdkDropListDropped)="drop($event)"
+  >
+    @for (card of selected(); track card.id; let index = $index) {
+      <div class="entry" cdkDrag>
+        <app-bot-card [card]="card" state="selected" [rank]="index + 1" [form]="form(card)" />
+        <div class="actions">
+          <span
+            class="drag-handle"
+            cdkDragHandle
+            aria-label="Drag to reorder"
+            title="Drag to reorder"
+            >⠿ Drag</span
+          >
+          <button
+            type="button"
+            [disabled]="index === 0"
+            (click)="move(card, -1)"
+            [attr.aria-label]="'Raise ' + card.name + ' priority'"
+          >
+            ↑
+          </button>
+          <button
+            type="button"
+            [disabled]="index === selected().length - 1"
+            (click)="move(card, 1)"
+            [attr.aria-label]="'Lower ' + card.name + ' priority'"
+          >
+            ↓
+          </button>
+          <button type="button" (click)="remove(card)">Remove</button>
+          <label class="form-control">
+            Form
+            <select
+              #formSelect
+              [value]="form(card)"
+              (change)="setForm(card, formSelect.value)"
+              [attr.aria-label]="'Form for ' + card.name"
+            >
+              <option value="human">Human</option>
+              <option value="robot">RED robot</option>
+              <option value="giant">RED robot Giant</option>
+            </select>
+          </label>
+          <button
+            type="button"
+            class="reroll"
+            (click)="setForm(card, 'reroll')"
+            [attr.aria-label]="'Reroll form for ' + card.name"
+          >
+            🎲 Reroll form
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+}
+
+<h3 class="collection-heading">Available cards</h3>
+<div class="grid" role="region" aria-label="Bot card collection">
+  @for (card of available(); track card.id) {
+    <div class="entry">
+      <app-bot-card [card]="card" [form]="form(card)" />
+      <button class="recruit" type="button" (click)="select(card)">{{ recruitLabel(card) }}</button>
+    </div>
+  }
+</div>
+<p class="feedback" role="status">{{ feedback() }}</p>

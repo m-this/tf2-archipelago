@@ -91,6 +91,8 @@ func currentIDs() map[string]int64 {
 			if mission, ok := MissionByID(it.Mission); ok {
 				ids[frozenKey(it.Kind.Key(), mission.PopFile, 0)] = it.ID
 			}
+		case ItemBotCard:
+			// New optional cards are deliberately absent from the frozen legacy IDs.
 		}
 	}
 	return ids
@@ -409,6 +411,8 @@ func TestItemPoolCoversEveryGate(t *testing.T) {
 			// One copy each, and only in the pool when the option asks for them.
 		case ItemTrophy:
 			// Locked onto a mission clear by the world, never in the pool.
+		case ItemBotCard:
+			// Optional useful rewards, bounded by the world's card-check setting.
 		}
 		if it.Classification == Progression && it.Count == 0 {
 			t.Errorf("%q is progression with no copies in the pool", it.Name)

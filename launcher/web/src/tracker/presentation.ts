@@ -15,6 +15,7 @@ export function itemKind(name: string): string {
   if (name.startsWith('Weapon Buff:')) return 'Buff';
   if (name.startsWith('Mission Ticket:')) return 'Ticket';
   if (name.startsWith('Class:')) return 'Class';
+  if (name.startsWith('Bot:')) return 'Bot';
   if (name.startsWith('Australium Medal:')) return 'Medal';
   if (name.startsWith('Trap:')) return 'Trap';
   if (name.startsWith('Progressive Weapon Slot') || name.endsWith(' Slot')) return 'Loadout';
@@ -26,6 +27,7 @@ export function itemKind(name: string): string {
 export function itemTone(kind: string): BadgeTone {
   if (kind === 'Buff' || kind === 'Server') return 'accent';
   if (kind === 'Class' || kind === 'Loadout') return 'info';
+  if (kind === 'Bot') return 'accent';
   if (kind === 'Ticket' || kind === 'Cash') return 'good';
   if (kind === 'Medal') return 'warn';
   if (kind === 'Trap') return 'bad';

@@ -16,7 +16,7 @@ move a page.
 */
 func Specs(s State, env Env) []Spec {
 	specs := runSpecs(s, env)
-	return append(specs, botSpecs(s)...)
+	return append(specs, botSpecs(s, env)...)
 }
 
 // trim is what a text row does to what was typed. A path or a slot name with a

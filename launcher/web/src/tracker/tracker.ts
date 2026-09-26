@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- room loading, collection rendering and mission state share one tracker component */
 import {
   ChangeDetectionStrategy,
   Component,
@@ -19,6 +20,8 @@ import { Logo } from '@app/ui/logo';
 import { ModifierIcon } from '@app/ui/modifier-icon';
 import { Panel } from '@app/ui/panel';
 import { grapplingHookIcon, mercenaryIcons } from '@app/ui/tf2-art';
+import { BotTradingCard } from '@cards/bot-card';
+import { BotCard, BotForm, botCards, rolledCard } from '@cards/catalog';
 import { buffsFor, buildView } from './model';
 import { firstWeapon } from './first-weapon';
 import { hideBrokenImage, initialLocation, objectiveLabel, rememberSource } from './presentation';
@@ -27,7 +30,7 @@ import { ClassView, TrackerSource } from './types';
 @Component({
   selector: 'app-tracker',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Badge, Button, EmptyState, Logo, ModifierIcon, Panel],
+  imports: [Badge, BotTradingCard, Button, EmptyState, Logo, ModifierIcon, Panel],
   templateUrl: './tracker.html',
 })
 export class Tracker implements OnDestroy {
@@ -61,6 +64,24 @@ export class Tracker implements OnDestroy {
       id: Number(row.player),
       name: source?.names.get(Number(row.player)) ?? `TF2 slot ${row.player}`,
     }));
+  });
+  readonly unlockedBots = computed(() => {
+    const owned = this.view()?.owned;
+    if (owned === undefined) return [];
+    const found: { card: BotCard; form: BotForm }[] = [];
+    for (const base of botCards) {
+      for (const name of owned.keys()) {
+        const parts = name.split(' | ');
+        if (parts[0] !== `Bot: ${base.name}` || parts.length !== 3) continue;
+        const rarity = parts[1]?.toUpperCase();
+        const form = parts[2]?.toLowerCase();
+        if (rarity !== 'COMMON' && rarity !== 'ELITE' && rarity !== 'LEGENDARY') continue;
+        if (form !== 'human' && form !== 'robot' && form !== 'giant') continue;
+        found.push({ card: rolledCard(base, rarity), form });
+        break;
+      }
+    }
+    return found;
   });
   readonly classBuffs = computed(() => {
     const chosen = this.selectedClass();

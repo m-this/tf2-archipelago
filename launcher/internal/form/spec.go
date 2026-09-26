@@ -102,6 +102,9 @@ disk itself, so Build stays a pure function of its two arguments and a test
 hands it whatever it likes.
 */
 type Env struct {
+	// BotCardItems are the AP variants this room has received. Nil preserves
+	// the unrestricted offline editor used by tests and test mode.
+	BotCardItems []string
 	// CommunityAvailable names the packs with a valid local ZIP, never merely
 	// the ones checked. A mission row for a pack that cannot be used is a row
 	// that fails at run time instead of at the tick.

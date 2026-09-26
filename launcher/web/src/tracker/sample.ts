@@ -46,6 +46,9 @@ export function sampleSource(host: string): TrackerSource {
     [7_443_005_012, 'Weapon Buff: Bootlegger — +15 max health while active'],
     [7_443_007_001, 'Grappling Hook'],
     [7_443_004_001, 'Cash Bundle'],
+    [7_443_011_082, 'Bot: CreditToTeam | Common | Human'],
+    [7_443_011_095, "Bot: Screamin' Eagles | Elite | Robot"],
+    [7_443_011_117, 'Bot: Herr Doktor | Legendary | Giant'],
   ]);
   const receivedIds = [
     7_443_001_002, 7_443_001_015, 7_443_001_024, 7_443_002_001, 7_443_002_002, 7_443_002_005,
@@ -56,7 +59,7 @@ export function sampleSource(host: string): TrackerSource {
     7_443_005_005, 7_443_005_005, 7_443_005_005, 7_443_005_006, 7_443_005_006, 7_443_005_006,
     7_443_005_007, 7_443_005_008, 7_443_005_008, 7_443_005_009, 7_443_005_009, 7_443_005_010,
     7_443_005_011, 7_443_005_011, 7_443_005_012, 7_443_007_001, 7_443_004_001, 7_443_004_001,
-    7_443_004_001,
+    7_443_004_001, 7_443_011_082, 7_443_011_095, 7_443_011_117,
   ];
   const weapons = [
     weapon('Air Strike', ['Soldier'], 'f87faf790afc0d04056479f1566f09f1.png'),

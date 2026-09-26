@@ -125,12 +125,12 @@ exists. The Grappling Hook was missing exactly that way: it arrived, the plugin
 turned it on, and the screen never mentioned it. TestEveryUnlockKindIsListed
 walks gamedata and fails when the two disagree.
 */
-var kindOrder = []string{"class", "weapon_slot", "class_weapon_slot", "mission_ticket", "weapon_buff", "server_setting"}
+var kindOrder = []string{"class", "weapon_slot", "class_weapon_slot", "mission_ticket", "bot_card", "weapon_buff", "server_setting"}
 
 // kindLabels is what each kind reads as on the tab.
 var kindLabels = map[string]string{
 	"class": "Class", "weapon_slot": "Weapon slot", "class_weapon_slot": "Weapon slot",
-	"mission_ticket": "Mission", "weapon_buff": "Weapon buff", "server_setting": "Server lever",
+	"mission_ticket": "Mission", "bot_card": "Bot card", "weapon_buff": "Weapon buff", "server_setting": "Server lever",
 }
 
 // Describe turns the bridge's unlock set into rows: one per distinct key, in a

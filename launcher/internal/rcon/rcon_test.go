@@ -45,6 +45,11 @@ func fakeServer(t *testing.T, password string) string {
 					writePacket(conn, id, typeResponse, "")
 					continue
 				}
+				if body == "long" {
+					writePacket(conn, id, typeResponse, strings.Repeat("a", 4096))
+					writePacket(conn, id, typeResponse, "b")
+					continue
+				}
 				writePacket(conn, id, typeResponse, "you said "+body)
 			}
 		}
@@ -91,6 +96,24 @@ func TestExec(t *testing.T) {
 		if want := "you said " + command; reply != want {
 			t.Errorf("Exec(%q) = %q, want %q", command, reply, want)
 		}
+	}
+}
+
+// A server splits a long reply into bodies of 4096 bytes, and the size field
+// of a full one says 4106. The bed's sig_list_mods is one.
+func TestExecReadsAFullPacket(t *testing.T) {
+	client, err := Dial(fakeServer(t, "secret"), "secret")
+	if err != nil {
+		t.Fatalf("Dial: %v", err)
+	}
+	defer func() { _ = client.Close() }()
+
+	reply, err := client.Exec("long")
+	if err != nil {
+		t.Fatalf("Exec: %v", err)
+	}
+	if want := strings.Repeat("a", 4096) + "b"; reply != want {
+		t.Errorf("Exec returned %d bytes, want %d", len(reply), len(want))
 	}
 }
 

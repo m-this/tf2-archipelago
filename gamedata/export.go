@@ -115,6 +115,10 @@ type itemJSON struct {
 	ClassID        ClassID   `json:"class_id,omitempty"`
 	Credits        uint16    `json:"credits,omitempty"`
 	WeaponBuffID   uint16    `json:"weapon_buff_id,omitempty"`
+	BotName        string    `json:"bot_name,omitempty"`
+	BotTier        string    `json:"bot_tier,omitempty"`
+	BotForm        string    `json:"bot_form,omitempty"`
+	BotStock       bool      `json:"bot_stock,omitempty"`
 	Stackable      bool      `json:"stackable,omitempty"`
 	Eligible       bool      `json:"eligible,omitempty"`
 
@@ -289,6 +293,10 @@ func buildItemsFile() itemsFile {
 			ClassID:        it.Class,
 			Credits:        it.Credits,
 			WeaponBuffID:   it.WeaponBuff,
+			BotName:        it.BotName,
+			BotTier:        it.BotTier,
+			BotForm:        it.BotForm,
+			BotStock:       it.BotStock,
 			Stackable:      stackable,
 			Eligible:       eligible,
 			Slot:           slotKey(it.Slot),

@@ -4,6 +4,17 @@ Handle g_ChamberMaxAmmo;
 float g_ChamberNextSupply[MAXPLAYERS + 1];
 int g_ChamberBonusDamagePercent = 150;
 
+// Whether the GetMaxAmmo hook has run since the map started. SigMod
+// reconfigures its own detour on that function at every mission load, and a
+// reconfigure used to delete this hook; the first call on each map is logged
+// so a server's log shows the hook survived it.
+bool g_ChamberHookSeen;
+
+void Chamber_OnMapStart()
+{
+    g_ChamberHookSeen = false;
+}
+
 bool Chamber_Enabled()
 {
     return g_ChamberReady && (g_ActiveMissionModifiers & MissionModifier_OneInTheChamber) != 0;
@@ -21,7 +32,9 @@ void Chamber_Init()
     if (data == null) return;
     bool ready = Chamber_Detour(data, "CTFPlayer::GetMaxAmmo", Hook_Post, Chamber_MaxAmmo);
     ready = Chamber_Detour(data, "CObjectDispenser::DispenseAmmo", Hook_Pre, Chamber_DispensePre) && ready;
-    ready = Chamber_Detour(data, "CRobotDispenser::DispenseAmmo", Hook_Pre, Chamber_DispensePre) && ready;
+    // CRobotDispenser::DispenseAmmo is `return false`, so a hook that can only
+    // hold a supply back has nothing to do there. On Windows it is also one
+    // stub MSVC shares with every other function that returns false.
     StartPrepSDKCall(SDKCall_Player);
     if (PrepSDKCall_SetFromConf(data, SDKConf_Signature, "CTFPlayer::GetMaxAmmo"))
     {
@@ -48,6 +61,13 @@ bool Chamber_Detour(GameData data, const char[] name, HookMode mode, DHookCallba
 
 public MRESReturn Chamber_MaxAmmo(int client, DHookReturn result, DHookParam args)
 {
+    if (!g_ChamberHookSeen)
+    {
+        g_ChamberHookSeen = true;
+        char map[64];
+        GetCurrentMap(map, sizeof(map));
+        LogMessage("Make it Count: the GetMaxAmmo hook runs on %s", map);
+    }
     // Ammo types 1/2 are primary/secondary, 3 is Engineer metal, and
     // remaining positive types include throwable ammo.
     if (!Chamber_Enabled() || !Chamber_Red(client) || args.Get(1) <= 0)

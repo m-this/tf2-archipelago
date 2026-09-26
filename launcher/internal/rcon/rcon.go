@@ -21,9 +21,10 @@ const (
 	typeExecCommand int32 = 2
 	typeAuth        int32 = 3
 
-	// 4096 is Valve's limit. The count cap is ours: an endless reply is a bug,
-	// not a long answer.
-	packetBytesMax = 4096
+	// 4096 is Valve's limit on a body. The size field also counts the id, the
+	// type and the two terminating nuls, so a full packet says 4106. The count
+	// cap is ours: an endless reply is a bug, not a long answer.
+	packetBytesMax = 4096 + 10
 	packetCountMax = 128
 
 	// The empty command sent behind every real one. The server answers in

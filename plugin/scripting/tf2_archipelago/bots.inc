@@ -59,6 +59,9 @@ float g_NextVillaEscort[MAXPLAYERS + 1];
 #define VillaRecalledPop "mvm_villa_b13f_adv_recalled_to_life"
 #define VillaRoofDestinationName "roof_player_destination"
 #define VillaEscortInterval 2.0
+// Where a bot nobody ranked stands in line: behind every seat, as the defender
+// mod puts a seat nobody named.
+#define BotsUnrankedSeat 1000
 #define VillaRoomMinX -9900.0
 #define VillaRoomMaxX -7400.0
 #define VillaRoomMinY 2500.0
@@ -308,7 +311,7 @@ void Bots_PublishDirective()
     {
         if (MvM_IsDefender(bot) && IsFakeClient(bot) && !IsClientSourceTV(bot))
         {
-            Defenderbots_SetDirective(bot, combat, goal, combat, villa);
+            Defenderbots_SetDirective(bot, combat, goal, combat, villa || BotCards_IsGiant(bot));
         }
     }
 }
@@ -537,7 +540,7 @@ void Bots_MakeRoom()
     }
     int size = DefenderTeamSize();
     int onRed = 0;
-    int bot = 0;
+    bool leaving[MAXPLAYERS + 1];
     for (int client = 1; client <= MaxClients; client++)
     {
         if (!IsClientInGame(client) || GetClientTeam(client) != TeamRed)
@@ -545,17 +548,53 @@ void Bots_MakeRoom()
             continue;
         }
         onRed++;
-        if (IsFakeClient(client))
-        {
-            bot = client;
-        }
     }
+    int bot = Bots_LowestPriorityBot(leaving);
     if (onRed < size || bot == 0)
     {
         return;
     }
     AP_Debug("RED is full at %d. A bot leaves for the player who arrived.", onRed);
     KickClient(bot, "Making room for a player");
+}
+
+// The bot that leaves first, among those not already leaving. Who that is,
+// is the defender mod's rule (named seats kept, the last named seat first), so
+// this asks it rather than reading the loadout file a second time. Between
+// equals the newest bot goes: the game hands out the lowest free slot, so the
+// bot that arrived last holds the highest number.
+static int Bots_LowestPriorityBot(bool[] leaving)
+{
+    int chosen = 0;
+    int lowest = -1;
+    for (int client = 1; client <= MaxClients; client++)
+    {
+        if (leaving[client] || !IsClientInGame(client) || !IsFakeClient(client)
+            || IsClientSourceTV(client) || GetClientTeam(client) != TeamRed)
+        {
+            continue;
+        }
+        int rank = Bots_SeatRank(client);
+        if (rank > lowest || (rank == lowest && client > chosen))
+        {
+            chosen = client;
+            lowest = rank;
+        }
+    }
+    return chosen;
+}
+
+// How late in line this bot stands when somebody has to leave, as the defender
+// mod ranks it. A bot the mod does not answer for, or a mod too old to have the
+// native, ranks behind every seat, so every bot is equal and the newest leaves.
+int Bots_SeatRank(int client)
+{
+    if (GetFeatureStatus(FeatureType_Native, "Defenderbots_GetSeatRank") != FeatureStatus_Available)
+    {
+        return BotsUnrankedSeat;
+    }
+    int rank = Defenderbots_GetSeatRank(client);
+    return rank < 0 ? BotsUnrankedSeat : rank;
 }
 
 // How many seats RED holds. The game's own number, and six when it will not say.
@@ -803,7 +842,7 @@ static void Bots_Fill()
  * the same way, and this is the one rule that covers both. It is also where
  * Bots_MakeRoom already lives: whose seat it is, is this plugin's question.
  *
- * Bots only, newest first. A human is never in the surplus.
+ * Bots only, lowest selected priority first. A human is never in the surplus.
  */
 void Bots_TrimSurplus()
 {
@@ -831,15 +870,15 @@ void Bots_TrimSurplus()
             onRed++;
         }
     }
-    // Highest index last in, near enough: the game hands out the lowest free
-    // slot, so the bots that arrived last hold the highest numbers.
-    for (int client = MaxClients; client >= 1 && onRed > size; client--)
+    bool leaving[MAXPLAYERS + 1];
+    while (onRed > size)
     {
-        if (!IsClientInGame(client) || !IsFakeClient(client) || IsClientSourceTV(client)
-            || GetClientTeam(client) != TeamRed)
+        int client = Bots_LowestPriorityBot(leaving);
+        if (client == 0)
         {
-            continue;
+            break;
         }
+        leaving[client] = true;
         AP_Debug("RED holds %d of %d. %N leaves.", onRed, size, client);
         KickClient(client, "RED is full");
         onRed--;

@@ -3,8 +3,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, exhaustMap, tap } from 'rxjs';
 
 import { BotLineup } from '@app/bots/components/bot-lineup';
+import { BotCardDeck } from '@app/bots/components/bot-card-deck';
 import { ClassTable } from '@app/bots/components/class-table';
 import { SettingsStore } from '@app/settings/settings-store';
+import { LauncherStore } from '@app/server/launcher-store';
 import { Button } from '@app/ui/button';
 import { Notice } from '@app/ui/notice';
 import { Panel } from '@app/ui/panel';
@@ -22,8 +24,11 @@ import { Panel } from '@app/ui/panel';
 @Component({
   selector: 'app-bots-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [BotLineup, Button, ClassTable, Notice, Panel],
+  imports: [BotCardDeck, BotLineup, Button, ClassTable, Notice, Panel],
   template: `
+    <app-panel heading="Bot cards">
+      <app-bot-card-deck />
+    </app-panel>
     <app-panel heading="Bot Switcher">
       <app-bot-lineup />
     </app-panel>
@@ -45,12 +50,20 @@ import { Panel } from '@app/ui/panel';
 })
 export class BotsPage {
   private readonly store = inject(SettingsStore);
+  private readonly attached = inject(LauncherStore).managedExternally;
 
   readonly dirty = computed(() => this.store.dirty());
   readonly refusal = signal('');
   readonly applied = signal(false);
 
   readonly dirtyLabel = computed(() => {
+    if (this.attached()) {
+      return this.dirty()
+        ? 'Not saved yet. Apply updates the live bot team now.'
+        : this.applied()
+          ? 'Applied to the running server.'
+          : 'Edit a bot or loadout, then Apply to update the running server.';
+    }
     if (this.dirty()) {
       return 'Not applied yet. Apply writes the lineup and the bots switch on their next respawn.';
     }

@@ -1,0 +1,73 @@
+<article
+  class="trading-card"
+  [class.selected]="state() === 'selected'"
+  [class.locked]="state() === 'locked'"
+  [class.giant]="form() === 'giant'"
+  [class.human]="form() === 'human'"
+  [attr.data-rarity]="card().rarity.toLowerCase()"
+>
+  <div class="card-top">
+    <span>{{ card().rarity }} · {{ card().className }}</span>
+    @if (rank(); as priority) {
+      <strong>#{{ priority }}</strong>
+    } @else {
+      <strong>{{ state() === 'locked' ? 'LOCKED' : 'READY' }}</strong>
+    }
+  </div>
+  <div class="portrait">
+    <img
+      [src]="portrait()"
+      [alt]="(form() === 'human' ? 'Human RED ' : 'RED robot ') + card().className + ' portrait'"
+      loading="lazy"
+    />
+    <span [attr.aria-label]="form() + ', ' + card().stars + ' stars'"
+      >{{ form() === 'human' ? 'RED MERC' : 'RED ROBOT' }} · {{ '★'.repeat(card().stars) }}
+      @if (form() === 'giant') {
+        · GIANT
+      }
+    </span>
+  </div>
+  <div class="identity">
+    <h3>{{ card().name }}</h3>
+  </div>
+  <div class="loadout">
+    <div>
+      <b>PRI</b><span>{{ card().weapons[0] }}</span>
+    </div>
+    <div>
+      <b>SEC</b><span>{{ card().weapons[1] }}</span>
+    </div>
+    <div>
+      <b>MEL</b><span>{{ card().weapons[2] }}</span>
+    </div>
+  </div>
+  <p class="detail cosmetic">
+    <b>Cosmetic</b>
+    @if (card().rarity === 'LEGENDARY') {
+      <span class="unusual">Unusual&nbsp;{{ card().cosmetic }} · {{ card().unusualEffect }}</span>
+    } @else {
+      {{ card().cosmetic }}
+    }
+  </p>
+  <div class="detail perk" title="Each innate applies across this bot's weapons">
+    <b>INNATE</b>
+    <ul>
+      @for (innate of card().innates; track innate) {
+        <li>{{ innate }}</li>
+      }
+    </ul>
+  </div>
+  <div class="stats" aria-label="Basic stats">
+    <span
+      class="stat-cell"
+      [attr.aria-label]="'Health ' + (form() === 'giant' ? card().giantHealth : card().health)"
+      title="Max health with equipped item modifiers"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 21.2 3.7 13.4C-1.5 8.5 5.5 1.4 12 7c6.5-5.6 13.5 1.5 8.3 6.4Z" />
+      </svg>
+      <b>{{ form() === 'giant' ? card().giantHealth : card().health }}</b
+      ><small>HP</small>
+    </span>
+  </div>
+</article>

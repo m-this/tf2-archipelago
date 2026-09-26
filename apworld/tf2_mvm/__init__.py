@@ -228,6 +228,7 @@ class TF2MvMWorld(World):
     start_mission: data.Mission
     goal_mission: data.Mission
     start_items: list[str]
+    bot_card_rewards: list[str]
     missionsanity_target: int
     mission_modifiers: dict[str, list[dict[str, str]]]
 
@@ -331,6 +332,24 @@ class TF2MvMWorld(World):
         else:
             slots = [data.PROGRESSIVE_WEAPON_SLOT] * requirement.slots
         self.start_items = [*tickets, *classes, *slots]
+        self.bot_card_rewards = []
+        if self.options.bot_cards.value:
+            if self.options.starting_bot_card_mode.current_key == "stock_classes":
+                starters = list(data.STOCK_BOT_CARD_BASES)
+            else:
+                starters = self.random.sample(
+                    data.BOT_CARD_BASES, self.options.starting_bot_cards.value
+                )
+            self.start_items.extend(self._roll_bot_card(base) for base in starters)
+            remaining = [base for base in data.BOT_CARD_BASES if base not in starters]
+            self.random.shuffle(remaining)
+            self.bot_card_rewards = [self._roll_bot_card(base) for base in remaining]
+
+    def _roll_bot_card(self, base: str) -> str:
+        # Two independent draws: a Giant is not intrinsically Legendary.
+        tier = self.random.choices(("Common", "Elite", "Legendary"), (50, 40, 10))[0]
+        form = self.random.choices(("Human", "Robot", "Giant"), (50, 40, 10))[0]
+        return data.BOT_CARD_VARIANTS[(base, tier, form)]
 
     def _asked_start_mission(self, available: list[data.Mission]) -> data.Mission | None:
         """The mission start_mission names, or None for the easiest one drawn."""
@@ -466,6 +485,10 @@ class TF2MvMWorld(World):
         # above zero puts at least one trap in a run too small for a whole
         # percent; zero stays zero.
         open_slots = self._free_check_count() - len(pool)
+        if self.options.bot_cards.value:
+            card_count = min(max(0, open_slots), len(self.bot_card_rewards))
+            pool += [self.create_item(name) for name in self.bot_card_rewards[:card_count]]
+            open_slots -= card_count
         trap_count = min(
             open_slots, math.ceil(open_slots * self.options.trap_percentage.value / 100)
         )

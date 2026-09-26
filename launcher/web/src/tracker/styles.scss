@@ -274,6 +274,13 @@ main {
   align-items: start;
 }
 
+.bot-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: var(--gap);
+  margin-top: var(--gap);
+}
+
 .side-column {
   display: grid;
   gap: var(--gap-lg);

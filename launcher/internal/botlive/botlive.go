@@ -15,8 +15,11 @@ import (
 	"fmt"
 	"reflect"
 	"slices"
+	"strconv"
 	"strings"
 
+	"github.com/m-this/tf2-archipelago/gamedata"
+	"github.com/m-this/tf2-archipelago/launcher/internal/botcards"
 	"github.com/m-this/tf2-archipelago/launcher/internal/botloadout"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 )
@@ -44,8 +47,39 @@ not, because a weapon is handed out on the way in and never again.
 */
 func Commands(before, after settings.Settings) []string {
 	var out []string
-	// First, so the player reads it while the mod is still rebuilding the team.
-	if TeamMoved(before, after) {
+	moved := TeamMoved(before, after)
+	oldCards, newCards := cardStates(before), cardStates(after)
+	if (len(oldCards) > 0 || len(newCards) > 0) && !manualSeatsMoved(before, after) {
+		// Reload first, while each surviving bot still has its old name. The
+		// mod rebinds that name to the card's new priority seat without a kick.
+		out = append(out, "sm_redbots_rebind_seats")
+		oldSeats := SeatsOf(before)
+		for _, seat := range slices.Backward(oldSeats) {
+			name := seat.Name
+			old, isCard := oldCards[name]
+			if !isCard {
+				continue
+			}
+			if next, kept := newCards[name]; !kept || !reflect.DeepEqual(old, next) {
+				out = append(out, "sm_ap_botcards_evict "+strconv.Quote(name))
+			}
+		}
+		out = append(out, convars(after)...)
+		// A priority drag may move an existing card below the human-adjusted
+		// cutoff even though its identity and loadout did not change. Rebind
+		// alone preserves that bot incorrectly; reconcile frees only the lower
+		// priority seats needed by selected cards now above the cutoff.
+		out = append(out, "sm_ap_botcards_reconcile")
+		// Do not claim success in chat until the live reconciliation command
+		// has answered. The admin stops sending on an RCON refusal.
+		if moved {
+			out = append(out, "say "+Announcement)
+		}
+		return out
+	}
+	// Legacy manual seats retain their existing early announcement. The
+	// defender manager can defer their full reseat until a wave break.
+	if moved {
 		out = append(out, "say "+Announcement)
 	}
 	out = append(out, convars(after)...)
@@ -58,6 +92,55 @@ func Commands(before, after settings.Settings) []string {
 		out = append(out, "sm_redbots_reload_names")
 	}
 	return out
+}
+
+type cardState struct {
+	Seat     botloadout.Seat
+	Weapons  botloadout.Loadout
+	Fallback string
+}
+
+func cardStates(s settings.Settings) map[string]cardState {
+	out := map[string]cardState{}
+	for _, seat := range SeatsOf(s) {
+		if !seat.Card {
+			continue
+		}
+		class, ok := botloadout.ClassByKey(seat.Class)
+		if !ok {
+			continue
+		}
+		out[seat.Name] = cardState{seat, LibraryOf(s).Loadout(class, seat.Loadout), s.SrcdsBotLoadouts[seat.Class]}
+	}
+	return out
+}
+
+func manualSeatsMoved(before, after settings.Settings) bool {
+	manual := func(s settings.Settings) []botloadout.Seat {
+		var seats []botloadout.Seat
+		for _, seat := range SeatsOf(s) {
+			if !seat.Card {
+				seats = append(seats, seat)
+			}
+		}
+		return seats
+	}
+	old, next := manual(before), manual(after)
+	used := make([]bool, len(old))
+	for _, seat := range next {
+		found := false
+		for i, previous := range old {
+			if !used[i] && reflect.DeepEqual(previous, seat) {
+				used[i], found = true, true
+				break
+			}
+		}
+		if !found {
+			return true
+		}
+	}
+	return len(next) > 0 && (!reflect.DeepEqual(before.SrcdsBotLoadouts, after.SrcdsBotLoadouts) ||
+		!reflect.DeepEqual(before.SrcdsBotCustomLoadouts, after.SrcdsBotCustomLoadouts))
 }
 
 /*
@@ -78,8 +161,14 @@ func namesMoved(before, after settings.Settings) bool {
 // weaponsFile is the loadout file with the names taken out of it, which is what
 // decides whether the team has to be rebuilt.
 func weaponsFile(s settings.Settings) string {
+	var cards strings.Builder
+	for index, seat := range SeatsOf(s) {
+		if card, ok := botcards.BySeat(seat.Class, seat.Name); ok {
+			fmt.Fprintf(&cards, "%d:%s:%t:%t;", index, card.ID, seat.Robot, seat.Giant)
+		}
+	}
 	s.SrcdsBotSeatNames = nil
-	return loadoutFile(s)
+	return loadoutFile(s) + cards.String()
 }
 
 // TeamMoved is whether these two settings ask for a different team at all. A
@@ -110,7 +199,47 @@ func convars(s settings.Settings) []string {
 // loadoutFile is what the mod would read off disk for these settings, which is
 // the only thing sm_redbots_reseat exists to pick up.
 func loadoutFile(s settings.Settings) string {
-	return LibraryOf(s).Render(s.SrcdsBotLoadouts, botloadout.Seats(s.SrcdsBotTeamComp, s.SrcdsBotSeatLoadouts, s.SrcdsBotSeatNames))
+	return LibraryOf(s).Render(s.SrcdsBotLoadouts, SeatsOf(s))
+}
+
+// SeatsOf decorates named collectible seats with their gameplay card data.
+// The exported file is shared by native installs and the Compose hot-apply.
+func SeatsOf(s settings.Settings) []botloadout.Seat {
+	seats := botloadout.Seats(s.SrcdsBotTeamComp, s.SrcdsBotSeatLoadouts, s.SrcdsBotSeatNames)
+	for i := range seats {
+		card, ok := botcards.BySeat(seats[i].Class, seats[i].Name)
+		if !ok {
+			continue
+		}
+		tier := card.Tier
+		rolled, rolledTier, _, valid := botcards.ParseItemName(s.SrcdsBotCardRolls[card.ID])
+		if s.MvmBotCards && !s.TestMode && (!valid || rolled.ID != card.ID) {
+			continue
+		}
+		if valid && rolled.ID == card.ID {
+			tier = rolledTier
+		}
+		form := s.SrcdsBotCardForms[card.ID]
+		seats[i].Giant = form == "giant"
+		seats[i].Robot = form != "human"
+		seats[i].Card = true
+		seats[i].Tier = tier.Stacks()
+		seats[i].Cosmetic = card.Cosmetic
+		seats[i].Unusual = tier == botcards.Legendary && card.Cosmetic != 0
+		seats[i].UnusualEffect = card.UnusualEffect
+		if seats[i].Unusual && seats[i].UnusualEffect == 0 {
+			seats[i].UnusualEffect = 13
+		}
+		for _, id := range botcards.BuffsFor(card, tier) {
+			buff, ok := gamedata.WeaponBuffByID(id)
+			if ok && buff.Eligible {
+				seats[i].Innates = append(seats[i].Innates, botloadout.Innate{
+					Effect: int(buff.EffectID) - 1, Stacks: tier.Stacks(),
+				})
+			}
+		}
+	}
+	return seats
 }
 
 // LibraryOf is the loadouts these settings can offer: the built-in presets and
@@ -124,7 +253,7 @@ func LibraryOf(s settings.Settings) botloadout.Library {
 // same terms the file is written on: it is removed when nothing is custom, and
 // the convar has to agree or the mod looks for a file that is not there.
 func customLoadouts(s settings.Settings) int {
-	seats := botloadout.Seats(s.SrcdsBotTeamComp, s.SrcdsBotSeatLoadouts, s.SrcdsBotSeatNames)
+	seats := SeatsOf(s)
 	if LibraryOf(s).Anything(s.SrcdsBotLoadouts, seats) {
 		return 1
 	}
@@ -144,6 +273,7 @@ drift apart.
 func WithoutTeam(s settings.Settings) settings.Settings {
 	s.SrcdsBotTeamComp = nil
 	s.SrcdsBotSeatLoadouts = nil
+	s.SrcdsBotCardForms = nil
 	s.SrcdsBotLoadouts = nil
 	s.SrcdsBotClassBlacklist = nil
 	s.SrcdsBotTeamSize = 0

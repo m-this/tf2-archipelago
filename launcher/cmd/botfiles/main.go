@@ -35,6 +35,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	flags := flag.NewFlagSet("botfiles", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	root := flags.String("root", "", "the tree to write into, holding addons/sourcemod/configs")
+	live := flags.Bool("live", false, "stage an empty loadout file when clearing a live team")
 	if err := flags.Parse(args); err != nil {
 		return 2
 	}
@@ -43,10 +44,17 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 
-	custom, err := botfiles.Install(*root, settings.ApplyEnv(settings.Defaults()))
+	state := settings.ApplyEnv(settings.Defaults())
+	custom, err := botfiles.Install(*root, state)
 	if err != nil {
 		say(stderr, "botfiles: "+err.Error())
 		return 1
+	}
+	if *live {
+		if err := botfiles.StageForLive(*root, state); err != nil {
+			say(stderr, "botfiles: "+err.Error())
+			return 1
+		}
 	}
 
 	// The last line is the answer, so a caller reads it with $(...) and any

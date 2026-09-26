@@ -285,6 +285,16 @@
           </app-panel>
         </aside>
       </div>
+      <app-panel heading="Defender collection">
+        <span panelAside class="section-aside">{{ unlockedBots().length }} discovered</span>
+        <div class="bot-card-grid">
+          @for (found of unlockedBots(); track found.card.id) {
+            <app-bot-card [card]="found.card" state="selected" [form]="found.form" />
+          } @empty {
+            <app-empty-state>No named defenders discovered in this room yet.</app-empty-state>
+          }
+        </div>
+      </app-panel>
     </div>
   }
 </main>

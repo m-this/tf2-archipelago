@@ -29,12 +29,22 @@ export default defineConfig({
   // The real-launcher tests talk to a launcher somebody started; the rest bring
   // the fake up themselves. Both live in e2e/, and the real ones skip
   // themselves when TF2AP_REAL is unset.
-  webServer: {
-    // The frontend is fenced out of the Go module by launcher/web/go.mod, so
-    // the fake is run from the repository root rather than from here.
-    command: `npm run build && cd ../.. && go run ./launcher/cmd/fakelauncher -addr 127.0.0.1:${port}`,
-    url: `http://127.0.0.1:${port}/`,
-    reuseExistingServer: !process.env['CI'],
-    timeout: 240_000,
-  },
+  webServer: [
+    {
+      // The frontend is fenced out of the Go module by launcher/web/go.mod, so
+      // the fake is run from the repository root rather than from here.
+      command: `npm run build && cd ../.. && go run ./launcher/cmd/fakelauncher -addr 127.0.0.1:${port}`,
+      url: `http://127.0.0.1:${port}/`,
+      reuseExistingServer: !process.env['CI'],
+      timeout: 240_000,
+    },
+    {
+      // The public tracker is a separate Angular entry, not a launcher route.
+      command:
+        'mkdir -p src/tracker/data && cp ../../apworld/tf2_mvm/data/missions.json ../../apworld/tf2_mvm/data/weapon_classes.json ../../apworld/tf2_mvm/data/class_loadouts.json src/tracker/data/ && npm run build:tracker && node e2e/tracker-server.cjs',
+      url: 'http://127.0.0.1:8472/',
+      reuseExistingServer: !process.env['CI'],
+      timeout: 240_000,
+    },
+  ],
 });

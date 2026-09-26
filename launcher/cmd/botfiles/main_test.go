@@ -67,6 +67,26 @@ func TestNoLoadoutLeavesTheShippedFileAndSaysSo(t *testing.T) {
 	}
 }
 
+func TestLiveClearReplacesTheOldCardFile(t *testing.T) {
+	root := staged(t)
+	if err := os.WriteFile(loadoutPath(root), []byte(`"giant" "1"`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("SRCDS_BOT_TEAM_COMP", "soldier")
+	t.Setenv("SRCDS_BOT_SEAT_NAMES", "")
+	var out, errs bytes.Buffer
+	if code := run([]string{"-root", root, "-live"}, &out, &errs); code != 0 {
+		t.Fatalf("code = %d, stderr = %s", code, errs.String())
+	}
+	if got := strings.TrimSpace(out.String()); got != "0" {
+		t.Fatalf("said %q, want 0", got)
+	}
+	body, err := os.ReadFile(loadoutPath(root))
+	if err != nil || !strings.Contains(string(body), `"loadout"`) || strings.Contains(string(body), `"giant"`) {
+		t.Fatalf("old giant card survived clearing: %s, %v", body, err)
+	}
+}
+
 func TestARootThatWasNotGivenIsRefused(t *testing.T) {
 	var out, errs bytes.Buffer
 	if code := run(nil, &out, &errs); code != 2 {

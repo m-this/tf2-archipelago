@@ -187,10 +187,18 @@ after the classes, the slots and the tickets.
 | Weapon slots | `weapon_slot_importance` | `MVM_WEAPON_SLOT_IMPORTANCE` | `progression` | Whether slots count for the tier requirements. |
 | Weapon buffs | `weapon_buff_importance` | `MVM_WEAPON_BUFF_IMPORTANCE` | `useful` | Whether harder tiers need some buffs. |
 | Cash rewards | `cash_rewards` | `MVM_CASH_REWARDS` | off | Let spare checks pay cash. |
+| Unlockable bot cards | `bot_cards` | `MVM_BOT_CARDS` | off | Put every distinct non-starting card on a spare check when the seed has room; cards never gate progress. |
+| Starting card mode | `starting_bot_card_mode` | `MVM_STARTING_BOT_CARD_MODE` | `draw_random` | Random cards or one stock-loadout card for each class. |
+| Random starting cards | `starting_bot_cards` | `MVM_STARTING_BOT_CARDS` | `0` | Distinct cards received at the start; ignored in stock-class mode. |
 | Buff share | `weapon_buff_percentage` | `MVM_WEAPON_BUFF_PERCENTAGE` | `75` | With cash on, the share of spare checks that pay a buff. |
 | Buff stack chance | `weapon_buff_stack_chance` | `MVM_WEAPON_BUFF_STACK_CHANCE` | `25` | Chance that a buff adds a level to one already in the seed. |
 | Traps (%) | `trap_percentage` | `MVM_TRAP_PERCENTAGE` | `1` | The share of spare checks that hold a trap. |
 | Grappling Hook | `server_settings` | `MVM_SERVER_SETTINGS` | off | Put the Grappling Hook in the pool. |
+
+Each card's rarity and form are separate seed rolls: Common / Elite / Legendary
+are 50% / 40% / 10%, and Human / RED robot / Giant are 50% / 40% / 10%.
+Only cards received by the room can be recruited in the admin UI. Test mode
+continues to offer the full collection.
 
 ### Importance
 
