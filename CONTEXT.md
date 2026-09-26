@@ -173,7 +173,9 @@ sends `grant_weapon_slot{slot}`; the plugin never sees the item id behind it.
 The two kinds of grant, told apart by `ItemKind.OneShot` in `gamedata`. A
 state grant is a fact that stays true, such as a playable class, an open
 loadout slot, or an available mission. Applying one twice equals applying
-it once, so the bridge can resend it whenever the plugin asks.
+it once for those unlocks. Weapon buffs are state too, but each received copy
+adds a level. The bridge may resend them; the plugin counts each item sequence
+once, including those already represented by an unlock snapshot.
 
 An effect happens once and ends: credits get paid, or a trap fires.
 Applying one twice pays money nobody earned, or fires a trap nobody
@@ -185,7 +187,8 @@ keeps sending it. Credits are the case: money paid into a wave the team
 then loses goes back with the wave, so the plugin waits for the upgrade
 station. The cursor stops at the held effect and effects stay ordered
 behind it, while state grants past it are applied anyway, because applying
-one twice changes nothing.
+them once does not skip the held effect. Their item sequences are remembered
+separately from the acknowledgement cursor so retries cannot add buff levels.
 
 **Acknowledgement**
 The sequence number the plugin reports back to the bridge for what it

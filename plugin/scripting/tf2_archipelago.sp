@@ -33,6 +33,7 @@ native int Defenderbots_GetSeatRank(int client);
 #include "tf2_archipelago/unlocks.inc"
 #include "tf2_archipelago/weapon_buffs_data.inc"
 #include "tf2_archipelago/weapon_buffs_math.inc"
+#include "tf2_archipelago/bridge_grants_math.inc"
 #include "tf2_archipelago/bot_cards.inc"
 #include "tf2_archipelago/mission_modifiers_math.inc"
 #include "tf2_archipelago/weapon_buffs.inc"

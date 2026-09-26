@@ -30,7 +30,7 @@ import (
 // APIVersion is the contract with the plugin. The plugin reads it at startup
 // and says so in chat when it does not match: the two ship in one compose file,
 // so a mismatch means one image was updated and the other was not.
-const APIVersion = 5
+const APIVersion = 6
 
 // wavesObservedMax bounds what the game is believed about a mission's length.
 // The property behind it has never been seen answer, so anything past what a

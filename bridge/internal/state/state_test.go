@@ -692,12 +692,23 @@ func TestRepeatedWeaponBuffCopiesSurviveUnlockResync(t *testing.T) {
 		}
 	}
 	store := openTemp(t)
-	if err := store.ApplyItems(0, []int64{item.ID, item.ID, item.ID}); err != nil {
+	// The cash between buff copies remains unacknowledged. The snapshot must
+	// still name the later buff's position so polling for cash cannot count it
+	// a second time.
+	if err := store.ApplyItems(0, []int64{item.ID, item.ID, cashBundleID(t), item.ID}); err != nil {
 		t.Fatal(err)
 	}
-	held := store.Unlocks().Of(gamedata.ItemWeaponBuff)
+	snapshot := store.Unlocks()
+	if snapshot.ResumeFrom != 0 || snapshot.SnapshotSeq != 4 {
+		t.Fatalf("snapshot cursors = (%d, %d), want (0, 4)", snapshot.ResumeFrom, snapshot.SnapshotSeq)
+	}
+	held := snapshot.Of(gamedata.ItemWeaponBuff)
 	if len(held) != 3 || held[0] != held[1] || held[1] != held[2] {
 		t.Fatalf("repeated weapon buff unlocks = %v, want three copies", held)
+	}
+	grants, latest := store.GrantsSince(snapshot.ResumeFrom)
+	if len(grants) != 4 || latest != snapshot.SnapshotSeq || grants[3].Seq != 4 {
+		t.Fatalf("retry from acknowledged sequence = %+v, latest %d", grants, latest)
 	}
 }
 

@@ -12,7 +12,7 @@
 
 // The plugin-facing contract. The bridge reports its own; a mismatch means one
 // half of the compose file was updated and the other was not.
-#define BridgeAPIVersion 5
+#define BridgeAPIVersion 6
 
 // With every giant a check, one wave of Caliginous Caper queues eighty, so
 // nearing this means the bridge has been gone a long time.
@@ -154,6 +154,11 @@ int g_NextObjectiveID = 1;
 bool g_PollingGrants;
 bool g_FetchingUnlocks;
 int g_GrantSeq;
+
+// State grants already represented by the unlock snapshot or applied from a
+// poll. This advances past a held effect without moving the effect cursor.
+// Numeric weapon buffs are state, but applying one twice adds another level.
+int g_StateGrantSeq;
 
 // The sequence of the effect the plugin is holding, zero for none. An effect
 // happens once, so one that cannot happen yet is not acknowledged; the bridge
@@ -539,6 +544,7 @@ static void OnAcked(HTTPResponse response, any value, const char[] error)
         g_GrantSeq = 0;
         g_AckedSeq = 0;
         g_HeldSeq = 0;
+        g_StateGrantSeq = 0;
         Bridge_FetchUnlocks();
         return;
     }
@@ -750,15 +756,26 @@ static void OnUnlocks(HTTPResponse response, any value, const char[] error)
     }
     JSONObject payload = view_as<JSONObject>(response.Data);
 
+    if (!payload.HasKey("snapshot_seq"))
+    {
+        Bridge_NoteError("The bridge sent an unlock set without its snapshot sequence.");
+        g_UnlocksRetryAt = GetGameTime() + RetryInterval;
+        CreateTimer(RetryInterval, Timer_FetchUnlocksAgain);
+        return;
+    }
+
     Unlocks_Clear();
 
     // The bridge answers with the sequence it has been acknowledged up to, not
     // with how far its item list reaches. Anything between the two is state the
-    // plugin is about to be handed again, which costs nothing, plus every
-    // effect it never received. Taking the item count here instead would step
+    // plugin must deduplicate, plus every effect it never received. Taking
+    // the item count here instead would step
     // over an unapplied cash bundle and lose it for good.
     g_GrantSeq = payload.GetInt("resume_from");
     ApplyUnlockSet(payload);
+    // The snapshot already counted every state grant through this item position.
+    // Polling from resume_from may send them again to recover a held effect.
+    g_StateGrantSeq = payload.GetInt("snapshot_seq");
     g_HaveUnlocks = true;
     Bridge_ClearError();
 
@@ -941,12 +958,14 @@ static void OnGrants(HTTPResponse response, any value, const char[] error)
     JSONObject payload = view_as<JSONObject>(response.Data);
 
     // A bridge behind this plugin means the run restarted: these grants belong to a different one.
-    if (payload.GetInt("seq") < g_GrantSeq)
+    if (payload.GetInt("seq") < g_GrantSeq
+        || payload.GetInt("seq") < g_StateGrantSeq)
     {
         AP_Error("The run restarted. The plugin asks for the unlock set again.");
         g_GrantSeq = 0;
         g_AckedSeq = 0;
         g_HeldSeq = 0;
+        g_StateGrantSeq = 0;
         Bridge_FetchUnlocks();
         return;
     }
@@ -1010,39 +1029,49 @@ static void ApplyGrant(JSONObject grant)
         strcopy(name, sizeof(name), key);
     }
 
-    if (StrEqual(kind, "credits"))
+    bool state = !StrEqual(kind, "credits") && !StrEqual(kind, "trap");
+    int nextStateSeq = state ? Bridge_NextStateGrantSeq(g_StateGrantSeq, seq) : g_StateGrantSeq;
+    bool newState = state && nextStateSeq != g_StateGrantSeq;
+    // The snapshot or an earlier poll already counted every older state item.
+    // A held effect keeps resending those items until it can be applied.
+    if (!state || newState)
     {
-        if (!ApplyCredits(seq, grant.GetInt("amount")))
+        if (StrEqual(kind, "credits"))
         {
-            return;
+            if (!ApplyCredits(seq, grant.GetInt("amount")))
+            {
+                return;
+            }
         }
-    }
-    else if (StrEqual(kind, "trap"))
-    {
-        if (!ApplyTrap(seq, key, name))
+        else if (StrEqual(kind, "trap"))
         {
-            return;
+            if (!ApplyTrap(seq, key, name))
+            {
+                return;
+            }
         }
-    }
-    else if (Bridge_ApplyKind(kind, key))
-    {
-        // A held effect stops the cursor, so every grant behind it arrives
-        // again on the next poll. State grants are replayed on purpose, and
-        // saying so once is the difference between news and a chat full of it.
-        if (g_HeldSeq == 0)
+        else if (Bridge_ApplyKind(kind, key))
         {
-            AP_Announce("%s unlocked: %s", GrantLabel(kind), name);
+            // A held effect stops the effect cursor. New state grants beyond
+            // it can still be applied and announced once.
+            if (g_HeldSeq == 0)
+            {
+                AP_Announce("%s unlocked: %s", GrantLabel(kind), name);
+            }
         }
-    }
-    else
-    {
-        AP_Error("The bridge sent a grant of kind %s. This plugin does not know it.", kind);
+        else
+        {
+            AP_Error("The bridge sent a grant of kind %s. This plugin does not know it.", kind);
+        }
     }
 
-    // The cursor is how far every effect has been applied, not every grant. A
-    // state grant past a held effect is applied and not acknowledged: applying
-    // it twice changes nothing, and moving the cursor over the effect would
-    // lose it.
+    if (newState)
+    {
+        g_StateGrantSeq = nextStateSeq;
+    }
+
+    // The effect cursor stays behind a held effect. The state cursor above
+    // prevents later state items being applied again on the next poll.
     if (g_HeldSeq == 0)
     {
         g_GrantSeq = seq;

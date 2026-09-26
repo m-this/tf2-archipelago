@@ -55,10 +55,15 @@ type Unlocks struct {
 	// cash bundle that arrived while no plugin was listening is not in it. A
 	// cursor set to the length of the item list would sit above that bundle and
 	// the bridge would never hand it over. Resuming from the acknowledged
-	// sequence re-sends some state the plugin already has, which costs nothing,
-	// and every effect it never got.
-	ResumeFrom int                 `json:"resume_from"`
-	ByKind     map[string][]string `json:"unlocks"`
+	// sequence re-sends state grants the plugin already has and every effect it
+	// never got. The plugin must skip those state grants by sequence: numeric
+	// weapon buffs are not idempotent when applied twice.
+	ResumeFrom int `json:"resume_from"`
+	// SnapshotSeq is the last item position included in this unlock snapshot.
+	// The plugin can skip state grants at or below it when polling from the
+	// earlier acknowledgement to recover effects that are still waiting.
+	SnapshotSeq int                 `json:"snapshot_seq"`
+	ByKind      map[string][]string `json:"unlocks"`
 
 	// ClassWeaponSlots is the seed opening slots class by class rather than
 	// with one item for every class. The plugin reads the slot keys it holds
@@ -182,8 +187,12 @@ func grantFor(item gamedata.Item, slotsGranted, classSlotsGranted int) (Grant, b
 //
 // Every state kind gets an entry even when it is empty, so the shape a plugin
 // parses does not change with what the run happens to hold.
-func unlocksFrom(grants []Grant, resumeFrom int) Unlocks {
-	unlocks := Unlocks{ResumeFrom: resumeFrom, ByKind: make(map[string][]string, len(gamedata.ItemKinds))}
+func unlocksFrom(grants []Grant, resumeFrom, snapshotSeq int) Unlocks {
+	unlocks := Unlocks{
+		ResumeFrom:  resumeFrom,
+		SnapshotSeq: snapshotSeq,
+		ByKind:      make(map[string][]string, len(gamedata.ItemKinds)),
+	}
 	for _, kind := range gamedata.ItemKinds {
 		if !kind.Granted() {
 			continue

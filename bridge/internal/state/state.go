@@ -280,10 +280,10 @@ func (s *Store) ApplyItems(index int, itemIDs []int64) error {
 //
 // Sequences count items, not grants, so this cannot index the slice.
 //
-// State grants are sent whenever they are asked for: applying one twice is the
-// same as applying it once. An effect is held back once acknowledged, because
-// the plugin asking from a lower sequence means it restarted, not that the
-// effect should happen again.
+// State grants are sent whenever they are asked for. The plugin uses their
+// sequence to avoid counting a weapon buff twice. An effect is held back once
+// acknowledged: the plugin asking from a lower sequence means it restarted,
+// not that the effect should happen again.
 func (s *Store) GrantsSince(seq int) ([]Grant, int) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -329,7 +329,7 @@ func (s *Store) Ack(seq int) error {
 func (s *Store) Unlocks() Unlocks {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return unlocksFrom(s.grants, s.data.AckedSeq)
+	return unlocksFrom(s.grants, s.data.AckedSeq, len(s.data.Items))
 }
 
 // GoalSent reports whether CLIENT_GOAL has already gone out for this run.

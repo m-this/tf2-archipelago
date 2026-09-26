@@ -214,6 +214,9 @@ func TestUnlocksReportsWhatHasBeenGranted(t *testing.T) {
 	if unlocks.ResumeFrom != 0 {
 		t.Errorf("resume_from = %d", unlocks.ResumeFrom)
 	}
+	if unlocks.SnapshotSeq != 2 {
+		t.Errorf("snapshot_seq = %d, want both items in the snapshot", unlocks.SnapshotSeq)
+	}
 	missions := unlocks.Of(gamedata.ItemMissionTicket)
 	if len(missions) != 1 || missions[0] != "mvm_coaltown" {
 		t.Errorf("missions = %v", missions)
@@ -345,6 +348,79 @@ func TestGrantsReturnWhatIsAlreadyThere(t *testing.T) {
 	decode(t, get(t, handler, "/grants?since=0"), &response)
 	if len(response.Grants) != 1 || response.Grants[0].Seq != 1 {
 		t.Fatalf("grants = %+v", response.Grants)
+	}
+}
+
+func TestHeldEffectReplaysBuffsWithoutChangingTheirPositions(t *testing.T) {
+	buff := gamedata.WeaponBuffs[0]
+	for _, tc := range []struct {
+		name       string
+		effectID   int64
+		effectKind gamedata.ItemKind
+	}{
+		{"cash waiting for the upgrade station", cashBundleID(t), gamedata.ItemCredits},
+		{"trap waiting for a wave", gamedata.Traps[0].ItemID(), gamedata.ItemTrap},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			store, handler := newTestServer(t, time.Second)
+			if err := store.ApplyItems(0, []int64{buff.ItemID(), tc.effectID, buff.ItemID()}); err != nil {
+				t.Fatal(err)
+			}
+
+			var snapshot state.Unlocks
+			decode(t, get(t, handler, "/unlocks"), &snapshot)
+			if snapshot.ResumeFrom != 0 || snapshot.SnapshotSeq != 3 {
+				t.Fatalf("snapshot cursors = (%d, %d), want (0, 3)", snapshot.ResumeFrom, snapshot.SnapshotSeq)
+			}
+			if got := snapshot.Of(gamedata.ItemWeaponBuff); !slices.Equal(got, []string{buff.Key, buff.Key}) {
+				t.Fatalf("snapshot buff levels = %v, want two copies", got)
+			}
+
+			// An effect held by the plugin leaves the poll cursor at zero.
+			// Each retry then returns the same buff positions again.
+			for retry := range 21 {
+				var response grantsResponse
+				decode(t, get(t, handler, "/grants?since=0"), &response)
+				if response.Seq != 3 || len(response.Grants) != 3 {
+					t.Fatalf("retry %d: response = %+v", retry, response)
+				}
+				for i, grant := range response.Grants {
+					if grant.Seq != i+1 {
+						t.Fatalf("retry %d: grant %d = %+v", retry, i, grant)
+					}
+				}
+				if response.Grants[0].Key != buff.Key || response.Grants[1].Kind != tc.effectKind.Key() || response.Grants[2].Key != buff.Key {
+					t.Fatalf("retry %d: grants = %+v", retry, response.Grants)
+				}
+			}
+		})
+	}
+}
+
+func TestBuffSnapshotAndPollCanOverlapWithoutEffects(t *testing.T) {
+	store, handler := newTestServer(t, time.Second)
+	buff := gamedata.WeaponBuffs[0]
+	if err := store.ApplyItems(0, []int64{buff.ItemID(), buff.ItemID()}); err != nil {
+		t.Fatal(err)
+	}
+
+	var snapshot state.Unlocks
+	decode(t, get(t, handler, "/unlocks"), &snapshot)
+	if snapshot.ResumeFrom != 0 || snapshot.SnapshotSeq != 2 {
+		t.Fatalf("snapshot cursors = (%d, %d), want (0, 2)", snapshot.ResumeFrom, snapshot.SnapshotSeq)
+	}
+	if got := snapshot.Of(gamedata.ItemWeaponBuff); !slices.Equal(got, []string{buff.Key, buff.Key}) {
+		t.Fatalf("snapshot buff levels = %v, want two copies", got)
+	}
+
+	// Even without a held effect, the acknowledgement can lag a reload. The
+	// plugin then polls both item positions already included in the snapshot.
+	var response grantsResponse
+	decode(t, get(t, handler, "/grants?since=0"), &response)
+	if response.Seq != 2 || len(response.Grants) != 2 ||
+		response.Grants[0].Seq != 1 || response.Grants[1].Seq != 2 ||
+		response.Grants[0].Key != buff.Key || response.Grants[1].Key != buff.Key {
+		t.Fatalf("overlapping snapshot and poll = %+v", response)
 	}
 }
 

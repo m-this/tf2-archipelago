@@ -75,7 +75,7 @@ the HTTP API and nowhere else.
 | --- | --- | --- | --- |
 | `POST` | `/objective` | `{"kind":"wave_cleared","popfile":"mvm_coaltown","wave":3,"waves_total":6}` | `204` once the check is on disk |
 | `POST` | `/objective` | `{"kind":"mission_cleared","popfile":"mvm_coaltown"}` | `204` |
-| `GET` | `/unlocks` | | `{"resume_from":6,"unlocks":{"class":[…],"weapon_slot":[…],"mission_ticket":[…]}}` |
+| `GET` | `/unlocks` | | `{"resume_from":6,"snapshot_seq":8,"unlocks":{"class":[…],"weapon_slot":[…],"mission_ticket":[…]}}` |
 | `GET` | `/missions` | | the run's missions in the order the seed drew them, each with its map, optional special `loadout`, ticket state, and clear state. Each carries `wave_reached`, the highest wave the team has cleared in it. Carries `resume` when the team was part way through one: `{"popfile":…,"wave":3}` |
 | `GET` | `/grants?since=6` | | `{"seq":8,"grants":[…]}`, held open until there is something past that sequence |
 | `POST` | `/grants/ack` | `{"seq":8}` | `204`. Everything through that sequence is applied, so no effect below it is sent again |
@@ -112,8 +112,11 @@ and the difference is a lost effect. The unlock set carries state only, so a
 cash bundle that landed while no plugin was listening is not in it. A cursor set
 to the length of the item list would sit above that bundle and nothing would
 ever hand it over. Resuming from the acknowledged sequence re-sends some state
-the plugin already holds, which costs nothing by definition, and every effect it
-never got.
+the plugin already holds and every effect it never got. `snapshot_seq` is the
+last item position included in the unlock set; the plugin skips state grants
+at or below it when it polls from `resume_from`. It tracks later state item
+sequences separately while an effect is held, so retries do not add weapon buff
+levels again.
 
 `/grants` always answers with the sequence the bridge is at, even when it has
 nothing new. That is how the plugin learns it is *ahead*: the only way to be
