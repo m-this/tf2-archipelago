@@ -19,6 +19,11 @@ in the release notes, so this file is the only place to write it.
   slow to leave spawn got moved to the hatch, and because the hatch sits next
   to RED's spawn on most maps, it was moved there again a few seconds later.
   Engineers who built near the hatch were carried off before they could finish.
+- **SigMod missions on a Windows server crash far less.** The Windows build of
+  SigMod is updated: 83 of the 95 missions tested now play every wave, and the
+  server stops mid-mission on one of them, where it used to on about ten.
+  Robots that change attributes, map-scripted events, bots' dropped items and
+  swords all behave as they do on a Linux server.
 
 ## v1.17.3
 
