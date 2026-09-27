@@ -6,6 +6,23 @@ in the release notes, so this file is the only place to write it.
 
 ## Unreleased
 
+### Added
+
+- **Bot cards: named defender bots you unlock during the run.** Turn on
+  **Unlockable Bot Cards** and the item pool holds cards for 15 bots. Each bot
+  has a class, a loadout and a buff of its own. A card rolls a rarity, which
+  sets its health and buff stacks, and a form: human, robot or Giant robot.
+  **Starting Bot Cards** gives some at the start, or one stock card per class.
+  Cards are useful items and never lock a mission. Off by default. By kelly-cs.
+- **The Bots page shows your cards as a deck.** Recruit cards into your six
+  seats, drag them to set who stays when a player joins, and choose the form.
+  **Apply** swaps the bots on the running server, with no restart. The tracker
+  shows the cards the run has found. In test mode every card is there.
+- **Shop where they stand**, a Bots page option. Every bot buys its upgrades
+  where it is instead of walking back to the station. A bot that shops during a
+  wave stays in the fight. Off by default. A Giant card always shops where it
+  stands, because it no longer fits through the spawn door.
+
 ### Fixed
 
 - **Make it Count works on a Windows server.** It switched itself off there,
@@ -15,10 +32,17 @@ in the release notes, so this file is the only place to write it.
   each giant and tank killed while the bridge was down made the traffic grow,
   until the server stopped with "Out of memory" a few missions later. It now
   retries the oldest check alone until the bridge answers, then sends the rest.
-- **Bots are no longer put back on the hatch over and over.** A bot that was
-  slow to leave spawn got moved to the hatch, and because the hatch sits next
-  to RED's spawn on most maps, it was moved there again a few seconds later.
-  Engineers who built near the hatch were carried off before they could finish.
+- **Bots are no longer put back on the hatch over and over.** The rescue for a
+  bot that is slow to leave spawn puts it on the hatch. On most maps the hatch
+  sits next to RED's spawn, so a few seconds later the rescue moved it again.
+  An engineer that built near the hatch lost its nest before it finished.
+- **Weapon buffs no longer climb on their own.** The server counted the same
+  grants again each time it asked the bridge. A buff you had twice then showed
+  as x44 in the weapon buffs menu until the next mission. By kelly-cs.
+- **Repair fixes a community pack that fails its hash check.** Repair left the
+  old download in place, so the next install stopped on the same "SHA-256
+  mismatch". It now downloads the pack again and keeps the old file until the
+  new one checks out. A mismatch you chose to ignore is left alone. By kelly-cs.
 
 ## v1.17.3
 
