@@ -512,12 +512,15 @@ static void RegisterEnemyBot(int bot)
 // defeat. Its "timer" tag is visible to VScript, so mark it through the same
 // RunScriptCode input the authored missions use and leave it alive while the
 // real room groups are cleared. The game retires it at wave completion.
+// MvM gives a bot client the next robot when one dies, with the same userid,
+// and the targetname stays on the client: every spawn decides the mark again,
+// or a Giant Pyro spawned into a timer's old slot was left alive for good.
 public Action Timer_MarkScriptedBot(Handle timer, any userid)
 {
     int bot = GetClientOfUserId(userid);
     if (bot > 0 && IsClientInGame(bot) && GetClientTeam(bot) == g_EnemyTeam)
     {
-        SetVariantString("if (self.HasBotTag(\"timer\")) self.AcceptInput(\"AddOutput\", \"targetname waveprobe_timer\", null, null)");
+        SetVariantString("if (self.HasBotTag(\"timer\")) self.KeyValueFromString(\"targetname\", \"waveprobe_timer\"); else if (self.GetName() == \"waveprobe_timer\") self.KeyValueFromString(\"targetname\", \"\")");
         AcceptEntityInput(bot, "RunScriptCode");
     }
     return Plugin_Stop;
