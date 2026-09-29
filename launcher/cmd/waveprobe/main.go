@@ -424,6 +424,11 @@ func (s *server) recordWave(opt options, mapName string, mission gamedata.Missio
 		} else {
 			row.Debug = "debug snapshot unavailable: " + debugErr.Error()
 		}
+		// SigMod's own view of the wave: which wave spawn is waiting on what.
+		// An unknown command on a server without it says so and costs nothing.
+		if waves, wavesErr := s.exec("sig_wave_dump"); wavesErr == nil && strings.Contains(waves, "sig_wave_dump:") {
+			row.Debug += "\n" + strings.TrimSpace(waves)
+		}
 	}
 	writeResult(row)
 	if row.Outcome == "passed" {
