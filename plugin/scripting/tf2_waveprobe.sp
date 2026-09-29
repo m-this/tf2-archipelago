@@ -52,6 +52,7 @@ int g_BotUserId[MAXPLAYERS + 1];
 bool g_BotKillPending[MAXPLAYERS + 1];
 float g_BotDeadline[MAXPLAYERS + 1];
 int g_TankRef[PROBE_MAX_TANKS];
+float g_NpcDeadline[2049];
 int g_TankIndex[PROBE_MAX_TANKS];
 bool g_TankKillPending[PROBE_MAX_TANKS];
 float g_TankDeadline[PROBE_MAX_TANKS];
@@ -575,6 +576,7 @@ static int RegisterTank(int tank)
 
 public void OnEntityDestroyed(int entity)
 {
+    if (entity > 0 && entity <= 2048) g_NpcDeadline[entity] = 0.0;
     for (int i = 0; i < PROBE_MAX_TANKS; i++)
     {
         if (g_TankKillPending[i] && g_TankIndex[i] == entity)
@@ -633,6 +635,26 @@ public Action Timer_Probe(Handle timer)
             g_KillAttempts++;
             ForcePlayerSuicide(bot);
             g_BotDeadline[bot] = now + 5.0;
+        }
+    }
+
+    // A wave spawn's skeletons are NPCs, neither players nor tanks, and the
+    // wave spawn waits for them to die as for any robot: dreadwood's wave 3
+    // waited on thirty of them until the time limit.
+    int npc = -1;
+    while ((npc = FindEntityByClassname(npc, "tf_zombie")) != -1)
+    {
+        if (npc <= MaxClients || npc > 2048) continue;
+        if (GetEntProp(npc, Prop_Send, "m_iTeamNum") == g_PlayerTeam) continue;
+        if (g_NpcDeadline[npc] == 0.0)
+        {
+            g_NpcDeadline[npc] = now + 15.0;
+        }
+        else if (now >= g_NpcDeadline[npc])
+        {
+            g_KillAttempts++;
+            SDKHooks_TakeDamage(npc, g_Defender, g_Defender, 1000000.0);
+            g_NpcDeadline[npc] = now + 5.0;
         }
     }
 
