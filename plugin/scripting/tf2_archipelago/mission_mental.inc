@@ -163,6 +163,9 @@ public Action Mental_Timer(Handle timer)
     int tank = -1;
     while ((tank = FindEntityByClassname(tank, "tank_boss")) != -1)
     {
+        // A tank with no edict is a reference, not an index: no client sees
+        // it, and it indexes none of these arrays.
+        if (tank < 0) continue;
         Mental_HookEntityDamage(tank);
         float tankAmount = active ? 1.0 - Mental_EntityVisibility(now,
             g_MentalEntityShimmerUntil[tank], g_MentalEntityRevealUntil[tank]) : 0.0;
@@ -259,6 +262,7 @@ int Mental_TankForSentry(int sentry)
     int tank = -1;
     while ((tank = FindEntityByClassname(tank, "tank_boss")) != -1)
     {
+        if (tank < 0) continue;
         if (EntRefToEntIndex(g_TankSentryRef[tank]) == sentry) return tank;
     }
     return -1;

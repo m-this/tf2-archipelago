@@ -540,7 +540,11 @@ public void OnEntityCreated(int entity, const char[] classname)
 
 static int RegisterTank(int tank)
 {
-    int ref = EntIndexToEntRef(tank);
+    // A tank with no edict (SigMod makes some entities server-side only)
+    // comes back from FindEntityByClassname as a reference already, and
+    // EntIndexToEntRef throws on it, which ended the probe's tick before it
+    // could kill the tank.
+    int ref = tank < 0 ? tank : EntIndexToEntRef(tank);
     int slot = -1;
     for (int i = 0; i < PROBE_MAX_TANKS; i++)
     {
