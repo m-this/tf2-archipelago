@@ -51,6 +51,7 @@ char g_FailureReason[32];
 int g_BotUserId[MAXPLAYERS + 1];
 bool g_BotKillPending[MAXPLAYERS + 1];
 float g_BotDeadline[MAXPLAYERS + 1];
+int g_BotHits[MAXPLAYERS + 1];
 int g_TankRef[PROBE_MAX_TANKS];
 float g_NpcDeadline[2049];
 int g_TankIndex[PROBE_MAX_TANKS];
@@ -495,8 +496,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 
 static void RegisterEnemyBot(int bot)
 {
-    if (g_State != Probe_Running || bot == g_Defender || !IsClientInGame(bot)
-        || GetClientTeam(bot) != g_EnemyTeam)
+    if (g_State != Probe_Running || !IsWaveRobot(bot))
     {
         return;
     }
@@ -504,6 +504,7 @@ static void RegisterEnemyBot(int bot)
     if (g_BotUserId[bot] == userid) return;
     g_BotUserId[bot] = userid;
     g_BotDeadline[bot] = GetGameTime() + KillDelay();
+    g_BotHits[bot] = 0;
     g_BotSpawns++;
     g_BotKillPending[bot] = false;
     CreateTimer(0.1, Timer_MarkScriptedBot, userid, TIMER_FLAG_NO_MAPCHANGE);
@@ -519,12 +520,53 @@ static void RegisterEnemyBot(int bot)
 public Action Timer_MarkScriptedBot(Handle timer, any userid)
 {
     int bot = GetClientOfUserId(userid);
-    if (bot > 0 && IsClientInGame(bot) && GetClientTeam(bot) == g_EnemyTeam)
+    if (bot > 0 && IsClientInGame(bot) && IsWaveRobot(bot))
     {
         SetVariantString("if (self.HasBotTag(\"timer\")) self.KeyValueFromString(\"targetname\", \"waveprobe_timer\"); else if (self.GetName() == \"waveprobe_timer\") self.KeyValueFromString(\"targetname\", \"\")");
         AcceptEntityInput(bot, "RunScriptCode");
     }
     return Plugin_Stop;
+}
+
+// A robot a wave spawned, on whichever team: the enemy's, the players' own
+// (the survivors, VIPs and allies a wave waits on until they die) or the gray
+// team. The populator gives every robot it spawns a class icon; the defender
+// bots and the probe's own player have none.
+static bool IsWaveRobot(int bot)
+{
+    if (bot == g_Defender || !IsClientInGame(bot)) return false;
+    int team = GetClientTeam(bot);
+    if (team == g_EnemyTeam) return true;
+    if (team < 1 || !IsFakeClient(bot) || !HasEntProp(bot, Prop_Send, "m_iszClassIcon")) return false;
+    char icon[64];
+    GetEntPropString(bot, Prop_Send, "m_iszClassIcon", icon, sizeof(icon));
+    return icon[0] != '\0';
+}
+
+// Players wear a robot down, and a scripted boss changes phase at the health
+// thresholds its popfile names (IfHealthBelow): a suicide went past all of
+// them, and a wave waiting on the next phase never ended. So the probe sets
+// the robot's health an eighth lower each half second, which no resistance
+// or buddha mode turns aside, and then makes it commit suicide.
+#define PROBE_WEAR_STEPS 8
+
+static void WearDown(int bot, float now)
+{
+    int health = GetClientHealth(bot);
+    if (g_BotHits[bot] >= PROBE_WEAR_STEPS || health <= 1)
+    {
+        ForcePlayerSuicide(bot);
+        g_BotDeadline[bot] = now + 5.0;
+        return;
+    }
+    int maxHealth = GetEntProp(bot, Prop_Data, "m_iMaxHealth");
+    if (maxHealth < health) maxHealth = health;
+    int step = maxHealth / PROBE_WEAR_STEPS;
+    if (step < 1) step = 1;
+    int next = health - step;
+    SetEntityHealth(bot, next < 1 ? 1 : next);
+    g_BotHits[bot]++;
+    g_BotDeadline[bot] = now + 0.5;
 }
 
 static bool IsScriptedTimerBot(int bot)
@@ -621,8 +663,7 @@ public Action Timer_Probe(Handle timer)
     float now = GetGameTime();
     for (int bot = 1; bot <= MaxClients; bot++)
     {
-        if (bot == g_Defender || !IsClientInGame(bot)
-            || GetClientTeam(bot) != g_EnemyTeam || !IsPlayerAlive(bot))
+        if (!IsClientInGame(bot) || !IsWaveRobot(bot) || !IsPlayerAlive(bot))
         {
             g_BotUserId[bot] = 0;
             g_BotKillPending[bot] = false;
@@ -631,30 +672,37 @@ public Action Timer_Probe(Handle timer)
         RegisterEnemyBot(bot);
         if (!IsScriptedTimerBot(bot) && now >= g_BotDeadline[bot])
         {
-            g_BotKillPending[bot] = true;
-            g_KillAttempts++;
-            ForcePlayerSuicide(bot);
-            g_BotDeadline[bot] = now + 5.0;
+            if (!g_BotKillPending[bot])
+            {
+                g_BotKillPending[bot] = true;
+                g_KillAttempts++;
+            }
+            WearDown(bot, now);
         }
     }
 
-    // A wave spawn's skeletons are NPCs, neither players nor tanks, and the
-    // wave spawn waits for them to die as for any robot: dreadwood's wave 3
-    // waited on thirty of them until the time limit.
-    int npc = -1;
-    while ((npc = FindEntityByClassname(npc, "tf_zombie")) != -1)
+    // A wave spawn's skeletons and Halloween bosses are NPCs, neither players
+    // nor tanks, and the wave spawn waits for them to die as for any robot:
+    // dreadwood's wave 3 waited on thirty skeletons until the time limit, and
+    // trespasser's first wave on a Horseless Headless Horsemann.
+    static const char npcClasses[][] = { "tf_zombie", "headless_hatman", "eyeball_boss", "merasmus" };
+    for (int c = 0; c < sizeof(npcClasses); c++)
     {
-        if (npc <= MaxClients || npc > 2048) continue;
-        if (GetEntProp(npc, Prop_Send, "m_iTeamNum") == g_PlayerTeam) continue;
-        if (g_NpcDeadline[npc] == 0.0)
+        int npc = -1;
+        while ((npc = FindEntityByClassname(npc, npcClasses[c])) != -1)
         {
-            g_NpcDeadline[npc] = now + 15.0;
-        }
-        else if (now >= g_NpcDeadline[npc])
-        {
-            g_KillAttempts++;
-            SDKHooks_TakeDamage(npc, g_Defender, g_Defender, 1000000.0);
-            g_NpcDeadline[npc] = now + 5.0;
+            if (npc <= MaxClients || npc > 2048) continue;
+            if (GetEntProp(npc, Prop_Send, "m_iTeamNum") == g_PlayerTeam) continue;
+            if (g_NpcDeadline[npc] == 0.0)
+            {
+                g_NpcDeadline[npc] = now + 15.0;
+            }
+            else if (now >= g_NpcDeadline[npc])
+            {
+                g_KillAttempts++;
+                SDKHooks_TakeDamage(npc, g_Defender, g_Defender, 1000000.0);
+                g_NpcDeadline[npc] = now + 5.0;
+            }
         }
     }
 
