@@ -25,6 +25,9 @@ in the release notes, so this file is the only place to write it.
 
 ### Fixed
 
+- **A tank SigMod keeps off the network no longer breaks Mental.** On some
+  community missions Mental threw an error for such a tank every tick, tens of
+  thousands a run.
 - **Make it Count works on a Windows server.** It switched itself off there,
   because the plugin could not find the dispenser's ammo function on Windows.
 - **A server whose bridge stops answering no longer runs out of memory.** The
