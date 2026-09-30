@@ -46,6 +46,8 @@ in the release notes, so this file is the only place to write it.
   old download in place, so the next install stopped on the same "SHA-256
   mismatch". It now downloads the pack again and keeps the old file until the
   new one checks out. A mismatch you chose to ignore is left alone. By kelly-cs.
+- **Repair on Windows also throws away the downloaded SigMod package.** It
+  only ever looked for the Linux file, so a broken download stayed in place.
 - **Every SigMod mission plays to the end on a Windows server.** The Windows
   build of SigMod is updated, and all 95 community missions that need it now
   play every wave, where about ten used to stop the server mid-mission. Robots
