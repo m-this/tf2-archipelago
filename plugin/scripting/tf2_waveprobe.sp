@@ -47,6 +47,9 @@ int g_BotSpawns;
 int g_TankSpawns;
 int g_KillAttempts;
 int g_InitialEnemies;
+// The robots left to kill, and since when that count has not moved.
+int g_StallRemaining = -2;
+float g_StallSince;
 char g_FailureReason[32];
 int g_BotUserId[MAXPLAYERS + 1];
 bool g_BotKillPending[MAXPLAYERS + 1];
@@ -170,6 +173,8 @@ static void ResetProbe()
     g_TankSpawns = 0;
     g_KillAttempts = 0;
     g_InitialEnemies = 0;
+    g_StallRemaining = -2;
+    g_StallSince = GetGameTime();
     g_FailureReason[0] = '\0';
     g_ArmedAt = 0.0;
     g_StartedAt = 0.0;
@@ -542,17 +547,24 @@ public Action Timer_MarkScriptedBot(Handle timer, any userid)
     return Plugin_Stop;
 }
 
-// A robot a wave spawned on the enemy's team or the gray one. The populator
-// gives every robot it spawns a class icon; the defender bots and the probe's
-// own player have none. A robot on the players' team is an ally the players
-// protect: trespasser's survivors are support the wave never waits on, and
-// the mission lost the wave when the probe killed them.
+// Game seconds the wave's robot count may stand still before the players'
+// own robots are counted as ones to kill.
+#define PROBE_ALLY_STALL 600.0
+
+// A robot a wave spawned, on the enemy's team, the gray one or the players'.
+// The populator gives every robot it spawns a class icon; the defender bots
+// and the probe's own player have none. A robot on the players' team is an
+// ally the players protect, and the probe cannot tell the ones a wave waits
+// on from the support around them: trespasser lost its wave when the probe
+// killed its survivors, and its finale waits on the military it sends. So an
+// ally is left alone until the wave's count has stood still for a while.
 static bool IsWaveRobot(int bot)
 {
     if (bot == g_Defender || !IsClientInGame(bot)) return false;
     int team = GetClientTeam(bot);
     if (team == g_EnemyTeam) return true;
-    if (team < 1 || team == g_PlayerTeam || !IsFakeClient(bot) || !HasEntProp(bot, Prop_Send, "m_iszClassIcon")) return false;
+    if (team == g_PlayerTeam && GetGameTime() - g_StallSince < PROBE_ALLY_STALL) return false;
+    if (team < 1 || !IsFakeClient(bot) || !HasEntProp(bot, Prop_Send, "m_iszClassIcon")) return false;
     char icon[64];
     GetEntPropString(bot, Prop_Send, "m_iszClassIcon", icon, sizeof(icon));
     return icon[0] != '\0';
@@ -680,6 +692,13 @@ public Action Timer_Probe(Handle timer)
     }
 
     float now = GetGameTime();
+    int resource = FindEntityByClassname(-1, "tf_objective_resource");
+    int remaining = resource == -1 ? -1 : GetEntProp(resource, Prop_Send, "m_nMannVsMachineWaveEnemyCount");
+    if (remaining != g_StallRemaining)
+    {
+        g_StallRemaining = remaining;
+        g_StallSince = now;
+    }
     for (int bot = 1; bot <= MaxClients; bot++)
     {
         if (!IsClientInGame(bot) || !IsWaveRobot(bot) || !IsPlayerAlive(bot))
