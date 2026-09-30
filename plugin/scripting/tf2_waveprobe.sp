@@ -142,6 +142,20 @@ public void OnClientDisconnect(int client)
 public void OnClientPutInServer(int client)
 {
     SDKHook(client, SDKHook_OnTakeDamage, DefenderDamage);
+    SDKHook(client, SDKHook_SpawnPost, ClientSpawnPost);
+}
+
+// MvM hands a dead robot's client, userid and all, to the next robot it
+// spawns. When the probe missed the death between two ticks, the new robot
+// inherited the old one's finished wear-down and was made to commit suicide
+// at full health, past every IfHealthBelow threshold: accursed's Chief never
+// killed the entity its wave 6 waits on. Each spawn starts the robot over.
+public void ClientSpawnPost(int client)
+{
+    g_BotUserId[client] = 0;
+    g_BotHits[client] = 0;
+    g_BotDeadline[client] = 0.0;
+    g_BotKillPending[client] = false;
 }
 
 static void ResetProbe()
