@@ -528,16 +528,17 @@ public Action Timer_MarkScriptedBot(Handle timer, any userid)
     return Plugin_Stop;
 }
 
-// A robot a wave spawned, on whichever team: the enemy's, the players' own
-// (the survivors, VIPs and allies a wave waits on until they die) or the gray
-// team. The populator gives every robot it spawns a class icon; the defender
-// bots and the probe's own player have none.
+// A robot a wave spawned on the enemy's team or the gray one. The populator
+// gives every robot it spawns a class icon; the defender bots and the probe's
+// own player have none. A robot on the players' team is an ally the players
+// protect: trespasser's survivors are support the wave never waits on, and
+// the mission lost the wave when the probe killed them.
 static bool IsWaveRobot(int bot)
 {
     if (bot == g_Defender || !IsClientInGame(bot)) return false;
     int team = GetClientTeam(bot);
     if (team == g_EnemyTeam) return true;
-    if (team < 1 || !IsFakeClient(bot) || !HasEntProp(bot, Prop_Send, "m_iszClassIcon")) return false;
+    if (team < 1 || team == g_PlayerTeam || !IsFakeClient(bot) || !HasEntProp(bot, Prop_Send, "m_iszClassIcon")) return false;
     char icon[64];
     GetEntPropString(bot, Prop_Send, "m_iszClassIcon", icon, sizeof(icon));
     return icon[0] != '\0';
