@@ -580,6 +580,10 @@ static void WearDown(int bot, float now)
     if (step < 1) step = 1;
     int next = health - step;
     SetEntityHealth(bot, next < 1 ? 1 : next);
+    if (maxHealth >= 1000)
+    {
+        LogMessage("WAVEPROBE wear %N step %d read %d set %d now %d", bot, g_BotHits[bot], health, next < 1 ? 1 : next, GetClientHealth(bot));
+    }
     g_BotHits[bot]++;
     g_BotDeadline[bot] = now + 0.5;
 }
