@@ -21,7 +21,12 @@ The disposable probe prevents damage to RED participants. This keeps
 survival objectives and friendly mission NPCs alive while it measures BLU
 spawn clearance and wave completion.
 It uses `tf_bot_flag_kill_on_touch` so an unguarded hatch does not turn a
-population test into an automatic loss. The spawn delays use a fixed seed and
+population test into an automatic loss. A robot with a boss health bar drops the
+bomb as it takes it instead, so a boss whose phases change at health
+thresholds reaches them. A wave whose robot count stands still for 300 game
+seconds gets the capture a player would make on any enabled capture area, as
+trespasser's landing zone needs. Robots on the players' team are killed like
+any other unless the wave lists their icon as support. The spawn delays use a fixed seed and
 can be changed for a repeat run.
 
 Run this from a checkout with both community packs extracted under

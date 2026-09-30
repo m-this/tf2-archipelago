@@ -147,17 +147,6 @@ public void OnClientPutInServer(int client)
 {
     SDKHook(client, SDKHook_OnTakeDamage, DefenderDamage);
     SDKHook(client, SDKHook_SpawnPost, ClientSpawnPost);
-    SDKHook(client, SDKHook_OnTakeDamageAlivePost, GiantHitPost);
-}
-
-public void GiantHitPost(int victim, int attacker, int inflictor, float damage, int damagetype, int weapon,
-    const float damageForce[3], const float damagePosition[3], int damagecustom)
-{
-    if (!IsClientInGame(victim) || GetEntProp(victim, Prop_Send, "m_bIsMiniBoss") == 0 || GetClientHealth(victim) > 1) return;
-    char cls[64];
-    if (inflictor > 0 && IsValidEntity(inflictor)) GetEntityClassname(inflictor, cls, sizeof(cls));
-    LogMessage("WAVEPROBE hit %N to %d by %d inflictor %s damage %.0f type %d custom %d", victim, GetClientHealth(victim),
-        attacker, cls, damage, damagetype, damagecustom);
 }
 
 // MvM hands a dead robot's client, userid and all, to the next robot it
@@ -507,16 +496,6 @@ public void Event_WaveFailed(Event event, const char[] name, bool dontBroadcast)
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
     int bot = GetClientOfUserId(event.GetInt("userid"));
-    if (bot > 0 && IsClientInGame(bot) && GetEntProp(bot, Prop_Send, "m_bIsMiniBoss") != 0)
-    {
-        char weapon[64];
-        event.GetString("weapon", weapon, sizeof(weapon));
-        float origin[3];
-        GetClientAbsOrigin(bot, origin);
-        LogMessage("WAVEPROBE death %N step %d attacker %d weapon %s custom %d bits %d at %.0f %.0f %.0f", bot, g_BotHits[bot],
-            GetClientOfUserId(event.GetInt("attacker")), weapon, event.GetInt("customkill"), event.GetInt("damagebits"),
-            origin[0], origin[1], origin[2]);
-    }
     if (bot > 0 && g_BotKillPending[bot])
     {
         g_BotKills++;
@@ -662,10 +641,6 @@ static void WearDown(int bot, float now)
     if (step < 1) step = 1;
     int next = health - step;
     SetEntityHealth(bot, next < 1 ? 1 : next);
-    if (maxHealth >= 1000)
-    {
-        LogMessage("WAVEPROBE wear %N step %d read %d set %d now %d", bot, g_BotHits[bot], health, next < 1 ? 1 : next, GetClientHealth(bot));
-    }
     g_BotHits[bot]++;
     g_BotDeadline[bot] = now + 0.5;
 }
