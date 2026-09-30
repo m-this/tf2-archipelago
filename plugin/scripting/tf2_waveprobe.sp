@@ -50,6 +50,7 @@ int g_InitialEnemies;
 // The robots left to kill, and since when that count has not moved.
 int g_StallRemaining = -2;
 float g_StallSince;
+float g_StallCapturedAt;
 char g_FailureReason[32];
 int g_BotUserId[MAXPLAYERS + 1];
 bool g_BotKillPending[MAXPLAYERS + 1];
@@ -176,6 +177,7 @@ static void ResetProbe()
     g_InitialEnemies = 0;
     g_StallRemaining = -2;
     g_StallSince = GetGameTime();
+    g_StallCapturedAt = g_StallSince;
     g_FailureReason[0] = '\0';
     g_ArmedAt = 0.0;
     g_StartedAt = 0.0;
@@ -567,7 +569,7 @@ public Action Timer_MarkScriptedBot(Handle timer, any userid)
     int bot = GetClientOfUserId(userid);
     if (bot > 0 && IsClientInGame(bot) && IsWaveRobot(bot))
     {
-        SetVariantString("if (self.HasBotTag(\"timer\")) self.KeyValueFromString(\"targetname\", \"waveprobe_timer\"); else if (self.GetName() == \"waveprobe_timer\") self.KeyValueFromString(\"targetname\", \"\")");
+        SetVariantString("if (self.HasBotTag(\"timer\") || self.HasBotTag(\"bot_timer\")) self.KeyValueFromString(\"targetname\", \"waveprobe_timer\"); else if (self.GetName() == \"waveprobe_timer\") self.KeyValueFromString(\"targetname\", \"\")");
         AcceptEntityInput(bot, "RunScriptCode");
     }
     return Plugin_Stop;
@@ -606,7 +608,10 @@ static bool IsSupportIcon(const char[] icon)
 // and the probe's own player have none. A robot on the players' team is an
 // ally: trespasser lost its wave when the probe killed its survivors, which
 // are support, and its finale waits on the military it sends, which are not.
-// So an ally whose icon the wave lists as support is left alone.
+// So an ally whose icon the wave lists as support is left alone, until the
+// wave has stood still long enough that it can only be waiting on one:
+// dismal devilry's sixth wave waits for its VIP, support as well, to die.
+#define PROBE_ALLY_STALL 1200.0
 static bool IsWaveRobot(int bot)
 {
     if (bot == g_Defender || !IsClientInGame(bot)) return false;
@@ -616,7 +621,7 @@ static bool IsWaveRobot(int bot)
     char icon[64];
     GetEntPropString(bot, Prop_Send, "m_iszClassIcon", icon, sizeof(icon));
     if (icon[0] == '\0') return false;
-    return team != g_PlayerTeam || !IsSupportIcon(icon);
+    return team != g_PlayerTeam || !IsSupportIcon(icon) || GetGameTime() - g_StallSince >= PROBE_ALLY_STALL;
 }
 
 // Players wear a robot down, and a scripted boss changes phase at the health
@@ -733,10 +738,11 @@ static void CaptureWhenStalled(float now)
     {
         g_StallRemaining = remaining;
         g_StallSince = now;
+        g_StallCapturedAt = now;
         return;
     }
-    if (now - g_StallSince < PROBE_CAPTURE_STALL) return;
-    g_StallSince = now;
+    if (now - g_StallCapturedAt < PROBE_CAPTURE_STALL) return;
+    g_StallCapturedAt = now;
     char output[16];
     strcopy(output, sizeof(output), g_PlayerTeam == 2 ? "OnCapTeam1" : "OnCapTeam2");
     int area = -1;
