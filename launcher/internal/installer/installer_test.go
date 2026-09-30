@@ -755,6 +755,9 @@ func TestCleanKeepsWhatCannotBeFetchedAgain(t *testing.T) {
 		write("steamcmd", "steamcmd.exe"),
 		write("tf-dedicated", "tf", "addons", "sourcemod", "plugins", "tf2_archipelago.smx"),
 		write("tf-dedicated", "steamapps", "appmanifest_232250.acf"),
+		// This platform's cached SigMod package: on Windows it is the port's
+		// -windows.zip, which Clean used to leave behind.
+		write(strings.TrimPrefix(sigmodCachePath(root), root+string(filepath.Separator))),
 	}
 	kept := []string{
 		write("tf-dedicated", "srcds.exe"),
@@ -767,8 +770,8 @@ func TestCleanKeepsWhatCannotBeFetchedAgain(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Clean: %v", err)
 	}
-	if len(removed) != 3 {
-		t.Errorf("removed %d directories, want 3: %v", len(removed), removed)
+	if len(removed) != 4 {
+		t.Errorf("removed %d paths, want 4: %v", len(removed), removed)
 	}
 	for _, path := range gone {
 		if _, err := os.Stat(path); err == nil {

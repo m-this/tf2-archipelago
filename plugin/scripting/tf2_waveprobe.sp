@@ -47,11 +47,21 @@ int g_BotSpawns;
 int g_TankSpawns;
 int g_KillAttempts;
 int g_InitialEnemies;
+// The robots left to kill, and since when that count has not moved.
+int g_StallRemaining = -2;
+float g_StallSince;
+float g_StallCapturedAt;
+// Allies a wave spawn the wave counts is waiting on, from SigMod's wave dump.
+bool g_AllyAwaited[MAXPLAYERS + 1];
+float g_AllyAwaitedAt;
+char g_WaveDump[65536];
 char g_FailureReason[32];
 int g_BotUserId[MAXPLAYERS + 1];
 bool g_BotKillPending[MAXPLAYERS + 1];
 float g_BotDeadline[MAXPLAYERS + 1];
+int g_BotHits[MAXPLAYERS + 1];
 int g_TankRef[PROBE_MAX_TANKS];
+float g_NpcDeadline[2049];
 int g_TankIndex[PROBE_MAX_TANKS];
 bool g_TankKillPending[PROBE_MAX_TANKS];
 float g_TankDeadline[PROBE_MAX_TANKS];
@@ -113,6 +123,7 @@ public void OnPluginStart()
     HookEvent("mvm_wave_failed", Event_WaveFailed);
     HookEvent("player_spawn", Event_PlayerSpawn);
     HookEvent("player_death", Event_PlayerDeath);
+    HookEvent("teamplay_flag_event", Event_FlagEvent);
     CreateTimer(PROBE_TICK, Timer_Probe, _, TIMER_REPEAT);
 }
 
@@ -140,6 +151,20 @@ public void OnClientDisconnect(int client)
 public void OnClientPutInServer(int client)
 {
     SDKHook(client, SDKHook_OnTakeDamage, DefenderDamage);
+    SDKHook(client, SDKHook_SpawnPost, ClientSpawnPost);
+}
+
+// MvM hands a dead robot's client, userid and all, to the next robot it
+// spawns. When the probe missed the death between two ticks, the new robot
+// inherited the old one's finished wear-down and was made to commit suicide
+// at full health, past every IfHealthBelow threshold: accursed's Chief never
+// killed the entity its wave 6 waits on. Each spawn starts the robot over.
+public void ClientSpawnPost(int client)
+{
+    g_BotUserId[client] = 0;
+    g_BotHits[client] = 0;
+    g_BotDeadline[client] = 0.0;
+    g_BotKillPending[client] = false;
 }
 
 static void ResetProbe()
@@ -154,6 +179,9 @@ static void ResetProbe()
     g_TankSpawns = 0;
     g_KillAttempts = 0;
     g_InitialEnemies = 0;
+    g_StallRemaining = -2;
+    g_StallSince = GetGameTime();
+    g_StallCapturedAt = g_StallSince;
     g_FailureReason[0] = '\0';
     g_ArmedAt = 0.0;
     g_StartedAt = 0.0;
@@ -486,6 +514,31 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
     }
 }
 
+// tf_bot_flag_kill_on_touch makes a robot that picks up the bomb commit
+// suicide, which keeps an unguarded hatch from ending a population test. A
+// boss with phases dies that way at full health, past every IfHealthBelow
+// its popfile names: accursed's Chief took the bomb at its spawn and never
+// killed the entity wave 6 waits on. So a robot with a boss health bar drops
+// the bomb as it takes it, and lives until the wear-down reaches it.
+public void Event_FlagEvent(Event event, const char[] name, bool dontBroadcast)
+{
+    if (g_State != Probe_Running || event.GetInt("eventtype") != 1) return;
+    int carrier = event.GetInt("player");
+    if (carrier < 1 || carrier > MaxClients || !IsClientInGame(carrier) || GetClientTeam(carrier) != g_EnemyTeam
+        || !HasEntProp(carrier, Prop_Send, "m_bUseBossHealthBar") || GetEntProp(carrier, Prop_Send, "m_bUseBossHealthBar") == 0)
+    {
+        return;
+    }
+    int flag = -1;
+    while ((flag = FindEntityByClassname(flag, "item_teamflag")) != -1)
+    {
+        if (GetEntPropEnt(flag, Prop_Send, "moveparent") == carrier || GetEntPropEnt(flag, Prop_Send, "m_hOwnerEntity") == carrier)
+        {
+            AcceptEntityInput(flag, "ForceDrop");
+        }
+    }
+}
+
 public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 {
     int bot = GetClientOfUserId(event.GetInt("userid"));
@@ -494,8 +547,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 
 static void RegisterEnemyBot(int bot)
 {
-    if (g_State != Probe_Running || bot == g_Defender || !IsClientInGame(bot)
-        || GetClientTeam(bot) != g_EnemyTeam)
+    if (g_State != Probe_Running || !IsWaveRobot(bot))
     {
         return;
     }
@@ -503,6 +555,7 @@ static void RegisterEnemyBot(int bot)
     if (g_BotUserId[bot] == userid) return;
     g_BotUserId[bot] = userid;
     g_BotDeadline[bot] = GetGameTime() + KillDelay();
+    g_BotHits[bot] = 0;
     g_BotSpawns++;
     g_BotKillPending[bot] = false;
     CreateTimer(0.1, Timer_MarkScriptedBot, userid, TIMER_FLAG_NO_MAPCHANGE);
@@ -512,15 +565,92 @@ static void RegisterEnemyBot(int bot)
 // defeat. Its "timer" tag is visible to VScript, so mark it through the same
 // RunScriptCode input the authored missions use and leave it alive while the
 // real room groups are cleared. The game retires it at wave completion.
+// MvM gives a bot client the next robot when one dies, with the same userid,
+// and the targetname stays on the client: every spawn decides the mark again,
+// or a Giant Pyro spawned into a timer's old slot was left alive for good.
 public Action Timer_MarkScriptedBot(Handle timer, any userid)
 {
     int bot = GetClientOfUserId(userid);
-    if (bot > 0 && IsClientInGame(bot) && GetClientTeam(bot) == g_EnemyTeam)
+    if (bot > 0 && IsClientInGame(bot) && IsWaveRobot(bot))
     {
-        SetVariantString("if (self.HasBotTag(\"timer\")) self.AcceptInput(\"AddOutput\", \"targetname waveprobe_timer\", null, null)");
+        SetVariantString("if (self.HasBotTag(\"timer\") || self.HasBotTag(\"bot_timer\")) self.KeyValueFromString(\"targetname\", \"waveprobe_timer\"); else if (self.GetName() == \"waveprobe_timer\") self.KeyValueFromString(\"targetname\", \"\")");
         AcceptEntityInput(bot, "RunScriptCode");
     }
     return Plugin_Stop;
+}
+
+// The wave's icons in the objective resource: support (1 << 1) and limited
+// support (1 << 5) are the robots a wave does not wait on.
+#define PROBE_ICON_SUPPORT ((1 << 1) | (1 << 5))
+
+static bool IsSupportIcon(const char[] icon)
+{
+    int resource = FindEntityByClassname(-1, "tf_objective_resource");
+    if (resource == -1) return false;
+    static const char names[][] = { "m_iszMannVsMachineWaveClassNames", "m_iszMannVsMachineWaveClassNames2" };
+    static const char flags[][] = { "m_nMannVsMachineWaveClassFlags", "m_nMannVsMachineWaveClassFlags2" };
+    char listed[64];
+    for (int t = 0; t < sizeof(names); t++)
+    {
+        if (!HasEntProp(resource, Prop_Send, names[t])) continue;
+        int count = GetEntPropArraySize(resource, Prop_Send, names[t]);
+        for (int i = 0; i < count; i++)
+        {
+            GetEntPropString(resource, Prop_Send, names[t], listed, sizeof(listed), i);
+            if (StrEqual(listed, icon, false)
+                && (GetEntProp(resource, Prop_Send, flags[t], _, i) & PROBE_ICON_SUPPORT) != 0)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+// A robot a wave spawned, on the enemy's team, the gray one or the players'.
+// The populator gives every robot it spawns a class icon; the defender bots
+// and the probe's own player have none. A robot on the players' team is an
+// ally: trespasser lost its wave when the probe killed its survivors, which
+// are support, and its finale waits on the military it sends, which are not.
+// So an ally whose icon the wave lists as support is left alone, unless a
+// wave spawn the wave counts waits for it to die: dismal devilry's sixth wave
+// waits on its VIP, support as well. SigMod's wave dump says which.
+static bool IsWaveRobot(int bot)
+{
+    if (bot == g_Defender || !IsClientInGame(bot)) return false;
+    int team = GetClientTeam(bot);
+    if (team == g_EnemyTeam) return true;
+    if (team < 1 || !IsFakeClient(bot) || !HasEntProp(bot, Prop_Send, "m_iszClassIcon")) return false;
+    char icon[64];
+    GetEntPropString(bot, Prop_Send, "m_iszClassIcon", icon, sizeof(icon));
+    if (icon[0] == '\0') return false;
+    return team != g_PlayerTeam || !IsSupportIcon(icon) || g_AllyAwaited[bot];
+}
+
+// Players wear a robot down, and a scripted boss changes phase at the health
+// thresholds its popfile names (IfHealthBelow): a suicide went past all of
+// them, and a wave waiting on the next phase never ended. So the probe sets
+// the robot's health an eighth lower each half second, which no resistance
+// or buddha mode turns aside, and then makes it commit suicide.
+#define PROBE_WEAR_STEPS 8
+
+static void WearDown(int bot, float now)
+{
+    int health = GetClientHealth(bot);
+    if (g_BotHits[bot] >= PROBE_WEAR_STEPS || health <= 1)
+    {
+        ForcePlayerSuicide(bot);
+        g_BotDeadline[bot] = now + 5.0;
+        return;
+    }
+    int maxHealth = GetEntProp(bot, Prop_Data, "m_iMaxHealth");
+    if (maxHealth < health) maxHealth = health;
+    int step = maxHealth / PROBE_WEAR_STEPS;
+    if (step < 1) step = 1;
+    int next = health - step;
+    SetEntityHealth(bot, next < 1 ? 1 : next);
+    g_BotHits[bot]++;
+    g_BotDeadline[bot] = now + 0.5;
 }
 
 static bool IsScriptedTimerBot(int bot)
@@ -572,6 +702,7 @@ static int RegisterTank(int tank)
 
 public void OnEntityDestroyed(int entity)
 {
+    if (entity > 0 && entity <= 2048) g_NpcDeadline[entity] = 0.0;
     for (int i = 0; i < PROBE_MAX_TANKS; i++)
     {
         if (g_TankKillPending[i] && g_TankIndex[i] == entity)
@@ -594,6 +725,114 @@ static float KillDelay()
     return 15.0 + float(value % 1001) / 100.0;
 }
 
+// Game seconds the wave's robot count may stand still before the probe does
+// what only a player can: stand on a capture area the players' team takes.
+#define PROBE_CAPTURE_STALL 300.0
+
+// Trespasser's finale ends when RED captures its landing zone, a capture area
+// the players reach; no robot the probe kills moves the wave past it. When the
+// count has stood still that long, every enabled capture area fires the output
+// a capture by the players' team fires, and the probe waits as long again.
+static void CaptureWhenStalled(float now)
+{
+    int resource = FindEntityByClassname(-1, "tf_objective_resource");
+    int remaining = resource == -1 ? -1 : GetEntProp(resource, Prop_Send, "m_nMannVsMachineWaveEnemyCount");
+    if (remaining != g_StallRemaining)
+    {
+        g_StallRemaining = remaining;
+        g_StallSince = now;
+        g_StallCapturedAt = now;
+        for (int i = 0; i <= MaxClients; i++) g_AllyAwaited[i] = false;
+        return;
+    }
+    if (now - g_StallCapturedAt < PROBE_CAPTURE_STALL) return;
+    g_StallCapturedAt = now;
+    char output[16];
+    strcopy(output, sizeof(output), g_PlayerTeam == 2 ? "OnCapTeam1" : "OnCapTeam2");
+    int area = -1;
+    while ((area = FindEntityByClassname(area, "trigger_capture_area")) != -1)
+    {
+        if (HasEntProp(area, Prop_Data, "m_bDisabled") && GetEntProp(area, Prop_Data, "m_bDisabled") != 0) continue;
+        LogMessage("WAVEPROBE wave stood still at %d robots: %s on capture area %d", remaining, output, area);
+        FireEntityOutput(area, output, g_Defender > 0 ? g_Defender : -1);
+    }
+}
+
+// Reads sig_wave_dump: the names non-support wave spawns wait on to die, then
+// the players on the players' team alive in wave spawns of those names. On a
+// server without SigMod the command is unknown and no ally is awaited.
+// The dump names every live robot, thousands of skeletons on some missions,
+// so it is read only on a wave that has stood still, now and then, and when
+// an ally the wave lists as support is alive to be decided about.
+static void RefreshAwaitedAllies(float now)
+{
+    if (now - g_StallSince < 60.0 || now - g_AllyAwaitedAt < 30.0) return;
+    g_AllyAwaitedAt = now;
+    for (int i = 0; i <= MaxClients; i++) g_AllyAwaited[i] = false;
+    bool supportAlly = false;
+    char icon[64];
+    for (int bot = 1; bot <= MaxClients && !supportAlly; bot++)
+    {
+        if (!IsClientInGame(bot) || !IsFakeClient(bot) || bot == g_Defender || GetClientTeam(bot) != g_PlayerTeam
+            || !IsPlayerAlive(bot) || !HasEntProp(bot, Prop_Send, "m_iszClassIcon")) continue;
+        GetEntPropString(bot, Prop_Send, "m_iszClassIcon", icon, sizeof(icon));
+        supportAlly = icon[0] != '\0' && IsSupportIcon(icon);
+    }
+    if (!supportAlly) return;
+    ServerCommandEx(g_WaveDump, sizeof(g_WaveDump), "sig_wave_dump");
+    char awaited[32][64];
+    int count = 0;
+    char line[512];
+    int at = 0;
+    // First pass: what the counted wave spawns wait on.
+    while (at >= 0 && count < sizeof(awaited))
+    {
+        int len = SplitString(g_WaveDump[at], "\n", line, sizeof(line));
+        if (len == -1) break;
+        at += len;
+        if (StrContains(line, "sig_wave_dump: #") != 0 || StrContains(line, "state=DONE") != -1
+            || StrContains(line, "support=0") == -1) continue;
+        int w = StrContains(line, "waitdead=\"");
+        if (w == -1) continue;
+        char name[64];
+        strcopy(name, sizeof(name), line[w + 10]);
+        int q = FindCharInString(name, '"');
+        if (q > 0) { name[q] = '\0'; strcopy(awaited[count++], 64, name); }
+    }
+    if (count == 0) return;
+    // Second pass: who is alive in a wave spawn of an awaited name.
+    bool inAwaited = false;
+    at = 0;
+    while (at >= 0)
+    {
+        int len = SplitString(g_WaveDump[at], "\n", line, sizeof(line));
+        if (len == -1) break;
+        at += len;
+        if (StrContains(line, "sig_wave_dump: #") == 0)
+        {
+            inAwaited = false;
+            int n = StrContains(line, "name=\"");
+            if (n == -1) continue;
+            char name[64];
+            strcopy(name, sizeof(name), line[n + 6]);
+            int q = FindCharInString(name, '"');
+            if (q < 1) continue;
+            name[q] = '\0';
+            for (int i = 0; i < count; i++)
+            {
+                if (StrEqual(name, awaited[i], false)) { inAwaited = true; break; }
+            }
+        }
+        else if (inAwaited)
+        {
+            int a = StrContains(line, "alive #");
+            if (a == -1 || StrContains(line, " player ") == -1) continue;
+            int index = StringToInt(line[a + 7]);
+            if (index >= 1 && index <= MaxClients) g_AllyAwaited[index] = true;
+        }
+    }
+}
+
 public Action Timer_Probe(Handle timer)
 {
     if (g_Defender > 0) EnsureDefender();
@@ -614,10 +853,11 @@ public Action Timer_Probe(Handle timer)
     }
 
     float now = GetGameTime();
+    CaptureWhenStalled(now);
+    RefreshAwaitedAllies(now);
     for (int bot = 1; bot <= MaxClients; bot++)
     {
-        if (bot == g_Defender || !IsClientInGame(bot)
-            || GetClientTeam(bot) != g_EnemyTeam || !IsPlayerAlive(bot))
+        if (!IsClientInGame(bot) || !IsWaveRobot(bot) || !IsPlayerAlive(bot))
         {
             g_BotUserId[bot] = 0;
             g_BotKillPending[bot] = false;
@@ -626,10 +866,37 @@ public Action Timer_Probe(Handle timer)
         RegisterEnemyBot(bot);
         if (!IsScriptedTimerBot(bot) && now >= g_BotDeadline[bot])
         {
-            g_BotKillPending[bot] = true;
-            g_KillAttempts++;
-            ForcePlayerSuicide(bot);
-            g_BotDeadline[bot] = now + 5.0;
+            if (!g_BotKillPending[bot])
+            {
+                g_BotKillPending[bot] = true;
+                g_KillAttempts++;
+            }
+            WearDown(bot, now);
+        }
+    }
+
+    // A wave spawn's skeletons and Halloween bosses are NPCs, neither players
+    // nor tanks, and the wave spawn waits for them to die as for any robot:
+    // dreadwood's wave 3 waited on thirty skeletons until the time limit, and
+    // trespasser's first wave on a Horseless Headless Horsemann.
+    static const char npcClasses[][] = { "tf_zombie", "headless_hatman", "eyeball_boss", "merasmus" };
+    for (int c = 0; c < sizeof(npcClasses); c++)
+    {
+        int npc = -1;
+        while ((npc = FindEntityByClassname(npc, npcClasses[c])) != -1)
+        {
+            if (npc <= MaxClients || npc > 2048) continue;
+            if (GetEntProp(npc, Prop_Send, "m_iTeamNum") == g_PlayerTeam) continue;
+            if (g_NpcDeadline[npc] == 0.0)
+            {
+                g_NpcDeadline[npc] = now + 15.0;
+            }
+            else if (now >= g_NpcDeadline[npc])
+            {
+                g_KillAttempts++;
+                SDKHooks_TakeDamage(npc, g_Defender, g_Defender, 1000000.0);
+                g_NpcDeadline[npc] = now + 5.0;
+            }
         }
     }
 

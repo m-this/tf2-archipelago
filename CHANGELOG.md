@@ -46,11 +46,15 @@ in the release notes, so this file is the only place to write it.
   old download in place, so the next install stopped on the same "SHA-256
   mismatch". It now downloads the pack again and keeps the old file until the
   new one checks out. A mismatch you chose to ignore is left alone. By kelly-cs.
-- **SigMod missions on a Windows server crash far less.** The Windows build of
-  SigMod is updated: 83 of the 95 missions tested now play every wave, and the
-  server stops mid-mission on one of them, where it used to on about ten.
-  Robots that change attributes, map-scripted events, bots' dropped items and
-  swords all behave as they do on a Linux server.
+- **Repair on Windows also throws away the downloaded SigMod package.** It
+  only ever looked for the Linux file, so a broken download stayed in place.
+- **Every SigMod mission plays to the end on a Windows server.** The Windows
+  build of SigMod is updated, and all 95 community missions that need it now
+  play every wave, where about ten used to stop the server mid-mission. Robots
+  that change attributes, map-scripted events, bosses with several phases, bots'
+  dropped items and swords all behave as they do on a Linux server. A squad
+  with a gray robot in it no longer stalls its wave (Dust to Dust, wave 5).
+  Linux and Docker servers keep the regular SigMod release.
 
 ## v1.17.3
 

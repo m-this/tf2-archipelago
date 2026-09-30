@@ -1012,10 +1012,17 @@ func removeSigmod(modDir string) (bool, error) {
 	return found, nil
 }
 
+// sigmodCachePath is where this platform's SigMod package is kept between
+// installs. Clean removes the same file, so the two cannot disagree on its name.
+func sigmodCachePath(installRoot string) string {
+	version, _ := assets.SigsegvMVM()
+	return filepath.Join(installRoot, "downloads", "sigsegv-mvm-"+version+"-"+runtime.GOOS+".zip")
+}
+
 func cachedSigmod(ctx context.Context, installRoot string) ([]byte, error) {
 	cacheDir := filepath.Join(installRoot, "downloads")
 	version, _ := assets.SigsegvMVM()
-	path := filepath.Join(cacheDir, "sigsegv-mvm-"+version+"-"+runtime.GOOS+".zip")
+	path := sigmodCachePath(installRoot)
 	if data, err := os.ReadFile(path); err == nil && validSigmodPackage(data) {
 		return data, nil
 	}
@@ -1456,7 +1463,7 @@ func Clean(installRoot string) ([]string, error) {
 		filepath.Join(installRoot, "steamcmd"),
 		filepath.Join(installRoot, "tf-dedicated", "tf", "addons"),
 		filepath.Join(installRoot, "tf-dedicated", "steamapps"),
-		filepath.Join(installRoot, "downloads", "sigsegv-mvm-"+assets.SigsegvMVMVersion+"-linux.zip"),
+		sigmodCachePath(installRoot),
 	}
 	var removed []string
 	for _, target := range targets {
