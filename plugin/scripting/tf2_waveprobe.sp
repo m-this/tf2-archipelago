@@ -742,6 +742,7 @@ static void CaptureWhenStalled(float now)
         g_StallRemaining = remaining;
         g_StallSince = now;
         g_StallCapturedAt = now;
+        for (int i = 0; i <= MaxClients; i++) g_AllyAwaited[i] = false;
         return;
     }
     if (now - g_StallCapturedAt < PROBE_CAPTURE_STALL) return;
