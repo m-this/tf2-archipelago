@@ -51,6 +51,10 @@ int g_InitialEnemies;
 int g_StallRemaining = -2;
 float g_StallSince;
 float g_StallCapturedAt;
+// Allies a wave spawn the wave counts is waiting on, from SigMod's wave dump.
+bool g_AllyAwaited[MAXPLAYERS + 1];
+float g_AllyAwaitedAt;
+char g_WaveDump[65536];
 char g_FailureReason[32];
 int g_BotUserId[MAXPLAYERS + 1];
 bool g_BotKillPending[MAXPLAYERS + 1];
@@ -608,10 +612,9 @@ static bool IsSupportIcon(const char[] icon)
 // and the probe's own player have none. A robot on the players' team is an
 // ally: trespasser lost its wave when the probe killed its survivors, which
 // are support, and its finale waits on the military it sends, which are not.
-// So an ally whose icon the wave lists as support is left alone, until the
-// wave has stood still long enough that it can only be waiting on one:
-// dismal devilry's sixth wave waits for its VIP, support as well, to die.
-#define PROBE_ALLY_STALL 1200.0
+// So an ally whose icon the wave lists as support is left alone, unless a
+// wave spawn the wave counts waits for it to die: dismal devilry's sixth wave
+// waits on its VIP, support as well. SigMod's wave dump says which.
 static bool IsWaveRobot(int bot)
 {
     if (bot == g_Defender || !IsClientInGame(bot)) return false;
@@ -621,7 +624,7 @@ static bool IsWaveRobot(int bot)
     char icon[64];
     GetEntPropString(bot, Prop_Send, "m_iszClassIcon", icon, sizeof(icon));
     if (icon[0] == '\0') return false;
-    return team != g_PlayerTeam || !IsSupportIcon(icon) || GetGameTime() - g_StallSince >= PROBE_ALLY_STALL;
+    return team != g_PlayerTeam || !IsSupportIcon(icon) || g_AllyAwaited[bot];
 }
 
 // Players wear a robot down, and a scripted boss changes phase at the health
@@ -754,6 +757,68 @@ static void CaptureWhenStalled(float now)
     }
 }
 
+// Reads sig_wave_dump: the names non-support wave spawns wait on to die, then
+// the players on the players' team alive in wave spawns of those names. On a
+// server without SigMod the command is unknown and no ally is awaited.
+static void RefreshAwaitedAllies(float now)
+{
+    if (now - g_AllyAwaitedAt < 5.0) return;
+    g_AllyAwaitedAt = now;
+    for (int i = 0; i <= MaxClients; i++) g_AllyAwaited[i] = false;
+    ServerCommandEx(g_WaveDump, sizeof(g_WaveDump), "sig_wave_dump");
+    char awaited[32][64];
+    int count = 0;
+    char line[512];
+    int at = 0;
+    // First pass: what the counted wave spawns wait on.
+    while (at >= 0 && count < sizeof(awaited))
+    {
+        int len = SplitString(g_WaveDump[at], "\n", line, sizeof(line));
+        if (len == -1) break;
+        at += len;
+        if (StrContains(line, "sig_wave_dump: #") != 0 || StrContains(line, "state=DONE") != -1
+            || StrContains(line, "support=0") == -1) continue;
+        int w = StrContains(line, "waitdead=\"");
+        if (w == -1) continue;
+        char name[64];
+        strcopy(name, sizeof(name), line[w + 10]);
+        int q = FindCharInString(name, '"');
+        if (q > 0) { name[q] = '\0'; strcopy(awaited[count++], 64, name); }
+    }
+    if (count == 0) return;
+    // Second pass: who is alive in a wave spawn of an awaited name.
+    bool inAwaited = false;
+    at = 0;
+    while (at >= 0)
+    {
+        int len = SplitString(g_WaveDump[at], "\n", line, sizeof(line));
+        if (len == -1) break;
+        at += len;
+        if (StrContains(line, "sig_wave_dump: #") == 0)
+        {
+            inAwaited = false;
+            int n = StrContains(line, "name=\"");
+            if (n == -1) continue;
+            char name[64];
+            strcopy(name, sizeof(name), line[n + 6]);
+            int q = FindCharInString(name, '"');
+            if (q < 1) continue;
+            name[q] = '\0';
+            for (int i = 0; i < count; i++)
+            {
+                if (StrEqual(name, awaited[i], false)) { inAwaited = true; break; }
+            }
+        }
+        else if (inAwaited)
+        {
+            int a = StrContains(line, "alive #");
+            if (a == -1 || StrContains(line, " player ") == -1) continue;
+            int index = StringToInt(line[a + 7]);
+            if (index >= 1 && index <= MaxClients) g_AllyAwaited[index] = true;
+        }
+    }
+}
+
 public Action Timer_Probe(Handle timer)
 {
     if (g_Defender > 0) EnsureDefender();
@@ -775,6 +840,7 @@ public Action Timer_Probe(Handle timer)
 
     float now = GetGameTime();
     CaptureWhenStalled(now);
+    RefreshAwaitedAllies(now);
     for (int bot = 1; bot <= MaxClients; bot++)
     {
         if (!IsClientInGame(bot) || !IsWaveRobot(bot) || !IsPlayerAlive(bot))
