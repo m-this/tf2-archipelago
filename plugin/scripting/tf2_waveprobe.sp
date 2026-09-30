@@ -118,6 +118,7 @@ public void OnPluginStart()
     HookEvent("mvm_wave_failed", Event_WaveFailed);
     HookEvent("player_spawn", Event_PlayerSpawn);
     HookEvent("player_death", Event_PlayerDeath);
+    HookEvent("teamplay_flag_event", Event_FlagEvent);
     CreateTimer(PROBE_TICK, Timer_Probe, _, TIMER_REPEAT);
 }
 
@@ -525,6 +526,31 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
     {
         g_BotUserId[bot] = 0;
         g_BotDeadline[bot] = 0.0;
+    }
+}
+
+// tf_bot_flag_kill_on_touch makes a robot that picks up the bomb commit
+// suicide, which keeps an unguarded hatch from ending a population test. A
+// boss with phases dies that way at full health, past every IfHealthBelow
+// its popfile names: accursed's Chief took the bomb at its spawn and never
+// killed the entity wave 6 waits on. So a robot with a boss health bar drops
+// the bomb as it takes it, and lives until the wear-down reaches it.
+public void Event_FlagEvent(Event event, const char[] name, bool dontBroadcast)
+{
+    if (g_State != Probe_Running || event.GetInt("eventtype") != 1) return;
+    int carrier = event.GetInt("player");
+    if (carrier < 1 || carrier > MaxClients || !IsClientInGame(carrier) || GetClientTeam(carrier) != g_EnemyTeam
+        || !HasEntProp(carrier, Prop_Send, "m_bUseBossHealthBar") || GetEntProp(carrier, Prop_Send, "m_bUseBossHealthBar") == 0)
+    {
+        return;
+    }
+    int flag = -1;
+    while ((flag = FindEntityByClassname(flag, "item_teamflag")) != -1)
+    {
+        if (GetEntPropEnt(flag, Prop_Send, "moveparent") == carrier || GetEntPropEnt(flag, Prop_Send, "m_hOwnerEntity") == carrier)
+        {
+            AcceptEntityInput(flag, "ForceDrop");
+        }
     }
 }
 
