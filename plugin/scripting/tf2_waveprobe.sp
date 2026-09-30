@@ -760,11 +760,24 @@ static void CaptureWhenStalled(float now)
 // Reads sig_wave_dump: the names non-support wave spawns wait on to die, then
 // the players on the players' team alive in wave spawns of those names. On a
 // server without SigMod the command is unknown and no ally is awaited.
+// The dump names every live robot, thousands of skeletons on some missions,
+// so it is read only on a wave that has stood still, now and then, and when
+// an ally the wave lists as support is alive to be decided about.
 static void RefreshAwaitedAllies(float now)
 {
-    if (now - g_AllyAwaitedAt < 5.0) return;
+    if (now - g_StallSince < 60.0 || now - g_AllyAwaitedAt < 30.0) return;
     g_AllyAwaitedAt = now;
     for (int i = 0; i <= MaxClients; i++) g_AllyAwaited[i] = false;
+    bool supportAlly = false;
+    char icon[64];
+    for (int bot = 1; bot <= MaxClients && !supportAlly; bot++)
+    {
+        if (!IsClientInGame(bot) || !IsFakeClient(bot) || bot == g_Defender || GetClientTeam(bot) != g_PlayerTeam
+            || !IsPlayerAlive(bot) || !HasEntProp(bot, Prop_Send, "m_iszClassIcon")) continue;
+        GetEntPropString(bot, Prop_Send, "m_iszClassIcon", icon, sizeof(icon));
+        supportAlly = icon[0] != '\0' && IsSupportIcon(icon);
+    }
+    if (!supportAlly) return;
     ServerCommandEx(g_WaveDump, sizeof(g_WaveDump), "sig_wave_dump");
     char awaited[32][64];
     int count = 0;
