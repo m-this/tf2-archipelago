@@ -47,6 +47,9 @@ int g_BotSpawns;
 int g_TankSpawns;
 int g_KillAttempts;
 int g_InitialEnemies;
+// The robots left to kill, and since when that count has not moved.
+int g_StallRemaining = -2;
+float g_StallSince;
 char g_FailureReason[32];
 int g_BotUserId[MAXPLAYERS + 1];
 bool g_BotKillPending[MAXPLAYERS + 1];
@@ -170,6 +173,8 @@ static void ResetProbe()
     g_TankSpawns = 0;
     g_KillAttempts = 0;
     g_InitialEnemies = 0;
+    g_StallRemaining = -2;
+    g_StallSince = GetGameTime();
     g_FailureReason[0] = '\0';
     g_ArmedAt = 0.0;
     g_StartedAt = 0.0;
@@ -697,6 +702,37 @@ static float KillDelay()
     return 15.0 + float(value % 1001) / 100.0;
 }
 
+// Game seconds the wave's robot count may stand still before the probe does
+// what only a player can: stand on a capture area the players' team takes.
+#define PROBE_CAPTURE_STALL 300.0
+
+// Trespasser's finale ends when RED captures its landing zone, a capture area
+// the players reach; no robot the probe kills moves the wave past it. When the
+// count has stood still that long, every enabled capture area fires the output
+// a capture by the players' team fires, and the probe waits as long again.
+static void CaptureWhenStalled(float now)
+{
+    int resource = FindEntityByClassname(-1, "tf_objective_resource");
+    int remaining = resource == -1 ? -1 : GetEntProp(resource, Prop_Send, "m_nMannVsMachineWaveEnemyCount");
+    if (remaining != g_StallRemaining)
+    {
+        g_StallRemaining = remaining;
+        g_StallSince = now;
+        return;
+    }
+    if (now - g_StallSince < PROBE_CAPTURE_STALL) return;
+    g_StallSince = now;
+    char output[16];
+    strcopy(output, sizeof(output), g_PlayerTeam == 2 ? "OnCapTeam1" : "OnCapTeam2");
+    int area = -1;
+    while ((area = FindEntityByClassname(area, "trigger_capture_area")) != -1)
+    {
+        if (HasEntProp(area, Prop_Data, "m_bDisabled") && GetEntProp(area, Prop_Data, "m_bDisabled") != 0) continue;
+        LogMessage("WAVEPROBE wave stood still at %d robots: %s on capture area %d", remaining, output, area);
+        FireEntityOutput(area, output, g_Defender > 0 ? g_Defender : -1);
+    }
+}
+
 public Action Timer_Probe(Handle timer)
 {
     if (g_Defender > 0) EnsureDefender();
@@ -717,6 +753,7 @@ public Action Timer_Probe(Handle timer)
     }
 
     float now = GetGameTime();
+    CaptureWhenStalled(now);
     for (int bot = 1; bot <= MaxClients; bot++)
     {
         if (!IsClientInGame(bot) || !IsWaveRobot(bot) || !IsPlayerAlive(bot))
