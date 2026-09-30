@@ -146,6 +146,17 @@ public void OnClientPutInServer(int client)
 {
     SDKHook(client, SDKHook_OnTakeDamage, DefenderDamage);
     SDKHook(client, SDKHook_SpawnPost, ClientSpawnPost);
+    SDKHook(client, SDKHook_OnTakeDamageAlivePost, GiantHitPost);
+}
+
+public void GiantHitPost(int victim, int attacker, int inflictor, float damage, int damagetype, int weapon,
+    const float damageForce[3], const float damagePosition[3], int damagecustom)
+{
+    if (!IsClientInGame(victim) || GetEntProp(victim, Prop_Send, "m_bIsMiniBoss") == 0 || GetClientHealth(victim) > 1) return;
+    char cls[64];
+    if (inflictor > 0 && IsValidEntity(inflictor)) GetEntityClassname(inflictor, cls, sizeof(cls));
+    LogMessage("WAVEPROBE hit %N to %d by %d inflictor %s damage %.0f type %d custom %d", victim, GetClientHealth(victim),
+        attacker, cls, damage, damagetype, damagecustom);
 }
 
 // MvM hands a dead robot's client, userid and all, to the next robot it
