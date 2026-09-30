@@ -490,6 +490,13 @@ public void Event_WaveFailed(Event event, const char[] name, bool dontBroadcast)
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
     int bot = GetClientOfUserId(event.GetInt("userid"));
+    if (bot > 0 && IsClientInGame(bot) && GetEntProp(bot, Prop_Data, "m_iMaxHealth") >= 1000)
+    {
+        char weapon[64];
+        event.GetString("weapon", weapon, sizeof(weapon));
+        LogMessage("WAVEPROBE death %N step %d attacker %d weapon %s custom %d bits %d", bot, g_BotHits[bot],
+            GetClientOfUserId(event.GetInt("attacker")), weapon, event.GetInt("customkill"), event.GetInt("damagebits"));
+    }
     if (bot > 0 && g_BotKillPending[bot])
     {
         g_BotKills++;
