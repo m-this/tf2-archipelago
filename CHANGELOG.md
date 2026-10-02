@@ -4,7 +4,7 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
-## Unreleased
+## v1.17.8
 
 ### Fixed
 
