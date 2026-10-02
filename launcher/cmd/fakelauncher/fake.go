@@ -132,6 +132,7 @@ func (f *fake) snapshotLocked() webapi.Snapshot {
 		Notice:         f.notice,
 		NoticeSeq:      f.noticeSeq,
 		ItemServer:     "item server: ready",
+		GameBuild:      "16234567",
 	}
 	screen := f.screenLocked()
 	snapshot.Form, snapshot.FormPage = screen.Form, screen.Page

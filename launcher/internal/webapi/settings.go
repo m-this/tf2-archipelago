@@ -489,11 +489,23 @@ func (a *App) ignoreCommunityArchiveHashMismatch(s settings.Settings) {
 // state and a line that remains visible on the settings page. Progress updates
 // replace that line instead of making the player hunt through the server log.
 func (a *App) beginSettingsActivity(message string) (context.Context, func(), bool) {
+	ctx, done, err := a.claimActivity(message)
+	if err != nil {
+		a.Notify(err.Error())
+		return nil, func() {}, false
+	}
+	return ctx, done, true
+}
+
+var errActivityRunning = errors.New("another install or update is already running")
+
+// claimActivity takes the one busy slot that Start, installs and updates
+// share, or refuses with errActivityRunning.
+func (a *App) claimActivity(message string) (context.Context, func(), error) {
 	a.mu.Lock()
 	if a.busy {
 		a.mu.Unlock()
-		a.Notify("another install is already running")
-		return nil, func() {}, false
+		return nil, nil, errActivityRunning
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	a.busy, a.install, a.activity = true, cancel, message
@@ -506,7 +518,7 @@ func (a *App) beginSettingsActivity(message string) (context.Context, func(), bo
 		a.busy, a.install, a.activity = false, nil, ""
 		a.publishLocked(Event{Name: "state", Data: struct{}{}})
 		a.mu.Unlock()
-	}, true
+	}, nil
 }
 
 func (a *App) reportSettingsActivity(format string, args ...any) {

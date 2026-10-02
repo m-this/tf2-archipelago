@@ -69,7 +69,7 @@ func updateGame(ctx context.Context, steamcmdDir, gameDir string, logf func(stri
 	}
 
 	stuck := errors.Is(err, errUpdateStuck)
-	manifest := filepath.Join(gameDir, "steamapps", "appmanifest_"+AppID+".acf")
+	manifest := manifestPath(gameDir)
 	aside := manifest + ".0x6-" + time.Now().Format("2006-01-02T150405")
 	if stuck {
 		switch err := os.Rename(manifest, aside); {

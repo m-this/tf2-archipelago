@@ -87,6 +87,13 @@ func (s launcherRPC) ApproveFunnel(context.Context, *connect.Request[launcherv1.
 	}), nil
 }
 
+// UpdateGame has no SteamCMD behind it: the build is already the newest one.
+func (s launcherRPC) UpdateGame(context.Context, *connect.Request[launcherv1.UpdateGameRequest]) (*connect.Response[launcherv1.UpdateGameResponse], error) {
+	s.fake.say("TF2 is up to date")
+	s.fake.redraw()
+	return connect.NewResponse(&launcherv1.UpdateGameResponse{}), nil
+}
+
 type settingsRPC struct{ fake *fake }
 
 func (s settingsRPC) OpenSettings(_ context.Context, request *connect.Request[launcherv1.OpenSettingsRequest]) (*connect.Response[launcherv1.OpenSettingsResponse], error) {

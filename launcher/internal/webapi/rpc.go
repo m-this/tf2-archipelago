@@ -102,6 +102,17 @@ func (s LauncherRPC) ApproveFunnel(ctx context.Context, _ *connect.Request[launc
 	return connect.NewResponse(response), nil
 }
 
+// UpdateGame answers once the update has begun; the stream carries its
+// progress. A refusal, an update or install already running, is the error.
+//
+//nolint:contextcheck // The update outlives the request, the way Start does.
+func (s LauncherRPC) UpdateGame(context.Context, *connect.Request[launcherv1.UpdateGameRequest]) (*connect.Response[launcherv1.UpdateGameResponse], error) {
+	if err := s.App.UpdateGame(); err != nil {
+		return nil, connect.NewError(connect.CodeFailedPrecondition, err)
+	}
+	return connect.NewResponse(&launcherv1.UpdateGameResponse{}), nil
+}
+
 // SettingsRPC is SettingsService over one App.
 type SettingsRPC struct{ App *App }
 

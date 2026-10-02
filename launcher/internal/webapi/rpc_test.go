@@ -358,3 +358,18 @@ func TestFunnelSaysHowToFixTheUsualFailure(t *testing.T) {
 		t.Errorf("a different failure lost what Tailscale said: %v", err)
 	}
 }
+
+// A refused update is the player's to read, so it comes back as the error with
+// the launcher's words in it rather than as a silent no-op.
+func TestUpdateGameRefusalReachesTheBrowser(t *testing.T) {
+	app := newUpdateApp(t)
+	_, done, ok := app.beginSettingsActivity("Preparing selected server mods…")
+	if !ok {
+		t.Fatal("the install was refused")
+	}
+	defer done()
+	_, err := LauncherRPC{App: app}.UpdateGame(context.Background(), connect.NewRequest(&launcherv1.UpdateGameRequest{}))
+	if connect.CodeOf(err) != connect.CodeFailedPrecondition || !strings.Contains(err.Error(), errActivityRunning.Error()) {
+		t.Fatalf("update during an install = %v", err)
+	}
+}

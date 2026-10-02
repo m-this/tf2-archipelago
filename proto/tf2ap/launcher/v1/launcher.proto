@@ -21,6 +21,10 @@ service LauncherService {
   rpc SetMission(SetMissionRequest) returns (SetMissionResponse);
   rpc ResumeMission(ResumeMissionRequest) returns (ResumeMissionResponse);
   rpc ApproveFunnel(ApproveFunnelRequest) returns (ApproveFunnelResponse);
+  // UpdateGame brings TF2 to Steam's current build: it stops a running
+  // server, updates, and starts it again. A server that was stopped stays
+  // stopped. Refused while an install or another update is running.
+  rpc UpdateGame(UpdateGameRequest) returns (UpdateGameResponse);
 }
 
 // ServerStatus is what the status bar reads. Starting covers both the install
@@ -175,6 +179,15 @@ message Snapshot {
 
   // Public room page URL, used to open the campaign tracker on this room.
   string tracker_room_url = 24;
+
+  // The Steam build of the installed TF2 server, empty when it cannot be read.
+  string game_build = 25;
+
+  // The running server said Steam has a newer TF2 build. Cleared by an update.
+  bool game_update_available = 26;
+
+  // Why the last TF2 update failed, empty once one succeeds or starts again.
+  string game_update_error = 27;
 }
 
 message GetSnapshotRequest {}
@@ -244,3 +257,7 @@ message ApproveFunnelResponse {
   string approval_url = 1;
   string message = 2;
 }
+
+message UpdateGameRequest {}
+
+message UpdateGameResponse {}
