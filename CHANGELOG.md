@@ -4,6 +4,14 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
+## Unreleased
+
+### Fixed
+
+- **Caliginous Caper plays on a server started from the Windows or Linux
+  launcher.** The server now makes the mission's file from the game's own files
+  when it starts.
+
 ## v1.17.7
 
 ### Fixed

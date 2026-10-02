@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/m-this/tf2-archipelago/launcher/internal/stockpop"
 	"github.com/m-this/tf2-archipelago/launcher/internal/winproc"
 )
 
@@ -49,13 +50,31 @@ func gamePath(installRoot string) string { return filepath.Join(installRoot, "tf
 
 // UpdateGame brings the installed TF2 server to Steam's current build. Run it
 // after Ensure and before every start: a server one build behind refuses every
-// client that has updated.
+// client that has updated. It then remakes Caliginous Caper's mission from the
+// build that will run, updated or not.
 func UpdateGame(ctx context.Context, installRoot string, logf func(string, ...any)) error {
 	gameDir := gamePath(installRoot)
 	if !gameInstalled(gameDir) {
 		return fmt.Errorf("the TF2 dedicated server is not installed in %s", gameDir)
 	}
-	return updateGame(ctx, steamcmdPath(installRoot), gameDir, logf)
+	err := updateGame(ctx, steamcmdPath(installRoot), gameDir, logf)
+	if ctx.Err() == nil {
+		installStockMission(filepath.Join(gameDir, "tf"), logf)
+	}
+	return err
+}
+
+// installStockMission writes the file the plugin plays Caliginous Caper from.
+// Without it the plugin refuses that one mission and the rest of the run still
+// plays, so a failure is a warning and never stops a start.
+func installStockMission(modDir string, logf func(string, ...any)) {
+	changed, err := stockpop.Install(modDir, stockpop.Destination(modDir))
+	switch {
+	case err != nil:
+		logf("Caliginous Caper cannot be played on this server: its mission could not be made from the game's files (%v)", err)
+	case changed:
+		logf("made Caliginous Caper's mission from the game's files")
+	}
 }
 
 // updateGame runs app_update on an installed server, without validate, which
