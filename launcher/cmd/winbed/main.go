@@ -42,6 +42,7 @@ type options struct {
 	port    int
 	install bool
 	serve   bool
+	bots    bool
 }
 
 func main() {
@@ -54,6 +55,7 @@ func main() {
 	flag.IntVar(&opt.port, "port", 27015, "game port, also rcon")
 	flag.BoolVar(&opt.install, "install", false, "install the server, the packs, SigMod and the probe, then exit")
 	flag.BoolVar(&opt.serve, "serve", false, "run the game server until interrupted")
+	flag.BoolVar(&opt.bots, "bots", os.Getenv("WINBED_BOTS") == "1", "fill RED with defender bots, which shop at the upgrade station (WINBED_BOTS=1)")
 	flag.Parse()
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	if err := run(opt, logger); err != nil {
@@ -79,7 +81,8 @@ func run(opt options, logger *slog.Logger) error {
 }
 
 // bedSettings is the launcher's defaults with what the Docker probe sets:
-// a LAN server with no bots and no room, SigMod loaded whatever the mission.
+// a LAN server with no room, SigMod loaded whatever the mission. Bots are off
+// unless asked for; with them on, their purchases go through the upgrade code.
 func bedSettings(opt options) settings.Settings {
 	s := settings.Defaults()
 	s.InstallRoot = opt.root
@@ -91,7 +94,8 @@ func bedSettings(opt options) settings.Settings {
 	s.SrcdsPort = opt.port
 	s.SrcdsMaxPlayers = 32
 	s.SrcdsReach = settings.ReachLan
-	s.SrcdsBots = false
+	s.SrcdsBots = opt.bots
+	s.BotUpgradesChat = opt.bots
 	s.TestMode = false
 	s.FastDLPort = 0
 	s.SrcdsStartMap = "mvm_decoy"
