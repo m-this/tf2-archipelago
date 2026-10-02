@@ -6,6 +6,12 @@ in the release notes, so this file is the only place to write it.
 
 ## Unreleased
 
+### Changed
+
+- **Windows labels SigMod as unstable instead of beta.** The Windows build of
+  SigMod is this project's own port, and it has crashed servers. The word says
+  that plainly.
+
 ### Added
 
 - **Update TF2 from the Game server settings page.** The page shows the TF2

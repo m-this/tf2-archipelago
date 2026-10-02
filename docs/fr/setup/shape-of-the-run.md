@@ -180,7 +180,7 @@ contient déjà : enregistrez le choix et recréez les conteneurs pour l'appliq
 Le désactiver laisse les fichiers en place, donc le réactiver ne coûte aucun
 téléchargement.
 
-Sur Windows la ligne affiche **SigMod (beta)**. Linux et Docker utilisent
+Sur Windows la ligne affiche **SigMod (unstable)**. Linux et Docker utilisent
 la version publiée par le mod lui-même, que des joueurs font tourner tous les
 jours. Windows n'a pas cette version : il télécharge le portage de ce projet.
 Ce portage a fait planter le serveur d'un joueur. Laissez-le sur **only when a

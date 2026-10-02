@@ -138,17 +138,17 @@ func TestSigmodWarnsOnWindowsOnly(t *testing.T) {
 }
 
 /*
-The Windows row is labelled beta, and no other row is.
+The Windows row is labelled unstable, and no other row is.
 
 Windows downloads this project's port; Linux and Docker download upstream's
 release. The label is the one place a player sees that difference before they
 pick, so a Linux label carrying it would be a lie about their build.
 */
-func TestSigmodIsLabelledBetaOnWindowsOnly(t *testing.T) {
+func TestSigmodIsLabelledUnstableOnWindowsOnly(t *testing.T) {
 	state := NewState(settings.Defaults())
 	windows, _ := Build(state, Env{Platform: "windows"}).Field("missions.mod.sigsegv-mvm")
-	if windows.Label != "SigMod (beta)" {
-		t.Errorf("Windows SigMod label = %q, want SigMod (beta)", windows.Label)
+	if windows.Label != "SigMod (unstable)" {
+		t.Errorf("Windows SigMod label = %q, want SigMod (unstable)", windows.Label)
 	}
 	linux, _ := Build(state, Env{Platform: "linux"}).Field("missions.mod.sigsegv-mvm")
 	if linux.Label != "SigMod" {
