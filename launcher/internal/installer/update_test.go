@@ -2,19 +2,22 @@ package installer
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/m-this/tf2-archipelago/launcher/internal/assets"
 )
 
 // fakeSteamcmd writes a steamcmd.sh that records every command line and
 // answers each app_update with the next of outcomes: "ok", "stuck" (state
-// 0x6), or "lost" (state 0x602).
+// 0x6), "lost" (state 0x602), or "hang" (no answer).
 func fakeSteamcmd(t *testing.T, outcomes ...string) (steamcmdDir, gameDir string, calls func() []string) {
 	t.Helper()
 	if runtime.GOOS == "windows" {
@@ -43,6 +46,7 @@ case "$(sed -n "${n}p" "$dir/outcomes")" in
 stuck) echo "Error! App '232250' state is 0x6 after update job."; exit 8 ;;
 lost) echo "Error! App '232250' state is 0x602 after update job."; exit 8 ;;
 ok) echo "Success! App '232250' fully installed."; exit 0 ;;
+hang) exec sleep 30 ;;
 *) echo "unexpected app_update number $n"; exit 99 ;;
 esac
 `
@@ -192,8 +196,8 @@ func TestUpdateGameStopsAfterASecondStateZeroX6(t *testing.T) {
 	manifest := writeManifest(t, gameDir)
 
 	err := updateGame(context.Background(), steamcmdDir, gameDir, discard)
-	if err == nil {
-		t.Fatal("a second 0x6 was not an error")
+	if err == nil || errors.Is(err, ErrGameNotUpdated) {
+		t.Fatalf("a second 0x6 = %v, want an error that stops a start", err)
 	}
 	if !strings.Contains(err.Error(), manifest) {
 		t.Errorf("the error does not name the manifest %s: %v", manifest, err)
@@ -210,8 +214,9 @@ func TestUpdateGameCarriesOnWhenSteamCannotUpdate(t *testing.T) {
 	steamcmdDir, gameDir, calls := fakeSteamcmd(t, "lost", "lost", "ok")
 	manifest := writeManifest(t, gameDir)
 
-	if err := updateGame(context.Background(), steamcmdDir, gameDir, discard); err != nil {
-		t.Fatalf("updateGame: %v", err)
+	err := updateGame(context.Background(), steamcmdDir, gameDir, discard)
+	if !errors.Is(err, ErrGameNotUpdated) || !strings.Contains(err.Error(), "0x602") {
+		t.Fatalf("updateGame = %v, want ErrGameNotUpdated naming the 0x602", err)
 	}
 	if n := len(appUpdates(calls())); n != 2 {
 		t.Errorf("ran %d app_update, want 2: %v", n, calls())
@@ -227,8 +232,9 @@ func TestUpdateGameCarriesOnWhenSteamCannotUpdate(t *testing.T) {
 func TestUpdateGameStartsTheInstalledBuildWhenTheStuckManifestIsMissing(t *testing.T) {
 	steamcmdDir, gameDir, calls := fakeSteamcmd(t, "stuck", "ok")
 
-	if err := updateGame(context.Background(), steamcmdDir, gameDir, discard); err != nil {
-		t.Fatalf("updateGame: %v", err)
+	err := updateGame(context.Background(), steamcmdDir, gameDir, discard)
+	if !errors.Is(err, ErrGameNotUpdated) || !strings.Contains(err.Error(), "not there to set aside") {
+		t.Fatalf("updateGame = %v, want ErrGameNotUpdated naming the missing manifest", err)
 	}
 	if n := len(appUpdates(calls())); n != 1 {
 		t.Errorf("ran %d app_update, want 1: %v", n, calls())
@@ -268,5 +274,46 @@ func TestStuckUpdateLine(t *testing.T) {
 				t.Errorf("stuckUpdate(%q) = %v, want %v", tt.line, got, tt.want)
 			}
 		})
+	}
+}
+
+func TestUpdateGameGivesUpAtTheTimeLimit(t *testing.T) {
+	steamcmdDir, gameDir, _ := fakeSteamcmd(t, "hang")
+	limit := gameUpdateTimeout
+	gameUpdateTimeout = 200 * time.Millisecond
+	t.Cleanup(func() { gameUpdateTimeout = limit })
+
+	err := updateGame(context.Background(), steamcmdDir, gameDir, discard)
+	if !errors.Is(err, ErrGameNotUpdated) || !strings.Contains(err.Error(), "longer than") {
+		t.Fatalf("updateGame = %v, want ErrGameNotUpdated naming the time limit", err)
+	}
+}
+
+func TestUpdateGameStoppedIsNotASoftFailure(t *testing.T) {
+	steamcmdDir, gameDir, _ := fakeSteamcmd(t, "hang")
+	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	defer cancel()
+
+	if err := updateGame(ctx, steamcmdDir, gameDir, discard); err == nil || errors.Is(err, ErrGameNotUpdated) {
+		t.Fatalf("a cancelled update = %v, want the cancellation, not ErrGameNotUpdated", err)
+	}
+}
+
+func TestStartAnywayCarriesOnOnlyWithoutTheUpdate(t *testing.T) {
+	var said []string
+	logf := func(format string, args ...any) { said = append(said, fmt.Sprintf(format, args...)) }
+
+	if err := StartAnyway(notUpdated(errors.New("0x602")), logf); err != nil {
+		t.Fatalf("a start stopped on ErrGameNotUpdated: %v", err)
+	}
+	if len(said) != 1 || !strings.Contains(said[0], "Starting the installed build") {
+		t.Errorf("a start without the update said %q", said)
+	}
+	stuck := errors.New("the TF2 update is stuck")
+	if err := StartAnyway(stuck, logf); !errors.Is(err, stuck) {
+		t.Errorf("a start carried on past %v: %v", stuck, err)
+	}
+	if err := StartAnyway(nil, logf); err != nil || len(said) != 1 {
+		t.Errorf("a good update = %v, said %q", err, said)
 	}
 }

@@ -132,7 +132,7 @@ func install(logger *slog.Logger, s settings.Settings) error {
 	if _, err := installer.Ensure(context.Background(), s.InstallRoot, settings.CommunityArchives(s), settings.ServerModKeys(s), logf(logger)); err != nil {
 		return err
 	}
-	return installer.UpdateGame(context.Background(), s.InstallRoot, logf(logger))
+	return installer.StartAnyway(installer.UpdateGame(context.Background(), s.InstallRoot, logf(logger)), logf(logger))
 }
 
 // trayIcon is the same picture the .exe carries, for the notification area.
@@ -252,7 +252,7 @@ func ensureInstalled(s settings.Settings, logger *slog.Logger) settings.Settings
 		logger.Error("install failed", "error", err, "advice", installer.RepairAdvice)
 		os.Exit(1)
 	}
-	if err := installer.UpdateGame(context.Background(), s.InstallRoot, logf(logger)); err != nil {
+	if err := installer.StartAnyway(installer.UpdateGame(context.Background(), s.InstallRoot, logf(logger)), logf(logger)); err != nil {
 		logger.Error("TF2 update failed", "error", err)
 		os.Exit(1)
 	}

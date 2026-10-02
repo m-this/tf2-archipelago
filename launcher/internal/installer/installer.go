@@ -1264,6 +1264,9 @@ func runSteamcmd(ctx context.Context, exe, dir string, logf func(string, ...any)
 		}
 		return fmt.Errorf("%w (%w)", errUpdateStuck, err)
 	}
+	if err != nil && output.steamcmdError != "" {
+		return fmt.Errorf("%s (%w)", output.steamcmdError, err)
+	}
 	return err
 }
 
@@ -1438,6 +1441,10 @@ type lineSplitter struct {
 	// printing: it decides what the caller tells the operator to do.
 	saw32BitFailure bool
 	sawStuckUpdate  bool
+
+	// steamcmdError is SteamCMD's last "Error!" line, which says why it
+	// failed where the exit status only says that it did.
+	steamcmdError string
 }
 
 func (l *lineSplitter) Write(p []byte) (int, error) {
@@ -1456,6 +1463,9 @@ func (l *lineSplitter) Write(p []byte) (int, error) {
 			}
 			if stuckUpdate(line) {
 				l.sawStuckUpdate = true
+			}
+			if strings.HasPrefix(strings.TrimSpace(line), "Error!") {
+				l.steamcmdError = strings.TrimSpace(line)
 			}
 			if advice := steamcmdStateAdvice(line); advice != "" {
 				l.logf("%s", advice)

@@ -3,11 +3,13 @@ package webapi
 import (
 	"context"
 	"errors"
+	"fmt"
 	"slices"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/m-this/tf2-archipelago/launcher/internal/installer"
 	apruntime "github.com/m-this/tf2-archipelago/launcher/internal/runtime"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 )
@@ -184,5 +186,26 @@ func TestAttachedUpdateNamesCompose(t *testing.T) {
 	app := NewAttached(settings.Defaults(), nil, "")
 	if err := app.UpdateGame(); err == nil || !strings.Contains(err.Error(), "docker compose") {
 		t.Fatalf("attached update = %v, want Compose advice", err)
+	}
+}
+
+// UpdateGame's soft failure lets a start carry on with the installed build.
+// Asked for by the player, it is a failure: nothing was updated.
+func TestAnUpdateThatDidNotHappenIsAFailure(t *testing.T) {
+	app := newUpdateApp(t)
+	app.gameUpdateAvailable = true
+	game := &fakeGame{running: true, failure: fmt.Errorf("%w (state 0x602)", installer.ErrGameNotUpdated)}
+	run, err := app.beginGameUpdate(game)
+	if err != nil {
+		t.Fatal(err)
+	}
+	run()
+	if want := []string{"stop", "update", "start"}; !slices.Equal(game.steps, want) {
+		t.Fatalf("steps = %v, want %v", game.steps, want)
+	}
+	snapshot := app.Snapshot()
+	if !snapshot.GameUpdateAvailable || !strings.Contains(snapshot.GameUpdateError, "0x602") {
+		t.Fatalf("after an update that did not happen: available %v, error %q",
+			snapshot.GameUpdateAvailable, snapshot.GameUpdateError)
 	}
 }
