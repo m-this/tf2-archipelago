@@ -62,6 +62,15 @@ describe('the launcher store', () => {
     expect(store.logs()).toHaveLength(1);
   });
 
+  it('reads the TF2 build and whether Steam has a newer one', () => {
+    frames.next(
+      snapshot({ gameBuild: '16234567', gameUpdateAvailable: true, gameUpdateError: 'stuck' }),
+    );
+    expect(store.gameBuild()).toBe('16234567');
+    expect(store.gameUpdateAvailable()).toBe(true);
+    expect(store.gameUpdateError()).toBe('stuck');
+  });
+
   it('keeps the log when a redraw arrives without one', () => {
     frames.next(snapshot({ logs: [create(LogLineSchema, { text: 'kept' })] }));
     frames.next(snapshot({ status: ServerStatus.RUNNING }));
