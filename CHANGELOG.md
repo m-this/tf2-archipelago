@@ -14,6 +14,9 @@ in the release notes, so this file is the only place to write it.
   The server now installs a SigMod rebuilt for the new game. SigMod on a Windows
   server still crashes on this TF2 update: leave SigMod missions out of the run
   there until a Windows build follows.
+- **A run generated with v1.11 to v1.13 keeps going on this release.** The
+  server refused it at connect, so updating meant losing the run. It now plays
+  it with the options it was generated with, and every check counts.
 
 ## v1.17.4
 
