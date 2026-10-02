@@ -159,6 +159,21 @@ func SourceModWasUpdated(line string) bool {
 	return strings.Contains(line, sourcemodUpdatedPrefix)
 }
 
+// gameUpdateLine is srcds passing on Steam's word that a newer TF2 build is
+// out. The running server keeps the old one, and clients that updated cannot
+// join it until it is updated and started again.
+const gameUpdateLine = "Your server needs to be restarted in order to receive the latest update"
+
+// gameUpdatePattern holds the line at its start, past colors and a log
+// timestamp, so a player quoting it in chat does not raise it.
+var gameUpdatePattern = regexp.MustCompile(`^(L \d\d/\d\d/\d{4} - \d\d:\d\d:\d\d: )?` + regexp.QuoteMeta(gameUpdateLine))
+
+// GameUpdateRequired reports whether this line is Steam saying the installed
+// TF2 server is behind.
+func GameUpdateRequired(line string) bool {
+	return gameUpdatePattern.MatchString(strings.TrimSpace(consoleCSI.ReplaceAllString(line, "")))
+}
+
 /* itemSchemaPrefix is srcds saying it reached Steam's item server.
  *
  * That server is what hands out weapons. Without it every player and every bot

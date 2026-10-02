@@ -56,32 +56,35 @@ type Event struct {
 type App struct {
 	mu sync.Mutex
 
-	settings        settings.Settings
-	supervisor      *apruntime.Supervisor
-	logs            []apruntime.Line
-	busy            bool
-	activity        string
-	install         context.CancelFunc
-	steamURL        string
-	mission         string
-	snapshot        session.Snapshot
-	fetchErr        error
-	notice          string
-	noticeSeq       uint64
-	draft           *form.State
-	formPage        string
-	community       []string
-	imported        []string
-	serverMods      []string
-	smAsked         bool
-	smHeld          bool
-	itemServer      string
-	logFile         *os.File
-	attached        bool
-	attachedUp      bool
-	attachedEnvFile string
-	authorizeFunnel func(context.Context) (tailscalefastdl.Authorization, error)
-	funnelAdvice    func(error) string
+	settings            settings.Settings
+	supervisor          *apruntime.Supervisor
+	logs                []apruntime.Line
+	busy                bool
+	activity            string
+	install             context.CancelFunc
+	steamURL            string
+	mission             string
+	snapshot            session.Snapshot
+	fetchErr            error
+	notice              string
+	noticeSeq           uint64
+	draft               *form.State
+	formPage            string
+	community           []string
+	imported            []string
+	serverMods          []string
+	smAsked             bool
+	smHeld              bool
+	itemServer          string
+	gameBuild           string
+	gameUpdateAvailable bool
+	gameUpdateError     string
+	logFile             *os.File
+	attached            bool
+	attachedUp          bool
+	attachedEnvFile     string
+	authorizeFunnel     func(context.Context) (tailscalefastdl.Authorization, error)
+	funnelAdvice        func(error) string
 
 	listeners map[*Listener]struct{}
 	quit      chan struct{}
@@ -103,6 +106,7 @@ func New(s settings.Settings, logger *slog.Logger) *App {
 		funnelAdvice: funnelSetupAdvice,
 	}
 	a.supervisor = apruntime.NewSupervisor(s, logger, a.append)
+	a.gameBuild = a.readGameBuild(s.InstallRoot)
 	return a
 }
 
@@ -125,13 +129,13 @@ func (a *App) append(line apruntime.Line) {
 		a.logs = a.logs[len(a.logs)-linesMax:]
 	}
 	restart := false
-	addressChanged := false
+	stateChanged := false
 	if a.logFile != nil {
 		_, _ = fmt.Fprintf(a.logFile, "%s  %-8s %s\n", line.At.Format("15:04:05"), line.Source, line.Text)
 	}
 	if line.Source == "srcds" {
 		if address := apruntime.FakeIPAddress(strings.TrimSpace(line.Text)); address != "" {
-			addressChanged = address != a.steamURL
+			stateChanged = address != a.steamURL
 			a.steamURL = address
 		}
 		if mission := apruntime.LoadedMission(line.Text); mission != "" {
@@ -140,6 +144,10 @@ func (a *App) append(line apruntime.Line) {
 		if note := apruntime.ItemServerLine(line.Text); note != "" {
 			a.itemServer = note
 		}
+		if apruntime.GameUpdateRequired(line.Text) && !a.gameUpdateAvailable {
+			a.gameUpdateAvailable = true
+			stateChanged = true
+		}
 		if apruntime.SourceModWasUpdated(line.Text) && !a.smAsked {
 			a.smAsked = true
 			a.smHeld = a.draft != nil
@@ -147,7 +155,7 @@ func (a *App) append(line apruntime.Line) {
 		}
 	}
 	a.publishLocked(Event{Name: "log", Data: line})
-	if addressChanged {
+	if stateChanged {
 		a.publishLocked(Event{Name: "state", Data: struct{}{}})
 	}
 	a.mu.Unlock()
@@ -230,43 +238,52 @@ func (a *App) Start() {
 			}
 			return
 		}
-		if err := installer.UpdateGame(ctx, s.InstallRoot, logf); err != nil {
-			if ctx.Err() == nil {
-				a.Say("TF2 update failed: %v", err)
-			}
+		err := installer.UpdateGame(ctx, s.InstallRoot, logf)
+		if ctx.Err() != nil {
 			return
 		}
-		// Which mods this run loads, as opposed to has installed. Off and
-		// "only when a mission needs it" are answered here, by writing or
-		// removing each one's autoload marker before srcds reads it.
-		if err := installer.SetServerModLoading(s.InstallRoot, settings.ServerModsToLoad(s, runtime.GOOS)); err != nil {
-			a.Say("%v", err)
+		a.gameUpdateFinished(err)
+		if err != nil {
+			a.Say("TF2 update failed: %v", err)
 			return
 		}
-		a.mu.Lock()
-		a.serverMods = installer.ReadyServerMods(s.InstallRoot)
-		readyMods := slices.Clone(a.serverMods)
-		a.mu.Unlock()
-		if err := settings.CheckServerModsReady(s, readyMods); err != nil {
-			a.Say("server mod setup is incomplete: %v", err)
-			return
-		}
-		for _, line := range apruntime.ConnectLines(s) {
-			a.Say("%s", line)
-		}
-		if err := a.supervisor.Start(func(err error) {
-			if err != nil {
-				a.Say("%v", err)
-			}
-			a.publishState()
-		}); err != nil {
-			a.Say("%v", err)
-			var funnel *apruntime.TailscaleFastDLStartError
-			if errors.As(err, &funnel) && funnel.ApprovalURL != "" {
-				a.Notify("Tailscale Funnel approval required: " + funnel.ApprovalURL)
-			}
-		}
+		a.boot(s)
 	})
+}
+
+// boot starts srcds and the bridge on an installed, updated server. Start
+// runs it after the install and the update, and so does UpdateGame.
+func (a *App) boot(s settings.Settings) {
+	// Which mods this run loads, as opposed to has installed. Off and
+	// "only when a mission needs it" are answered here, by writing or
+	// removing each one's autoload marker before srcds reads it.
+	if err := installer.SetServerModLoading(s.InstallRoot, settings.ServerModsToLoad(s, runtime.GOOS)); err != nil {
+		a.Say("%v", err)
+		return
+	}
+	a.mu.Lock()
+	a.serverMods = installer.ReadyServerMods(s.InstallRoot)
+	readyMods := slices.Clone(a.serverMods)
+	a.mu.Unlock()
+	if err := settings.CheckServerModsReady(s, readyMods); err != nil {
+		a.Say("server mod setup is incomplete: %v", err)
+		return
+	}
+	for _, line := range apruntime.ConnectLines(s) {
+		a.Say("%s", line)
+	}
+	if err := a.supervisor.Start(func(err error) {
+		if err != nil {
+			a.Say("%v", err)
+		}
+		a.publishState()
+	}); err != nil {
+		a.Say("%v", err)
+		var funnel *apruntime.TailscaleFastDLStartError
+		if errors.As(err, &funnel) && funnel.ApprovalURL != "" {
+			a.Notify("Tailscale Funnel approval required: " + funnel.ApprovalURL)
+		}
+	}
 }
 
 func (a *App) Stop() {
