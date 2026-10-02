@@ -4,7 +4,18 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
-## Unreleased
+## v1.17.7
+
+### Fixed
+
+- **SigMod missions run again on a Windows server after the 2026-10-02 TF2
+  update.** The Windows build of SigMod crashed the server at every start on
+  the new game. The launcher now installs a build made for it. One mission,
+  Trespasser Remaster, still loses its first wave in our tests.
+- **Buying an upgrade with SigMod on a Windows server no longer stops it.** The
+  Windows build asked the game for an upgrade's name through a function it had
+  never found, and every purchase crashed the server. It now reads the name
+  itself.
 
 ### Changed
 
