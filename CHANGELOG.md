@@ -4,6 +4,15 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
+## Unreleased
+
+### Added
+
+- **Update TF2 from the Game server settings page.** The page shows the TF2
+  build the server has, and says when Steam has a newer one. Update TF2 stops
+  the server if it is running, updates TF2, and starts the server again, so you
+  no longer have to press Stop and Start to get the new build.
+
 ## v1.17.6
 
 ### Fixed

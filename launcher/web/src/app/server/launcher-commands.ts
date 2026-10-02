@@ -57,6 +57,12 @@ export class LauncherCommands {
     return this.done(this.launcher.resumeMission({ popFile, wave }));
   }
 
+  /** updateGame stops a running server, updates TF2 and starts it again. The
+      progress, and a failure, arrive on the stream. */
+  updateGame(): Observable<void> {
+    return this.done(this.launcher.updateGame({}));
+  }
+
   approveFunnel(): Observable<{ approvalUrl: string; message: string }> {
     return from(this.launcher.approveFunnel({}));
   }
