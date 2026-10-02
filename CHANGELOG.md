@@ -4,6 +4,20 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
+## v1.17.6
+
+### Fixed
+
+- **A TF2 update no longer keeps players out of a launcher server.** The
+  launcher installed the TF2 server once and never updated it, so after a TF2
+  update the server refused every player on the new game. It now updates the
+  server each time you press Start, and gets past an update SteamCMD left
+  stuck.
+- **A Docker server whose TF2 update got stuck starts again by itself.** After
+  a failed update, SteamCMD refused every later one, and the server restarted
+  in a loop. It now sets the stuck update aside, keeps a copy of it, and
+  updates again once. If that fails too, the log says which file to look at.
+
 ## v1.17.5
 
 ### Fixed
