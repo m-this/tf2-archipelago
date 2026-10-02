@@ -7,10 +7,11 @@ import (
 	"github.com/m-this/tf2-archipelago/gamedata"
 )
 
-// oldestFormatVersion is the oldest seed this bridge still reads. Version 6
-// predates the bot cards and shares every id it has with version 7, so a room
-// generated the week before the cards keeps running.
-const oldestFormatVersion = 6
+// oldestFormatVersion is the oldest seed this bridge still reads. Every id of
+// formats 4 through 7 is still in gamedata/testdata/ids-frozen.json under the
+// same key, and a key a format 4 seed lacks reads as that feature off, which is
+// how the v1.11.0 to v1.13.0 apworlds played. Format 2 was never checked.
+const oldestFormatVersion = 4
 
 // validate rejects a seed from an apworld this binary may disagree with about what an id means.
 func (s SlotData) validate() error {

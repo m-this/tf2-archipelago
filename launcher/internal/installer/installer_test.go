@@ -827,16 +827,15 @@ func TestTheLoaderFilesDecideWhetherToReinstall(t *testing.T) {
 	}
 }
 
-// Upstream's SigMod release has no Windows binary in it, so a Windows launcher
-// that fell back to package-linux.zip would download 30 MB and install nothing
-// SourceMod can load. The pins are separate releases of separate repositories.
+// A Windows launcher that fell back to package-linux.zip would download 30 MB
+// and install nothing SourceMod can load. The pins are separate releases.
 func TestSigmodPackageIsPerPlatform(t *testing.T) {
 	windows := sigmodURL("windows", "20260918")
-	linux := sigmodURL("linux", "20250703")
+	linux := sigmodURL("linux", "linux-20261002")
 	if !strings.Contains(windows, "sigsegv-mvm-win/releases/download/20260918/package-windows.zip") {
 		t.Errorf("Windows SigMod URL = %q", windows)
 	}
-	if !strings.Contains(linux, "rafradek/sigsegv-mvm/releases/download/20250703/package-linux.zip") {
+	if !strings.Contains(linux, "sigsegv-mvm-win/releases/download/linux-20261002/package-linux.zip") {
 		t.Errorf("Linux SigMod URL = %q", linux)
 	}
 	if slices.Contains(sigmodFiles("windows"), "addons/sourcemod/extensions/x64/sigsegv.ext.2.tf2.so") {

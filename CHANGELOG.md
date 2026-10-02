@@ -4,6 +4,20 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
+## v1.17.5
+
+### Fixed
+
+- **SigMod missions run again on a Linux or Docker server after the
+  2026-10-02 TF2 update.** The update changed how the game stores its key and
+  value data, and the SigMod build the server used crashed it on every start.
+  The server now installs a SigMod rebuilt for the new game. SigMod on a Windows
+  server still crashes on this TF2 update: leave SigMod missions out of the run
+  there until a Windows build follows.
+- **A run generated with v1.11 to v1.13 keeps going on this release.** The
+  server refused it at connect, so updating meant losing the run. It now plays
+  it with the options it was generated with, and every check counts.
+
 ## v1.17.4
 
 ### Added

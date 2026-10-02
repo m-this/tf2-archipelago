@@ -149,7 +149,7 @@ RUN apt-get update \
 	&& rm -rf /tmp/ripext.zip /tmp/ripext \
 	&& mkdir -p /opt/tf2-mods/sigsegv-mvm \
 	&& curl -fsSL -o /tmp/sigsegv.zip \
-		"https://github.com/rafradek/sigsegv-mvm/releases/download/${SIGSEGV_MVM_VERSION}/package-linux.zip" \
+		"https://github.com/m-this/sigsegv-mvm-win/releases/download/${SIGSEGV_MVM_VERSION}/package-linux.zip" \
 	&& echo "${SIGSEGV_MVM_SHA256}  /tmp/sigsegv.zip" | sha256sum -c - \
 	&& unzip -oq /tmp/sigsegv.zip -d /opt/tf2-mods/sigsegv-mvm \
 	&& /usr/local/bin/tf2ap-sigmodpatch /opt/tf2-mods/sigsegv-mvm linux \

@@ -79,10 +79,10 @@ critical installed files. **Start** performs the same setup automatically. A
 SigMod mission cannot be ticked or chosen as the start until that inspection
 passes; its Compatibility cell says whether to turn SigMod on or run setup.
 
-Both platforms work, from different releases. rafradek publishes a Linux
-package; the Windows extension is cross-compiled in `m-this/sigsegv-mvm-win`
-and pinned separately, so a Windows launcher can never reach for the Linux
-one. Nothing installs SigMod on its own: it arrives only when it is turned on,
+Both platforms work, from different releases of `m-this/sigsegv-mvm-win`:
+the Linux package is upstream rebuilt against the current TF2 SDK, and the
+Windows extension is the port. They are pinned separately, so a Windows
+launcher can never reach for the Linux one. Nothing installs SigMod on its own: it arrives only when it is turned on,
 and it is turned on only for missions that declare `requires: "sigsegv-mvm"`.
 
 ## Build a new Windows launcher

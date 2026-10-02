@@ -10,7 +10,7 @@ import (
 // The old message named two numbers and no action, and two players a week
 // apart asked the same question about it in Discord.
 func TestAFormatMismatchSaysWhatToDoAboutIt(t *testing.T) {
-	err := SlotData{FormatVersion: gamedata.FormatVersion - 2}.validate()
+	err := SlotData{FormatVersion: oldestFormatVersion - 1}.validate()
 	if err == nil {
 		t.Fatal("a seed from another apworld was accepted")
 	}

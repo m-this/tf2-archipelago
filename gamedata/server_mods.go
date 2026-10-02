@@ -20,8 +20,8 @@ type ServerMod struct {
 ServerMods is the catalog. Versions and checksums live in
 deploy/env/versions.env, which is where every pin of this project lives.
 
-SigMod's Windows build is not upstream's: rafradek publishes Linux only, and
-m-this/sigsegv-mvm-win carries the port the Windows launcher downloads.
+Both SigMod builds come from m-this/sigsegv-mvm-win: Linux from its master,
+which is upstream rebuilt against the current TF2 SDK, and Windows from the port.
 
 Windows is true, and what makes that safe is the loading setting rather than
 this flag. v1.17.0 shipped Windows with no such setting: installing SigMod was
