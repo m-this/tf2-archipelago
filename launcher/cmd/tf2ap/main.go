@@ -109,10 +109,7 @@ func run(logger *slog.Logger) error {
 	}
 
 	if *installFlag {
-		if _, err := installer.Ensure(context.Background(), s.InstallRoot, settings.CommunityArchives(s), settings.ServerModKeys(s), logf(logger)); err != nil {
-			return err
-		}
-		return installer.UpdateGame(context.Background(), s.InstallRoot, logf(logger))
+		return install(logger, s)
 	}
 
 	if *configureFlag {
@@ -128,6 +125,14 @@ func run(logger *slog.Logger) error {
 	}
 
 	return launchInterface(logger, s, *consoleFlag, *addressFlag, *noBrowserFlag)
+}
+
+// install installs what is missing and brings the game to Steam's latest build.
+func install(logger *slog.Logger, s settings.Settings) error {
+	if _, err := installer.Ensure(context.Background(), s.InstallRoot, settings.CommunityArchives(s), settings.ServerModKeys(s), logf(logger)); err != nil {
+		return err
+	}
+	return installer.UpdateGame(context.Background(), s.InstallRoot, logf(logger))
 }
 
 // trayIcon is the same picture the .exe carries, for the notification area.
