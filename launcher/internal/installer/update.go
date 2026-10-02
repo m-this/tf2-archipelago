@@ -16,13 +16,30 @@ import (
 // gameUpdateTimeout bounds the update on Start, recovery included. A routine
 // update is a few hundred MB; this leaves room for a full download on a slow
 // link, and no more.
-const gameUpdateTimeout = 2 * time.Hour
+var gameUpdateTimeout = 2 * time.Hour
 
 // errUpdateStuck is SteamCMD's "state is 0x6 after update job". The manifest
 // keeps that state, and every later app_update stops on it, validate included.
 var errUpdateStuck = errors.New("SteamCMD left app " + AppID + " at state 0x6")
 
 var stuckUpdatePattern = regexp.MustCompile(`state is 0x6\b`)
+
+// ErrGameNotUpdated is an update that did not happen while the installed build
+// still works: Steam out of reach, a 0x602, the time limit. A start goes on
+// with the installed build; an update the player asked for reports it.
+var ErrGameNotUpdated = errors.New("the TF2 update did not finish")
+
+func notUpdated(cause error) error { return fmt.Errorf("%w (%w)", ErrGameNotUpdated, cause) }
+
+// StartAnyway is what a start does with UpdateGame's answer. ErrGameNotUpdated
+// is logged and dropped, so the installed build starts; any other error stays.
+func StartAnyway(err error, logf func(string, ...any)) error {
+	if !errors.Is(err, ErrGameNotUpdated) {
+		return err
+	}
+	logf("%v. Starting the installed build: players on a newer TF2 cannot join until it updates", err)
+	return nil
+}
 
 func stuckUpdate(line string) bool { return stuckUpdatePattern.MatchString(line) }
 
@@ -47,8 +64,8 @@ func UpdateGame(ctx context.Context, installRoot string, logf func(string, ...an
 // A failed update is retried once, after the same warm-up an install gets.
 // When SteamCMD reported state 0x6, the app manifest is moved aside first,
 // which is what got two stuck servers updating again by hand. A second 0x6 is
-// an error. Any other failure, Steam out of reach say, starts the build that
-// is installed rather than no server at all.
+// an error. Any other failure, Steam out of reach say, is ErrGameNotUpdated:
+// the installed build still starts, which beats no server at all.
 func updateGame(ctx context.Context, steamcmdDir, gameDir string, logf func(string, ...any)) error {
 	exe := firstExisting(steamcmdDir, steamcmdNames())
 	if exe == "" {
@@ -64,18 +81,16 @@ func updateGame(ctx context.Context, steamcmdDir, gameDir string, logf func(stri
 		return err
 	}
 	if updateCtx.Err() != nil {
-		logf("the TF2 update did not finish in %v, starting the installed build", gameUpdateTimeout)
-		return nil
+		return notUpdated(fmt.Errorf("it took longer than %v", gameUpdateTimeout))
 	}
 
 	stuck := errors.Is(err, errUpdateStuck)
-	manifest := filepath.Join(gameDir, "steamapps", "appmanifest_"+AppID+".acf")
+	manifest := manifestPath(gameDir)
 	aside := manifest + ".0x6-" + time.Now().Format("2006-01-02T150405")
 	if stuck {
 		switch err := os.Rename(manifest, aside); {
 		case errors.Is(err, fs.ErrNotExist):
-			logUpdateFailed(logf, fmt.Errorf("%w, and %s is not there to set aside", errUpdateStuck, manifest))
-			return nil
+			return notUpdated(fmt.Errorf("%w, and %s is not there to set aside", errUpdateStuck, manifest))
 		case err != nil:
 			return fmt.Errorf("SteamCMD reported state 0x6 and %s could not be set aside: %w", manifest, err)
 		}
@@ -92,11 +107,5 @@ func updateGame(ctx context.Context, steamcmdDir, gameDir string, logf func(stri
 			"so %s was moved to %s, SteamCMD was warmed up and app_update ran again, which failed: %w. %s",
 			manifest, aside, err, RepairAdvice)
 	}
-	logUpdateFailed(logf, err)
-	return nil
-}
-
-func logUpdateFailed(logf func(string, ...any), err error) {
-	logf("the TF2 update did not finish (%v). Starting the installed build: "+
-		"players on a newer TF2 cannot join until it updates", err)
+	return notUpdated(err)
 }

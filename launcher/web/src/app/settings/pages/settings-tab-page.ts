@@ -15,6 +15,7 @@ import { RouterLink } from '@angular/router';
 import { Subject, concatMap, from, of, switchMap, tap } from 'rxjs';
 
 import { appLink } from '@app/routing/app-routes';
+import { GameUpdate } from '@app/settings/components/game-update';
 import { MissionTable } from '@app/settings/components/mission-table';
 import { SettingsRow } from '@app/settings/components/settings-row';
 import { SECTION_RENDERERS } from '@app/settings/section-renderers';
@@ -66,7 +67,15 @@ const poolRow = /^missions\.pool[._]/;
 @Component({
   selector: 'app-settings-tab-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [EmptyState, MissionTable, NgComponentOutlet, Notice, RouterLink, SettingsRow],
+  imports: [
+    EmptyState,
+    GameUpdate,
+    MissionTable,
+    NgComponentOutlet,
+    Notice,
+    RouterLink,
+    SettingsRow,
+  ],
   templateUrl: './settings-tab-page.html',
   styleUrl: './settings-tab-page.scss',
 })
@@ -83,6 +92,7 @@ export class SettingsTabPage {
   readonly title = computed(() => this.tab()?.title ?? '');
   readonly intro = computed(() => this.tab()?.intro ?? '');
   readonly missionTabs = computed(() => this.settingsTab() === 'missions');
+  readonly gameServerTab = computed(() => this.settingsTab() === 'game-server');
 
   /** The rows of the page, in order, each with the section it belongs to. */
   readonly rows = computed<Placed[]>(() => {

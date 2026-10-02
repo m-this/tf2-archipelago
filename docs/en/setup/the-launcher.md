@@ -190,7 +190,7 @@ Which missions the seed can draw from, and where the run starts.
   **Download / set up selected server mods**; in Docker, the image already
   includes the mod, so save the selection and recreate the containers. A
   mission that needs a mod stays out of the pool while that mod is off. On
-  Windows, the row reads **SigMod (beta)** because Windows runs this project's
+  Windows, the row reads **SigMod (unstable)** because Windows runs this project's
   port rather than the mod's own release. See
   [Run options](shape-of-the-run.md#the-missions).
 - **Check Run Selection** tells you whether the pool holds enough checks for

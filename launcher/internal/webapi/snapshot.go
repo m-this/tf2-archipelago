@@ -44,6 +44,10 @@ type Snapshot struct {
 	MissionPool       []MissionPoolRow `json:"mission_pool,omitempty"`
 	RestartNeeded     bool             `json:"restart_needed,omitempty"`
 	ManagedExternally bool             `json:"managed_externally,omitempty"`
+
+	GameBuild           string `json:"game_build,omitempty"`
+	GameUpdateAvailable bool   `json:"game_update_available,omitempty"`
+	GameUpdateError     string `json:"game_update_error,omitempty"`
 }
 
 // MissionPoolRow is the domain data behind one dense row in the settings
@@ -117,6 +121,7 @@ func (a *App) Snapshot() Snapshot {
 		Form: screen.Form, FormPage: screen.Page, Notice: a.notice, NoticeSeq: a.noticeSeq,
 		ItemServer: a.itemServer, MissionPool: screen.MissionPool, RestartNeeded: screen.RestartNeeded,
 		ManagedExternally: a.attached,
+		GameBuild:         a.gameBuild, GameUpdateAvailable: a.gameUpdateAvailable, GameUpdateError: a.gameUpdateError,
 	}
 	if a.fetchErr != nil {
 		result.SessionError = a.fetchErr.Error()

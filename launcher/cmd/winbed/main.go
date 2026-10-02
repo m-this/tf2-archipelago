@@ -114,14 +114,14 @@ func install(opt options, s settings.Settings, logger *slog.Logger) error {
 	if opt.sigmod == "" {
 		_, err := installer.Ensure(ctx, s.InstallRoot, archives, s.SrcdsMods, logf)
 		if err == nil {
-			err = installer.UpdateGame(ctx, s.InstallRoot, logf)
+			err = installer.StartAnyway(installer.UpdateGame(ctx, s.InstallRoot, logf), logf)
 		}
 		return errors.Join(err, finish(opt, s))
 	}
 	if _, err := installer.Ensure(ctx, s.InstallRoot, nil, nil, logf); err != nil {
 		return err
 	}
-	if err := installer.UpdateGame(ctx, s.InstallRoot, logf); err != nil {
+	if err := installer.StartAnyway(installer.UpdateGame(ctx, s.InstallRoot, logf), logf); err != nil {
 		return err
 	}
 	modDir := filepath.Join(s.InstallRoot, "tf-dedicated", "tf")

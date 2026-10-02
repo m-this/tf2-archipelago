@@ -8,7 +8,7 @@
       <p class="intro">{{ intro() }}</p>
     }
 
-    @if (store.activity()) {
+    @if (store.activity() && !gameServerTab()) {
       <app-notice tone="info">
         <span class="activity"><span class="activity-dot"></span>{{ store.activity() }}</span>
       </app-notice>
@@ -53,6 +53,10 @@
           }
         }
       }
+    }
+
+    @if (gameServerTab() && !searching()) {
+      <app-game-update />
     }
 
     @if (saidLink()) {

@@ -165,6 +165,31 @@ func TestSourceModWasUpdated(t *testing.T) {
 	}
 }
 
+// Steam tells a running server that Valve shipped a build. Only an update and
+// a restart fix it, so the launcher shows it rather than leaving it in the log.
+func TestGameUpdateRequired(t *testing.T) {
+	for _, line := range []string{
+		"Your server needs to be restarted in order to receive the latest update.",
+		"\x1b[0;33mYour server needs to be restarted in order to receive the latest update.\x1b[0m",
+		"L 10/02/2026 - 21:04:11: Your server needs to be restarted in order to receive the latest update.",
+	} {
+		if !GameUpdateRequired(line) {
+			t.Errorf("missed Steam asking for an update: %q", line)
+		}
+	}
+	for _, line := range []string{
+		"MasterRequestRestart",
+		"Your server is out of date and will be shutdown during hibernation or changelevel, whichever comes first.",
+		"L 10/02/2026 - 21:04:11: \"player<2><[U:1:1]><Red>\" say \"Your server needs to be restarted in order to receive the latest update\"",
+		"player : Your server needs to be restarted in order to receive the latest update",
+		"",
+	} {
+		if GameUpdateRequired(line) {
+			t.Errorf("flagged an update for an ordinary line: %q", line)
+		}
+	}
+}
+
 // Over Steam the relayed address is the server's address, so the link goes
 // there rather than to an address only this network knows. It used to join a
 // local address whatever the reach was, which worked on the machine that ran

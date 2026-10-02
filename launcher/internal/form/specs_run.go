@@ -446,15 +446,15 @@ func serverModSpec(key, label string, env Env) Spec {
 	}
 
 	/*
-		Beta is the Windows row only. Linux and Docker run upstream's own
-		release, which has been played for years; Windows runs this project's
+		Unstable is the Windows row only. Linux and Docker run upstream's own
+		code, which has been played for years; Windows runs this project's
 		port, which has crashed a real server. The word belongs where the
-		difference is, and a Linux host reading "beta" would be misled about
-		the build they actually have.
+		difference is, and a Linux host reading "unstable" would be misled
+		about the build they actually have.
 	*/
 	shown := label
 	if env.Platform == "windows" && mod.BuildsOn(env.Platform) {
-		shown = label + " (beta)"
+		shown = label + " (unstable)"
 	}
 
 	spec := choice("missions.mod."+key, "Missions", shown, help,

@@ -201,7 +201,7 @@ Les missions où la seed peut piocher, et où la partie commence.
   lanceur natif, appuyez ensuite sur **Download / set up selected server mods**.
   Dans Docker, l'image contient déjà le mod : enregistrez le choix et recréez
   les conteneurs. Une mission qui demande un mod reste hors de la réserve tant
-  que ce mod est sur off. Sur Windows, la ligne affiche **SigMod (beta)** :
+  que ce mod est sur off. Sur Windows, la ligne affiche **SigMod (unstable)** :
   Windows fait tourner le portage de ce projet et non la version publiée par le
   mod. Voir
   [Les options de la partie](shape-of-the-run.md#les-missions).
