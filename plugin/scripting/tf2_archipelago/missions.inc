@@ -563,6 +563,12 @@ static void Missions_Load(Mission mission)
     }
     if (!Missions_PopFileInstalled(mission.popFile))
     {
+        if (StrEqual(mission.popFile, CaliginousCaperID, false))
+        {
+            AP_Error("%s cannot be played here: %s.pop is not on this server, so the game would keep the map's own mission and never start a wave. The server makes that file from the game's own files when it starts. Restart the server, or leave the mission out of the run.",
+                mission.name, CaliginousCaperRuntimePop);
+            return;
+        }
         AP_Error("%s cannot be played here: %s.pop is not on this server, so the game would keep the map's own mission and never start a wave. Install the community pack that carries it, or leave the mission out of the run.",
             mission.name, mission.popFile);
         return;

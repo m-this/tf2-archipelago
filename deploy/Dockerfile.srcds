@@ -43,7 +43,7 @@ COPY gamedata gamedata
 COPY launcher/cmd/rcon launcher/cmd/rcon
 COPY launcher/cmd/botfiles launcher/cmd/botfiles
 COPY launcher/cmd/sigmodpatch launcher/cmd/sigmodpatch
-COPY deploy/stockpop deploy/stockpop
+COPY launcher/cmd/stockpop launcher/cmd/stockpop
 COPY launcher/internal/rcon launcher/internal/rcon
 COPY launcher/internal/botfiles launcher/internal/botfiles
 COPY launcher/internal/botcards launcher/internal/botcards
@@ -53,9 +53,10 @@ COPY launcher/internal/botnames launcher/internal/botnames
 COPY launcher/internal/runshape launcher/internal/runshape
 COPY launcher/internal/settings launcher/internal/settings
 COPY launcher/internal/sigmodpatch launcher/internal/sigmodpatch
+COPY launcher/internal/stockpop launcher/internal/stockpop
 RUN CGO_ENABLED=0 go build -trimpath -o /rcon ./launcher/cmd/rcon \
 	&& CGO_ENABLED=0 go build -trimpath -o /botfiles ./launcher/cmd/botfiles \
-	&& CGO_ENABLED=0 go build -trimpath -o /stockpop ./deploy/stockpop \
+	&& CGO_ENABLED=0 go build -trimpath -o /stockpop ./launcher/cmd/stockpop \
 	&& CGO_ENABLED=0 go build -trimpath -o /sigmodpatch ./launcher/cmd/sigmodpatch
 
 
