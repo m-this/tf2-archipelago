@@ -243,7 +243,7 @@ func (a *App) Start() {
 			return
 		}
 		a.gameUpdateFinished(err)
-		if err != nil {
+		if err := installer.StartAnyway(err, logf); err != nil {
 			a.Say("TF2 update failed: %v", err)
 			return
 		}
