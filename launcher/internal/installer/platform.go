@@ -39,14 +39,14 @@ func sourcemodURL() string {
 		assets.SourcemodBranch, assets.SourcemodVersion, platformArchive())
 }
 
-// sigmodURL is the verified package for this platform. rafradek publishes
-// Linux only; the Windows extension is cross-compiled in m-this/sigsegv-mvm-win
-// and released there, so the two differ by repository as well as by file name.
+// sigmodURL is the verified package for this platform. Both are released by
+// m-this/sigsegv-mvm-win: Linux from its master, which follows upstream, and
+// Windows from the port. Each platform has its own pin and its own file.
 func sigmodURL(goos, version string) string {
 	if goos == "windows" {
 		return fmt.Sprintf("https://github.com/m-this/sigsegv-mvm-win/releases/download/%s/package-windows.zip", version)
 	}
-	return fmt.Sprintf("https://github.com/rafradek/sigsegv-mvm/releases/download/%s/package-linux.zip", version)
+	return fmt.Sprintf("https://github.com/m-this/sigsegv-mvm-win/releases/download/%s/package-linux.zip", version)
 }
 
 // platformArchive is the tail both AlliedModders drops share: the platform and
