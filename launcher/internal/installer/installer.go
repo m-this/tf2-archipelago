@@ -75,8 +75,8 @@ type Result struct {
 	Done        Status
 }
 
-// Ensure installs whatever is missing and brings the game server to Steam's
-// current build. It prints progress to logf as it goes.
+// Ensure installs whatever is missing. It prints progress to logf as it goes.
+// It does not update an installed game: UpdateGame does, before a start.
 // Cancel the context to abort a download or a steamcmd run.
 func Ensure(ctx context.Context, installRoot string, communityArchives, serverMods []string, logf func(format string, args ...any)) (Result, error) {
 	if err := assets.RequireVersions(); err != nil {
@@ -86,8 +86,8 @@ func Ensure(ctx context.Context, installRoot string, communityArchives, serverMo
 		return Result{}, fmt.Errorf("cannot create the install root %s: %w", installRoot, err)
 	}
 	result := Result{
-		SteamcmdDir: filepath.Join(installRoot, "steamcmd"),
-		GameDir:     filepath.Join(installRoot, "tf-dedicated"),
+		SteamcmdDir: steamcmdPath(installRoot),
+		GameDir:     gamePath(installRoot),
 	}
 
 	if !exists(result.SteamcmdDir) {
@@ -101,14 +101,21 @@ func Ensure(ctx context.Context, installRoot string, communityArchives, serverMo
 		result.Done.SteamcmdInstalled = true
 	}
 
-	installed, err := ensureGame(ctx, installRoot, result.SteamcmdDir, result.GameDir, logf)
-	if err != nil {
-		return result, err
-	}
-	if installed {
+	if !gameInstalled(result.GameDir) {
+		if free, ok := winproc.FreeBytes(installRoot); ok && free < gameBytesNeeded {
+			return result, fmt.Errorf(
+				"the game server needs about %d GB and %s has %d GB free",
+				gameBytesNeeded/gigabyte, installRoot, free/gigabyte)
+		}
+		logf("installing the TF2 dedicated server (~14 GB, this is the long part)")
+		if err := installGame(ctx, result.SteamcmdDir, result.GameDir, logf); err != nil {
+			return result, err
+		}
+		result.Done.GameInstalled = true
 		result.Done.Message = "TF2 dedicated server installed"
+	} else {
+		result.Done.GameInstalled = true
 	}
-	result.Done.GameInstalled = true
 
 	// After the game, because it links what SteamCMD downloaded into where the
 	// game server looks. Every start, because it is a link and cheap, and a

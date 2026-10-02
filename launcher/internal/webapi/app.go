@@ -220,12 +220,19 @@ func (a *App) Start() {
 			a.publishLocked(Event{Name: "state", Data: struct{}{}})
 			a.mu.Unlock()
 		}()
-		if _, err := installer.Ensure(ctx, s.InstallRoot, settings.CommunityArchives(s), settings.ServerModKeys(s), func(f string, args ...any) {
+		logf := func(f string, args ...any) {
 			a.append(apruntime.Line{At: time.Now(), Source: "install", Text: fmt.Sprintf(f, args...)})
-		}); err != nil {
+		}
+		if _, err := installer.Ensure(ctx, s.InstallRoot, settings.CommunityArchives(s), settings.ServerModKeys(s), logf); err != nil {
 			if ctx.Err() == nil {
 				a.Say("install failed: %v", err)
 				a.Say("%s.", installer.RepairAdvice)
+			}
+			return
+		}
+		if err := installer.UpdateGame(ctx, s.InstallRoot, logf); err != nil {
+			if ctx.Err() == nil {
+				a.Say("TF2 update failed: %v", err)
 			}
 			return
 		}

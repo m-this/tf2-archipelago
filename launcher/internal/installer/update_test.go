@@ -8,6 +8,8 @@ import (
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/m-this/tf2-archipelago/launcher/internal/assets"
 )
 
 // fakeSteamcmd writes a steamcmd.sh that records every command line and
@@ -83,15 +85,11 @@ func setAside(t *testing.T, gameDir string) []string {
 
 func discard(string, ...any) {}
 
-func TestEnsureGameUpdatesAnInstalledGame(t *testing.T) {
-	steamcmdDir, gameDir, calls := fakeSteamcmd(t, "ok")
+func TestUpdateGameUpdatesAnInstalledGame(t *testing.T) {
+	_, gameDir, calls := fakeSteamcmd(t, "ok")
 
-	installed, err := ensureGame(context.Background(), filepath.Dir(gameDir), steamcmdDir, gameDir, discard)
-	if err != nil {
-		t.Fatalf("ensureGame: %v", err)
-	}
-	if installed {
-		t.Error("an installed game was installed again")
+	if err := UpdateGame(context.Background(), filepath.Dir(gameDir), discard); err != nil {
+		t.Fatalf("UpdateGame: %v", err)
 	}
 	updates := appUpdates(calls())
 	if len(updates) != 1 {
@@ -102,6 +100,66 @@ func TestEnsureGameUpdatesAnInstalledGame(t *testing.T) {
 	}
 	if !strings.Contains(updates[0], "+force_install_dir "+gameDir) {
 		t.Errorf("the update does not target the game dir: %s", updates[0])
+	}
+}
+
+func TestUpdateGameNeedsAnInstalledGame(t *testing.T) {
+	steamcmdDir, gameDir, calls := fakeSteamcmd(t, "ok")
+	if err := os.Remove(filepath.Join(gameDir, "srcds_run")); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := UpdateGame(context.Background(), filepath.Dir(steamcmdDir), discard); err == nil {
+		t.Error("updated a game that is not installed")
+	}
+	if got := calls(); len(got) != 0 {
+		t.Errorf("ran SteamCMD for a game that is not installed: %v", got)
+	}
+}
+
+// Updating is a start's job. Ensure also runs from Settings, where a TF2
+// download would be a surprise.
+func TestEnsureDoesNotUpdateAnInstalledGame(t *testing.T) {
+	steamcmdDir, gameDir, calls := fakeSteamcmd(t, "ok")
+	withAssetVersions(t)
+	modDir := filepath.Join(gameDir, "tf")
+	writeFakeMetamod(t, modDir)
+	writeFakeSourcemod(t, modDir)
+
+	result, err := Ensure(context.Background(), filepath.Dir(steamcmdDir), nil, nil, discard)
+	if err != nil {
+		t.Fatalf("Ensure: %v", err)
+	}
+	if !result.Done.GameInstalled {
+		t.Error("Ensure did not see the installed game")
+	}
+	if got := calls(); len(got) != 0 {
+		t.Errorf("Ensure ran SteamCMD on an installed game: %v", got)
+	}
+}
+
+func withAssetVersions(t *testing.T) {
+	t.Helper()
+	for _, version := range []*string{
+		&assets.SourcemodVersion, &assets.MetamodVersion, &assets.RipextVersion,
+		&assets.ArchipelagoVersion, &assets.SigsegvMVMVersion, &assets.SigsegvMVMSHA256,
+	} {
+		old := *version
+		*version = "test"
+		t.Cleanup(func() { *version = old })
+	}
+}
+
+func writeFakeMetamod(t *testing.T, modDir string) {
+	t.Helper()
+	for _, relative := range metamodFiles(runtime.GOOS) {
+		path := filepath.Join(modDir, filepath.FromSlash(relative))
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte("metamod"), 0o644); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
@@ -163,6 +221,20 @@ func TestUpdateGameCarriesOnWhenSteamCannotUpdate(t *testing.T) {
 	}
 	if aside := setAside(t, gameDir); len(aside) != 0 {
 		t.Errorf("a 0x602 set the manifest aside: %v", aside)
+	}
+}
+
+func TestUpdateGameStartsTheInstalledBuildWhenTheStuckManifestIsMissing(t *testing.T) {
+	steamcmdDir, gameDir, calls := fakeSteamcmd(t, "stuck", "ok")
+
+	if err := updateGame(context.Background(), steamcmdDir, gameDir, discard); err != nil {
+		t.Fatalf("updateGame: %v", err)
+	}
+	if n := len(appUpdates(calls())); n != 1 {
+		t.Errorf("ran %d app_update, want 1: %v", n, calls())
+	}
+	if aside := setAside(t, gameDir); len(aside) != 0 {
+		t.Errorf("set aside a manifest that was not there: %v", aside)
 	}
 }
 

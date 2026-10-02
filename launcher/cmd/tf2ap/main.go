@@ -109,8 +109,10 @@ func run(logger *slog.Logger) error {
 	}
 
 	if *installFlag {
-		_, err := installer.Ensure(context.Background(), s.InstallRoot, settings.CommunityArchives(s), settings.ServerModKeys(s), logf(logger))
-		return err
+		if _, err := installer.Ensure(context.Background(), s.InstallRoot, settings.CommunityArchives(s), settings.ServerModKeys(s), logf(logger)); err != nil {
+			return err
+		}
+		return installer.UpdateGame(context.Background(), s.InstallRoot, logf(logger))
 	}
 
 	if *configureFlag {
@@ -243,6 +245,10 @@ func ensureInstalled(s settings.Settings, logger *slog.Logger) settings.Settings
 	result, err := installer.Ensure(context.Background(), s.InstallRoot, settings.CommunityArchives(s), settings.ServerModKeys(s), logf(logger))
 	if err != nil {
 		logger.Error("install failed", "error", err, "advice", installer.RepairAdvice)
+		os.Exit(1)
+	}
+	if err := installer.UpdateGame(context.Background(), s.InstallRoot, logf(logger)); err != nil {
+		logger.Error("TF2 update failed", "error", err)
 		os.Exit(1)
 	}
 	// Which mods this run loads, as opposed to has installed. The autoload

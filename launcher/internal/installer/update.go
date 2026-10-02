@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -25,23 +26,19 @@ var stuckUpdatePattern = regexp.MustCompile(`state is 0x6\b`)
 
 func stuckUpdate(line string) bool { return stuckUpdatePattern.MatchString(line) }
 
-// ensureGame installs the TF2 server when it is missing and updates it
-// otherwise: a server one build behind refuses every client that has updated.
-// It reports whether it installed.
-func ensureGame(ctx context.Context, installRoot, steamcmdDir, gameDir string, logf func(string, ...any)) (bool, error) {
-	if gameInstalled(gameDir) {
-		return false, updateGame(ctx, steamcmdDir, gameDir, logf)
+func steamcmdPath(installRoot string) string { return filepath.Join(installRoot, "steamcmd") }
+
+func gamePath(installRoot string) string { return filepath.Join(installRoot, "tf-dedicated") }
+
+// UpdateGame brings the installed TF2 server to Steam's current build. Run it
+// after Ensure and before every start: a server one build behind refuses every
+// client that has updated.
+func UpdateGame(ctx context.Context, installRoot string, logf func(string, ...any)) error {
+	gameDir := gamePath(installRoot)
+	if !gameInstalled(gameDir) {
+		return fmt.Errorf("the TF2 dedicated server is not installed in %s", gameDir)
 	}
-	if free, ok := winproc.FreeBytes(installRoot); ok && free < gameBytesNeeded {
-		return false, fmt.Errorf(
-			"the game server needs about %d GB and %s has %d GB free",
-			gameBytesNeeded/gigabyte, installRoot, free/gigabyte)
-	}
-	logf("installing the TF2 dedicated server (~14 GB, this is the long part)")
-	if err := installGame(ctx, steamcmdDir, gameDir, logf); err != nil {
-		return false, err
-	}
-	return true, nil
+	return updateGame(ctx, steamcmdPath(installRoot), gameDir, logf)
 }
 
 // updateGame runs app_update on an installed server, without validate, which
@@ -75,7 +72,11 @@ func updateGame(ctx context.Context, steamcmdDir, gameDir string, logf func(stri
 	manifest := filepath.Join(gameDir, "steamapps", "appmanifest_"+AppID+".acf")
 	aside := manifest + ".0x6-" + time.Now().Format("2006-01-02T150405")
 	if stuck {
-		if err := os.Rename(manifest, aside); err != nil {
+		switch err := os.Rename(manifest, aside); {
+		case errors.Is(err, fs.ErrNotExist):
+			logUpdateFailed(logf, fmt.Errorf("%w, and %s is not there to set aside", errUpdateStuck, manifest))
+			return nil
+		case err != nil:
 			return fmt.Errorf("SteamCMD reported state 0x6 and %s could not be set aside: %w", manifest, err)
 		}
 		logf("SteamCMD left the update stuck at state 0x6, moved its manifest aside to %s", aside)
@@ -91,7 +92,11 @@ func updateGame(ctx context.Context, steamcmdDir, gameDir string, logf func(stri
 			"so %s was moved to %s, SteamCMD was warmed up and app_update ran again, which failed: %w. %s",
 			manifest, aside, err, RepairAdvice)
 	}
+	logUpdateFailed(logf, err)
+	return nil
+}
+
+func logUpdateFailed(logf func(string, ...any), err error) {
 	logf("the TF2 update did not finish (%v). Starting the installed build: "+
 		"players on a newer TF2 cannot join until it updates", err)
-	return nil
 }
