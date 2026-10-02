@@ -75,7 +75,8 @@ type Result struct {
 	Done        Status
 }
 
-// Ensure installs whatever is missing. It prints progress to logf as it goes.
+// Ensure installs whatever is missing and brings the game server to Steam's
+// current build. It prints progress to logf as it goes.
 // Cancel the context to abort a download or a steamcmd run.
 func Ensure(ctx context.Context, installRoot string, communityArchives, serverMods []string, logf func(format string, args ...any)) (Result, error) {
 	if err := assets.RequireVersions(); err != nil {
@@ -100,21 +101,14 @@ func Ensure(ctx context.Context, installRoot string, communityArchives, serverMo
 		result.Done.SteamcmdInstalled = true
 	}
 
-	if !gameInstalled(result.GameDir) {
-		if free, ok := winproc.FreeBytes(installRoot); ok && free < gameBytesNeeded {
-			return result, fmt.Errorf(
-				"the game server needs about %d GB and %s has %d GB free",
-				gameBytesNeeded/gigabyte, installRoot, free/gigabyte)
-		}
-		logf("installing the TF2 dedicated server (~14 GB, this is the long part)")
-		if err := installGame(ctx, result.SteamcmdDir, result.GameDir, logf); err != nil {
-			return result, err
-		}
-		result.Done.GameInstalled = true
-		result.Done.Message = "TF2 dedicated server installed"
-	} else {
-		result.Done.GameInstalled = true
+	installed, err := ensureGame(ctx, installRoot, result.SteamcmdDir, result.GameDir, logf)
+	if err != nil {
+		return result, err
 	}
+	if installed {
+		result.Done.Message = "TF2 dedicated server installed"
+	}
+	result.Done.GameInstalled = true
 
 	// After the game, because it links what SteamCMD downloaded into where the
 	// game server looks. Every start, because it is a link and cheap, and a
@@ -1120,25 +1114,7 @@ func installGame(ctx context.Context, steamcmdDir, gameDir string, logf func(str
 		return fmt.Errorf("SteamCMD is not in %s", steamcmdDir)
 	}
 
-	// Two runs before the real one, both of which SteamCMD needs and neither
-	// of which is allowed to fail the install.
-	//
-	// The first is the bootstrap: a freshly unpacked steamcmd.exe downloads
-	// the rest of itself and exits non-zero (7 is the usual one) to say it
-	// restarted.
-	//
-	// The second is a login and nothing else. A SteamCMD that has never logged
-	// in fails its first app_update with "Failed to install app '232250'
-	// (Missing configuration)", every time, and the same command works on the
-	// next run. Spending one session on the login is what makes the install
-	// work on the first press rather than the second.
-	logf("preparing SteamCMD")
-	if err := runSteamcmd(ctx, exe, steamcmdDir, logf, "+quit"); err != nil {
-		logf("SteamCMD updated itself (%v), carrying on", err)
-	}
-	if err := runSteamcmd(ctx, exe, steamcmdDir, logf, "+login", "anonymous", "+quit"); err != nil {
-		logf("the warm-up login did not finish (%v), carrying on", err)
-	}
+	warmUpSteamcmd(ctx, exe, steamcmdDir, logf)
 
 	// SteamCMD tokenises its own command line, so a path holding a space or an
 	// accent reaches it broken. The short form has neither, and it needs the
@@ -1151,20 +1127,7 @@ func installGame(ctx context.Context, steamcmdDir, gameDir string, logf func(str
 		logf("installing into %s (the short name for %s)", installDir, gameDir)
 	}
 
-	args := []string{
-		// No console is attached, so a prompt would hang with nobody to answer
-		// it, and a failed command has to stop the script rather than carry on
-		// to +quit and report success.
-		"+@NoPromptForPassword", "1",
-		"+@ShutdownOnFailedCommand", "1",
-		"+force_install_dir", installDir,
-		"+login", "anonymous",
-		// Without fresh app info, app_update fails with "Missing
-		// configuration" however good the login was.
-		"+app_info_update", "1",
-		"+app_update", AppID, "validate",
-		"+quit",
-	}
+	args := appUpdateArgs(installDir, true)
 	logf("steamcmd %s", strings.Join(args, " "))
 	err := runSteamcmd(ctx, exe, steamcmdDir, logf, args...)
 	if err == nil {
@@ -1186,6 +1149,49 @@ func installGame(ctx context.Context, steamcmdDir, gameDir string, logf func(str
 		return fmt.Errorf("SteamCMD could not install app %s: %w. %s", AppID, err, RepairAdvice)
 	}
 	return nil
+}
+
+// warmUpSteamcmd runs the two SteamCMD sessions an app_update needs first,
+// neither of which is allowed to fail the caller.
+func warmUpSteamcmd(ctx context.Context, exe, steamcmdDir string, logf func(string, ...any)) {
+	// The first is the bootstrap: a freshly unpacked steamcmd.exe downloads
+	// the rest of itself and exits non-zero (7 is the usual one) to say it
+	// restarted.
+	//
+	// The second is a login and nothing else. A SteamCMD that has never logged
+	// in fails its first app_update with "Failed to install app '232250'
+	// (Missing configuration)", every time, and the same command works on the
+	// next run. Spending one session on the login is what makes the install
+	// work on the first press rather than the second.
+	logf("preparing SteamCMD")
+	if err := runSteamcmd(ctx, exe, steamcmdDir, logf, "+quit"); err != nil {
+		logf("SteamCMD updated itself (%v), carrying on", err)
+	}
+	if err := runSteamcmd(ctx, exe, steamcmdDir, logf, "+login", "anonymous", "+quit"); err != nil {
+		logf("the warm-up login did not finish (%v), carrying on", err)
+	}
+}
+
+// appUpdateArgs is the command line that installs or updates the game in
+// installDir. validate rereads all 14 GB, so only an install asks for it.
+func appUpdateArgs(installDir string, validate bool) []string {
+	update := []string{"+app_update", AppID}
+	if validate {
+		update = append(update, "validate")
+	}
+	args := []string{
+		// No console is attached, so a prompt would hang with nobody to answer
+		// it, and a failed command has to stop the script rather than carry on
+		// to +quit and report success.
+		"+@NoPromptForPassword", "1",
+		"+@ShutdownOnFailedCommand", "1",
+		"+force_install_dir", installDir,
+		"+login", "anonymous",
+		// Without fresh app info, app_update fails with "Missing
+		// configuration" however good the login was.
+		"+app_info_update", "1",
+	}
+	return append(append(args, update...), "+quit")
 }
 
 // steamcmdStateAdvice turns the state SteamCMD reports into something a player
@@ -1244,6 +1250,12 @@ func runSteamcmd(ctx context.Context, exe, dir string, logf func(string, ...any)
 		// Wrapped rather than logged again: this is the whole reason the
 		// install stopped, and it has to reach the error the window shows.
 		return fmt.Errorf("%w. %s", err, Missing32BitAdvice)
+	}
+	if output.sawStuckUpdate {
+		if err == nil {
+			return errUpdateStuck
+		}
+		return fmt.Errorf("%w (%w)", errUpdateStuck, err)
 	}
 	return err
 }
@@ -1418,6 +1430,7 @@ type lineSplitter struct {
 	// saw32BitFailure is the one line worth remembering rather than only
 	// printing: it decides what the caller tells the operator to do.
 	saw32BitFailure bool
+	sawStuckUpdate  bool
 }
 
 func (l *lineSplitter) Write(p []byte) (int, error) {
@@ -1433,6 +1446,9 @@ func (l *lineSplitter) Write(p []byte) (int, error) {
 			l.logf("  %s", line)
 			if missing32Bit(line) {
 				l.saw32BitFailure = true
+			}
+			if stuckUpdate(line) {
+				l.sawStuckUpdate = true
 			}
 			if advice := steamcmdStateAdvice(line); advice != "" {
 				l.logf("%s", advice)
