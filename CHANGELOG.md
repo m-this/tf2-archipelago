@@ -4,6 +4,43 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
+## v1.17.9
+
+### Fixed
+
+- **A Windows server with SigMod runs again after the second 2026-10-02 TF2
+  update.** Valve shipped another update the same evening. SigMod for Windows
+  only knows the TF2 build it was made for, so on the new one the server
+  crashed at start, when anybody bought an upgrade (bots included), or when a
+  player inspected a weapon. The launcher now installs a SigMod build made for
+  the new TF2.
+- **The debug bundle no longer carries your RCON password.** It promised it
+  did not, but the server's crash log repeats its command line, password
+  included, and `server.cfg` sets it. Every text file in the bundle now has the
+  passwords taken out. If you posted a bundle before, change your RCON password
+  in the launcher.
+- **The first server start after updating the launcher uses the new
+  launcher.** A launcher from before the update, still running in the
+  background, kept its connection to the room, and the server spent that start
+  unable to read what the room had unlocked. The new launcher now closes the
+  old one's connection before the server starts.
+- **A bot's upgrade the game refused is no longer announced as bought.** The
+  chat and the log said a bot bought an upgrade even when the game turned the
+  purchase down. They now only report the purchases that happened, and the log
+  names the ones the game refused.
+- **Defender bots no longer take down a busy server in four ways we caught in
+  testing.** A bot leaving in the middle of shopping, a bot asked what it sees
+  before it had finished spawning, a check that treated any bot-controlled
+  player as a robot, and a few route searches with no limit could each crash
+  or freeze the server, most often on missions with many robots.
+
+### Changed
+
+- **After a TF2 update, SigMod for Windows switches itself off instead of
+  crashing the server.** Until a launcher release brings a SigMod build for the
+  new TF2, the server runs without it: missions that need SigMod are refused
+  and the run moves on, and the debug bundle says why.
+
 ## v1.17.8
 
 ### Fixed

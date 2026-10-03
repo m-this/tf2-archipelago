@@ -301,3 +301,36 @@ func TestOtherProgramsDumpsStayOutOfTheBundle(t *testing.T) {
 		t.Errorf("Breakpad's dump was dropped: %v", found)
 	}
 }
+
+// debug.log repeats srcds's command line on every crash, and server.cfg sets
+// the RCON password: Cowser's bundle carried his 27 times.
+func TestThePasswordsLeaveEveryLogToo(t *testing.T) {
+	root := t.TempDir()
+	game := filepath.Join(root, "tf-dedicated", "tf")
+	write(t, filepath.Join(game, "debug.log"), "Start Line: ./srcds_linux -game tf +rcon_password hunter22 +map mvm_decoy\n")
+	write(t, filepath.Join(game, "cfg", "server.cfg"), "rcon_password \"hunter22\"\nsv_password \"letmein\"\n")
+	write(t, filepath.Join(root, "launcher.log"), "13:37:00 room password roompass1 refused\n")
+	write(t, filepath.Join(game, "crash.mdmp"), "MDMP hunter22")
+
+	s := settings.Defaults()
+	s.InstallRoot = root
+	s.SrcdsRconPw = "hunter22"
+	s.APPassword = "roompass1"
+	path, err := Write(s, nil, time.Now())
+	if err != nil {
+		t.Fatalf("Write: %v", err)
+	}
+	for name, body := range read(t, path) {
+		if strings.HasPrefix(name, "crashes/") {
+			continue
+		}
+		for _, secret := range []string{"hunter22", "letmein", "roompass1"} {
+			if strings.Contains(body, secret) {
+				t.Errorf("%s still holds %q:\n%s", name, secret, body)
+			}
+		}
+	}
+	if got := read(t, path)["debug.log"]; !strings.Contains(got, "+rcon_password (removed from the bundle) +map mvm_decoy") {
+		t.Errorf("debug.log lost more than the password:\n%s", got)
+	}
+}

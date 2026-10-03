@@ -10,12 +10,14 @@ package debugbundle
 
 import (
 	"archive/zip"
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -48,6 +50,9 @@ func Write(s settings.Settings, versions map[string]string, stamp time.Time) (st
 
 	archive := zip.NewWriter(file)
 	game := filepath.Join(s.InstallRoot, "tf-dedicated", "tf")
+	copyIn := func(archive *zip.Writer, name, path string) {
+		copyFile(archive, name, path, secrets(s))
+	}
 
 	add(archive, "summary.txt", strings.NewReader(summary(s, versions, stamp)))
 	add(archive, "config.json", strings.NewReader(redactedSettings(s)))
@@ -75,7 +80,7 @@ func Write(s settings.Settings, versions map[string]string, stamp time.Time) (st
 	// per crash, and a crash that leaves no line in any log leaves one of
 	// these: it is the only file that names the function the server died in.
 	for _, dump := range newestCrashDumps(game, systemCrashDumpDir(), 3) {
-		copyIn(archive, filepath.Join("crashes", filepath.Base(dump)), dump)
+		copyRaw(archive, filepath.Join("crashes", filepath.Base(dump)), dump)
 	}
 
 	// Every SourceMod log, because the error log names the plugin and the plain
@@ -147,7 +152,7 @@ func summary(s settings.Settings, versions map[string]string, stamp time.Time) s
 	b.WriteString(found)
 	b.WriteString(crashDumpNote(s, sawCrash))
 
-	b.WriteString("\nPasswords are not in this file, and not in config.json either.\n")
+	b.WriteString("\nPasswords are taken out of every file in this bundle.\n")
 	return b.String()
 }
 
@@ -200,7 +205,6 @@ func crashDumpNote(s settings.Settings, sawCrash bool) string {
 // This zip is made to be posted in a chat channel. An RCON password in it is a
 // stranger's admin console, and a room password is somebody else's multiworld.
 func redactedSettings(s settings.Settings) string {
-	const hidden = "(removed from the bundle)"
 	if s.SrcdsRconPw != "" {
 		s.SrcdsRconPw = hidden
 	}
@@ -340,24 +344,75 @@ func add(archive *zip.Writer, name string, body io.Reader) {
 	_, _ = io.Copy(writer, body)
 }
 
-// copyIn adds a file if it is there, keeping the last fileBytesMax of it. A
-// missing file is normal: not every run has a console log or a SourceMod error.
-func copyIn(archive *zip.Writer, name, path string) {
+// hidden is what a secret reads as inside the bundle.
+const hidden = "(removed from the bundle)"
+
+// secretSetting matches a password given to srcds, in server.cfg or on the
+// command line that debug.log repeats on every crash. A Cowser bundle carried
+// his RCON password 27 times that way, under a summary saying it did not.
+var secretSetting = regexp.MustCompile(`(?i)(\+?(?:rcon_password|sv_password|sv_setsteamaccount)["\s]+)("[^"\r\n]*"|[^\s"]+)`)
+
+// secrets are the values the settings hold that nobody else should read. A
+// value shorter than four characters is left out: "0" is the token meaning
+// none, and replacing every 0 in a log would ruin it without hiding anything.
+func secrets(s settings.Settings) []string {
+	var out []string
+	for _, v := range []string{s.SrcdsRconPw, s.SrcdsPw, s.APPassword, s.SrcdsToken} {
+		if len(v) >= 4 {
+			out = append(out, v)
+		}
+	}
+	return out
+}
+
+// redact takes every secret out of a text file before it goes in the zip.
+func redact(body []byte, secrets []string) []byte {
+	body = secretSetting.ReplaceAll(body, []byte("${1}"+hidden))
+	for _, v := range secrets {
+		body = bytes.ReplaceAll(body, []byte(v), []byte(hidden))
+	}
+	return body
+}
+
+// copyFile adds a text file if it is there, keeping the last fileBytesMax of
+// it, with every secret taken out. A missing file is normal: not every run has
+// a console log or a SourceMod error.
+func copyFile(archive *zip.Writer, name, path string, secrets []string) {
+	body, name, ok := readTail(name, path)
+	if ok {
+		add(archive, name, bytes.NewReader(redact(body, secrets)))
+	}
+}
+
+// copyRaw adds a binary file as it is, keeping the last fileBytesMax of it.
+// A crash dump is not text, and a replacement inside it would corrupt it.
+func copyRaw(archive *zip.Writer, name, path string) {
+	body, name, ok := readTail(name, path)
+	if ok {
+		add(archive, name, bytes.NewReader(body))
+	}
+}
+
+func readTail(name, path string) ([]byte, string, bool) {
 	file, err := os.Open(path)
 	if err != nil {
-		return
+		return nil, name, false
 	}
 	defer func() { _ = file.Close() }()
 
 	info, err := file.Stat()
 	if err != nil {
-		return
+		return nil, name, false
 	}
 	if info.Size() > fileBytesMax {
 		if _, err := file.Seek(info.Size()-fileBytesMax, 0); err != nil {
-			return
+			return nil, name, false
 		}
 		name = strings.TrimSuffix(name, filepath.Ext(name)) + "-tail" + filepath.Ext(name)
 	}
-	add(archive, name, file)
+	body, err := io.ReadAll(file)
+	if err != nil {
+		return nil, name, false
+	}
+	return body, name, true
 }

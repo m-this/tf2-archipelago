@@ -89,6 +89,10 @@ var rules = []rule{
 		"      Machine: nothing locked, no checks sent, the settings above ignored.\n" +
 		"      Look under tf-dedicated/tf/addons for metamod.vdf, metamod/bin and\n" +
 		"      sourcemod/bin. The launcher reinstalls whichever is missing on the next start."},
+	{"SigMod did not load", func(l string) bool { return strings.Contains(l, "this SigMod build is for TF2 ServerVersion") }, "TF2 updated after this SigMod build was made, and the Windows build only\n" +
+		"      runs on the TF2 build it was made for. The server plays without it:\n" +
+		"      missions that need SigMod are refused. A launcher release with a new\n" +
+		"      SigMod build fixes it."},
 	{"a plugin threw", func(l string) bool { return strings.Contains(l, "[SM] Exception reported:") }, ""},
 	{"the plugin reported an error", func(l string) bool { return strings.Contains(l, "[AP] error:") }, ""},
 	{"a bot got stuck", func(l string) bool { return strings.Contains(l, "[defenderbots] stuck:") }, ""},

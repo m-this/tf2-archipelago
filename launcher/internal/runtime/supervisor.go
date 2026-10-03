@@ -134,7 +134,7 @@ func (s *Supervisor) Start(onExit func(error)) error {
 	}
 	current = prepared
 	funnelActive = current.TailscaleFastDL
-	cfg, err := bridgeConfig(current)
+	cfg, err := bridgeConfigReplacingStale(setupCtx, current, s.emit)
 	if err != nil {
 		return s.finishStart(err)
 	}

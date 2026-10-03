@@ -1,0 +1,101 @@
+package runtime
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"net"
+	"net/http"
+	"os"
+	"strconv"
+	"time"
+
+	"github.com/m-this/tf2-archipelago/bridge"
+	"github.com/m-this/tf2-archipelago/bridge/config"
+	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
+	"github.com/m-this/tf2-archipelago/launcher/internal/winproc"
+)
+
+// staleBridgeWait bounds the wait for a stopped bridge to let go of its port.
+const staleBridgeWait = 5 * time.Second
+
+var bridgeProbe = &http.Client{Timeout: time.Second}
+
+// bridgeConfigReplacingStale is bridgeConfig, once a stale bridge on its port
+// is stopped.
+func bridgeConfigReplacingStale(ctx context.Context, s settings.Settings, say func(string)) (config.Config, error) {
+	cfg, err := bridgeConfig(s)
+	if err != nil {
+		return config.Config{}, err
+	}
+	return cfg, replaceStaleBridge(ctx, cfg.Listen, say)
+}
+
+/*
+replaceStaleBridge stops a bridge of another API version that is already
+answering where this one is about to listen.
+
+This process starts its bridge only after this runs, so anything answering is
+another launcher's: usually the previous version, still running after its tab
+was closed. The new bridge then fails to bind while the game server it started
+beside it loads the new plugin and talks to the old bridge, which speaks an
+older API (apw-glb). A bridge of this launcher's own API version may be
+somebody's running server, so it is named and left alone, and so is something
+on the port that is not a bridge.
+*/
+func replaceStaleBridge(ctx context.Context, listen string, say func(string)) error {
+	version, ok := bridgeAt(ctx, listen)
+	if !ok {
+		return nil
+	}
+	if version == bridge.APIVersion {
+		return fmt.Errorf("another launcher is already running a server on %s: close it, or press Stop in it, and press Start again", listen)
+	}
+	_, portText, err := net.SplitHostPort(listen)
+	if err != nil {
+		return err
+	}
+	port, err := strconv.Atoi(portText)
+	if err != nil {
+		return err
+	}
+	pid, found := winproc.ListenerPID(port)
+	if !found || pid == os.Getpid() {
+		return fmt.Errorf("a bridge (API version %d) from another launcher is already on %s: close the other launcher and press Start again", version, listen)
+	}
+	say(fmt.Sprintf("stopping a bridge left running by another launcher (API version %d, process %d)", version, pid))
+	process, err := os.FindProcess(pid)
+	if err == nil {
+		err = process.Kill()
+	}
+	if err != nil {
+		return fmt.Errorf("cannot stop the other launcher's bridge on %s (process %d): %w", listen, pid, err)
+	}
+	for deadline := time.Now().Add(staleBridgeWait); time.Now().Before(deadline); time.Sleep(100 * time.Millisecond) {
+		if _, still := bridgeAt(ctx, listen); !still {
+			return nil
+		}
+	}
+	return fmt.Errorf("the other launcher's bridge on %s did not stop", listen)
+}
+
+// bridgeAt reports whether a bridge answers /healthz at listen, and its API
+// version.
+func bridgeAt(ctx context.Context, listen string) (int, bool) {
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://"+listen+"/healthz", nil)
+	if err != nil {
+		return 0, false
+	}
+	response, err := bridgeProbe.Do(request)
+	if err != nil {
+		return 0, false
+	}
+	defer func() { _ = response.Body.Close() }()
+	var health struct {
+		APIVersion int `json:"api_version"`
+	}
+	if response.StatusCode != http.StatusOK || json.NewDecoder(response.Body).Decode(&health) != nil || health.APIVersion == 0 {
+		return 0, false
+	}
+	return health.APIVersion, true
+}
