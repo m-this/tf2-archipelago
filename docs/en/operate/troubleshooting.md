@@ -10,6 +10,11 @@ This page finds out which. If you ask for help, send the debug bundle first:
 **Settings**, then **Debug logs**, in the launcher. It holds the launcher log,
 the server console and your settings, without passwords.
 
+Open `summary.txt` in it before anything else. It names the TF2 build the
+server was running beside every version the launcher installed, and says when
+two of them cannot work together. `collected.txt` beside it says which files
+the bundle could not take, and why.
+
 ## Read the logs
 
 - **Launcher:** the log at the bottom of the **Play** tab. **Filter the log**

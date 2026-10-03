@@ -143,6 +143,11 @@ build is live and opens an issue when it is not `TF2_SERVER_VERSION` in
 `deploy/env/versions.env`. That issue says what to check. Bump the pin last,
 once the SigMod and SourceMod pins are right, because the pin is what closes it.
 
+`TF2_SERVER_VERSION` is also linked into the launcher as
+`assets.TF2ServerVersion`, and the debug bundle compares it with the build srcds
+printed at start. Bumping it before the pins are right therefore silences the
+bundle as well as the watcher.
+
 ## Triage from Discord
 
 All discussion happens in Discord and no bot reads it. The maintainer copies the

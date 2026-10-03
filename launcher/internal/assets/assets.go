@@ -60,6 +60,21 @@ var (
 	// installs no separate download, so nothing gates on it; it is here because
 	// a crash report that does not say which bots were playing cannot be read.
 	DefenderbotsVersion = ""
+
+	/* TF2ServerVersion is the TF2 build deploy/env/versions.env says the pins
+	   above were last checked against.
+
+	   Not a version of anything this project ships, and nothing installs by it.
+	   It is here because the pins that matter most are keyed to the game: a
+	   SigMod build knows one ServerVersion, and SourceMod reads a KeyValues
+	   layout a TF2 update can move. The debug bundle compares this with the
+	   build srcds says it started on, which is the comparison that took an
+	   evening of reading Breakpad output by hand on 2026-10-02.
+
+	   It is not in Versions(): RequireVersions gates installs on that map, and
+	   a launcher that does not know this number can still install correctly.
+	   It only loses the comparison. */
+	TF2ServerVersion = ""
 )
 
 // Plugin returns the compiled SourceMod plugin bytecode.
