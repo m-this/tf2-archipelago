@@ -97,7 +97,7 @@ func (s FilesRPC) ShowFile(ctx context.Context, request *connect.Request[launche
 //
 //nolint:contextcheck // Bundle collection owns its bridge timeout.
 func (s FilesRPC) DownloadDebugBundle(_ context.Context, _ *connect.Request[launcherv1.DownloadDebugBundleRequest], stream *connect.ServerStream[launcherv1.DownloadDebugBundleResponse]) error {
-	path, err := debugbundle.Write(s.App.SettingsNow(), assets.Versions(), time.Now())
+	path, err := debugbundle.Write(s.App.SettingsNow(), assets.Versions(), assets.TF2ServerVersion, time.Now())
 	if err != nil {
 		return connect.NewError(connect.CodeInternal, err)
 	}

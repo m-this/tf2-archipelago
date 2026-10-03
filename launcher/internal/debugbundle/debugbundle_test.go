@@ -65,7 +65,7 @@ func TestWriteCollectsTheFilesAndHidesTheSecrets(t *testing.T) {
 	s.SrcdsToken = "the-token-secret"
 
 	stamp := time.Date(2026, 8, 18, 17, 4, 5, 0, time.UTC)
-	path, err := Write(s, map[string]string{"sourcemod": "1.12.0-git7246"}, stamp)
+	path, err := Write(s, map[string]string{"sourcemod": "1.12.0-git7246"}, "11068238", stamp)
 	if err != nil {
 		t.Fatalf("Write: %v", err)
 	}
@@ -103,7 +103,7 @@ func TestWriteCollectsTheFilesAndHidesTheSecrets(t *testing.T) {
 func TestWriteOnAnEmptyRoot(t *testing.T) {
 	s := settings.Defaults()
 	s.InstallRoot = t.TempDir()
-	path, err := Write(s, nil, time.Date(2026, 8, 18, 1, 2, 3, 0, time.UTC))
+	path, err := Write(s, nil, "", time.Date(2026, 8, 18, 1, 2, 3, 0, time.UTC))
 	if err != nil {
 		t.Fatalf("Write: %v", err)
 	}
@@ -131,7 +131,7 @@ func TestWriteKeepsThePreviousRun(t *testing.T) {
 
 	s := settings.Defaults()
 	s.InstallRoot = root
-	path, err := Write(s, nil, time.Date(2026, 8, 18, 1, 2, 3, 0, time.UTC))
+	path, err := Write(s, nil, "", time.Date(2026, 8, 18, 1, 2, 3, 0, time.UTC))
 	if err != nil {
 		t.Fatalf("Write: %v", err)
 	}
@@ -165,7 +165,7 @@ func TestWriteCarriesTheBridgeState(t *testing.T) {
 
 	s := settings.Defaults()
 	s.InstallRoot = t.TempDir()
-	path, err := Write(s, nil, time.Date(2026, 8, 18, 1, 2, 3, 0, time.UTC))
+	path, err := Write(s, nil, "", time.Date(2026, 8, 18, 1, 2, 3, 0, time.UTC))
 	if err != nil {
 		t.Fatalf("Write: %v", err)
 	}
@@ -186,7 +186,7 @@ func TestWriteSaysWhenTheBridgeDidNotAnswer(t *testing.T) {
 
 	s := settings.Defaults()
 	s.InstallRoot = t.TempDir()
-	path, err := Write(s, nil, time.Date(2026, 8, 18, 1, 2, 3, 0, time.UTC))
+	path, err := Write(s, nil, "", time.Date(2026, 8, 18, 1, 2, 3, 0, time.UTC))
 	if err != nil {
 		t.Fatalf("Write: %v", err)
 	}
@@ -206,7 +206,7 @@ func TestWriteCollectsTheCrashDumps(t *testing.T) {
 
 	s := settings.Defaults()
 	s.InstallRoot = root
-	path, err := Write(s, nil, time.Date(2026, 8, 21, 23, 4, 35, 0, time.UTC))
+	path, err := Write(s, nil, "", time.Date(2026, 8, 21, 23, 4, 35, 0, time.UTC))
 	if err != nil {
 		t.Fatalf("Write: %v", err)
 	}
@@ -223,7 +223,7 @@ func TestWriteCollectsTheCrashDumps(t *testing.T) {
 func TestTheSummaryNamesTheBotsVersion(t *testing.T) {
 	s := settings.Defaults()
 	s.InstallRoot = t.TempDir()
-	path, err := Write(s, map[string]string{"defenderbots": "v2.0.0"}, time.Now())
+	path, err := Write(s, map[string]string{"defenderbots": "v2.0.0"}, "", time.Now())
 	if err != nil {
 		t.Fatalf("Write: %v", err)
 	}
@@ -316,7 +316,7 @@ func TestThePasswordsLeaveEveryLogToo(t *testing.T) {
 	s.InstallRoot = root
 	s.SrcdsRconPw = "hunter22"
 	s.APPassword = "roompass1"
-	path, err := Write(s, nil, time.Now())
+	path, err := Write(s, nil, "", time.Now())
 	if err != nil {
 		t.Fatalf("Write: %v", err)
 	}
@@ -332,5 +332,134 @@ func TestThePasswordsLeaveEveryLogToo(t *testing.T) {
 	}
 	if got := read(t, path)["debug.log"]; !strings.Contains(got, "+rcon_password (removed from the bundle) +map mvm_decoy") {
 		t.Errorf("debug.log lost more than the password:\n%s", got)
+	}
+}
+
+/*
+The summary lists every pin and, until this, not the thing they are pinned
+against. The whole of the 2026-10-02 crash wave was the TF2 build against a
+SigMod keyed to the one before, and that number was in the logs the bundle
+already carried.
+*/
+func TestTheSummaryNamesTheTF2Build(t *testing.T) {
+	root := t.TempDir()
+	write(t, filepath.Join(root, apruntime.LogFileName),
+		"21:48:15  srcds    Using Breakpad minidump system. Version: 11076587 AppID: 232250\n")
+
+	s := settings.Defaults()
+	s.InstallRoot = root
+	path, err := Write(s, map[string]string{"sourcemod": "1.12.0-git7253"}, "11068238", time.Now())
+	if err != nil {
+		t.Fatalf("Write: %v", err)
+	}
+	got := read(t, path)["summary.txt"]
+	if !strings.Contains(got, "tf2 build     11076587") {
+		t.Fatalf("the summary does not name the running build:\n%s", got)
+	}
+	if !strings.Contains(got, "checked against 11068238") {
+		t.Errorf("the summary does not name the build the pins are for:\n%s", got)
+	}
+	if !strings.Contains(got, "What does not add up") {
+		t.Errorf("the summary has no cross-check section:\n%s", got)
+	}
+}
+
+/*
+Shysoul's bundle: a crash, no dump, and a note saying Breakpad should have
+written one. It should not have. SigMod caught the fault, printed its own two
+stacks, and called ExitProcess, which Windows does not treat as a crash, so the
+player was sent looking for a file that was never going to exist.
+*/
+func TestTheCrashNoteSaysWhenThereIsNoDumpToFind(t *testing.T) {
+	root := t.TempDir()
+	write(t, filepath.Join(root, apruntime.LogFileName), strings.Join([]string{
+		"21:48:22  srcds    SigMod: fault 0xc0000005 at ?+0xacf1200 touching 0x0acf1200 (esp 0x00f7ce8c), EBP chain:",
+		"21:48:22  srcds    SigMod: ExitProcess(4294967295) called from:",
+		"21:48:22  launcher game server CRASHED: exit status 0xffffffff (an unhandled exception, so this is a crash and not a stop)",
+	}, "\n")+"\n")
+
+	s := settings.Defaults()
+	s.InstallRoot = root
+	path, err := Write(s, nil, "", time.Now())
+	if err != nil {
+		t.Fatalf("Write: %v", err)
+	}
+	got := read(t, path)["summary.txt"]
+	if strings.Contains(got, "NO CRASH DUMP") {
+		t.Errorf("the player is still being sent after a dump that cannot exist:\n%s", got)
+	}
+	if !strings.Contains(got, "SigMod: ExitProcess") {
+		t.Errorf("the summary does not say where to look instead:\n%s", got)
+	}
+}
+
+// A crash with no SigMod handler behind it still has a dump somewhere, and the
+// note names the directories that were read rather than "under the install
+// root", which is not an instruction anybody can follow.
+func TestTheCrashNoteNamesWhereItLooked(t *testing.T) {
+	root := t.TempDir()
+	write(t, filepath.Join(root, apruntime.LogFileName),
+		"21:09:26  launcher game server stopped: exit status 0xc0000005\n")
+
+	s := settings.Defaults()
+	s.InstallRoot = root
+	path, err := Write(s, nil, "", time.Now())
+	if err != nil {
+		t.Fatalf("Write: %v", err)
+	}
+	got := read(t, path)["summary.txt"]
+	if !strings.Contains(got, "NO CRASH DUMP") {
+		t.Fatalf("the missing dump was not reported:\n%s", got)
+	}
+	if !strings.Contains(got, filepath.Join(root, "tf-dedicated", "tf")) {
+		t.Errorf("the note does not name the directories it read:\n%s", got)
+	}
+}
+
+/*
+Three bundles out of one crash wave held three different sets of files, and
+which of them was a missing file could not be told from the outside. The bundle
+writes down what it went for.
+*/
+func TestTheBundleSaysWhatItCouldNotCollect(t *testing.T) {
+	root := t.TempDir()
+	write(t, filepath.Join(root, apruntime.LogFileName), "13:37:00 launcher started\n")
+
+	s := settings.Defaults()
+	s.InstallRoot = root
+	path, err := Write(s, nil, "", time.Now())
+	if err != nil {
+		t.Fatalf("Write: %v", err)
+	}
+	got := read(t, path)["collected.txt"]
+	if !strings.Contains(got, "In the bundle") || !strings.Contains(got, apruntime.LogFileName) {
+		t.Fatalf("the log that arrived is not recorded:\n%s", got)
+	}
+	for _, want := range []string{"console.log", "server.cfg", "sourcemod/", "crashes/"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("%s is missing from the bundle and from the record:\n%s", want, got)
+		}
+	}
+	if !strings.Contains(read(t, path)["summary.txt"], "collected.txt") {
+		t.Error("the summary does not point at the record")
+	}
+}
+
+// debug.log is looked for in two places and only one of them has it. The one
+// that does not is not a loss, so it is not reported as one.
+func TestANameTakenFromOnePlaceIsNotAlsoMissing(t *testing.T) {
+	root := t.TempDir()
+	write(t, filepath.Join(root, "tf-dedicated", "tf", "debug.log"), "Start Line: ./srcds_linux -game tf\n")
+
+	s := settings.Defaults()
+	s.InstallRoot = root
+	path, err := Write(s, nil, "", time.Now())
+	if err != nil {
+		t.Fatalf("Write: %v", err)
+	}
+	got := read(t, path)["collected.txt"]
+	_, missing, _ := strings.Cut(got, "Not in the bundle")
+	if strings.Contains(missing, "debug.log") {
+		t.Errorf("debug.log arrived and is reported missing too:\n%s", got)
 	}
 }
