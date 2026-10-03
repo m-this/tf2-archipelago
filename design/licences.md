@@ -9,6 +9,15 @@ The defender bots are GPL-3.0, and so is
 now. Both `tf2ap.exe` and `tf2-defender-bots.zip` carry their compiled plugins,
 and that repository is where the source lives.
 
+Up to tf2-mvm-bots-go v0.18.3 the defender plugin also included headers from
+[SM_Stock_OfficerSpy](https://github.com/OfficerSpy/SM_Stock_OfficerSpy), a
+library its author has published no licence for. They were compiled into
+`tf2_defenderbots.smx`, which ships inside `tf2ap.exe`, `tf2ap-linux-amd64` and
+`tf2-defender-bots.zip`. v0.18.4 removed the includes, and this build no longer
+fetches the library. A release built on v0.18.4 or later carries none of it.
+Every release with the defender bots up to and including v1.17.9 was built on
+an earlier version and still contains those headers.
+
 Every other project in the bot stack keeps its own terms.
 [The bots on your team](../docs/en/play/defender-bots.md) names each one and what it is
 for.
