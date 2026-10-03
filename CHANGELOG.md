@@ -24,6 +24,10 @@ in the release notes, so this file is the only place to write it.
   background, kept its connection to the room, and the server spent that start
   unable to read what the room had unlocked. The new launcher now closes the
   old one's connection before the server starts.
+- **A bot's upgrade the game refused is no longer announced as bought.** The
+  chat and the log said a bot bought an upgrade even when the game turned the
+  purchase down. They now only report the purchases that happened, and the log
+  names the ones the game refused.
 
 ### Changed
 
