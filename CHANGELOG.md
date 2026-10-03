@@ -4,6 +4,24 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
+## v1.17.9
+
+### Fixed
+
+- **A Windows server with SigMod runs again after the second 2026-10-02 TF2
+  update.** Valve shipped another update the same evening. SigMod for Windows
+  only knows the TF2 build it was made for, so on the new one the server
+  crashed at start, when anybody bought an upgrade (bots included), or when a
+  player inspected a weapon. The launcher now installs a SigMod build made for
+  the new TF2.
+
+### Changed
+
+- **After a TF2 update, SigMod for Windows switches itself off instead of
+  crashing the server.** Until a launcher release brings a SigMod build for the
+  new TF2, the server runs without it: missions that need SigMod are refused
+  and the run moves on, and the debug bundle says why.
+
 ## v1.17.8
 
 ### Fixed
