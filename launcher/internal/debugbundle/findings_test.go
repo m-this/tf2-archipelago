@@ -128,3 +128,14 @@ func TestAServerWithoutThePluginIsNamed(t *testing.T) {
 		t.Errorf("the summary does not say what the lines mean:\n%s", got)
 	}
 }
+
+// SigMod for Windows refuses a TF2 build it was not made for, and a bundle
+// should say so rather than leave the refused missions unexplained.
+func TestASigModForAnotherBuildIsNamed(t *testing.T) {
+	got, _ := scanLogs(writeLog(t,
+		`22:23:31  srcds    [SM] Unable to load extension "sigsegv.ext": this SigMod build is for TF2 ServerVersion 11068238, and the server is 11076587`,
+	))
+	if !strings.Contains(got, "SigMod did not load") || !strings.Contains(got, "TF2 updated") {
+		t.Fatalf("the refused SigMod was not reported:\n%s", got)
+	}
+}

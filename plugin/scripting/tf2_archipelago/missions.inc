@@ -524,6 +524,9 @@ static void Missions_NoteRefused(const char[] popFile)
     {
         AP_Error("SigMod is not loaded here, and that is where those populators come from.");
         AP_Error("Turn SigMod on in the launcher, or leave %s out of the run.", name);
+        // On Windows SigMod refuses a TF2 build its addresses were not made for,
+        // and that is the case after every Valve update until a new one ships.
+        AP_Error("If it is on, the server console says why it did not load.");
     }
     Missions_LeaveRefused(popFile);
 }
