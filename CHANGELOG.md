@@ -14,6 +14,11 @@ in the release notes, so this file is the only place to write it.
   crashed at start, when anybody bought an upgrade (bots included), or when a
   player inspected a weapon. The launcher now installs a SigMod build made for
   the new TF2.
+- **The debug bundle no longer carries your RCON password.** It promised it
+  did not, but the server's crash log repeats its command line, password
+  included, and `server.cfg` sets it. Every text file in the bundle now has the
+  passwords taken out. If you posted a bundle before, change your RCON password
+  in the launcher.
 
 ### Changed
 
