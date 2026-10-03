@@ -399,6 +399,46 @@ static bool SplitQuoted(const char[] line, char[] key, int keyMax, char[] value,
     return true;
 }
 
+/* What the client held when an MVM_Upgrade arrived, before the game saw it.
+ *
+ * The line below is written after the game has handled the command, and it
+ * used to say "bought" whatever the game did. apw-bjf's log is every bot
+ * "buying" damage bonus over and over at 400 credits that never moved, which
+ * read as purchases and were refusals. -1 is "not measured".
+ */
+static int g_CreditsBeforeUpgrade[MAXPLAYERS + 1] = { -1, ... };
+
+static int CreditsOf(int client)
+{
+    return HasEntProp(client, Prop_Send, "m_nCurrency")
+        ? GetEntProp(client, Prop_Send, "m_nCurrency") : -1;
+}
+
+public Action OnClientCommandKeyValues(int client, KeyValues kv)
+{
+    if (client <= 0 || client > MaxClients)
+    {
+        return Plugin_Continue;
+    }
+    char name[32];
+    kv.GetSectionName(name, sizeof(name));
+    g_CreditsBeforeUpgrade[client] = StrEqual(name, "MVM_Upgrade") ? CreditsOf(client) : -1;
+    return Plugin_Continue;
+}
+
+/* Whether the game turned the command down: the credits did not move.
+ *
+ * The game takes the money for each step as it applies it, and gives it back for
+ * each step it takes off, so a balance that did not move is a request the game
+ * refused. Unmeasured is not a refusal.
+ */
+static bool UpgradeRefused(int client, int credits)
+{
+    int before = g_CreditsBeforeUpgrade[client];
+    g_CreditsBeforeUpgrade[client] = -1;
+    return before >= 0 && credits >= 0 && before == credits;
+}
+
 /* Every purchase and every sale at the upgrade station.
  *
  * The game handles it; this only says what it was. For the mod's bots that is
@@ -459,23 +499,26 @@ public void OnClientCommandKeyValues_Post(int client, KeyValues kv)
      * The same reasoning as the sale a player makes: what a station shows and
      * what the game does are two things, and only the second moves money.
      */
-    int credits = HasEntProp(client, Prop_Send, "m_nCurrency")
-        ? GetEntProp(client, Prop_Send, "m_nCurrency") : -1;
+    int credits = CreditsOf(client);
+    bool refused = UpgradeRefused(client, credits);
+    char verb[16];
+    strcopy(verb, sizeof(verb), refused ? (count < 0 ? "asked to sell" : "asked for") : (count < 0 ? "sold" : "bought"));
 
     if (!IsFakeClient(client))
     {
-        AP_Debug("%N %s %s (%s) x%d, and holds %d credits.",
-            client, count < 0 ? "sold" : "bought", upgrade, SlotLabel(slot), count < 0 ? -count : count,
-            credits);
+        AP_Debug("%N %s %s (%s) x%d%s, and holds %d credits.",
+            client, verb, upgrade, SlotLabel(slot), count < 0 ? -count : count,
+            refused ? ", which the game refused" : "", credits);
         return;
     }
     // The log takes every bot purchase whatever the chat is set to: the chat is
     // one line per tier and unreadable during a wave, and the log is what a
     // debug bundle carries.
-    AP_Debug("%N %s %s (%s) x%d, and holds %d credits.",
-        client, count < 0 ? "sold" : "bought", upgrade, SlotLabel(slot), count < 0 ? -count : count,
-        credits);
-    if (!g_CvarBotUpgradesChat.BoolValue)
+    AP_Debug("%N %s %s (%s) x%d%s, and holds %d credits.",
+        client, verb, upgrade, SlotLabel(slot), count < 0 ? -count : count,
+        refused ? ", which the game refused" : "", credits);
+    // A refusal is nothing the team needs told: the bot tries the next one.
+    if (refused || !g_CvarBotUpgradesChat.BoolValue)
     {
         return;
     }
