@@ -138,6 +138,11 @@ and tagging a release could never both hold.
 `.github/workflows/release.yml` copies the `CHANGELOG.md` section that matches
 the tag into the release notes. Players read it. Keep developer notes out.
 
+`.github/workflows/tf2-build-watch.yml` asks Valve every two hours which TF2
+build is live and opens an issue when it is not `TF2_SERVER_VERSION` in
+`deploy/env/versions.env`. That issue says what to check. Bump the pin last,
+once the SigMod and SourceMod pins are right, because the pin is what closes it.
+
 ## Triage from Discord
 
 All discussion happens in Discord and no bot reads it. The maintainer copies the
