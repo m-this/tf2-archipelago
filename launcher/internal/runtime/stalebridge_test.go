@@ -50,7 +50,7 @@ func TestAStaleBridgeIsReplaced(t *testing.T) {
 	t.Cleanup(func() { _ = old.Process.Kill() })
 
 	for deadline := time.Now().Add(10 * time.Second); ; time.Sleep(50 * time.Millisecond) {
-		if _, up := bridgeAt(listen); up {
+		if _, up := bridgeAt(t.Context(), listen); up {
 			break
 		}
 		if time.Now().After(deadline) {
@@ -58,7 +58,7 @@ func TestAStaleBridgeIsReplaced(t *testing.T) {
 		}
 	}
 
-	if err := replaceStaleBridge(listen, func(text string) { t.Log(text) }); err != nil {
+	if err := replaceStaleBridge(t.Context(), listen, func(text string) { t.Log(text) }); err != nil {
 		t.Fatalf("the stale bridge was not replaced: %v", err)
 	}
 	select {
@@ -81,7 +81,7 @@ func TestNoBridgeIsNoWork(t *testing.T) {
 	}
 	listen := probe.Addr().String()
 	_ = probe.Close()
-	if err := replaceStaleBridge(listen, func(text string) { t.Log(text) }); err != nil {
+	if err := replaceStaleBridge(t.Context(), listen, func(text string) { t.Log(text) }); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -100,10 +100,10 @@ func TestABridgeOfThisVersionIsLeftAlone(t *testing.T) {
 	defer func() { _ = server.Close() }()
 
 	listen := listener.Addr().String()
-	if err := replaceStaleBridge(listen, func(text string) { t.Log(text) }); err == nil {
+	if err := replaceStaleBridge(t.Context(), listen, func(text string) { t.Log(text) }); err == nil {
 		t.Fatal("Start went ahead beside another launcher's server")
 	}
-	if _, still := bridgeAt(listen); !still {
+	if _, still := bridgeAt(t.Context(), listen); !still {
 		t.Fatal("the bridge of this version was stopped")
 	}
 }

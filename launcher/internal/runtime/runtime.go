@@ -64,13 +64,10 @@ func Run(ctx context.Context, s settings.Settings, logger *slog.Logger) error {
 	if err := srcdsconfig.Install(s); err != nil {
 		return err
 	}
-	bridgeCfg, err := bridgeConfig(s)
-	if err != nil {
-		return err
-	}
-	if err := replaceStaleBridge(bridgeCfg.Listen, func(text string) {
+	bridgeCfg, err := bridgeConfigReplacingStale(ctx, s, func(text string) {
 		logger.InfoContext(ctx, "bridge", "detail", text)
-	}); err != nil {
+	})
+	if err != nil {
 		return err
 	}
 

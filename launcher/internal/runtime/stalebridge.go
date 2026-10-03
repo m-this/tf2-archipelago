@@ -11,11 +11,25 @@ import (
 	"time"
 
 	"github.com/m-this/tf2-archipelago/bridge"
+	"github.com/m-this/tf2-archipelago/bridge/config"
+	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 	"github.com/m-this/tf2-archipelago/launcher/internal/winproc"
 )
 
 // staleBridgeWait bounds the wait for a stopped bridge to let go of its port.
 const staleBridgeWait = 5 * time.Second
+
+var bridgeProbe = &http.Client{Timeout: time.Second}
+
+// bridgeConfigReplacingStale is bridgeConfig, once a stale bridge on its port
+// is stopped.
+func bridgeConfigReplacingStale(ctx context.Context, s settings.Settings, say func(string)) (config.Config, error) {
+	cfg, err := bridgeConfig(s)
+	if err != nil {
+		return config.Config{}, err
+	}
+	return cfg, replaceStaleBridge(ctx, cfg.Listen, say)
+}
 
 /*
 replaceStaleBridge stops a bridge of another API version that is already
@@ -29,8 +43,8 @@ older API (apw-glb). A bridge of this launcher's own API version may be
 somebody's running server, so it is named and left alone, and so is something
 on the port that is not a bridge.
 */
-func replaceStaleBridge(listen string, say func(string)) error {
-	version, ok := bridgeAt(listen)
+func replaceStaleBridge(ctx context.Context, listen string, say func(string)) error {
+	version, ok := bridgeAt(ctx, listen)
 	if !ok {
 		return nil
 	}
@@ -58,7 +72,7 @@ func replaceStaleBridge(listen string, say func(string)) error {
 		return fmt.Errorf("cannot stop the other launcher's bridge on %s (process %d): %w", listen, pid, err)
 	}
 	for deadline := time.Now().Add(staleBridgeWait); time.Now().Before(deadline); time.Sleep(100 * time.Millisecond) {
-		if _, still := bridgeAt(listen); !still {
+		if _, still := bridgeAt(ctx, listen); !still {
 			return nil
 		}
 	}
@@ -67,14 +81,12 @@ func replaceStaleBridge(listen string, say func(string)) error {
 
 // bridgeAt reports whether a bridge answers /healthz at listen, and its API
 // version.
-func bridgeAt(listen string) (int, bool) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
+func bridgeAt(ctx context.Context, listen string) (int, bool) {
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://"+listen+"/healthz", nil)
 	if err != nil {
 		return 0, false
 	}
-	response, err := http.DefaultClient.Do(request)
+	response, err := bridgeProbe.Do(request)
 	if err != nil {
 		return 0, false
 	}

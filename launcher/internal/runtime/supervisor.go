@@ -134,11 +134,8 @@ func (s *Supervisor) Start(onExit func(error)) error {
 	}
 	current = prepared
 	funnelActive = current.TailscaleFastDL
-	cfg, err := bridgeConfig(current)
+	cfg, err := bridgeConfigReplacingStale(setupCtx, current, s.emit)
 	if err != nil {
-		return s.finishStart(err)
-	}
-	if err := replaceStaleBridge(cfg.Listen, s.emit); err != nil {
 		return s.finishStart(err)
 	}
 	// The game server reads server.cfg once, at its own startup, so the file
