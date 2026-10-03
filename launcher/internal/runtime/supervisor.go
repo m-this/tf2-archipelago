@@ -138,6 +138,9 @@ func (s *Supervisor) Start(onExit func(error)) error {
 	if err != nil {
 		return s.finishStart(err)
 	}
+	if err := replaceStaleBridge(cfg.Listen, s.emit); err != nil {
+		return s.finishStart(err)
+	}
 	// The game server reads server.cfg once, at its own startup, so the file
 	// has to hold the settings this start is using. Rendering it here rather
 	// than once per launcher run is what makes a class unticked in the

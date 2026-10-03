@@ -19,6 +19,11 @@ in the release notes, so this file is the only place to write it.
   included, and `server.cfg` sets it. Every text file in the bundle now has the
   passwords taken out. If you posted a bundle before, change your RCON password
   in the launcher.
+- **The first server start after updating the launcher uses the new
+  launcher.** A launcher from before the update, still running in the
+  background, kept its connection to the room, and the server spent that start
+  unable to read what the room had unlocked. The new launcher now closes the
+  old one's connection before the server starts.
 
 ### Changed
 

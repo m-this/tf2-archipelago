@@ -68,6 +68,11 @@ func Run(ctx context.Context, s settings.Settings, logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	if err := replaceStaleBridge(bridgeCfg.Listen, func(text string) {
+		logger.InfoContext(ctx, "bridge", "detail", text)
+	}); err != nil {
+		return err
+	}
 
 	bridgeCtx, cancelBridge := context.WithCancel(ctx)
 	defer cancelBridge()
