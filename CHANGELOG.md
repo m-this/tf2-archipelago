@@ -40,6 +40,23 @@ in the release notes, so this file is the only place to write it.
   crashing the server.** Until a launcher release brings a SigMod build for the
   new TF2, the server runs without it: missions that need SigMod are refused
   and the run moves on, and the debug bundle says why.
+- **The debug bundle names the TF2 build the server is running.** It listed
+  every version the launcher installs and not the one they are all built
+  against, which is the version that matters most on the evening TF2 updates.
+- **The debug bundle says when two of those versions cannot work together.**
+  Above the logs it now names, in plain words, a SigMod built for a different
+  TF2 build, a SourceMod too old for the upgrade station on this one, and a run
+  where the game refused every upgrade the bots tried to buy. It compares what
+  the file already said; it still does not claim to have found your bug.
+- **The debug bundle stops sending you after a crash dump that does not
+  exist.** When SigMod catches the fault and closes the server itself, Windows
+  writes no dump, and the summary now says so and points at the two stacks
+  SigMod printed into the log instead. When a dump should exist it names the
+  folders it looked in.
+- **The debug bundle lists what it could not collect.** Two bundles from the
+  same evening held different files and there was no way to tell a missing file
+  from a file that never existed. `collected.txt` in the zip now says which it
+  was, and why.
 
 ## v1.17.8
 
