@@ -187,16 +187,46 @@ fetch Vinillia/actions.ext "$ACTIONS_VERSION" actions
 
 apply_patches tf2attributes
 
-# --- The compiler ---
+# --- The compiler, which the mod names and we do not ---
 #
 # spcomp from SOURCEMOD_VERSION, which plugin/build.sh uses for our own plugin,
-# segfaults on the defender mod: upstream issue #5, no diagnostic, exit 139.
-# This is the drop the mod's own CI uses, and it compiles it.
-if [ ! -d "$work/spcomp" ]; then
-	echo "fetching SourceMod $DEFENDERBOTS_SOURCEMOD_VERSION"
+# segfaults on the defender mod: upstream issue #5, no diagnostic, exit 139. So
+# the mod compiles with the drop its own CI uses, and the mod is where that drop
+# is named: plugin/testbed/versions.env, read here out of the module cache.
+#
+# One pin, the same way the mod's own version is the go.mod requirement and
+# nothing else. versions.env used to carry a copy as
+# DEFENDERBOTS_SOURCEMOD_VERSION, and the copy and the original drifted ninety
+# builds apart: the test-bed proved the mod with one compiler and this image
+# shipped it built with another.
+defenderbots_versions="$defenderbots_dir/plugin/testbed/versions.env"
+
+# One KEY=value out of the mod's file. Missing is a failure and never an empty
+# string: an empty version builds a download URL that 404s, which reads as the
+# network being down rather than as the pin being gone.
+defenderbots_pin() {
+	value=$(sed -n "s/^$1=//p" "$defenderbots_versions" | head -1)
+	if [ -z "$value" ]; then
+		echo "$defenderbots_versions does not name $1, so there is no compiler to fetch for the defender mod" >&2
+		exit 1
+	fi
+	printf '%s\n' "$value"
+}
+
+defenderbots_sourcemod_branch=$(defenderbots_pin SOURCEMOD_BRANCH)
+defenderbots_sourcemod_version=$(defenderbots_pin SOURCEMOD_VERSION)
+
+# The same stamp rule the checkouts use: a compiler left from the previous pin
+# compiles and says nothing, and a build that silently used the old compiler is
+# the one failure this whole arrangement exists to stop.
+spcomp_stamp="$work/spcomp.ref"
+if [ ! -d "$work/spcomp" ] || [ "$(cat "$spcomp_stamp" 2>/dev/null)" != "$defenderbots_sourcemod_version" ]; then
+	echo "fetching SourceMod $defenderbots_sourcemod_version, which $defenderbots_module compiles with"
+	rm -rf "$work/spcomp"
 	mkdir -p "$work/spcomp"
-	curl -fsSL "https://sm.alliedmods.net/smdrop/$SOURCEMOD_BRANCH/sourcemod-$DEFENDERBOTS_SOURCEMOD_VERSION-linux.tar.gz" |
+	curl -fsSL "https://sm.alliedmods.net/smdrop/$defenderbots_sourcemod_branch/sourcemod-$defenderbots_sourcemod_version-linux.tar.gz" |
 		tar xz -C "$work/spcomp"
+	printf '%s\n' "$defenderbots_sourcemod_version" >"$spcomp_stamp"
 fi
 sm="$work/spcomp/addons/sourcemod/scripting"
 
