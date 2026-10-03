@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -46,6 +47,45 @@ func TestVersionsEnvNamesOneSourcemodDropAndTheTF2BuildItWasCheckedOn(t *testing
 	build := pins["SOURCEMOD_TF2_SERVER_VERSION"]
 	if !regexp.MustCompile(`^[0-9]+$`).MatchString(build) {
 		t.Errorf("SOURCEMOD_TF2_SERVER_VERSION = %q, want the bare TF2 ServerVersion the SourceMod pin was checked on", build)
+	}
+}
+
+/*
+The SourceMod pin is not keyed to a TF2 build older than the one the stack is on.
+
+TF2_SERVER_VERSION is the build somebody last checked the game-keyed pins
+against, and versions.env says bumping it is the last step of dealing with an
+update, not the first: .github/workflows/tf2-build-watch.yml keeps filing the
+issue until it moves. So the two fields are only allowed to drift one way. A
+SOURCEMOD_TF2_SERVER_VERSION ahead of TF2_SERVER_VERSION is somebody who checked
+SourceMod against a new build while another pin is still being fixed, which is
+the normal middle of that work. Behind means the game has moved past the last
+build this drop was run on and nothing says so, which is a server that segfaults
+when a client joins while the watcher is quiet, because TF2_SERVER_VERSION says
+the pins are fine.
+
+That is the state this repository was in between the 2026-10-02 update and the
+git7255 pin, and it was found by reading the file rather than by a gate.
+
+Numeric, not string: a ServerVersion is an increasing integer and will change
+digit count.
+*/
+func TestTheSourcemodPinIsNotBehindTheTF2BuildTheStackIsOn(t *testing.T) {
+	t.Parallel()
+
+	pins := readEnvFile(t, filepath.Join("env", "versions.env"))
+
+	checked, err := strconv.ParseInt(pins["SOURCEMOD_TF2_SERVER_VERSION"], 10, 64)
+	if err != nil {
+		t.Fatalf("SOURCEMOD_TF2_SERVER_VERSION = %q, want a bare TF2 ServerVersion: %v", pins["SOURCEMOD_TF2_SERVER_VERSION"], err)
+	}
+	stack, err := strconv.ParseInt(pins["TF2_SERVER_VERSION"], 10, 64)
+	if err != nil {
+		t.Fatalf("TF2_SERVER_VERSION = %q, want a bare TF2 ServerVersion: %v", pins["TF2_SERVER_VERSION"], err)
+	}
+
+	if checked < stack {
+		t.Errorf("SOURCEMOD_TF2_SERVER_VERSION = %d, behind TF2_SERVER_VERSION = %d: SOURCEMOD_VERSION=%s has not been run on the build the rest of the pins are checked against, so bump it once it has, or hold TF2_SERVER_VERSION back until the pins are right", checked, stack, pins["SOURCEMOD_VERSION"])
 	}
 }
 
