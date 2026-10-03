@@ -51,7 +51,7 @@ git config --global advice.detachedHead false 2>/dev/null || true
 # $1 repo, $2 ref, $3 directory
 #
 # The checkouts survive between runs, here and in CI's cache, and that is worth
-# having: a clone of seven repositories is most of this script's time. It is
+# having: a clone of six repositories is most of this script's time. It is
 # only worth having for the ref that is asked for now, though. Keeping whatever
 # is on disk meant a version bump built the previous version and said nothing,
 # which does not fail: it ships, labelled as the new one.
@@ -96,7 +96,6 @@ apply_patches() {
 
 # --- Sources for the plugins ---
 
-fetch OfficerSpy/SM_Stock_OfficerSpy "$SM_STOCK_OFFICERSPY_REF" stocklib
 fetch FlaminSarge/tf2attributes "$TF2ATTRIBUTES_VERSION" tf2attributes
 fetch nosoop/SM-TFEconData "$TFECONDATA_VERSION" tf_econ_data
 fetch nosoop/SM-TFUtils "$TF2UTILS_VERSION" tf2utils
@@ -305,7 +304,6 @@ compile() {
 	echo "compiling $name"
 	"$compile_sm/spcomp64" \
 		-i"$compile_sm/include" \
-		-i"$compile_src/stocklib" \
 		-i"$compile_src/stocksoup-root" \
 		-i"$compile_src/cbasenpc/scripting/include" \
 		-i"$compile_src/actions/sourcemod/include" \
