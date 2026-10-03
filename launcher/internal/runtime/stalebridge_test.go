@@ -1,12 +1,15 @@
 package runtime
 
 import (
+	"fmt"
 	"net"
 	"net/http"
 	"os"
 	"os/exec"
 	"testing"
 	"time"
+
+	"github.com/m-this/tf2-archipelago/bridge"
 )
 
 // staleBridgeEnv makes the test binary play an older launcher's bridge.
@@ -80,5 +83,27 @@ func TestNoBridgeIsNoWork(t *testing.T) {
 	_ = probe.Close()
 	if err := replaceStaleBridge(listen, func(text string) { t.Log(text) }); err != nil {
 		t.Fatal(err)
+	}
+}
+
+// A bridge of this launcher's own API version may be somebody's running
+// server: Start refuses and names it, and the bridge keeps answering.
+func TestABridgeOfThisVersionIsLeftAlone(t *testing.T) {
+	listener, err := net.Listen("tcp4", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	server := &http.Server{Handler: http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = fmt.Fprintf(w, `{"api_version":%d}`, bridge.APIVersion)
+	})}
+	go func() { _ = server.Serve(listener) }()
+	defer func() { _ = server.Close() }()
+
+	listen := listener.Addr().String()
+	if err := replaceStaleBridge(listen, func(text string) { t.Log(text) }); err == nil {
+		t.Fatal("Start went ahead beside another launcher's server")
+	}
+	if _, still := bridgeAt(listen); !still {
+		t.Fatal("the bridge of this version was stopped")
 	}
 }

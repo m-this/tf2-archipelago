@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/m-this/tf2-archipelago/bridge"
 	"github.com/m-this/tf2-archipelago/launcher/internal/winproc"
 )
 
@@ -17,19 +18,24 @@ import (
 const staleBridgeWait = 5 * time.Second
 
 /*
-replaceStaleBridge stops a bridge that is already answering where this one is
-about to listen.
+replaceStaleBridge stops a bridge of another API version that is already
+answering where this one is about to listen.
 
 This process starts its bridge only after this runs, so anything answering is
 another launcher's: usually the previous version, still running after its tab
 was closed. The new bridge then fails to bind while the game server it started
 beside it loads the new plugin and talks to the old bridge, which speaks an
-older API (apw-glb). Something on the port that is not a bridge is left alone.
+older API (apw-glb). A bridge of this launcher's own API version may be
+somebody's running server, so it is named and left alone, and so is something
+on the port that is not a bridge.
 */
 func replaceStaleBridge(listen string, say func(string)) error {
 	version, ok := bridgeAt(listen)
 	if !ok {
 		return nil
+	}
+	if version == bridge.APIVersion {
+		return fmt.Errorf("another launcher is already running a server on %s: close it, or press Stop in it, and press Start again", listen)
 	}
 	_, portText, err := net.SplitHostPort(listen)
 	if err != nil {

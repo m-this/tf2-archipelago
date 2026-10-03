@@ -28,6 +28,10 @@ import (
 	"github.com/m-this/tf2-archipelago/gamedata"
 )
 
+// APIVersion is the contract with the plugin, for a caller outside the bridge
+// that has to tell this bridge from another build's.
+const APIVersion = httpapi.APIVersion
+
 const (
 	// ShutdownGrace is how long in-flight long-polls get to finish after the
 	// context is cancelled.
