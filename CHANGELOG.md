@@ -28,6 +28,11 @@ in the release notes, so this file is the only place to write it.
   chat and the log said a bot bought an upgrade even when the game turned the
   purchase down. They now only report the purchases that happened, and the log
   names the ones the game refused.
+- **Defender bots no longer take down a busy server in four ways we caught in
+  testing.** A bot leaving in the middle of shopping, a bot asked what it sees
+  before it had finished spawning, a check that treated any bot-controlled
+  player as a robot, and a few route searches with no limit could each crash
+  or freeze the server, most often on missions with many robots.
 
 ### Changed
 
