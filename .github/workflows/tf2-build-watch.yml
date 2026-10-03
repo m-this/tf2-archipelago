@@ -1,0 +1,181 @@
+name: TF2 build watch
+
+on:
+  schedule:
+    # Every two hours. The thing being fixed is a production server that sat 19
+    # hours logging "Your server needs to be restarted" with nobody told, so the
+    # bound that matters is "inside the evening it happened", not minutes.
+    - cron: "23 */2 * * *"
+  workflow_dispatch:
+    inputs:
+      known_build:
+        description: Pretend the pins are for this TF2 build instead of the one in versions.env
+        required: false
+        type: string
+      dry_run:
+        description: Print the alert instead of opening an issue
+        required: false
+        default: false
+        type: boolean
+
+# One at a time, and never cancelled. Two runs overlapping would both look for
+# an open issue, both find none, and both file one.
+concurrency:
+  group: tf2-build-watch
+  cancel-in-progress: false
+
+# What this is for: Valve shipped two TF2 updates on the evening of 2026-10-02
+# and nothing here noticed. The order of events was players reporting that the
+# server died when a bot bought an upgrade, then a debug bundle, then somebody
+# reading Breakpad output by hand to find that SigMod was keyed to the previous
+# build. This job is that notice, moved to before the first player joins.
+#
+# It asks Valve which build is live and compares it with TF2_SERVER_VERSION in
+# deploy/env/versions.env, which is the last build the pins were checked
+# against. Equal is silence. Different opens one issue naming both builds, every
+# pin keyed to the game, and the failure each one causes.
+#
+# Once per change, not once per run: the issue title carries the new build id, so
+# a run that finds an issue already naming that build says nothing. Two updates
+# in one evening are two builds and two issues, which is what 2026-10-02 needed.
+#
+# A failed check is loud. There is no path here that logs a problem and exits 0:
+# anything other than "up to date" or "a new build" fails the job, which is the
+# notification GitHub sends for a scheduled workflow that failed. Three curl
+# attempts cover a Steam blip; a Steam outage that outlasts them is worth being
+# told about, because for its duration nothing is watching.
+#
+# GitHub-only, like the release and nightly jobs: `gh issue create` is GitHub's.
+# The Forgejo mirror reads this file and skips it.
+jobs:
+  watch:
+    if: github.server_url == 'https://github.com'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: ask Valve which TF2 build is live
+        id: check
+        env:
+          KNOWN_BUILD: ${{ inputs.known_build }}
+        run: |
+          . deploy/env/versions.env
+          known=${KNOWN_BUILD:-$TF2_SERVER_VERSION}
+
+          # The script prints the live build and exits 10 when it differs from
+          # the one passed in. Any other non-zero is a failed check, and it goes
+          # out of here as a failed job.
+          status=0
+          current=$(deploy/tf2-build-check.sh "$known") || status=$?
+          case "$status" in
+            0)
+              echo "TF2 is on $current, which is what the pins were checked against."
+              echo "stale=no" >> "$GITHUB_OUTPUT"
+              ;;
+            10)
+              echo "TF2 moved from $known to $current."
+              echo "stale=yes" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "the build check failed with exit $status; nothing is being watched until this works" >&2
+              exit "$status"
+              ;;
+          esac
+          echo "known=$known" >> "$GITHUB_OUTPUT"
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+
+      # The pins go in the text rather than a link to the file, so somebody
+      # reading this on a phone at 23:00 already has the values.
+      - name: write the alert
+        if: steps.check.outputs.stale == 'yes'
+        env:
+          CURRENT: ${{ steps.check.outputs.current }}
+          KNOWN: ${{ steps.check.outputs.known }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          . deploy/env/versions.env
+          # Every format string below is single-quoted on purpose: the backticks
+          # are markdown and the values arrive as printf arguments.
+          # shellcheck disable=SC2016
+          {
+            printf 'TF2 is on ServerVersion %s. `TF2_SERVER_VERSION` in `deploy/env/versions.env`\n' "$CURRENT"
+            printf 'is %s, so the pins keyed to the game are a build behind. Each one below fails\n' "$KNOWN"
+            printf 'differently and none of them warn first: without this issue the first report is\n'
+            printf 'a player saying the server died.\n\n'
+
+            printf 'Worst first.\n\n'
+
+            printf '### SigMod for Windows, pinned at `SIGSEGV_MVM_WINDOWS_VERSION=%s`\n\n' "$SIGSEGV_MVM_WINDOWS_VERSION"
+            printf 'A SigMod build knows one TF2 ServerVersion. On any other, `IAddr_FixedAddr`\n'
+            printf 'refuses every fixed address and the server faults: at extension load, when\n'
+            printf 'anybody buys an upgrade (bots included), or when a player inspects a weapon.\n'
+            printf 'Regenerate `package-windows.zip` in `m-this/sigsegv-mvm-win` against %s,\n' "$CURRENT"
+            printf 'then bump `SIGSEGV_MVM_WINDOWS_VERSION` and `SIGSEGV_MVM_WINDOWS_SHA256`.\n\n'
+
+            printf '### SigMod for Linux, pinned at `SIGSEGV_MVM_VERSION=%s`\n\n' "$SIGSEGV_MVM_VERSION"
+            printf 'Same cause, same three crashes. Rebuild `rafradek/sigsegv-mvm` master against\n'
+            printf 'the current `hl2sdk` `tf2` branch, then bump `SIGSEGV_MVM_VERSION` and\n'
+            printf '`SIGSEGV_MVM_SHA256`.\n\n'
+
+            printf '### SourceMod, pinned at `SOURCEMOD_VERSION=%s`\n\n' "$SOURCEMOD_VERSION"
+            printf 'A TF2 update can move the KeyValues layout SourceMod reads, and the 2026-10-02\n'
+            printf 'one did. On a snapshot older than the fix, a real client joining segfaults the\n'
+            printf 'server and an `MVM_Upgrade` sent by a plugin is refused silently, so bots shop\n'
+            printf 'and buy nothing: alliedmodders/sourcemod#2587, fixed by #2588 in\n'
+            printf '`1.12.0-git7255`. Check whether this update moved it again, and that the pin is\n'
+            printf 'at or past the snapshot that absorbed it.\n\n'
+
+            printf '### The running server, which needs restarting either way\n\n'
+            printf 'srcds keeps the build it started with. Once players update, an un-restarted\n'
+            printf 'server refuses all of them and logs `Your server needs to be restarted in order\n'
+            printf 'to receive the latest update` until somebody looks. On the Compose deployment:\n'
+            printf '`docker compose restart srcds`, which updates TF2 on the way up.\n\n'
+
+            printf '### Then close this\n\n'
+            printf 'Set `TF2_SERVER_VERSION=%s` in `deploy/env/versions.env` once the pins above\n' "$CURRENT"
+            printf 'are right. That is what stops this being filed again.\n\n'
+
+            printf -- '---\n\n'
+            printf 'Valve'\''s own answer, no credentials: `ISteamApps/UpToDateCheck/v1` for app 440.\n'
+            printf 'Filed by `.github/workflows/tf2-build-watch.yml` ([run](%s)).\n' "$RUN_URL"
+          } > /tmp/tf2-build-alert.md
+          cat /tmp/tf2-build-alert.md
+
+      - name: tell the maintainer
+        if: steps.check.outputs.stale == 'yes'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          CURRENT: ${{ steps.check.outputs.current }}
+          KNOWN: ${{ steps.check.outputs.known }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "dry run: the alert above was not filed"
+            exit 0
+          fi
+
+          # The open issue is the record of having said this, so no state is
+          # written anywhere. Listing and matching here rather than passing a
+          # query to the search API, because that index lags behind by minutes
+          # and this job runs again in two hours.
+          titled="TF2 server build $CURRENT "
+          existing=$(gh issue list --state open --limit 100 --json number,title \
+            --jq "map(select(.title | startswith(\"$titled\"))) | .[0].number // empty")
+          if [ -n "$existing" ]; then
+            echo "#$existing already covers build $CURRENT"
+            exit 0
+          fi
+
+          # Assigned, not just filed. Somebody who has muted this repository's
+          # feed still gets a notification for an issue put on them, and the
+          # whole point is to hear about this before a player does.
+          gh issue create \
+            --title "${titled}is live (pins are for $KNOWN)" \
+            --assignee "$OWNER" \
+            --body-file /tmp/tf2-build-alert.md
