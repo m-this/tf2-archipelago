@@ -108,10 +108,11 @@ var rules = []rule{
 	   then resolves nothing: every address it wants comes back FAIL and the
 	   first one it uses faults. Shysoul's bundle was 96 of these for
 	   CBaseEntity::m_DataMap alone, reported as a line that repeats a lot. */
-	{sigmodUnresolvedRule, func(l string) bool { return strings.Contains(l, "AddrManager::GetAddr FAIL") }, "SigMod loaded and then could not resolve the addresses it needs. That is\n" +
-		"      what a SigMod build made for another TF2 build does when it has no\n" +
-		"      ServerVersion check to refuse on: it faults on the first one it uses.\n" +
-		"      Compare the TF2 build above with the build the pins were checked against."},
+	{sigmodUnresolvedRule, func(l string) bool { return strings.Contains(l, "AddrManager::GetAddr FAIL") }, "SigMod loaded and then could not resolve the addresses it needs, and it\n" +
+		"      faults on the first one it uses. Either it was\n" +
+		"      made for another TF2 build, or the game files on disk are not all the\n" +
+		"      build TF2 reports.\n" +
+		"      \"What does not add up\" above says which the versions point to."},
 	/* SigMod installs its own fault handler. It prints the stack it faulted on
 	   and then calls ExitProcess, which is a clean exit as far as Windows is
 	   concerned, so Breakpad never runs and there is no minidump to look for.
