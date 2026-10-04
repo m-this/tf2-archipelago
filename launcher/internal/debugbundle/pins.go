@@ -166,8 +166,8 @@ func everyPurchaseRefused(got scan, sourcemod string, unresolved bool) (string, 
 		line += fmt.Sprintf(
 			"      SourceMod here is %s, which builds the KeyValues this game\n"+
 				"      reads, so it is not that. SigMod could not find the game's addresses on\n"+
-				"      this run, and a SigMod that cannot is what faults when an upgrade is\n"+
-				"      bought.",
+				"      this run, and a SigMod that cannot is what\n"+
+				"      faults when an upgrade is bought.",
 			sourcemod)
 	case known && snapshot >= sourcemodKeyValuesFix:
 		line += fmt.Sprintf(
