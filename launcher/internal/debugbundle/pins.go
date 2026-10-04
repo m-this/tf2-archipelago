@@ -78,13 +78,53 @@ func crossCheck(running, pinnedFor string, versions map[string]string, got scan)
 		}
 	}
 
-	if got.refused >= refusalFloor && got.taken == 0 {
+	/* SigMod made for the running build, and still resolving nothing.
+
+	   The build line is the engine's own Version, which says what TF2 reports,
+	   not that every file on disk is that build. An install updated halfway
+	   reports the new build while SigMod reads a server binary from the old
+	   one. Celsius's bundle was exactly this: build 11076587, SigMod 20261005
+	   made for it, 8760 failed lookups, then a SigMod fault; resetting the
+	   game files fixed it. Telling them to compare the build with the pins
+	   sent them to two numbers that already agreed. */
+	unresolved := got.found[sigmodUnresolvedRule] != nil
+	if unresolved && running != "" && running == pinnedFor {
 		found = append(found, fmt.Sprintf(
+			"SigMod could not find the game's addresses, yet TF2 reports build %s,\n"+
+				"      the build this launcher's SigMod was made for. That number comes from\n"+
+				"      the engine, not from the server binary SigMod reads, so an install\n"+
+				"      updated halfway reports the new build and still holds old files. Press\n"+
+				"      Repair in Settings: the next start verifies every game file.", running))
+	}
+
+	if got.refused >= refusalFloor && got.taken == 0 {
+		head := fmt.Sprintf(
 			"Every bot purchase this run was refused: %d refused, none applied.\n"+
 				"      One refusal is ordinary. All of them means the game turned down every\n"+
-				"      MVM_Upgrade the plugin sent, which is what a SourceMod that cannot build\n"+
-				"      the KeyValues this game reads looks like from the outside. The bots shop,\n"+
-				"      spend nothing, and the wave arrives against an unupgraded team.", got.refused))
+				"      MVM_Upgrade the plugin sent. The bots shop, spend nothing, and the wave\n"+
+				"      arrives against an unupgraded team.\n", got.refused)
+		/* Only a SourceMod below the fix earns the KeyValues explanation. At or
+		   past it, naming SourceMod points away from the cause: Celsius's
+		   bundle had git7255 and SigMod faulting under every purchase. */
+		snapshot, known := snapshotOf(versions["sourcemod"])
+		switch {
+		case known && snapshot >= sourcemodKeyValuesFix && unresolved:
+			head += fmt.Sprintf(
+				"      SourceMod here is %s, which builds the KeyValues this game\n"+
+					"      reads, so it is not that. SigMod could not find the game's addresses on\n"+
+					"      this "+
+					"run, and a SigMod that cannot is what faults when an upgrade is bought.",
+				versions["sourcemod"])
+		case known && snapshot >= sourcemodKeyValuesFix:
+			head += fmt.Sprintf(
+				"      SourceMod here is %s, which builds the KeyValues this game\n"+
+					"      reads, so it is not that, and nothing else in these logs says what is.",
+				versions["sourcemod"])
+		default:
+			head += "      That is what a SourceMod that cannot build the KeyValues this game\n" +
+				"      reads looks like from the outside."
+		}
+		found = append(found, head)
 	}
 
 	var b strings.Builder
