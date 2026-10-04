@@ -165,6 +165,9 @@ func writeFakeMetamod(t *testing.T, modDir string) {
 			t.Fatal(err)
 		}
 	}
+	if err := writeStamp(modDir, metamodStamp, assets.MetamodVersion); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestUpdateGameRecoversOnceFromStateZeroX6(t *testing.T) {
