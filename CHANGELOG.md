@@ -4,6 +4,17 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
+## Unreleased
+
+### Fixed
+
+- **Bot Surge no longer crashes the server on Brain Taker's last wave.** Some
+  community missions leave a pickup behind for every robot that dies, and it
+  stays until somebody on RED walks over it. At Bot Surge's spawn rate those
+  pickups filled the server's entity limit within about ten minutes and the
+  server crashed. Bot Surge now slows down to the mission's own pace when the
+  server gets close to the limit, and speeds back up once there is room again.
+
 ## v1.18.0
 
 ### Fixed
