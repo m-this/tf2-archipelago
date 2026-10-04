@@ -4,6 +4,21 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
+## Unreleased
+
+### Fixed
+
+- **The bots can buy upgrades again, and an existing server gets SourceMod's
+  fix for the upgrade station crash.** The 2026-10-02 TF2 update changed how
+  the game stores the messages the upgrade station sends, and the SourceMod we
+  shipped read them the old way. A player opening the station crashed the
+  server, and the game refused every upgrade a bot asked for. SourceMod
+  1.12.0-git7255 reads the new layout, and the launcher and the Docker image
+  now upgrade a server that already has an older SourceMod at its next start.
+  Your own edits to SourceMod's configs are kept. We measured the bots: 35 of
+  35 purchases refused before, 44 bought after. We did not test the crash with
+  a real player, so tell us if opening the station still crashes your server.
+
 ## v1.17.9
 
 ### Fixed
