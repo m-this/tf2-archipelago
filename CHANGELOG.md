@@ -18,6 +18,13 @@ in the release notes, so this file is the only place to write it.
   Your own edits to SourceMod's configs are kept. We measured the bots: 35 of
   35 purchases refused before, 44 bought after. We did not test the crash with
   a real player, so tell us if opening the station still crashes your server.
+- **The debug bundle stops pointing at the wrong thing when SigMod cannot find
+  the game.** When SigMod was made for the TF2 build your server reports and
+  still finds none of the game's addresses, the game files are usually half
+  updated, and `summary.txt` now says so and tells you to press Repair, which
+  checks every game file on the next start. It used to tell you to compare two
+  version numbers that already matched. And when every bot purchase is refused
+  on a SourceMod that already has the fix, it no longer blames SourceMod.
 
 ## v1.17.9
 
