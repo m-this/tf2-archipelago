@@ -1,11 +1,13 @@
 package apclient
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -527,6 +529,57 @@ func TestARefusedConnectionStopsTheClient(t *testing.T) {
 		}
 	case <-time.After(3 * time.Second):
 		t.Fatal("the client kept retrying a refused connection")
+	}
+}
+
+// archipelago.gg hands a closed room's port to another multiworld. Reaching
+// that one and being refused is not a new run, and must not cost this one.
+func TestARefusedRoomLeavesTheRunAlone(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "bridge.json")
+	store, err := state.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.BindSeed("ours"); err != nil {
+		t.Fatal(err)
+	}
+	mission, _ := gamedata.MissionByPopFile("mvm_decoy")
+	if _, err := store.AddCheck(mission.WaveLocationID(1)); err != nil {
+		t.Fatal(err)
+	}
+	before, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	room := &fakeRoom{seed: "somebody-else", refuse: []string{"InvalidSlot"}}
+	client := New(Options{
+		URL:      room.start(t),
+		SlotName: "tf2",
+		Store:    store,
+		Logger:   slog.New(slog.DiscardHandler),
+	})
+	if err := client.Run(t.Context()); err == nil {
+		t.Fatal("a refused connection did not stop the client")
+	}
+
+	after, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(before, after) {
+		t.Fatalf("bridge.json changed:\n%s\nbecame\n%s", before, after)
+	}
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 1 {
+		t.Fatalf("the directory holds %v, want bridge.json alone", entries)
+	}
+	if stats := store.Stats(); stats.Seed != "ours" || stats.Checks != 1 {
+		t.Fatalf("the store holds %+v", stats)
 	}
 }
 

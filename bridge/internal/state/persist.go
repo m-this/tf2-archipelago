@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"slices"
 	"strings"
+	"time"
 )
 
 const (
@@ -235,19 +236,47 @@ func archiveSnapshot(path, seed string) (string, error) {
 // problem or a failing disk, leaves the name taken: reading it as free is how
 // an archive overwrites a run it cannot see.
 func archivePath(path, seed string) string {
-	extension := filepath.Ext(path)
-	stem := strings.TrimSuffix(path, extension)
-	base := fmt.Sprintf("%s.%s%s", stem, safeSeedName(seed), extension)
-	if free(base) {
-		return base
-	}
-	for attempt := 1; attempt < archivesMax; attempt++ {
-		candidate := fmt.Sprintf("%s.%s.%d%s", stem, safeSeedName(seed), attempt, extension)
+	names := archiveNames(path, seed)
+	for _, candidate := range names {
 		if free(candidate) {
 			return candidate
 		}
 	}
-	return base
+	return names[0]
+}
+
+func archiveNames(path, seed string) []string {
+	extension := filepath.Ext(path)
+	stem := strings.TrimSuffix(path, extension)
+	names := []string{fmt.Sprintf("%s.%s%s", stem, safeSeedName(seed), extension)}
+	for attempt := 1; attempt < archivesMax; attempt++ {
+		names = append(names, fmt.Sprintf("%s.%s.%d%s", stem, safeSeedName(seed), attempt, extension))
+	}
+	return names
+}
+
+// latestArchive reads back the newest run set aside for seed, and names the
+// file it came from; the name is empty when there is none.
+//
+// An archive that cannot be read, or that holds another seed safeSeedName
+// folded onto the same name, is passed over and left on disk. The seed then
+// starts empty, which is what it always did.
+func latestArchive(path, seed string) (snapshot, string) {
+	var found snapshot
+	var from string
+	var newest time.Time
+	for _, candidate := range archiveNames(path, seed) {
+		info, err := os.Stat(candidate)
+		if err != nil || (from != "" && info.ModTime().Before(newest)) {
+			continue
+		}
+		loaded, _, err := readSnapshot(candidate)
+		if err != nil || loaded.Seed != seed {
+			continue
+		}
+		found, from, newest = loaded, candidate, info.ModTime()
+	}
+	return found, from
 }
 
 func free(path string) bool {

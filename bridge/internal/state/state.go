@@ -106,48 +106,60 @@ func (s *Store) Stats() Stats {
 	return stats
 }
 
-// BindSeed ties the state to one multiworld. It reports the file it set the
-// previous run aside in, empty when it kept what it held.
+// Rebind is what BindSeed did on disk. Both empty means it kept what it held.
+type Rebind struct {
+	// Archived is the file the previous run was set aside in.
+	Archived string
+	// Restored is the archive the seed's own run was read back from.
+	Restored string
+}
+
+// BindSeed ties the state to one multiworld.
 //
 // A different seed drops the old run rather than replay ids that now mean
-// something else, and keeps a copy of the file it dropped. Learning the seed for
-// the first time keeps what is held: the bridge answers the plugin before it has
-// ever reached Archipelago.
-func (s *Store) BindSeed(seed string) (string, error) {
+// something else, and keeps a copy of the file it dropped. If that seed was
+// played here before, its newest archive is read back rather than starting it
+// empty, and the archive is left where it was. Learning the seed for the first
+// time keeps what is held: the bridge answers the plugin before it has ever
+// reached Archipelago.
+func (s *Store) BindSeed(seed string) (Rebind, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.data.Seed == seed {
-		return "", nil
+		return Rebind{}, nil
 	}
 	if s.data.Seed == "" {
 		s.data.Seed = seed
 		if err := s.persist(); err != nil {
 			s.data.Seed = ""
-			return "", err
+			return Rebind{}, err
 		}
-		return "", nil
+		return Rebind{}, nil
 	}
 
+	next, restored := latestArchive(s.path, seed)
+	if restored == "" {
+		next = snapshot{FormatVersion: FormatVersion, Seed: seed}
+	}
 	archive, err := archiveSnapshot(s.path, s.data.Seed)
 	if err != nil {
-		return "", fmt.Errorf("cannot set the previous run aside: %w", err)
+		return Rebind{}, fmt.Errorf("cannot set the previous run aside: %w", err)
 	}
 	previous, previousGrants := s.data, s.grants
-	s.data = snapshot{FormatVersion: FormatVersion, Seed: seed}
-	s.grants = nil
+	s.data, s.grants = next, grantsFrom(next.Items)
 	if err := s.persist(); err != nil {
 		// The run is still whole in the archive and in memory. Putting the file
 		// back is what keeps the two agreeing.
 		s.data, s.grants = previous, previousGrants
 		if renamed := os.Rename(archive, s.path); renamed != nil {
-			return archive, fmt.Errorf("%w, and the run stayed in %s: %w", err, archive, renamed)
+			return Rebind{Archived: archive}, fmt.Errorf("%w, and the run stayed in %s: %w", err, archive, renamed)
 		}
-		return "", err
+		return Rebind{}, err
 	}
-	// The sequence just went back to zero. A plugin blocked on a long poll has
-	// to hear that now rather than at the poll timeout.
+	// The sequence just moved under the plugin. A plugin blocked on a long poll
+	// has to hear that now rather than at the poll timeout.
 	s.broadcast()
-	return archive, nil
+	return Rebind{Archived: archive, Restored: restored}, nil
 }
 
 // AddCheck records a location the plugin reported and reports whether it was

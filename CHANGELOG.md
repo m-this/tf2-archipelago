@@ -14,6 +14,13 @@ in the release notes, so this file is the only place to write it.
   pickups filled the server's entity limit within about ten minutes and the
   server crashed. Bot Surge now slows down to the mission's own pace when the
   server gets close to the limit, and speeds back up once there is room again.
+- **A room going down no longer wipes the run.** When an archipelago.gg room
+  closes, its port can be handed to a different multiworld. The bridge
+  reconnected to that one, took it for a new run and started your progress over,
+  even though that room then refused to let it in. The bridge now only switches
+  runs once a room has accepted your slot. And if you go back to a room you
+  played here before, its run comes back as you left it instead of starting
+  empty.
 
 ## v1.18.0
 

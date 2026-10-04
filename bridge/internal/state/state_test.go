@@ -265,8 +265,8 @@ func TestLearningTheSeedKeepsChecksTakenBeforeIt(t *testing.T) {
 		t.Fatal(err)
 	}
 	archive, err := store.BindSeed("first")
-	if err != nil || archive != "" {
-		t.Fatalf("first bind: archive=%q err=%v", archive, err)
+	if err != nil || archive != (Rebind{}) {
+		t.Fatalf("first bind: archive=%+v err=%v", archive, err)
 	}
 	if len(store.Checks()) != 1 {
 		t.Fatal("the queued check did not survive learning the seed")
@@ -284,16 +284,16 @@ func TestANewSeedDropsTheOldRun(t *testing.T) {
 	}
 
 	archive, err := store.BindSeed("first")
-	if err != nil || archive != "" {
-		t.Fatalf("rebinding the same seed: archive=%q err=%v", archive, err)
+	if err != nil || archive != (Rebind{}) {
+		t.Fatalf("rebinding the same seed: archive=%+v err=%v", archive, err)
 	}
 	if len(store.Checks()) != 1 {
 		t.Fatal("rebinding the same seed dropped the run")
 	}
 
 	archive, err = store.BindSeed("second")
-	if err != nil || archive == "" {
-		t.Fatalf("rebinding a new seed: archive=%q err=%v", archive, err)
+	if err != nil || archive.Archived == "" {
+		t.Fatalf("rebinding a new seed: archive=%+v err=%v", archive, err)
 	}
 	if len(store.Checks()) != 0 {
 		t.Fatal("the previous run's checks survived a new seed")
@@ -570,10 +570,10 @@ func TestANewSeedKeepsTheOldRunOnDisk(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if archive == "" {
+	if archive.Archived == "" {
 		t.Fatal("the dropped run was not set aside anywhere")
 	}
-	body, err := os.ReadFile(archive)
+	body, err := os.ReadFile(archive.Archived)
 	if err != nil {
 		t.Fatalf("the dropped run left nothing behind: %v", err)
 	}
@@ -852,5 +852,103 @@ func TestAServerSettingGrantsAsStateAndSurvivesAResend(t *testing.T) {
 	}
 	if held := store.Unlocks().Of(gamedata.ItemServerSetting); len(held) != 1 || held[0] != setting.Key {
 		t.Errorf("the unlock set holds %v", held)
+	}
+}
+
+// A seed played here before comes back with its run, from the newest copy set
+// aside, and the copy stays on disk.
+func TestASeedPlayedBeforeComesBack(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "bridge.json")
+	store, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mission := firstMission(t)
+	if _, err := store.BindSeed("first"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.AddCheck(mission.WaveLocationID(1)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.BindSeed("second"); err != nil {
+		t.Fatal(err)
+	}
+
+	bound, err := store.BindSeed("first")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bound.Restored != filepath.Join(dir, "bridge.first.json") {
+		t.Fatalf("restored from %q", bound.Restored)
+	}
+	if got := store.Checks(); len(got) != 1 {
+		t.Fatalf("the run came back holding %v", got)
+	}
+	if _, err := os.Stat(bound.Restored); err != nil {
+		t.Fatalf("the archive was consumed: %v", err)
+	}
+
+	if _, err := store.AddCheck(mission.WaveLocationID(2)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.BindSeed("second"); err != nil {
+		t.Fatal(err)
+	}
+	bound, err = store.BindSeed("first")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := store.Checks(); len(got) != 2 {
+		t.Fatalf("restored %q holding %v, want the newer copy", bound.Restored, got)
+	}
+
+	reopened, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if stats := reopened.Stats(); stats.Seed != "first" || stats.Checks != 2 {
+		t.Fatalf("on disk: %+v", stats)
+	}
+}
+
+// An archive that is not this seed's run is never read back as one.
+func TestAnArchiveOfAnotherRunIsNotRestored(t *testing.T) {
+	tests := []struct {
+		name string
+		body string
+	}{
+		{"unreadable", "{not json"},
+		{"another seed folded onto the name", `{"format_version": 4, "seed": "a_b", "checks": [1]}`},
+		{"a newer format", `{"format_version": 99, "seed": "a/b", "checks": [1]}`},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			dir := t.TempDir()
+			path := filepath.Join(dir, "bridge.json")
+			archive := filepath.Join(dir, "bridge.a_b.json")
+			if err := os.WriteFile(archive, []byte(test.body), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			store, err := Open(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := store.BindSeed("first"); err != nil {
+				t.Fatal(err)
+			}
+
+			bound, err := store.BindSeed("a/b")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if bound.Restored != "" || len(store.Checks()) != 0 {
+				t.Fatalf("restored %q holding %v", bound.Restored, store.Checks())
+			}
+			body, err := os.ReadFile(archive)
+			if err != nil || string(body) != test.body {
+				t.Fatalf("the archive changed: %q %v", body, err)
+			}
+		})
 	}
 }
