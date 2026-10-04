@@ -81,6 +81,12 @@ type Client struct {
 	said *bucket
 	died *deaths
 
+	// roomSeed is the seed the current session's RoomInfo named. Only the read
+	// loop touches it. It is bound once the room accepts the slot, never on
+	// RoomInfo: archipelago.gg hands a closed room's port to another
+	// multiworld, and reaching that one wiped a live run.
+	roomSeed string
+
 	writeMu sync.Mutex
 
 	mu        sync.Mutex
@@ -214,6 +220,7 @@ func (c *Client) session(ctx context.Context) error {
 	c.mu.Lock()
 	c.conn = conn
 	c.mu.Unlock()
+	c.roomSeed = ""
 	defer func() {
 		c.mu.Lock()
 		c.conn = nil
@@ -311,14 +318,7 @@ func (c *Client) onRoomInfo(ctx context.Context, conn *websocket.Conn, message j
 	if err := json.Unmarshal(message, &room); err != nil {
 		return err
 	}
-	archive, err := c.opts.Store.BindSeed(room.SeedName)
-	if err != nil {
-		return err
-	}
-	if archive != "" {
-		c.opts.Logger.WarnContext(ctx, "new seed, set the previous run aside",
-			"seed", room.SeedName, "archive", archive)
-	}
+	c.roomSeed = room.SeedName
 	return c.send(ctx, conn, connectMessage{
 		Cmd:           "Connect",
 		Password:      c.opts.Password,
@@ -438,6 +438,9 @@ func (c *Client) onConnected(
 	if err := slot.validate(); err != nil {
 		return permanentError{err}
 	}
+	if err := c.bindSeed(ctx); err != nil {
+		return err
+	}
 	/* Who everybody is, and then what their items are called
 	 *
 	 * The names cost one request and the room does not change while a session
@@ -491,6 +494,26 @@ func (c *Client) onConnected(
 	}
 	if slot.DeathLink {
 		return c.claimDeathLink(ctx, conn)
+	}
+	return nil
+}
+
+// bindSeed ties the state to the room that has just accepted the slot.
+func (c *Client) bindSeed(ctx context.Context) error {
+	if c.roomSeed == "" {
+		return errors.New("the room accepted the slot without naming its seed first")
+	}
+	bound, err := c.opts.Store.BindSeed(c.roomSeed)
+	if err != nil {
+		return err
+	}
+	if bound.Archived != "" {
+		c.opts.Logger.WarnContext(ctx, "new seed, set the previous run aside",
+			"seed", c.roomSeed, "archive", bound.Archived)
+	}
+	if bound.Restored != "" {
+		c.opts.Logger.WarnContext(ctx, "this seed was played here before, its run is back",
+			"seed", c.roomSeed, "restored_from", bound.Restored)
 	}
 	return nil
 }

@@ -3,10 +3,14 @@ package apclient
 import (
 	"context"
 	"log/slog"
+	"os"
+	"path/filepath"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/m-this/tf2-archipelago/bridge/internal/state"
 	"github.com/m-this/tf2-archipelago/fakeroom"
 	"github.com/m-this/tf2-archipelago/gamedata"
 )
@@ -88,4 +92,83 @@ func TestFakeRoomServesThisClient(t *testing.T) {
 	waitFor(t, "an unlock to arrive", func() bool {
 		return store.Stats().Items > held
 	})
+}
+
+// Test mode binds its seed through the same handshake as a real room, so moving
+// the bind to Connected has to leave it binding, and switching between test mode
+// and a real room has to keep setting the other run aside.
+func TestTestModeBindsItsOwnSeed(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "bridge.json")
+	store, err := state.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.BindSeed("ours"); err != nil {
+		t.Fatal(err)
+	}
+	mission, _ := gamedata.MissionByPopFile("mvm_decoy")
+	if _, err := store.AddCheck(mission.WaveLocationID(1)); err != nil {
+		t.Fatal(err)
+	}
+
+	connect := func(address string) {
+		t.Helper()
+		ctx, cancel := context.WithCancel(t.Context())
+		client := New(Options{
+			URL: address, SlotName: "tester", Store: store, Logger: slog.New(slog.DiscardHandler),
+		})
+		stopped := make(chan error, 1)
+		go func() { stopped <- client.Run(ctx) }()
+		waitFor(t, "the handshake", func() bool { return client.Health().Connected })
+		cancel()
+		<-stopped
+	}
+
+	connect(startTestRoom(t))
+	testSeed := store.Stats().Seed
+	if !strings.HasPrefix(testSeed, "test-mode-") || store.Stats().Checks != 0 {
+		t.Fatalf("after test mode the store holds %+v", store.Stats())
+	}
+	if _, err := os.Stat(filepath.Join(dir, "bridge.ours.json")); err != nil {
+		t.Fatalf("the real run was not set aside: %v", err)
+	}
+
+	connect(startTestRoom(t))
+	if seed := store.Stats().Seed; seed == testSeed || !strings.HasPrefix(seed, "test-mode-") {
+		t.Fatalf("a second test room bound %q after %q", seed, testSeed)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "bridge."+testSeed+".json")); err != nil {
+		t.Fatalf("the first test run was not set aside: %v", err)
+	}
+
+	ours := &fakeRoom{seed: "ours", slotData: slotDataFor("final_boss", "mvm_decoy", "mvm_decoy")}
+	connect(ours.start(t))
+	if stats := store.Stats(); stats.Seed != "ours" || stats.Checks != 1 {
+		t.Fatalf("back in the real room the store holds %+v", stats)
+	}
+}
+
+func startTestRoom(t *testing.T) string {
+	t.Helper()
+	ctx, cancel := context.WithCancel(context.Background())
+	var done atomic.Bool
+	room, address, err := fakeroom.Start(ctx, fakeroom.Options{
+		SlotName: "tester", Goal: "final_boss", MissionCount: 3,
+		Log: func(text string) {
+			if !done.Load() {
+				t.Log(text)
+			}
+		},
+	})
+	if err != nil {
+		cancel()
+		t.Fatalf("Start: %v", err)
+	}
+	t.Cleanup(func() {
+		done.Store(true)
+		cancel()
+		_ = room.Close(context.Background())
+	})
+	return address
 }
