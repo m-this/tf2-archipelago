@@ -130,6 +130,8 @@ COPY --from=extensions /extensions/addons deploy/bots/build/package/addons
 FROM cm2network/tf2:sourcemod
 
 ARG RIPEXT_VERSION
+ARG SOURCEMOD_VERSION
+ARG MMSOURCE_VERSION
 ARG SIGSEGV_MVM_VERSION
 ARG SIGSEGV_MVM_SHA256
 
@@ -206,6 +208,10 @@ COPY --from=tools /stockpop /usr/local/bin/tf2ap-stockpop
 
 RUN chown -R steam:steam /opt/tf2-archipelago /opt/tf2-mods \
 	&& chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/tf2ap-srcds-launch.sh
+
+# srcds-launch.sh brings the game volume to these, not the base image's.
+ENV TF2AP_SOURCEMOD_VERSION=${SOURCEMOD_VERSION} \
+	TF2AP_MMSOURCE_VERSION=${MMSOURCE_VERSION}
 
 USER steam
 WORKDIR /home/steam

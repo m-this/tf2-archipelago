@@ -20,10 +20,26 @@ var gzipMagic = []byte{0x1f, 0x8b}
 
 // unpackTo writes an archive into dir, whether it is a zip or a gzipped tar.
 func unpackTo(data []byte, dir string) error {
+	return unpackKeeping(data, dir, nil)
+}
+
+// unpackKeeping is unpackTo for an upgrade over an install already there: an
+// entry for which keep answers true is left alone when its file exists. keep
+// sees the entry's slash-separated name inside the archive.
+func unpackKeeping(data []byte, dir string, keep func(name string) bool) error {
 	if bytes.HasPrefix(data, gzipMagic) {
-		return untarTo(data, dir)
+		return untarTo(data, dir, keep)
 	}
-	return unzipTo(data, dir)
+	return unzipKeeping(data, dir, keep)
+}
+
+// kept says whether an upgrade leaves this entry's existing file in place.
+func kept(keep func(name string) bool, name, target string) bool {
+	if keep == nil || !keep(name) {
+		return false
+	}
+	_, err := os.Lstat(target)
+	return err == nil
 }
 
 // untarTo unpacks a .tar.gz into dir.
@@ -31,7 +47,7 @@ func unpackTo(data []byte, dir string) error {
 // Symlinks are kept: the SteamCMD tarball ships linux32/steamclient.so as one,
 // and a copy of the target would be a second copy of a 100 MB library. Hard
 // links become a copy, which nothing in these archives relies on.
-func untarTo(data []byte, dir string) error {
+func untarTo(data []byte, dir string, keep func(name string) bool) error {
 	gz, err := gzip.NewReader(bytes.NewReader(data))
 	if err != nil {
 		return fmt.Errorf("cannot read the archive: %w", err)
@@ -50,6 +66,9 @@ func untarTo(data []byte, dir string) error {
 		target, err := safeJoin(dir, header.Name)
 		if err != nil {
 			return err
+		}
+		if header.Typeflag != tar.TypeDir && kept(keep, header.Name, target) {
+			continue
 		}
 		switch header.Typeflag {
 		case tar.TypeDir:

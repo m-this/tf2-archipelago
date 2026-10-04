@@ -52,8 +52,14 @@ func runLaunchWithStuckUpdates(t *testing.T, stuck int) launchRun {
 		filepath.Join(game, "srcds_run"):                   "echo srcds started\n",
 		filepath.Join(root, "stuck"):                       strconv.Itoa(stuck) + "\n",
 		filepath.Join(steamapps, "appmanifest_232250.acf"): "\"StateFlags\" \"6\"\n",
+		// Installed at the pins already, so nothing is downloaded.
+		filepath.Join(game, "tf", "addons", "metamod", "tf2ap-version.txt"):   "1.12.0-git1227\n",
+		filepath.Join(game, "tf", "addons", "sourcemod", "tf2ap-version.txt"): "1.12.0-git7255\n",
 	}
 	for path, content := range files {
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
 		if err := os.WriteFile(path, []byte(content), 0o755); err != nil {
 			t.Fatal(err)
 		}
@@ -69,8 +75,8 @@ func runLaunchWithStuckUpdates(t *testing.T, stuck int) launchRun {
 		"STEAMAPPDIR="+game,
 		"STEAMAPPID=232250",
 		"STEAMAPP=tf",
-		"METAMOD_VERSION=",
-		"SOURCEMOD_VERSION=",
+		"TF2AP_MMSOURCE_VERSION=1.12.0-git1227",
+		"TF2AP_SOURCEMOD_VERSION=1.12.0-git7255",
 		"SRCDS_MAXPLAYERS=32",
 		"SRCDS_STARTMAP=mvm_decoy",
 		"SRCDS_PORT=27015",
