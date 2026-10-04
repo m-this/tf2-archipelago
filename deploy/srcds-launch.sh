@@ -54,18 +54,36 @@ if [ "$status" != 0 ]; then
 	exit "$status"
 fi
 
-# Match the base image's first-run setup. The game directory is a volume, so
-# these disappear with a fresh volume even though the image itself has them.
-if [ -n "${METAMOD_VERSION:-}" ] && [ ! -d "${STEAMAPPDIR}/${STEAMAPP}/addons/metamod" ]; then
-	latest_mm=$(wget -qO- "https://mms.alliedmods.net/mmsdrop/${METAMOD_VERSION}/mmsource-latest-linux")
-	wget -qO- "https://mms.alliedmods.net/mmsdrop/${METAMOD_VERSION}/${latest_mm}" |
-		tar xvzf - -C "${STEAMAPPDIR}/${STEAMAPP}"
-fi
-if [ -n "${SOURCEMOD_VERSION:-}" ] && [ ! -d "${STEAMAPPDIR}/${STEAMAPP}/addons/sourcemod" ]; then
-	latest_sm=$(wget -qO- "https://sm.alliedmods.net/smdrop/${SOURCEMOD_VERSION}/sourcemod-latest-linux")
-	wget -qO- "https://sm.alliedmods.net/smdrop/${SOURCEMOD_VERSION}/${latest_sm}" |
-		tar xvzf - -C "${STEAMAPPDIR}/${STEAMAPP}"
-fi
+# Metamod and SourceMod at the versions deploy/env/versions.env pins. The game
+# directory is a volume, so what the image ships only reaches a fresh one, and a
+# copy that is merely there can predate the TF2 build: SourceMod before git7254
+# crashed srcds on the 2026-10-02 KeyValues layout (gh-179). The stamp says which
+# version is installed; a missing one is an install older than the stamp.
+#
+# The operator's edits under configs/ and cfg/ survive an upgrade: the first pass
+# leaves them out, the second adds only the files that are not there yet.
+install_alliedmods() {
+	local version=$1 url=$2 stamp=$3
+	local game="${STEAMAPPDIR}/${STEAMAPP}"
+	if [ "$(cat "$game/$stamp" 2>/dev/null)" = "$version" ]; then
+		return 0
+	fi
+	echo "[AP] installing $url"
+	local archive
+	archive=$(mktemp)
+	wget -qO "$archive" "$url"
+	tar xzf "$archive" -C "$game" --exclude='addons/sourcemod/configs/*' \
+		--exclude='cfg/*' --exclude='addons/metamod/metaplugins.ini'
+	tar xzf "$archive" -C "$game" --skip-old-files
+	rm -f "$archive"
+	echo "$version" > "$game/$stamp"
+}
+install_alliedmods "${TF2AP_MMSOURCE_VERSION}" \
+	"https://mms.alliedmods.net/mmsdrop/${TF2AP_MMSOURCE_VERSION%.*-*}/mmsource-${TF2AP_MMSOURCE_VERSION}-linux.tar.gz" \
+	addons/metamod/tf2ap-version.txt
+install_alliedmods "${TF2AP_SOURCEMOD_VERSION}" \
+	"https://sm.alliedmods.net/smdrop/${TF2AP_SOURCEMOD_VERSION%.*-*}/sourcemod-${TF2AP_SOURCEMOD_VERSION}-linux.tar.gz" \
+	addons/sourcemod/tf2ap-version.txt
 
 cd "${STEAMAPPDIR}"
 

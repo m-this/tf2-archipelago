@@ -96,6 +96,8 @@ jobs:
             --cache-from type=gha,scope=srcds \
             --cache-to type=gha,scope=srcds,mode=max \
             --build-arg "RIPEXT_VERSION=$RIPEXT_VERSION" \
+            --build-arg "SOURCEMOD_VERSION=$SOURCEMOD_VERSION" \
+            --build-arg "MMSOURCE_VERSION=$MMSOURCE_VERSION" \
             --build-arg "SIGSEGV_MVM_VERSION=$SIGSEGV_MVM_VERSION" \
             --build-arg "SIGSEGV_MVM_SHA256=$SIGSEGV_MVM_SHA256" \
             -t "$IMAGE/srcds:nightly" .

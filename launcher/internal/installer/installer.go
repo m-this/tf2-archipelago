@@ -696,12 +696,16 @@ func removeUnsupportedCommunityPopfiles(modDir string, serverMods []string) (int
 
 // installMods puts everything that loads inside the game server into tf/:
 // Metamod, SourceMod, ripext, this project's plugin and the defender bots.
-// The first two are skipped when they are already there; the rest are written
-// every time, because they are ours and a stale copy is our bug to have.
+// The first two are skipped when the pinned version is already there; the rest
+// are written every time, because they are ours and a stale copy is our bug to
+// have.
 func installMods(ctx context.Context, modDir string, logf func(string, ...any)) error {
-	if missing := firstMissing(modDir, metamodFiles(runtime.GOOS)); missing != "" {
-		logf("installing Metamod:Source %s: %s is missing", assets.MetamodVersion, missing)
+	if reason := staleMod(modDir, metamodFiles(runtime.GOOS), metamodStamp, assets.MetamodVersion); reason != "" {
+		logf("installing Metamod:Source %s: %s", assets.MetamodVersion, reason)
 		if err := installMetamod(ctx, modDir); err != nil {
+			return err
+		}
+		if err := writeStamp(modDir, metamodStamp, assets.MetamodVersion); err != nil {
 			return err
 		}
 	}
@@ -709,9 +713,12 @@ func installMods(ctx context.Context, modDir string, logf func(string, ...any)) 
 		return err
 	}
 
-	if missing := firstMissing(modDir, sourcemodFiles(runtime.GOOS)); missing != "" {
-		logf("installing SourceMod %s: %s is missing", assets.SourcemodVersion, missing)
+	if reason := staleMod(modDir, sourcemodFiles(runtime.GOOS), sourcemodStamp, assets.SourcemodVersion); reason != "" {
+		logf("installing SourceMod %s: %s", assets.SourcemodVersion, reason)
 		if err := installSourcemod(ctx, modDir, logf); err != nil {
+			return err
+		}
+		if err := writeStamp(modDir, sourcemodStamp, assets.SourcemodVersion); err != nil {
 			return err
 		}
 	}
@@ -1075,6 +1082,50 @@ func sourcemodFiles(goos string) []string {
 	return []string{"addons/sourcemod/bin/sourcemod_mm_i486.so", "addons/sourcemod/bin/sourcemod.2.tf2.so", "addons/sourcemod/bin/sourcemod.logic.so"}
 }
 
+/*
+Where the launcher records which Metamod and SourceMod it installed.
+
+Neither ships a version file, and a copy that is merely present is not enough:
+a TF2 update can change a structure the game and SourceMod both read, and only
+a newer build reads the new one. The 2026-10-02 update added a field to
+KeyValues, and the SourceMod installs that predate git7254 crashed srcds on
+every upgrade station opened (alliedmodders/sourcemod#2587, gh-179). An install
+with no stamp predates this file and is upgraded like an older one.
+*/
+const (
+	metamodStamp   = "addons/metamod/tf2ap-version.txt"
+	sourcemodStamp = "addons/sourcemod/tf2ap-version.txt"
+)
+
+// staleMod says why a mod needs installing, or empty when the pinned version
+// is there whole.
+func staleMod(modDir string, files []string, stamp, version string) string {
+	if missing := firstMissing(modDir, files); missing != "" {
+		return missing + " is missing"
+	}
+	data, err := os.ReadFile(filepath.Join(modDir, filepath.FromSlash(stamp)))
+	if err != nil {
+		return "no installed version is recorded"
+	}
+	if installed := strings.TrimSpace(string(data)); installed != version {
+		return "the installed one is " + installed
+	}
+	return ""
+}
+
+func writeStamp(modDir, stamp, version string) error {
+	return os.WriteFile(filepath.Join(modDir, filepath.FromSlash(stamp)), []byte(version+"\n"), 0o644)
+}
+
+// operatorFile is a file of a Metamod or SourceMod drop that the operator may
+// have edited, kept when an upgrade unpacks over an install. The launcher's
+// own, admins_simple.ini and server.cfg, are rewritten at every start anyway.
+func operatorFile(name string) bool {
+	return strings.HasPrefix(name, "addons/sourcemod/configs/") ||
+		strings.HasPrefix(name, "cfg/") ||
+		name == "addons/metamod/metaplugins.ini"
+}
+
 // firstMissing is the first of the files that is not a regular file under
 // modDir, or empty when every one is there.
 func firstMissing(modDir string, files []string) string {
@@ -1277,7 +1328,7 @@ func installMetamod(ctx context.Context, modDir string) error {
 	if err != nil {
 		return fmt.Errorf("cannot download Metamod:Source: %w", err)
 	}
-	return unpackTo(data, modDir)
+	return unpackKeeping(data, modDir, operatorFile)
 }
 
 // installSourcemod fetches the Windows SourceMod build and unpacks it into the
@@ -1290,7 +1341,7 @@ func installSourcemod(ctx context.Context, modDir string, logf func(string, ...a
 	if err != nil {
 		return fmt.Errorf("cannot download SourceMod: %w", err)
 	}
-	return unpackTo(data, modDir)
+	return unpackKeeping(data, modDir, operatorFile)
 }
 
 // installRipextAndPlugin unpacks the embedded ripext zip and copies the plugin
@@ -1336,6 +1387,12 @@ func fetch(ctx context.Context, url string) ([]byte, error) {
 // unzipTo extracts a zip into dir, preserving paths. Strips no prefix: the zip
 // files we use already ship addons/sourcemod/... at the root.
 func unzipTo(zipData []byte, dir string) error {
+	return unzipKeeping(zipData, dir, nil)
+}
+
+// unzipKeeping is unzipTo leaving alone the existing files keep names: see
+// unpackKeeping.
+func unzipKeeping(zipData []byte, dir string, keep func(name string) bool) error {
 	reader, err := zip.NewReader(bytes.NewReader(zipData), int64(len(zipData)))
 	if err != nil {
 		return fmt.Errorf("cannot read the zip: %w", err)
@@ -1349,6 +1406,9 @@ func unzipTo(zipData []byte, dir string) error {
 			if err := os.MkdirAll(target, 0o755); err != nil {
 				return err
 			}
+			continue
+		}
+		if kept(keep, file.Name, target) {
 			continue
 		}
 		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {

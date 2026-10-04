@@ -124,6 +124,8 @@ services:
       dockerfile: deploy/Dockerfile.srcds
       args:
         RIPEXT_VERSION: ${RIPEXT_VERSION:?set it in deploy/env/versions.env}
+        SOURCEMOD_VERSION: ${SOURCEMOD_VERSION:?set it in deploy/env/versions.env}
+        MMSOURCE_VERSION: ${MMSOURCE_VERSION:?set it in deploy/env/versions.env}
         SIGSEGV_MVM_VERSION: ${SIGSEGV_MVM_VERSION:?set it in deploy/env/versions.env}
         SIGSEGV_MVM_SHA256: ${SIGSEGV_MVM_SHA256:?set it in deploy/env/versions.env}
     # SRCDS reads its console input during startup. This also keeps its output

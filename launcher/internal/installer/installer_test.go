@@ -52,6 +52,9 @@ func writeFakeSourcemod(t *testing.T, modDir string) {
 			t.Fatal(err)
 		}
 	}
+	if err := writeStamp(modDir, sourcemodStamp, assets.SourcemodVersion); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func zipWith(t *testing.T, entries map[string]string) []byte {
@@ -823,6 +826,89 @@ func TestTheLoaderFilesDecideWhetherToReinstall(t *testing.T) {
 		}
 		if got := firstMissing(modDir, sourcemodFiles(goos)); got != sourcemodFiles(goos)[0] {
 			t.Errorf("%s: a missing loader reports %q", goos, got)
+		}
+	}
+}
+
+// A loader that is there is not a loader that reads this TF2 build. An install
+// from an older launcher has no stamp, and is upgraded like an older version:
+// gh-179 was SourceMod git7253 crashing on the 2026-10-02 KeyValues layout.
+func TestTheStampDecidesWhetherToUpgrade(t *testing.T) {
+	modDir := t.TempDir()
+	files := sourcemodFiles("linux")
+	for _, relative := range files {
+		path := filepath.Join(modDir, filepath.FromSlash(relative))
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte("x"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if got := staleMod(modDir, files, sourcemodStamp, "1.12.0-git7255"); got != "no installed version is recorded" {
+		t.Errorf("an unstamped install reports %q", got)
+	}
+	if err := writeStamp(modDir, sourcemodStamp, "1.12.0-git7253"); err != nil {
+		t.Fatal(err)
+	}
+	if got := staleMod(modDir, files, sourcemodStamp, "1.12.0-git7255"); got != "the installed one is 1.12.0-git7253" {
+		t.Errorf("an older install reports %q", got)
+	}
+	if err := writeStamp(modDir, sourcemodStamp, "1.12.0-git7255"); err != nil {
+		t.Fatal(err)
+	}
+	if got := staleMod(modDir, files, sourcemodStamp, "1.12.0-git7255"); got != "" {
+		t.Errorf("the pinned install reports %q", got)
+	}
+}
+
+// An upgrade replaces the binaries and leaves what the operator edited.
+func TestAnUpgradeKeepsTheOperatorsConfigs(t *testing.T) {
+	modDir := t.TempDir()
+	write := func(relative, body string) {
+		path := filepath.Join(modDir, filepath.FromSlash(relative))
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("addons/sourcemod/bin/sourcemod.2.tf2.so", "old")
+	write("addons/sourcemod/configs/core.cfg", "edited")
+	write("cfg/sourcemod/sourcemod.cfg", "edited")
+
+	var buffer bytes.Buffer
+	archive := zip.NewWriter(&buffer)
+	for name, body := range map[string]string{
+		"addons/sourcemod/bin/sourcemod.2.tf2.so": "new",
+		"addons/sourcemod/configs/core.cfg":       "stock",
+		"addons/sourcemod/configs/databases.cfg":  "stock",
+		"cfg/sourcemod/sourcemod.cfg":             "stock",
+	} {
+		file, err := archive.Create(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := file.Write([]byte(body)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := archive.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := unpackKeeping(buffer.Bytes(), modDir, operatorFile); err != nil {
+		t.Fatal(err)
+	}
+	for relative, want := range map[string]string{
+		"addons/sourcemod/bin/sourcemod.2.tf2.so": "new",
+		"addons/sourcemod/configs/core.cfg":       "edited",
+		"addons/sourcemod/configs/databases.cfg":  "stock",
+		"cfg/sourcemod/sourcemod.cfg":             "edited",
+	} {
+		body, err := os.ReadFile(filepath.Join(modDir, filepath.FromSlash(relative)))
+		if err != nil || string(body) != want {
+			t.Errorf("%s = %q, %v; want %q", relative, body, err, want)
 		}
 	}
 }
