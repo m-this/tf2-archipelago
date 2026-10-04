@@ -26,6 +26,12 @@
 #define MissionModifier_SurgeRecoverySeconds 4.0
 #define MissionModifier_SurgeSupportStartDelay 0.0
 #define MissionModifier_SurgeSupportSpawnInterval 0.10
+// A robot's SigMod templates can outlive it: Brain Taker's crumpkins wait for a
+// RED player to collect them, six edicts each. At Bot Surge's refill rate they
+// pile up until ED_Alloc runs out of the engine's 2048 and srcds dies, so the
+// surge stands down near the limit and resumes once the map has room again.
+#define MissionModifier_SurgeEdictsThrottle 1800
+#define MissionModifier_SurgeEdictsResume 1500
 #define MissionModifier_MaxWaves 64
 #define MissionModifier_MaxEntities 2049
 #define MissionModifier_TankRoofHeight 145.0
@@ -115,6 +121,7 @@ ArrayList g_BotSurgeSupportSpawners;
 ArrayList g_BotSurgeTimedSpawners;
 bool g_BotSurgeReloadQueued;
 bool g_BotSurgeMissionStarted;
+bool g_BotSurgeThrottled;
 Handle g_KVMakeCopy;
 Handle g_KVAddSubKey;
 Handle g_KVSetInt;
@@ -491,6 +498,7 @@ public MRESReturn MissionModifiers_PopulationParsing(Address populationManager,
     g_BotSurgeReloadQueued = false;
     g_BotSurgeMissionStarted = false;
     g_BotSurgeRecoveryUntil = 0.0;
+    g_BotSurgeThrottled = false;
     g_BotSurgeMainRemaining = -1;
     g_BotSurgeWave = 0;
     g_BotSurgeParsingWave = -1;
@@ -815,6 +823,45 @@ static void MissionModifiers_PauseSupportSpawners(bool paused)
     }
 }
 
+static int MissionModifiers_CountEdicts()
+{
+    int count;
+    int limit = GetMaxEntities();
+    for (int entity = 1; entity < limit; entity++)
+    {
+        if (IsValidEdict(entity))
+        {
+            count++;
+        }
+    }
+    return count;
+}
+
+// Back to the mission's own pace: authored refill intervals and support limits,
+// and no synthesized support at all.
+static void MissionModifiers_ThrottleBotSurge()
+{
+    MissionModifiers_RestoreSpawnerTimings();
+    MissionModifierSupportSpawner spawner;
+    for (int index = 0; index < g_BotSurgeSupportSpawners.Length; index++)
+    {
+        g_BotSurgeSupportSpawners.GetArray(index, spawner);
+        StoreToAddress(spawner.address + view_as<Address>(g_WaveSpawnMaxActiveOffset),
+            spawner.synthetic ? 0 : spawner.maxActive, NumberType_Int32);
+        StoreToAddress(spawner.address + view_as<Address>(g_WaveSpawnWaitOffset),
+            spawner.waitBits, NumberType_Int32);
+    }
+    g_BotSurgeThrottled = true;
+    g_BotSurgeRecoveryUntil = 0.0;
+}
+
+static void MissionModifiers_ResumeBotSurge()
+{
+    g_BotSurgeThrottled = false;
+    MissionModifiers_AccelerateRecordedSpawners();
+    MissionModifiers_ExpandRecordedSupportSpawners();
+}
+
 void MissionModifiers_OnWaveBegin(int wave)
 {
     g_BotSurgeWave = wave;
@@ -825,7 +872,11 @@ void MissionModifiers_OnWaveBegin(int wave)
 
 void MissionModifiers_OnWaveEnd()
 {
-    if (g_BotSurgeRecoveryUntil > 0.0)
+    if (g_BotSurgeThrottled)
+    {
+        MissionModifiers_ResumeBotSurge();
+    }
+    else if (g_BotSurgeRecoveryUntil > 0.0)
     {
         MissionModifiers_PauseSupportSpawners(false);
     }
@@ -918,6 +969,23 @@ public Action Timer_MissionModifiersBotSurgeRecovery(Handle timer)
         return Plugin_Continue;
     }
     float now = GetGameTime();
+    int edicts = MissionModifiers_CountEdicts();
+    if (!g_BotSurgeThrottled && edicts >= MissionModifier_SurgeEdictsThrottle)
+    {
+        MissionModifiers_ThrottleBotSurge();
+        AP_Debug("Bot Surge paused in wave %d: %d of %d edicts in use.",
+            g_BotSurgeWave, edicts, GetMaxEntities());
+    }
+    else if (g_BotSurgeThrottled && edicts <= MissionModifier_SurgeEdictsResume)
+    {
+        MissionModifiers_ResumeBotSurge();
+        g_BotSurgeLastProgress = now;
+        AP_Debug("Bot Surge resumed in wave %d: %d edicts in use.", g_BotSurgeWave, edicts);
+    }
+    if (g_BotSurgeThrottled)
+    {
+        return Plugin_Continue;
+    }
     if (g_BotSurgeRecoveryUntil > 0.0)
     {
         if (now >= g_BotSurgeRecoveryUntil)
@@ -1077,6 +1145,7 @@ void MissionModifiers_OnMapStart()
     g_BotSurgeReloadQueued = false;
     g_BotSurgeMissionStarted = false;
     g_BotSurgeRecoveryUntil = 0.0;
+    g_BotSurgeThrottled = false;
     g_BotSurgeMainRemaining = -1;
     g_BotSurgeWave = 0;
     MissionModifiers_Reset();
@@ -1253,6 +1322,7 @@ static void MissionModifiers_Reset()
     MissionModifiers_RestoreSupportSpawners();
     MissionModifiers_RestoreSpawnerTimings();
     g_BotSurgeRecoveryUntil = 0.0;
+    g_BotSurgeThrottled = false;
     g_BotSurgeLastProgress = GetGameTime();
     for (int client = 1; client <= MaxClients; client++)
     {
