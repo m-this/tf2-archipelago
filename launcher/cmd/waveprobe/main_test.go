@@ -164,3 +164,25 @@ func TestOnlySigModSelectsTheSigModMissionsAndNothingElse(t *testing.T) {
 		}
 	}
 }
+
+func TestLastWave(t *testing.T) {
+	mission := gamedata.Mission{Waves: 7}
+	tests := []struct {
+		name string
+		opt  options
+		want int
+	}{
+		{"every wave", options{startWave: 1}, 7},
+		{"first waves", options{startWave: 1, waves: 3}, 3},
+		{"more than the mission has", options{startWave: 1, waves: 9}, 7},
+		{"end wave", options{startWave: 2, endWave: 4}, 4},
+		{"waves after the start", options{startWave: 5, waves: 2}, 6},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := lastWave(mission, tt.opt); got != tt.want {
+				t.Fatalf("got %d, want %d", got, tt.want)
+			}
+		})
+	}
+}
