@@ -241,7 +241,7 @@ func run(opt options) error {
 		return err
 	}
 	if opt.plan {
-		return writePlan(missions, modes)
+		return writePlan(missions, modes, opt)
 	}
 	if opt.mission != "all" && strings.Contains(opt.mission, "_rev_") {
 		return errors.New("reverse MvM needs a BLU objective simulator; kill-only waveprobe cannot validate it")
@@ -258,14 +258,14 @@ func run(opt options) error {
 	return runMissions(server, opt, missions, modes)
 }
 
-func writePlan(missions []gamedata.Mission, modes []string) error {
+func writePlan(missions []gamedata.Mission, modes []string, opt options) error {
 	for _, mission := range missions {
 		played, ok := gamedata.MapByID(mission.Map)
 		if !ok {
 			return fmt.Errorf("unknown map for %s", mission.PopFile)
 		}
 		for _, mode := range modes {
-			for wave := 1; wave <= int(mission.Waves); wave++ {
+			for wave := opt.startWave; wave <= lastWave(mission, opt); wave++ {
 				state := "planned"
 				if strings.Contains(mission.PopFile, "_rev_") {
 					state = "unsupported_reverse"
@@ -354,13 +354,7 @@ func (s *server) runWaves(opt options, mapName string, mission gamedata.Mission,
 		// groups, which produces a false wave timeout.
 		first = 1
 	}
-	last := int(mission.Waves)
-	if opt.endWave > 0 {
-		last = opt.endWave
-	}
-	if opt.waves > 0 {
-		last = min(last, first+opt.waves-1)
-	}
+	last := lastWave(mission, opt)
 	if first > 1 {
 		if _, err := s.exec(fmt.Sprintf("tf_mvm_jump_to_wave %d 1", first)); err != nil {
 			return 0, err
@@ -392,6 +386,19 @@ func (s *server) runWaves(opt options, mapName string, mission gamedata.Mission,
 		}
 	}
 	return failures, nil
+}
+
+// lastWave is the last wave a run of the mission plays: the mission's end,
+// -end-wave, or -waves after -start-wave.
+func lastWave(mission gamedata.Mission, opt options) int {
+	last := int(mission.Waves)
+	if opt.endWave > 0 {
+		last = opt.endWave
+	}
+	if opt.waves > 0 {
+		last = min(last, opt.startWave+opt.waves-1)
+	}
+	return last
 }
 
 func (s *server) recordWave(opt options, mapName string, mission gamedata.Mission, mode string, wave int) error {
