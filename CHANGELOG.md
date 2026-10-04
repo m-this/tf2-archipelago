@@ -4,7 +4,7 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
-## Unreleased
+## v1.18.0
 
 ### Fixed
 
@@ -16,8 +16,8 @@ in the release notes, so this file is the only place to write it.
   1.12.0-git7255 reads the new layout, and the launcher and the Docker image
   now upgrade a server that already has an older SourceMod at its next start.
   Your own edits to SourceMod's configs are kept. We measured the bots: 35 of
-  35 purchases refused before, 44 bought after. We did not test the crash with
-  a real player, so tell us if opening the station still crashes your server.
+  35 purchases refused before, 44 bought after, and a player confirmed the
+  station no longer crashes their server.
 - **The debug bundle stops pointing at the wrong thing when SigMod cannot find
   the game.** When SigMod was made for the TF2 build your server reports and
   still finds none of the game's addresses, the game files are usually half
@@ -25,6 +25,26 @@ in the release notes, so this file is the only place to write it.
   checks every game file on the next start. It used to tell you to compare two
   version numbers that already matched. And when every bot purchase is refused
   on a SourceMod that already has the fix, it no longer blames SourceMod.
+
+### Changed
+
+- **The debug bundle names the TF2 build the server is running.** It listed
+  every version the launcher installs and not the one they are all built
+  against, which is the version that matters most on the evening TF2 updates.
+- **The debug bundle says when two of those versions cannot work together.**
+  Above the logs it now names, in plain words, a SigMod built for a different
+  TF2 build, a SourceMod too old for the upgrade station on this one, and a run
+  where the game refused every upgrade the bots tried to buy. It compares what
+  the file already said; it still does not claim to have found your bug.
+- **The debug bundle stops sending you after a crash dump that does not
+  exist.** When SigMod catches the fault and closes the server itself, Windows
+  writes no dump, and the summary now says so and points at the two stacks
+  SigMod printed into the log instead. When a dump should exist it names the
+  folders it looked in.
+- **The debug bundle lists what it could not collect.** Two bundles from the
+  same evening held different files and there was no way to tell a missing file
+  from a file that never existed. `collected.txt` in the zip now says which it
+  was, and why.
 
 ## v1.17.9
 
@@ -62,24 +82,6 @@ in the release notes, so this file is the only place to write it.
   crashing the server.** Until a launcher release brings a SigMod build for the
   new TF2, the server runs without it: missions that need SigMod are refused
   and the run moves on, and the debug bundle says why.
-- **The debug bundle names the TF2 build the server is running.** It listed
-  every version the launcher installs and not the one they are all built
-  against, which is the version that matters most on the evening TF2 updates.
-- **The debug bundle says when two of those versions cannot work together.**
-  Above the logs it now names, in plain words, a SigMod built for a different
-  TF2 build, a SourceMod too old for the upgrade station on this one, and a run
-  where the game refused every upgrade the bots tried to buy. It compares what
-  the file already said; it still does not claim to have found your bug.
-- **The debug bundle stops sending you after a crash dump that does not
-  exist.** When SigMod catches the fault and closes the server itself, Windows
-  writes no dump, and the summary now says so and points at the two stacks
-  SigMod printed into the log instead. When a dump should exist it names the
-  folders it looked in.
-- **The debug bundle lists what it could not collect.** Two bundles from the
-  same evening held different files and there was no way to tell a missing file
-  from a file that never existed. `collected.txt` in the zip now says which it
-  was, and why.
-
 ## v1.17.8
 
 ### Fixed
