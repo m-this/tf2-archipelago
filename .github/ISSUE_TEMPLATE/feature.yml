@@ -1,0 +1,41 @@
+name: Suggestion
+description: A new feature, mode, check or balancing idea.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Search the [open suggestions](https://github.com/m-this/tf2-archipelago/issues?q=is%3Aissue%20is%3Aopen%20label%3Aenhancement)
+        first. If yours is there, add your take to it rather than opening a
+        second one.
+  - type: dropdown
+    id: area
+    attributes:
+      label: What it touches
+      options:
+        - The defender bots
+        - Missions, waves and upgrades
+        - Items, checks and run options
+        - The launcher
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What you would like, as a player would see it in a run.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: What it fixes or makes more fun. Solo, a full team, a long run?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Other ways to get there
+      description: Anything you already tried, or a simpler version you would also take.
