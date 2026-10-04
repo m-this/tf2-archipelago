@@ -296,3 +296,67 @@ func TestCrossCheckWithoutABuildSaysSo(t *testing.T) {
 		t.Errorf("a quiet check over-claimed:\n%s", quiet)
 	}
 }
+
+/*
+Celsius's bundle on 2026-10-04: TF2 build 11076587, SigMod 20261005 made for
+
+	it, thousands of failed address lookups, and a reset of the game files fixed
+	it. The summary told them to compare the build with the pins, two numbers
+	that already agreed. When they agree and SigMod still resolves nothing, the
+	game files are the thing to look at.
+*/
+func TestSigModFailingOnItsOwnBuildPointsAtTheGameFiles(t *testing.T) {
+	unresolved := scan{found: map[string]*hit{sigmodUnresolvedRule: {count: 8760}}}
+
+	same := crossCheck("11076587", "11076587", map[string]string{"sourcemod": "1.12.0-git7255"}, unresolved)
+	if !strings.Contains(same, "updated halfway") || !strings.Contains(same, "Repair") {
+		t.Fatalf("a SigMod on its own build resolving nothing did not point at the game files:\n%s", same)
+	}
+
+	// On another build the mismatch is the explanation, and this one would
+	// send the player to verify files that are fine.
+	other := crossCheck("11076587", "11068238", map[string]string{"sourcemod": "1.12.0-git7255"}, unresolved)
+	if strings.Contains(other, "updated halfway") {
+		t.Errorf("a build mismatch was reported as a half-updated install:\n%s", other)
+	}
+
+	// Without failed lookups there is nothing to say about the files.
+	clean := crossCheck("11076587", "11076587", map[string]string{"sourcemod": "1.12.0-git7255"}, scan{})
+	if strings.Contains(clean, "updated halfway") {
+		t.Errorf("a clean run was told to repair its game files:\n%s", clean)
+	}
+}
+
+/*
+The refusal explanation named SourceMod's KeyValues bug on a bundle whose
+
+	SourceMod already carried the fix, while SigMod was faulting under every
+	purchase. SourceMod is the cause only below git7255.
+*/
+func TestRefusedPurchasesOnlyBlameAnOldSourceMod(t *testing.T) {
+	const keyValues = "SourceMod that cannot build the KeyValues"
+
+	old := crossCheck("11076587", "11076587", map[string]string{"sourcemod": "1.12.0-git7253"}, scan{refused: 34})
+	if !strings.Contains(old, keyValues) {
+		t.Errorf("refusals on git7253 did not name the KeyValues bug:\n%s", old)
+	}
+
+	unknown := crossCheck("11076587", "11076587", nil, scan{refused: 34})
+	if !strings.Contains(unknown, keyValues) {
+		t.Errorf("refusals with no SourceMod version lost the KeyValues explanation:\n%s", unknown)
+	}
+
+	withSigMod := crossCheck("11076587", "11076587", map[string]string{"sourcemod": "1.12.0-git7255"},
+		scan{refused: 34, found: map[string]*hit{sigmodUnresolvedRule: {count: 8760}}})
+	if strings.Contains(withSigMod, keyValues) {
+		t.Errorf("refusals on git7255 still blamed SourceMod:\n%s", withSigMod)
+	}
+	if !strings.Contains(withSigMod, "faults when an upgrade is bought") {
+		t.Errorf("refusals beside a SigMod that resolves nothing did not point at SigMod:\n%s", withSigMod)
+	}
+
+	fixed := crossCheck("11076587", "11076587", map[string]string{"sourcemod": "1.12.0-git7255"}, scan{refused: 34})
+	if strings.Contains(fixed, keyValues) || !strings.Contains(fixed, "nothing else in these logs") {
+		t.Errorf("refusals on git7255 without SigMod trouble were misexplained:\n%s", fixed)
+	}
+}
