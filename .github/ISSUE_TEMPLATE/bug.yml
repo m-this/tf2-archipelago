@@ -1,0 +1,80 @@
+name: Bug report
+description: Something broke on your server, in a run, or in the launcher.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Many bugs are fixed on the nightly before a release. Check the
+        [latest release notes](https://github.com/m-this/tf2-archipelago/releases)
+        and [Troubleshooting](https://m-this.github.io/tf2-archipelago/en/operate/troubleshooting.html)
+        first.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: >-
+        The launcher's window title says it, and so does `summary.txt` in the
+        debug bundle: `1.18.0-acda7df` on a release, `nightly-abc1234` on a
+        nightly.
+      placeholder: 1.18.0-acda7df
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How the server runs
+      options:
+        - Windows launcher
+        - Linux launcher
+        - Docker
+        - Something else (say which below)
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where it went wrong
+      options:
+        - The server crashed or froze
+        - The defender bots
+        - In game (missions, waves, unlocks, upgrades)
+        - The launcher or the install
+        - Archipelago (generation, items, the room, the tracker)
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: when
+    attributes:
+      label: When it happens
+      description: >-
+        The mission and wave, what you or the bots were doing, and whether it
+        happens every time.
+      placeholder: |
+        mvm_bigrock, wave 3. A player opened the upgrade station and the server
+        closed. Happens every time.
+  - type: textarea
+    id: bundle
+    attributes:
+      label: Debug bundle
+      description: >-
+        In the launcher: **Settings**, then **Debug logs**. Drag the zip in
+        here. It has no passwords in it. On Docker, paste `make logs` around
+        the moment it broke instead. A bug report without one usually starts
+        with us asking for it.
+  - type: textarea
+    id: seed
+    attributes:
+      label: Run options
+      description: >-
+        Only if it is about the run itself: your YAML options, or the room
+        link.
+      render: yaml
