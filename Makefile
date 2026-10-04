@@ -95,7 +95,7 @@ GO_SRC := $$(find . -type f -name '*.go' -not -path './deploy/bots/build/*' -not
 .PHONY: help seed up down restart logs ps rcon winbed community-catalog community-check \
         check fmt fmt-check vet lint lint-fix fix-check vuln compile test \
         test-fast export apworld-lint \
-		apworld-fmt apworld-test apworld-build apworld-package plugin bots bots-from-source \
+		apworld-fmt apworld-test apworld-build apworld-package plugin bots bots-from-source bots-gate \
         integration build docs \
         docs-build docs-down dist compose-release version-check clean \
         go-version-check \
@@ -125,6 +125,7 @@ help:
 	@echo "  make community-check Validate community.json against community-content/tf"
 	@echo "  make plugin        Compile the SourceMod plugin"
 	@echo "  make bots          Stage the MvM defender bots the image installs"
+	@echo "  make bots-gate     Play every wave with the bots before a release (hours)"
 	@echo "  make apworld-test  Run the apworld's tests inside Archipelago"
 	@echo "  make integration   Bring up Archipelago and the bridge, drive them"
 	@echo "  make dist          Build everything a release attaches into ./dist"
@@ -384,7 +385,7 @@ compile: embed-placeholders proto
 # Run `make check` or `make toolchain` once to have them locally.
 test: embed-placeholders proto
 	CGO_ENABLED=1 $(SPENV) $(REQUIRE_SPSHELL) go test -race -shuffle=on ./...
-	python3 -m unittest discover -s deploy -p 'waveprobe*_test.py'
+	python3 -m unittest discover -s deploy -p '*probe*_test.py'
 
 test-fast: embed-placeholders proto
 	$(SPENV) go test ./...
@@ -494,6 +495,16 @@ bots:
 # 32-bit toolchain, and Linux.
 bots-from-source:
 	BOTS_BUILD_EXTENSIONS=1 ./deploy/bots/build.sh
+
+# The defender bots' release gate: every wave of every mission the game volume
+# holds, with and without Bot Surge, fails on a bot that stays in spawn or
+# stands idle, and on a wave that leaves no record. Hours, and a 14 GB game, so
+# it is run by hand on a Docker host before tagging rather than in CI. Needs
+# WAVEPROBE_GAME_VOLUME and an image from `make build`. docs/waveprobe.md.
+bots-gate: bots
+	WAVEPROBE_GATE=1 WAVEPROBE_MODE=both WAVEPROBE_WAVES=0 \
+		WAVEPROBE_RCONPW="$${WAVEPROBE_RCONPW:-$$(openssl rand -hex 24)}" \
+		bash deploy/run-botprobe.sh
 
 # --- The launcher ---
 

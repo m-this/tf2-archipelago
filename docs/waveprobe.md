@@ -143,8 +143,17 @@ WAVEPROBE_BOTS_SMX=/path/to/tf2_defenderbots.smx \
 a build from a tf2-mvm-bots-go branch to measure that branch. Only maps the
 volume holds are run, and only community missions whose popfile it holds.
 `WAVEPROBE_MAPS` restricts the run to a comma-separated list, `WAVEPROBE_WAVES`
-(default 1) is how many waves of each mission to play, and `WAVEPROBE_ONE_PER_MAP`
-plays the first installed mission of each map.
+(default 1, 0 for all) is how many waves of each mission to play,
+`WAVEPROBE_MODE` is `normal` (default), `surge` or `both`, and
+`WAVEPROBE_ONE_PER_MAP` plays the first installed mission of each map.
+
+`WAVEPROBE_SHARDS` (default 1) splits the missions over that many servers, all
+on the same game volume, with RCON on `WAVEPROBE_RCON_PORT` and the ports after
+it. Each server takes `WAVEPROBE_CPUS` and `WAVEPROBE_MEMORY`, so size it to
+the host. Every server start runs SteamCMD over the volume, so a server is
+started only once the one before it answers. The shards share one SourceMod
+log, so a sharded report counts the mod's rescues but does not match them to
+missions.
 
 `REPORT.md` lists the bots that never left spawn, took over 20 seconds to, or
 stood idle for 30 seconds, and the rescues per wave. Idle means standing still
@@ -157,6 +166,37 @@ compare map by map with:
 ```sh
 python3 deploy/botprobe-compare.py docs/audits/<run-a> docs/audits/<run-b>
 ```
+
+## Release gate
+
+`make bots-gate` is the run before a release: every wave of every mission the
+game volume holds, with and without Bot Surge, with the bots from `make bots`.
+`REPORT.md` opens with the verdict, and the run exits 1 when it fails. It fails
+on:
+
+- a planned wave with no defender record, because the server crashed, hung or
+  never played it;
+- a bot that never left its spawn room in more than 20 game seconds, or whose
+  last life has spent more than 20 seconds there;
+- a bot other than an engineer or a sniper idle for 30 game seconds, as defined
+  above.
+
+A lost or timed-out wave does not fail it by itself: the probe's kills decide
+those, not the bots. The sweep above is what judges wave completion.
+
+It takes hours and a 14 GB game, so it runs by hand on a Linux Docker host, not
+on a GitHub runner:
+
+```sh
+make build    # the image under test, tf2-archipelago-srcds:latest
+WAVEPROBE_GAME_VOLUME=tf2-archipelago_tf2game WAVEPROBE_SHARDS=4 make bots-gate
+```
+
+At speed 4 one server played about two waves a minute on Decoy, loads
+included. Both modes of every Valve mission are about 360 waves, three hours
+on one server; with both community packs it is about 2,300, so shard as far
+as the host allows.
+`WAVEPROBE_MAPS` narrows a rerun to the maps that failed.
 
 A server that cannot keep up with `WAVEPROBE_SPEED` times out waves that pass
 on a quiet host. Compare arms run under the same load, and rerun a map whose
