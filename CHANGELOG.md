@@ -8,6 +8,26 @@ in the release notes, so this file is the only place to write it.
 
 ### Fixed
 
+- **Servers work again on the 2026-10-05 TF2 update.** The update changed how
+  the game finds an item attribute by its name, and three things broke:
+  - On Windows, TF2Attributes did not find that function and refused to load.
+    The Archipelago plugin and the defender bots need it, so the server started
+    with neither.
+  - On both platforms, TF Econ Data read part of the item list 36 bytes off,
+    which gave the bots wrong cosmetic slots and unusual effects. This release
+    patches it until TF Econ Data ships its own fix.
+  - SigMod crashed the server the first time somebody drew a weapon, on both
+    platforms. Its list of custom attributes named one attribute twice, and the
+    game now refuses that. SigMod linux-20261006 and 20261006 drop the
+    duplicate, and the Windows build has the addresses for the new TF2 build.
+
+  We played SigMod missions with defender bots on the new TF2 build. The team
+  won all 12 waves on Windows and 11 of 12 on Linux. The other Linux wave
+  stalls the same way it did before the update. The bots bought their upgrades
+  on both platforms.
+- **Bot Surge adds its extra support robots on Windows.** The plugin never
+  found a function that this part of Bot Surge needs on Windows, so it did
+  nothing there.
 - **Bot Surge no longer crashes the server on Brain Taker's last wave.** Some
   community missions leave a pickup behind for every robot that dies, and it
   stays until somebody on RED walks over it. At Bot Surge's spawn rate those
