@@ -454,6 +454,12 @@ static bool Unlocks_SlotOpen(TFClassType class, int slot, int held)
     return false;
 }
 
+// Whether the run lets this class hold anything in this slot right now.
+bool Unlocks_SlotAvailable(TFClassType class, int slot)
+{
+    return !Unlocks_SlotsEnforced() || Unlocks_SlotOpen(class, slot, Unlocks_SlotsHeld());
+}
+
 /* The loadout slot a wearable occupies, for the ones that take a weapon's
  * place. A shield, a pair of boots, a backpack: none is a weapon, so the strip
  * below walks past them, and the slot they sit in stays in use with the lock

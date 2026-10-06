@@ -59,6 +59,7 @@ var driverIncludes = []string{
 	"weapon_buffs_math.inc",
 	"bridge_grants_math.inc",
 	"mission_modifiers_math.inc",
+	"loadout_math.inc",
 }
 
 /*
