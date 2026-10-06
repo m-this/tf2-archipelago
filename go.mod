@@ -9,7 +9,7 @@ require (
 	connectrpc.com/validate v0.6.0
 	fyne.io/systray v1.12.2
 	github.com/coder/websocket v1.8.15
-	github.com/m-this/tf2-mvm-bots-go v0.18.4
+	github.com/m-this/tf2-mvm-bots-go v0.18.5-0.20261006060851-513f52f52b24
 	golang.org/x/sys v0.47.0
 	google.golang.org/protobuf v1.36.12
 )

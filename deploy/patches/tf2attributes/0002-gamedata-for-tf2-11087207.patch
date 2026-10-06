@@ -1,0 +1,13 @@
+diff --git a/gamedata/tf2.attributes.txt b/gamedata/tf2.attributes.txt
+index cf04d5a..a4d5f56 100644
+--- a/gamedata/tf2.attributes.txt
++++ b/gamedata/tf2.attributes.txt
+@@ -71,7 +71,7 @@
+ 			"CEconItemSchema::GetAttributeDefinitionByName"	//(const char*), returns CEconItemAttributeDefinition*
+ 			{
+ 				"library"			"server"
+-				"windows"			"\x55\x8B\xEC\x83\xEC\x1C\x83\x7D\x08\x00"
++				"windows"			"\x55\x8B\xEC\x8B\x45\x08\x56\x8B\xF1\x57\x85\xC0\x74\x2A\x50\x8D\x8E\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B\xC8\x3B\x8E"
+ 				"linux"				"@_ZN15CEconItemSchema28GetAttributeDefinitionByNameEPKc"
+ 				"mac"				"@_ZN15CEconItemSchema28GetAttributeDefinitionByNameEPKc"
+ 			}
