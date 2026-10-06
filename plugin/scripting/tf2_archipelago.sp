@@ -37,6 +37,8 @@ native int Defenderbots_GetSeatRank(int client);
 #include "tf2_archipelago/bot_cards.inc"
 #include "tf2_archipelago/mission_modifiers_math.inc"
 #include "tf2_archipelago/weapon_buffs.inc"
+#include "tf2_archipelago/loadout_math.inc"
+#include "tf2_archipelago/loadout.inc"
 #include "tf2_archipelago/deathlink.inc"
 #include "tf2_archipelago/traps.inc"
 #include "tf2_archipelago/bridge.inc"
@@ -128,6 +130,7 @@ public void OnPluginStart()
     InvaderStalls_Init();
     Unlocks_Init();
     WeaponBuffs_Init();
+    Loadout_Init();
     Bridge_Init();
     Missions_Init();
     Bots_Init();
@@ -195,6 +198,10 @@ public void OnPluginStart()
         "List the run's missions, or switch to one: sm_ap_mission [number|popfile]");
     RegConsoleCmd("sm_ap_buffs", Command_WeaponBuffs,
         "Show the Archipelago buffs for your current loadout");
+    RegConsoleCmd("sm_ap_loadout", Command_Loadout,
+        "Pick any weapon for your class, owned or not");
+    RegAdminCmd("sm_ap_loadout_set", Command_LoadoutSet, ADMFLAG_ROOT,
+        "Set a player's loadout: sm_ap_loadout_set <target> <primary|secondary|melee|watch> <weapon|own>");
     RegAdminCmd("sm_ap_buff_test", Command_TestWeaponBuff, ADMFLAG_ROOT,
         "Test an active-weapon effect: sm_ap_buff_test <number|key|all> [levels]");
     RegAdminCmd("sm_ap_buff_give", Command_GiveWeaponBuff, ADMFLAG_ROOT,
@@ -317,6 +324,7 @@ public Action Command_Say(int client, const char[] command, int argc)
         AP_PrintToClient(client, "!ap unlock mission hands over the next mission ticket, in test mode only.");
         AP_PrintToClient(client, "!ap bots changes what the bots on RED play, seat by seat.");
         AP_PrintToClient(client, "!ap buffs lists the Archipelago buffs on your loadout.");
+        AP_PrintToClient(client, "!ap loadout equips any weapon for your class, owned or not.");
         AP_PrintToClient(client, "!apchat <text> speaks to the other players in the multiworld.");
         AP_PrintToClient(client, "!mission lists the run's missions.%s",
             CheckCommandAccess(client, "sm_ap_mission", ADMFLAG_CHANGEMAP) ? " !mission <number> switches to one." : "");
@@ -333,6 +341,11 @@ public Action Command_Say(int client, const char[] command, int argc)
         {
             AP_PrintToClient(client, "No buffs for this loadout yet.");
         }
+        return Plugin_Handled;
+    }
+    if (StrEqual(message, "!ap loadout", false) || StrEqual(message, "!aploadout", false))
+    {
+        Loadout_Open(client);
         return Plugin_Handled;
     }
     if (StrEqual(message, "!ap bots", false) || StrEqual(message, "!apbots", false))
@@ -717,6 +730,7 @@ public Action Timer_PollWave(Handle timer)
 public void Event_InventoryApplied(Event event, const char[] name, bool dontBroadcast)
 {
     int client = GetClientOfUserId(event.GetInt("userid"));
+    Loadout_Apply(client);
     if (MvM_IsPlayer(client))
     {
         Unlocks_EnforceSlots(client);
@@ -744,6 +758,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 // was has to be recorded before it goes.
 public void OnClientDisconnect(int client)
 {
+    Loadout_Forget(client);
     BotCards_Clear(client);
     g_CardCosmeticPending[client] = false;
     InvaderStalls_ResetClient(client);
