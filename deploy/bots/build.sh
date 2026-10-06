@@ -185,6 +185,7 @@ fetch TF2-DMB/CBaseNPC "$CBASENPC_VERSION" cbasenpc
 fetch Vinillia/actions.ext "$ACTIONS_VERSION" actions
 
 apply_patches tf2attributes
+apply_patches tf_econ_data
 
 # --- The compiler, which the mod names and we do not ---
 #
