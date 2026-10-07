@@ -16,6 +16,11 @@ in the release notes, so this file is the only place to write it.
   locked. Upgrades you buy for the chosen weapon stay on it, the same as for a
   weapon from your backpack. We tested the weapon swaps and the upgrades on a
   server with a scripted player, but no real player has opened the menu yet.
+- **Nuke, next to Repair in Settings.** It deletes the game server, SteamCMD
+  and the downloads, and the next start installs them again from nothing, 14 GB
+  included. Repair keeps the game files; Nuke does not. The run and its checks,
+  your settings, the player file and your community content folder stay. It
+  asks before it does anything.
 
 ## v1.18.1
 
