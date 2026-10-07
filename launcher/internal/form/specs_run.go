@@ -764,6 +764,10 @@ func serverSpecs() []Spec {
 			"Reset SteamCMD and the mods; also redownload selected community packs whose hashes do not match. Keeps the game files and the run.",
 			"this stops the server, removes SteamCMD and the mods, and redownloads any selected community ZIP with a hash mismatch. A large pack may use several GB while downloading. No 14 GB game download and no lost checks.")),
 
+		onBar(confirm("server.nuke", tab, "Nuke",
+			"Delete the game server, SteamCMD and every download, and install them again from nothing at the next start. Keeps the run, the settings and the player file.",
+			"this stops the server and deletes the TF2 server install, SteamCMD and the downloads. The next start downloads the 14 GB game again. The run and its checks, the settings and the player file stay.")),
+
 		onBar(confirm("server.reset", tab, "Reset settings",
 			"Put every setting back to what a fresh install has. Keeps the game files and where they are.",
 			"this puts the room, the passwords, the missions, the bots and who can join back to their defaults.")),
