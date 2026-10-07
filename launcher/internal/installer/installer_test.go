@@ -788,6 +788,57 @@ func TestCleanKeepsWhatCannotBeFetchedAgain(t *testing.T) {
 	}
 }
 
+// Nuke takes the game files Clean keeps, and nothing the player made.
+func TestNukeKeepsWhatThePlayerMade(t *testing.T) {
+	root := t.TempDir()
+	write := func(parts ...string) string {
+		path := filepath.Join(append([]string{root}, parts...)...)
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatalf("cannot create %s: %v", path, err)
+		}
+		if err := os.WriteFile(path, []byte("x"), 0o644); err != nil {
+			t.Fatalf("cannot write %s: %v", path, err)
+		}
+		return path
+	}
+
+	gone := []string{
+		write("steamcmd", "steamcmd.exe"),
+		write("tf-dedicated", "srcds.exe"),
+		write("tf-dedicated", "tf", "cfg", "server.cfg"),
+		write("tf-dedicated", "tf", "maps", "mvm_decoy.bsp"),
+		write("tf-dedicated", "tf", "addons", "sourcemod", "plugins", "tf2_archipelago.smx"),
+		write(strings.TrimPrefix(sigmodCachePath(root), root+string(filepath.Separator))),
+	}
+	kept := []string{
+		write("bridge-state", "bridge.json"),
+		write("tf2.yaml"),
+		write("config.json"),
+		write("launcher.log"),
+	}
+
+	removed, err := Nuke(root)
+	if err != nil {
+		t.Fatalf("Nuke: %v", err)
+	}
+	if len(removed) != 3 {
+		t.Errorf("removed %d paths, want 3: %v", len(removed), removed)
+	}
+	for _, path := range gone {
+		if _, err := os.Stat(path); err == nil {
+			t.Errorf("%s survived", path)
+		}
+	}
+	for _, path := range kept {
+		if _, err := os.Stat(path); err != nil {
+			t.Errorf("%s was removed: %v", path, err)
+		}
+	}
+	if removed, err := Nuke(root); err != nil || len(removed) != 0 {
+		t.Errorf("a second Nuke removed %v, err %v", removed, err)
+	}
+}
+
 // A repair on a half-installed tree must not fail on what is not there.
 func TestCleanOnAnEmptyRoot(t *testing.T) {
 	removed, err := Clean(t.TempDir())

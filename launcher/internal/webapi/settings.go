@@ -303,6 +303,8 @@ func (a *App) Dispatch(id string) error {
 		go a.installSelectedMods(s.Settings)
 	case "server.repair":
 		go a.repair(s.Settings)
+	case "server.nuke":
+		go a.nuke(s.Settings)
 	case "server.reset":
 		return a.resetSettings()
 	default:
@@ -330,7 +332,7 @@ var wiredActions = []string{
 	"missions.ignore_hash_mismatch",
 	"missions.install_mods",
 	"missions.pool_all", "missions.pool_none",
-	"server.debug_bundle", "server.repair", "server.reset",
+	"server.debug_bundle", "server.repair", "server.nuke", "server.reset",
 	"net.check_funnel", "bots.save_team", "bots.remove_team", "bots.name_add", "loadout.save",
 }
 
@@ -562,6 +564,45 @@ func (a *App) repair(s settings.Settings) {
 	}
 	if len(repaired) > 0 {
 		a.Notify("repair downloaded verified community pack(s): " + strings.Join(repaired, ", "))
+	}
+	a.mu.Lock()
+	a.serverMods = installer.ReadyServerMods(s.InstallRoot)
+	a.mu.Unlock()
+}
+
+/*
+nuke is Repair with nothing kept of the server: the game files go too.
+
+Celsius's install (2026-10-07) kept a buff stacking fault through every Repair
+and lost it after deleting the folders by hand, and Repair leaves the game
+files, the cfg and the maps in place. This removes what the launcher installed
+and nothing the player made: the run, the settings, the player file and the
+community content folder stay, and the next start installs the server again.
+*/
+func (a *App) nuke(s settings.Settings) {
+	a.mu.Lock()
+	attached := a.attached
+	a.mu.Unlock()
+	if attached {
+		a.Notify("Docker Compose owns the server files; recreate the containers instead")
+		return
+	}
+	a.Stop()
+	_, _ = winproc.KillUnder(s.InstallRoot)
+	_, done, ok := a.beginSettingsActivity("Deleting the game server, SteamCMD and the downloads…")
+	if !ok {
+		return
+	}
+	defer done()
+	removed, err := installer.Nuke(s.InstallRoot)
+	if err != nil {
+		a.Notify("nuke: " + err.Error())
+		return
+	}
+	if len(removed) == 0 {
+		a.Notify("nuke: nothing to remove")
+	} else {
+		a.Notify("nuke removed " + strings.Join(removed, ", ") + "; the next start installs the server again")
 	}
 	a.mu.Lock()
 	a.serverMods = installer.ReadyServerMods(s.InstallRoot)

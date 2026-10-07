@@ -1571,6 +1571,28 @@ func Clean(installRoot string) ([]string, error) {
 	return removed, nil
 }
 
+// Nuke removes everything the launcher installed under the root: the game
+// server, SteamCMD and the download cache. What the player made stays: the
+// settings, the player file, the run's state and the logs.
+func Nuke(installRoot string) ([]string, error) {
+	targets := []string{
+		filepath.Join(installRoot, "tf-dedicated"),
+		filepath.Join(installRoot, "steamcmd"),
+		filepath.Join(installRoot, "downloads"),
+	}
+	var removed []string
+	for _, target := range targets {
+		if !exists(target) {
+			continue
+		}
+		if err := removeWithRetry(target); err != nil {
+			return removed, err
+		}
+		removed = append(removed, target)
+	}
+	return removed, nil
+}
+
 // removeWithRetry deletes a directory, waiting for whatever still holds it.
 //
 // Windows refuses to unlink a file another process has open, and SteamCMD can
