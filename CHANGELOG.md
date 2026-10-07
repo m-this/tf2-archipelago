@@ -10,12 +10,14 @@ in the release notes, so this file is the only place to write it.
 
 - **`!ap loadout` equips weapons you don't own.** Pick a slot, then any weapon
   your class can hold in it. The list puts the weapons with the most
-  Archipelago buffs first and shows how many each one has. The choice lasts
-  until you leave the server. It applies at once in the spawn room or between
-  waves, otherwise at your next resupply. Slots the run has not unlocked stay
-  locked. Upgrades you buy for the chosen weapon stay on it, the same as for a
-  weapon from your backpack. We tested the weapon swaps and the upgrades on a
-  server with a scripted player, but no real player has opened the menu yet.
+  Archipelago buffs first and shows how many each one has. Stock weapons are
+  not listed, since you already have them: Reset at the end of the list puts
+  your own weapon back. The choice lasts until you leave the server. It
+  applies at once in the spawn room or between waves, otherwise at your next
+  resupply. Slots the run has not unlocked stay locked. Upgrades you buy for
+  the chosen weapon stay on it, the same as for a weapon from your backpack. We
+  tested the weapon swaps and the upgrades on a server with a scripted player,
+  but no real player has opened the menu yet.
 
 ## v1.18.1
 
