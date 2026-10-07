@@ -3,9 +3,11 @@
  *
  * The weapons offered are the buff catalogue's, one per functional family, so
  * the count beside each is the run's buffs on it. Which class holds a weapon,
- * and where, is asked of the live item schema. A choice lasts while the player
- * stays connected and is put in their hands on every inventory application, in
- * a slot the run has unlocked.
+ * and where, is asked of the live item schema. The stock weapons are left out:
+ * everybody has them, and Reset at the end of a list hands the slot back to
+ * the player's own. A choice lasts while the player stays connected and is put
+ * in their hands on every inventory application, in a slot the run has
+ * unlocked.
  *
  * The game keeps MvM upgrades against the item they were bought for, and hands
  * them back when it hands that item out. A weapon given here is not one it
@@ -79,10 +81,18 @@ static void Loadout_Catalogue()
         return;
     }
     g_LoadoutCatalogued = true;
+    bool baseSet[WeaponCount];
+    for (int row = 0; row < sizeof(g_WeaponByDefinition); row++)
+    {
+        if (TF2Econ_IsItemInBaseSet(g_WeaponByDefinition[row][0]))
+        {
+            baseSet[g_WeaponByDefinition[row][1]] = true;
+        }
+    }
     for (int row = 0; row < sizeof(g_WeaponByDefinition); row++)
     {
         int definition = g_WeaponByDefinition[row][0];
-        if (!TF2Econ_IsValidItemDefinition(definition))
+        if (baseSet[g_WeaponByDefinition[row][1]] || !TF2Econ_IsValidItemDefinition(definition))
         {
             continue;
         }
@@ -409,8 +419,6 @@ static void Loadout_OpenSlot(int client, int position)
     // The class rides on every item, so a class change while the menu is open
     // cannot file the choice under the wrong class.
     char key[24];
-    Format(key, sizeof(key), "%d:%d:-1", classIndex, position);
-    menu.AddItem(key, "Your own");
     for (int rank = 0; rank < count; rank++)
     {
         int index = order[rank];
@@ -428,6 +436,8 @@ static void Loadout_OpenSlot(int client, int position)
         Format(key, sizeof(key), "%d:%d:%d", classIndex, position, weapon);
         menu.AddItem(key, label);
     }
+    Format(key, sizeof(key), "%d:%d:-1", classIndex, position);
+    menu.AddItem(key, "Reset: your own");
     menu.ExitBackButton = true;
     menu.Display(client, MENU_TIME_FOREVER);
 }
