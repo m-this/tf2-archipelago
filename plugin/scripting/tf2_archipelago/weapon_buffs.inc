@@ -58,6 +58,7 @@ int g_WeaponBuffSelfBlastHealth[MAXPLAYERS + 1];
 int g_WeaponBuffProviderRef[MAXPLAYERS + 1];
 float g_WeaponBuffProviderRetryAt[MAXPLAYERS + 1];
 bool g_WeaponBuffProviderNotEmptyLogged;
+bool g_WeaponBuffOrphanLogged;
 bool g_WeaponBuffAtUpgradeStation[MAXPLAYERS + 1];
 int g_DisposableSentryLastSwitchArgumentRef[MAXPLAYERS + 1];
 int g_DisposableSentryLastSwitchActiveRef[MAXPLAYERS + 1];
@@ -118,6 +119,7 @@ static void WeaponBuffs_DebugLog(const char[] format, any ...)
 void WeaponBuffs_OnMapStart()
 {
     g_WeaponBuffProviderNotEmptyLogged = false;
+    g_WeaponBuffOrphanLogged = false;
 }
 
 void WeaponBuffs_Init()
@@ -196,6 +198,41 @@ static int WeaponBuffs_PrivateProviderCount()
         }
     }
     return count;
+}
+
+static bool WeaponBuffs_IsClientProvider(int entity)
+{
+    int ref = EntIndexToEntRef(entity);
+    for (int client = 1; client <= MaxClients; client++)
+    {
+        if (g_WeaponBuffProviderRef[client] == ref)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Every private provider is some client's g_WeaponBuffProviderRef. One that is
+// not keeps providing to its owner and stacks on the real one.
+static void WeaponBuffs_RemoveOrphanProviders()
+{
+    int removed;
+    int entity = -1;
+    while ((entity = FindEntityByClassname(entity, "tf_wearable")) != -1)
+    {
+        if (WeaponBuffs_IsPrivateProvider(entity)
+            && !WeaponBuffs_IsClientProvider(entity))
+        {
+            RemoveEntity(entity);
+            removed++;
+        }
+    }
+    if (removed > 0 && !g_WeaponBuffOrphanLogged)
+    {
+        g_WeaponBuffOrphanLogged = true;
+        LogError("Removed %d Archipelago buff providers that no player held; each one stacked its buffs on the real provider.", removed);
+    }
 }
 
 static void WeaponBuffs_RemoveStaleProviders()
@@ -2730,6 +2767,7 @@ static int WeaponBuffs_EntityInLoadoutSlot(int client, int slot)
 
 static int WeaponBuffs_Provider(int client, int weaponEntity)
 {
+    WeaponBuffs_RemoveOrphanProviders();
     int provider = EntRefToEntIndex(g_WeaponBuffProviderRef[client]);
     if (provider > MaxClients && IsValidEntity(provider)
         && HasEntProp(provider, Prop_Send, "m_hOwnerEntity")
@@ -3414,25 +3452,63 @@ static void WeaponBuffs_DebugDisposableEntity(int client, const char[] label,
         WeaponBuffs_DirectDisposableSentryLevels(entity), hooked);
 }
 
+static int WeaponBuffs_MaxHealth(int client)
+{
+    int resource = GetPlayerResourceEntity();
+    return resource > MaxClients && IsValidEntity(resource)
+        ? GetEntProp(resource, Prop_Send, "m_iMaxHealth", 4, client) : -1;
+}
+
+static float WeaponBuffs_HookedByKey(const char[] key, int entity)
+{
+    for (int effect = 0; effect < WeaponEffectCount; effect++)
+    {
+        if (StrEqual(key, g_WeaponEffectKeys[effect]))
+        {
+            return entity > MaxClients && IsValidEntity(entity)
+                ? TF2Attrib_HookValueFloat(1.0, g_WeaponEffectAttributeClasses[effect], entity) : -1.0;
+        }
+    }
+    return -1.0;
+}
+
+static int WeaponBuffs_ReserveAmmo(int client, int entity)
+{
+    if (entity <= MaxClients || !IsValidEntity(entity)
+        || !HasEntProp(entity, Prop_Send, "m_iPrimaryAmmoType"))
+    {
+        return -1;
+    }
+    int type = GetEntProp(entity, Prop_Send, "m_iPrimaryAmmoType");
+    return type >= 0 ? GetEntProp(client, Prop_Send, "m_iAmmo", _, type) : -1;
+}
+
 public Action Command_DisposableSentryDebug(int client, int args)
 {
-    if (client < 1 || client > MaxClients || !IsClientInGame(client))
+    int target = client;
+    if (args >= 1)
     {
-        ReplyToCommand(client, "[AP debug] Run sm_ap_buff_debug from the player console.");
+        char pattern[MAX_TARGET_LENGTH];
+        GetCmdArg(1, pattern, sizeof(pattern));
+        target = FindTarget(client, pattern);
+    }
+    if (target < 1 || target > MaxClients || !IsClientInGame(target))
+    {
+        ReplyToCommand(client, "[AP debug] Run sm_ap_buff_debug from the player console, or give it a target.");
         return Plugin_Handled;
     }
-    int active = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+    int active = GetEntPropEnt(target, Prop_Send, "m_hActiveWeapon");
     WeaponBuffs_DebugDisposableEntity(client, "active", active);
     WeaponBuffs_DebugDisposableEntity(client, "slot 3 / Construction PDA",
-        WeaponBuffs_EntityInLoadoutSlot(client, 3));
+        WeaponBuffs_EntityInLoadoutSlot(target, 3));
     WeaponBuffs_DebugDisposableEntity(client, "slot 5 / PDA toolbox",
-        WeaponBuffs_EntityInLoadoutSlot(client, 5));
+        WeaponBuffs_EntityInLoadoutSlot(target, 5));
     WeaponBuffs_DebugDisposableEntity(client, "last switch argument",
-        EntRefToEntIndex(g_DisposableSentryLastSwitchArgumentRef[client]));
+        EntRefToEntIndex(g_DisposableSentryLastSwitchArgumentRef[target]));
     WeaponBuffs_DebugDisposableEntity(client, "active during switch callback",
-        EntRefToEntIndex(g_DisposableSentryLastSwitchActiveRef[client]));
+        EntRefToEntIndex(g_DisposableSentryLastSwitchActiveRef[target]));
 
-    int provider = EntRefToEntIndex(g_WeaponBuffProviderRef[client]);
+    int provider = EntRefToEntIndex(g_WeaponBuffProviderRef[target]);
     int providerDirect = provider > MaxClients && IsValidEntity(provider)
         ? WeaponBuffs_DirectDisposableSentryLevels(provider) : -1;
     int primary;
@@ -3440,7 +3516,7 @@ public Action Command_DisposableSentryDebug(int client, int args)
     int sentry = -1;
     while ((sentry = FindEntityByClassname(sentry, "obj_sentrygun")) != -1)
     {
-        if (GetEntPropEnt(sentry, Prop_Send, "m_hBuilder") != client
+        if (GetEntPropEnt(sentry, Prop_Send, "m_hBuilder") != target
             || (HasEntProp(sentry, Prop_Send, "m_bPlacing")
                 && GetEntProp(sentry, Prop_Send, "m_bPlacing") != 0))
         {
@@ -3458,19 +3534,22 @@ public Action Command_DisposableSentryDebug(int client, int args)
     ReplyToCommand(client,
         "[AP debug] shared AP=%d native=%d provider=%d provider-direct=%d private-providers=%d station=%d sentries=%d primary/%d disposable",
         WeaponBuffs_DisposableSentryLevels(),
-        WeaponBuffs_NativeDisposableSentryLevels(client), provider,
+        WeaponBuffs_NativeDisposableSentryLevels(target), provider,
         providerDirect, WeaponBuffs_PrivateProviderCount(),
-        g_WeaponBuffAtUpgradeStation[client], primary, disposable);
+        g_WeaponBuffAtUpgradeStation[target], primary, disposable);
     char attributes[160];
     int attributeCount = provider > MaxClients && IsValidEntity(provider)
         ? WeaponBuffs_ProviderAttributes(provider, attributes, sizeof(attributes)) : -1;
     ReplyToCommand(client, "[AP debug] provider-attributes=%d definitions=%s",
         attributeCount, attributes);
+    ReplyToCommand(client, "[AP debug] max-health=%d max-ammo-multiplier=%.3f reserve-ammo=%d",
+        WeaponBuffs_MaxHealth(target), WeaponBuffs_HookedByKey("max-ammo", active),
+        WeaponBuffs_ReserveAmmo(target, active));
     ReplyToCommand(client,
         "[AP debug] CanBuild sentry calls=%d overrides=%d last-result=%d",
-        g_DisposableSentryCanBuildCalls[client],
-        g_DisposableSentryCanBuildOverrides[client],
-        g_DisposableSentryLastCanBuildResult[client]);
+        g_DisposableSentryCanBuildCalls[target],
+        g_DisposableSentryCanBuildOverrides[target],
+        g_DisposableSentryLastCanBuildResult[target]);
     return Plugin_Handled;
 }
 
