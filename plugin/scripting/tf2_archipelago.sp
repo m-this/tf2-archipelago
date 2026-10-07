@@ -416,6 +416,7 @@ public void OnMapStart()
     Downloads_OnMapStart();
     Bots_OnMapStart();
     MvM_OnMapStart();
+    WeaponBuffs_OnMapStart();
     Chamber_OnMapStart();
 
     // The plugin's copy of the unlock set went with the map; ask before anyone spawns.

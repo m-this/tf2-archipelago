@@ -43,6 +43,7 @@
 #define EnergyClipSizeAttributeClass "mult_clipsize_upgrade"
 #define WeaponBuffProviderRetrySeconds 5.0
 #define WeaponBuffProviderTargetName "tf2ap_weapon_buff_provider"
+#define WeaponBuffProviderListMax 32
 #define ItemChargeMeterMaximum 100.0
 #define RocketPackReadyCharge 50.0
 #define StompBaseFallDamageMultiplier 3.0
@@ -56,6 +57,7 @@ int g_WeaponEffectLevels[WeaponCount][WeaponEffectCount];
 int g_WeaponBuffSelfBlastHealth[MAXPLAYERS + 1];
 int g_WeaponBuffProviderRef[MAXPLAYERS + 1];
 float g_WeaponBuffProviderRetryAt[MAXPLAYERS + 1];
+bool g_WeaponBuffProviderNotEmptyLogged;
 bool g_WeaponBuffAtUpgradeStation[MAXPLAYERS + 1];
 int g_DisposableSentryLastSwitchArgumentRef[MAXPLAYERS + 1];
 int g_DisposableSentryLastSwitchActiveRef[MAXPLAYERS + 1];
@@ -111,6 +113,11 @@ static void WeaponBuffs_DebugLog(const char[] format, any ...)
     {
         g_WeaponBuffProjectileLineHeld++;
     }
+}
+
+void WeaponBuffs_OnMapStart()
+{
+    g_WeaponBuffProviderNotEmptyLogged = false;
 }
 
 void WeaponBuffs_Init()
@@ -2920,6 +2927,39 @@ void WeaponBuffs_ApplyNextFrame(int client)
     }
 }
 
+static int WeaponBuffs_ProviderAttributes(int provider, char[] list, int size)
+{
+    int definitions[WeaponBuffProviderListMax];
+    int count = TF2Attrib_ListDefIndices(provider, definitions, sizeof(definitions));
+    int length;
+    list[0] = '\0';
+    for (int index = 0; index < count && index < sizeof(definitions); index++)
+    {
+        length += Format(list[length], size - length, index > 0 ? ",%d" : "%d",
+            definitions[index]);
+    }
+    return count;
+}
+
+// A gamedata signature that drifted onto another function makes RemoveAll
+// succeed and do nothing, and the provider then keeps every buff it ever had.
+static bool WeaponBuffs_ProviderEmptied(int client, int provider)
+{
+    char list[160];
+    int count = WeaponBuffs_ProviderAttributes(provider, list, sizeof(list));
+    if (count == 0)
+    {
+        return true;
+    }
+    if (!g_WeaponBuffProviderNotEmptyLogged)
+    {
+        g_WeaponBuffProviderNotEmptyLogged = true;
+        LogError("TF2Attrib_RemoveAll left %d attributes on the buff provider of %N (definitions %s), so no buff is applied. TF2Attributes' signature for CAttributeList::DestroyAllAttributes does not name that function on this TF2 build.",
+            count, client, list);
+    }
+    return false;
+}
+
 void WeaponBuffs_Apply(int client)
 {
     bool runBuffs = g_HaveUnlocks && WeaponBuffs_CanUseRunBuffs(client);
@@ -2948,6 +2988,10 @@ void WeaponBuffs_Apply(int client)
     // purely Valve/static/MvM state, so refunds cannot consume AP levels and
     // repeated purchases cannot fold AP values back into the station ledger.
     TF2Attrib_RemoveAll(provider);
+    if (!WeaponBuffs_ProviderEmptied(client, provider))
+    {
+        return;
+    }
     // The active weapon caches its final hook result, including attributes
     // reached through its owner. Provider changes clear the provider/player
     // caches but do not walk back into the weapon, so both sides of this
@@ -3417,6 +3461,11 @@ public Action Command_DisposableSentryDebug(int client, int args)
         WeaponBuffs_NativeDisposableSentryLevels(client), provider,
         providerDirect, WeaponBuffs_PrivateProviderCount(),
         g_WeaponBuffAtUpgradeStation[client], primary, disposable);
+    char attributes[160];
+    int attributeCount = provider > MaxClients && IsValidEntity(provider)
+        ? WeaponBuffs_ProviderAttributes(provider, attributes, sizeof(attributes)) : -1;
+    ReplyToCommand(client, "[AP debug] provider-attributes=%d definitions=%s",
+        attributeCount, attributes);
     ReplyToCommand(client,
         "[AP debug] CanBuild sentry calls=%d overrides=%d last-result=%d",
         g_DisposableSentryCanBuildCalls[client],
