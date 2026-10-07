@@ -11,3 +11,12 @@ func TestBedSettingsLeaveBotsOffUnlessAsked(t *testing.T) {
 		t.Fatalf("-bots left them off: SrcdsBots=%v BotUpgradesChat=%v", s.SrcdsBots, s.BotUpgradesChat)
 	}
 }
+
+func TestBedSettingsRunTheRoomOnlyWhenAsked(t *testing.T) {
+	if s := bedSettings(options{root: `C:\bed`}); s.TestMode {
+		t.Fatal("test mode on by default")
+	}
+	if s := bedSettings(options{root: `C:\bed`, room: true}); !s.TestMode {
+		t.Fatal("-room left test mode off")
+	}
+}

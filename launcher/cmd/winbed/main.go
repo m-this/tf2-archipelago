@@ -43,6 +43,7 @@ type options struct {
 	install bool
 	serve   bool
 	bots    bool
+	room    bool
 }
 
 func main() {
@@ -56,6 +57,7 @@ func main() {
 	flag.BoolVar(&opt.install, "install", false, "install the server, the packs, SigMod and the probe, then exit")
 	flag.BoolVar(&opt.serve, "serve", false, "run the game server until interrupted")
 	flag.BoolVar(&opt.bots, "bots", os.Getenv("WINBED_BOTS") == "1", "fill RED with defender bots, which shop at the upgrade station (WINBED_BOTS=1)")
+	flag.BoolVar(&opt.room, "room", os.Getenv("WINBED_ROOM") == "1", "run the bridge and a test room beside the server, so the plugin holds an unlock set (WINBED_ROOM=1)")
 	flag.Parse()
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	if err := run(opt, logger); err != nil {
@@ -77,6 +79,9 @@ func run(opt options, logger *slog.Logger) error {
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
+	if opt.room {
+		return tfruntime.Run(ctx, s, logger)
+	}
 	return tfruntime.RunServer(ctx, s, logger)
 }
 
@@ -96,7 +101,7 @@ func bedSettings(opt options) settings.Settings {
 	s.SrcdsReach = settings.ReachLan
 	s.SrcdsBots = opt.bots
 	s.BotUpgradesChat = opt.bots
-	s.TestMode = false
+	s.TestMode = opt.room
 	s.FastDLPort = 0
 	s.SrcdsStartMap = "mvm_decoy"
 	s.SrcdsHostname = "TF2 Archipelago Wave Probe"
