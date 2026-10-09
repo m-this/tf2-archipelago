@@ -44,6 +44,7 @@
 #define WeaponBuffProviderRetrySeconds 5.0
 #define WeaponBuffProviderTargetName "tf2ap_weapon_buff_provider"
 #define WeaponBuffProviderListMax 32
+#define AmmoTypeCount 32
 #define ItemChargeMeterMaximum 100.0
 #define RocketPackReadyCharge 50.0
 #define StompBaseFallDamageMultiplier 3.0
@@ -2998,6 +2999,28 @@ static bool WeaponBuffs_ProviderEmptied(int client, int provider)
     return false;
 }
 
+static void WeaponBuffs_SaveAmmo(int client, int[] ammo)
+{
+    for (int type = 0; type < AmmoTypeCount; type++)
+    {
+        ammo[type] = GetEntProp(client, Prop_Send, "m_iAmmo", 4, type);
+    }
+}
+
+// Setting a percentage max-ammo attribute scales the ammo the player holds by
+// the buff, and RemoveAll does not scale it back, so every rebuild multiplied the
+// reserve by the buff again (measured: 31 became 272 over ten, SigMod or not).
+static void WeaponBuffs_RestoreAmmo(int client, const int[] ammo)
+{
+    for (int type = 0; type < AmmoTypeCount; type++)
+    {
+        if (GetEntProp(client, Prop_Send, "m_iAmmo", 4, type) > ammo[type])
+        {
+            SetEntProp(client, Prop_Send, "m_iAmmo", ammo[type], 4, type);
+        }
+    }
+}
+
 void WeaponBuffs_Apply(int client)
 {
     bool runBuffs = g_HaveUnlocks && WeaponBuffs_CanUseRunBuffs(client);
@@ -3025,6 +3048,8 @@ void WeaponBuffs_Apply(int client)
     // Rebuild from an empty private list. The aggregate queried below is now
     // purely Valve/static/MvM state, so refunds cannot consume AP levels and
     // repeated purchases cannot fold AP values back into the station ledger.
+    int ammo[AmmoTypeCount];
+    WeaponBuffs_SaveAmmo(client, ammo);
     TF2Attrib_RemoveAll(provider);
     if (!WeaponBuffs_ProviderEmptied(client, provider))
     {
@@ -3157,6 +3182,7 @@ void WeaponBuffs_Apply(int client)
     WeaponBuffs_ApplyDisposableSentryPrediction(client, provider);
     WeaponBuffs_ApplyPassives(client, provider);
     TF2Attrib_ClearCache(entity);
+    WeaponBuffs_RestoreAmmo(client, ammo);
 }
 
 // The card diagnostic distinguishes configured innates from effects actually
