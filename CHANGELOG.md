@@ -17,6 +17,19 @@ in the release notes, so this file is the only place to write it.
   weapon from your backpack. We tested the weapon swaps and the upgrades on a
   server with a scripted player, but no real player has opened the menu yet.
 
+### Fixed
+
+- **Weapon buffs no longer pile up on Windows servers.** Each time the game
+  rebuilt your buffs, the reserve ammo and the health you were holding went up
+  by the buff again, and switching weapons rebuilds them twice. A +25% reserve
+  ammo buff read 511, 797, 1243 and kept going, and a max health buff added its
+  amount to your health every time. The buffs themselves were right. The plugin
+  now puts back the ammo and health a rebuild raised. It does not top up your
+  ammo or health when you first earn a buff; the next resupply does that. The
+  Linux server we measured did not do this. We ran ten rebuilds in a row on a
+  Windows and a Linux server with scripted defender bots, but no real player
+  has checked it yet.
+
 ## v1.18.1
 
 ### Fixed
