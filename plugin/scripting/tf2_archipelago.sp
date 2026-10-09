@@ -210,6 +210,8 @@ public void OnPluginStart()
         "Show disposable-sentry PDA/toolbox state for the calling player");
     RegAdminCmd("sm_ap_buff_slot", Command_GiveSlotWeaponBuff, ADMFLAG_ROOT,
         "Give a test effect by loadout slot: sm_ap_buff_slot <target> <1|2|3> <number|key|all> [levels]");
+    RegAdminCmd("sm_ap_buff_rebuild", Command_RebuildWeaponBuffs, ADMFLAG_ROOT,
+        "Rebuild a player's buff provider n times in a row: sm_ap_buff_rebuild <target> <n> [fresh]");
     RegAdminCmd("sm_ap_projectile_debug", Command_ProjectileDebug, ADMFLAG_ROOT,
         "Toggle projectile diagnostics: sm_ap_projectile_debug [on|off]");
     RegAdminCmd("sm_ap_unlock_override", Command_UnlockOverride, ADMFLAG_ROOT,

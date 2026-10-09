@@ -3592,6 +3592,64 @@ public Action Command_DisposableSentryDebug(int client, int args)
     return Plugin_Handled;
 }
 
+static int WeaponBuffs_EffectByKey(const char[] key)
+{
+    for (int effect = 0; effect < WeaponEffectCount; effect++)
+    {
+        if (StrEqual(key, g_WeaponEffectKeys[effect]))
+        {
+            return effect;
+        }
+    }
+    return -1;
+}
+
+// sm_ap_buff_rebuild <target> <count> [fresh]
+// Runs WeaponBuffs_Apply count times with no respawn between, to read whether a
+// percentage buff multiplies in again. fresh drops every granted level first.
+public Action Command_RebuildWeaponBuffs(int client, int args)
+{
+    char pattern[MAX_TARGET_LENGTH];
+    char rawCount[12];
+    if (args < 2)
+    {
+        ReplyToCommand(client, "[AP] Usage: sm_ap_buff_rebuild <target> <count 1-20> [fresh]");
+        return Plugin_Handled;
+    }
+    GetCmdArg(1, pattern, sizeof(pattern));
+    GetCmdArg(2, rawCount, sizeof(rawCount));
+    int target = FindTarget(client, pattern);
+    int count = StringToInt(rawCount);
+    if (target < 1 || count < 1 || count > 20)
+    {
+        return Plugin_Handled;
+    }
+    if (args >= 3)
+    {
+        WeaponBuffs_Clear();
+    }
+    int ammo = WeaponBuffs_EffectByKey("max-ammo");
+    for (int rebuild = 1; rebuild <= count; rebuild++)
+    {
+        WeaponBuffs_Apply(target);
+        int active = GetEntPropEnt(target, Prop_Send, "m_hActiveWeapon");
+        int provider = EntRefToEntIndex(g_WeaponBuffProviderRef[target]);
+        Address ammoAttribute = provider > MaxClients
+            ? TF2Attrib_GetByName(provider, g_WeaponEffectAttributes[ammo]) : Address_Null;
+        int ammoType = active > MaxClients && HasEntProp(active, Prop_Send, "m_iPrimaryAmmoType")
+            ? GetEntProp(active, Prop_Send, "m_iPrimaryAmmoType") : -1;
+        ReplyToCommand(client,
+            "[AP rebuild] n=%d set=%.4f hooked=%.4f max-ammo=%d reserve=%d max-health=%d health=%d provider=%d attributes=%d",
+            rebuild, ammoAttribute == Address_Null ? -1.0 : TF2Attrib_GetValue(ammoAttribute),
+            WeaponBuffs_HookedByKey("max-ammo", active),
+            ammoType >= 0 ? TF2Util_GetPlayerMaxAmmo(target, ammoType) : -1,
+            WeaponBuffs_ReserveAmmo(target, active), WeaponBuffs_MaxHealth(target),
+            GetClientHealth(target), provider,
+            provider > MaxClients ? WeaponBuffs_ProviderAttributes(provider, pattern, sizeof(pattern)) : -1);
+    }
+    return Plugin_Handled;
+}
+
 public Action Command_WeaponBuffs(int client, int args)
 {
     if (!WeaponBuffs_ShowMenu(client))
