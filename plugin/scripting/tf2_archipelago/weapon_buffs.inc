@@ -60,6 +60,7 @@ int g_WeaponBuffProviderRef[MAXPLAYERS + 1];
 float g_WeaponBuffProviderRetryAt[MAXPLAYERS + 1];
 bool g_WeaponBuffProviderNotEmptyLogged;
 bool g_WeaponBuffOrphanLogged;
+ConVar g_WeaponBuffKeepVitals;
 bool g_WeaponBuffAtUpgradeStation[MAXPLAYERS + 1];
 int g_DisposableSentryLastSwitchArgumentRef[MAXPLAYERS + 1];
 int g_DisposableSentryLastSwitchActiveRef[MAXPLAYERS + 1];
@@ -126,6 +127,8 @@ void WeaponBuffs_OnMapStart()
 void WeaponBuffs_Init()
 {
     WeaponBuffs_RemoveStaleProviders();
+    g_WeaponBuffKeepVitals = CreateConVar("tf2ap_buff_keep_vitals", "1",
+        "Put back the ammo and health a buff rebuild raised; 0 only to measure what it prevents", FCVAR_NONE, true, 0.0, true, 1.0);
     g_WeaponBuffProjectileDebug = CreateConVar("tf2ap_projectile_debug", "0",
         "Log extra-projectile creation and lifetime", FCVAR_NONE, true, 0.0, true, 1.0);
     CreateTimer(1.0, Timer_WeaponBuffHealthRegen, _, TIMER_REPEAT);
@@ -2999,25 +3002,35 @@ static bool WeaponBuffs_ProviderEmptied(int client, int provider)
     return false;
 }
 
-static void WeaponBuffs_SaveAmmo(int client, int[] ammo)
+// Setting a percentage max-ammo or a max-health attribute scales what the player
+// holds by the buff, and RemoveAll does not scale it back, so every rebuild raised
+// the reserve and the health again (measured: reserve 31 became 272 over ten).
+// Slot AmmoTypeCount of the array holds the health.
+static void WeaponBuffs_SaveVitals(int client, int[] vitals)
 {
     for (int type = 0; type < AmmoTypeCount; type++)
     {
-        ammo[type] = GetEntProp(client, Prop_Send, "m_iAmmo", 4, type);
+        vitals[type] = GetEntProp(client, Prop_Send, "m_iAmmo", 4, type);
     }
+    vitals[AmmoTypeCount] = GetClientHealth(client);
 }
 
-// Setting a percentage max-ammo attribute scales the ammo the player holds by
-// the buff, and RemoveAll does not scale it back, so every rebuild multiplied the
-// reserve by the buff again (measured: 31 became 272 over ten, SigMod or not).
-static void WeaponBuffs_RestoreAmmo(int client, const int[] ammo)
+static void WeaponBuffs_RestoreVitals(int client, const int[] vitals)
 {
+    if (!g_WeaponBuffKeepVitals.BoolValue)
+    {
+        return;
+    }
     for (int type = 0; type < AmmoTypeCount; type++)
     {
-        if (GetEntProp(client, Prop_Send, "m_iAmmo", 4, type) > ammo[type])
+        if (GetEntProp(client, Prop_Send, "m_iAmmo", 4, type) > vitals[type])
         {
-            SetEntProp(client, Prop_Send, "m_iAmmo", ammo[type], 4, type);
+            SetEntProp(client, Prop_Send, "m_iAmmo", vitals[type], 4, type);
         }
+    }
+    if (GetClientHealth(client) > vitals[AmmoTypeCount])
+    {
+        SetEntityHealth(client, vitals[AmmoTypeCount]);
     }
 }
 
@@ -3048,8 +3061,8 @@ void WeaponBuffs_Apply(int client)
     // Rebuild from an empty private list. The aggregate queried below is now
     // purely Valve/static/MvM state, so refunds cannot consume AP levels and
     // repeated purchases cannot fold AP values back into the station ledger.
-    int ammo[AmmoTypeCount];
-    WeaponBuffs_SaveAmmo(client, ammo);
+    int vitals[AmmoTypeCount + 1];
+    WeaponBuffs_SaveVitals(client, vitals);
     TF2Attrib_RemoveAll(provider);
     if (!WeaponBuffs_ProviderEmptied(client, provider))
     {
@@ -3182,7 +3195,7 @@ void WeaponBuffs_Apply(int client)
     WeaponBuffs_ApplyDisposableSentryPrediction(client, provider);
     WeaponBuffs_ApplyPassives(client, provider);
     TF2Attrib_ClearCache(entity);
-    WeaponBuffs_RestoreAmmo(client, ammo);
+    WeaponBuffs_RestoreVitals(client, vitals);
 }
 
 // The card diagnostic distinguishes configured innates from effects actually
@@ -3568,8 +3581,8 @@ public Action Command_DisposableSentryDebug(int client, int args)
         ? WeaponBuffs_ProviderAttributes(provider, attributes, sizeof(attributes)) : -1;
     ReplyToCommand(client, "[AP debug] provider-attributes=%d definitions=%s",
         attributeCount, attributes);
-    ReplyToCommand(client, "[AP debug] max-health=%d max-ammo-multiplier=%.3f reserve-ammo=%d",
-        WeaponBuffs_MaxHealth(target), WeaponBuffs_HookedByKey("max-ammo", active),
+    ReplyToCommand(client, "[AP debug] health=%d max-health=%d max-ammo-multiplier=%.3f reserve-ammo=%d",
+        GetClientHealth(target), WeaponBuffs_MaxHealth(target), WeaponBuffs_HookedByKey("max-ammo", active),
         WeaponBuffs_ReserveAmmo(target, active));
     ReplyToCommand(client,
         "[AP debug] CanBuild sentry calls=%d overrides=%d last-result=%d",
