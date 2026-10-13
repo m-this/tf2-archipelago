@@ -149,10 +149,10 @@ func running(pid int) bool {
 // program name, which is parenthesised and may itself hold spaces or brackets,
 // so the split is on the last ')' rather than on the second field.
 func zombie(stat []byte) bool {
-	i := bytes.LastIndexByte(stat, ')')
-	if i < 0 {
+	_, rest, ok := bytes.CutLast(stat, []byte(")"))
+	if !ok {
 		return false
 	}
-	fields := strings.Fields(string(stat[i+1:]))
+	fields := strings.Fields(string(rest))
 	return len(fields) > 0 && fields[0] == "Z"
 }
