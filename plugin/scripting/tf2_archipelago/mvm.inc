@@ -125,10 +125,7 @@ stock bool MvM_IsGiant(int client)
 stock bool MvM_IsSentryBuster(int client)
 {
     char model[PLATFORM_MAX_PATH];
-    if (!GetClientModel(client, model, sizeof(model)))
-    {
-        return false;
-    }
+    GetClientModel(client, model, sizeof(model));
     return StrEqual(model, "models/bots/demo/bot_sentry_buster.mdl");
 }
 
