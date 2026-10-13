@@ -260,6 +260,24 @@ func TestInstallServerCfgCarriesTheRunAndTheBots(t *testing.T) {
 	}
 }
 
+// tf_mvm_popfile does nothing on a server that is hibernating, and a server
+// with nobody on it hibernates the moment its map is up: the start mission
+// was refused with "Could not find a valid population file matching: normal"
+// and the map stayed on its own default at wave 0.
+func TestInstallServerCfgKeepsTheServerAwake(t *testing.T) {
+	s := settings.Settings{InstallRoot: t.TempDir()}
+	if err := Install(s); err != nil {
+		t.Fatalf("Install: %v", err)
+	}
+	cfg, err := os.ReadFile(filepath.Join(gameDir(s.InstallRoot), "cfg", "server.cfg"))
+	if err != nil {
+		t.Fatalf("cannot read server.cfg: %v", err)
+	}
+	if !strings.Contains(string(cfg), "sv_hibernate_when_empty 0") {
+		t.Errorf("an empty server hibernates and drops the plugin's mission switch:\n%s", cfg)
+	}
+}
+
 // The loadout file exists exactly when a class has a preset, and only once
 // the mod's config directory does: writing it into an empty tree would make
 // a directory the installer then finds already there.

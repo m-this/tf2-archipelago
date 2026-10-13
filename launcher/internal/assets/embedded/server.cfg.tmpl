@@ -55,6 +55,11 @@ sm_redbots_manager_bot_buy_anywhere {{.BotBuyAnywhere}}
 sm_redbots_manager_bot_hats {{.BotHats}}
 sm_redbots_manager_bot_hat_effects {{.BotHatEffects}}
 
+// An empty server hibernates, and a hibernating server ignores the
+// tf_mvm_popfile the plugin sends for the start mission: the map stays on its
+// own default at wave 0.
+sv_hibernate_when_empty 0
+
 // The mission the run starts on, and whether the bots' purchases at the
 // upgrade station reach the chat.
 tf2ap_start_mission "{{.StartMission}}"
