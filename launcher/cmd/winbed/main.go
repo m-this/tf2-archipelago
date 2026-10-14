@@ -23,6 +23,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/m-this/tf2-archipelago/launcher/internal/installer"
@@ -34,16 +35,18 @@ import (
 const sigmodKey = "sigsegv-mvm"
 
 type options struct {
-	root     string
-	packs    string
-	sigmod   string
-	probe    string
-	rconpw   string
-	port     int
-	install  bool
-	serve    bool
-	bots     bool
-	noSigmod bool
+	root        string
+	packs       string
+	sigmod      string
+	probe       string
+	rconpw      string
+	port        int
+	install     bool
+	serve       bool
+	bots        bool
+	noSigmod    bool
+	testMode    bool
+	botTeamSize int
 }
 
 func main() {
@@ -57,6 +60,8 @@ func main() {
 	flag.BoolVar(&opt.install, "install", false, "install the server, the packs, SigMod and the probe, then exit")
 	flag.BoolVar(&opt.serve, "serve", false, "run the game server until interrupted")
 	flag.BoolVar(&opt.noSigmod, "no-sigmod", os.Getenv("WINBED_NO_SIGMOD") == "1", "load no SigMod, as a server without it runs (WINBED_NO_SIGMOD=1)")
+	flag.BoolVar(&opt.testMode, "test-mode", os.Getenv("WINBED_TEST_MODE") == "1", "serve a test multiworld, as the launcher's test mode does (WINBED_TEST_MODE=1)")
+	flag.IntVar(&opt.botTeamSize, "bot-team-size", envInt("WINBED_BOT_TEAM_SIZE", 6), "defender bots on RED (WINBED_BOT_TEAM_SIZE)")
 	flag.BoolVar(&opt.bots, "bots", os.Getenv("WINBED_BOTS") == "1", "fill RED with defender bots, which shop at the upgrade station (WINBED_BOTS=1)")
 	flag.Parse()
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
@@ -100,7 +105,10 @@ func bedSettings(opt options) settings.Settings {
 	s.SrcdsReach = settings.ReachLan
 	s.SrcdsBots = opt.bots
 	s.BotUpgradesChat = opt.bots
-	s.TestMode = false
+	s.TestMode = opt.testMode
+	if opt.botTeamSize > 0 {
+		s.SrcdsBotTeamSize = opt.botTeamSize
+	}
 	s.FastDLPort = 0
 	s.SrcdsStartMap = "mvm_decoy"
 	s.SrcdsHostname = "TF2 Archipelago Wave Probe"
@@ -203,4 +211,12 @@ func extract(file *zip.File, target string) error {
 		return err
 	}
 	return out.Close()
+}
+
+func envInt(key string, fallback int) int {
+	n, err := strconv.Atoi(os.Getenv(key))
+	if err != nil {
+		return fallback
+	}
+	return n
 }
