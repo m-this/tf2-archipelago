@@ -907,13 +907,39 @@ public Action Timer_Probe(Handle timer)
         if (slot < 0) return Plugin_Continue;
         if (now >= g_TankDeadline[slot])
         {
+            bool retry = g_TankKillPending[slot];
+            if (retry)
+            {
+                LogMessage("WAVEPROBE tank %d survived a hit, health=%d",
+                    tank, GetEntProp(tank, Prop_Data, "m_iHealth"));
+            }
             g_TankKillPending[slot] = true;
             g_KillAttempts++;
-            SDKHooks_TakeDamage(tank, g_Defender, g_Defender, 1000000.0);
-            g_TankDeadline[slot] = now + 5.0;
+            HitTank(tank, retry);
+            g_TankDeadline[slot] = now + 1.0;
         }
     }
     return Plugin_Continue;
+}
+
+// A player kills a tank with explosive damage from a held weapon, and
+// SDKHooks_TakeDamage's default is generic damage with no weapon. Whatever the
+// tank does with a hit like that, it stayed alive on trespasser until the
+// 120 s detonation relay fired. The hit is a lethal blast from the defender's
+// weapon; a tank that survived one is put at 1 health first so the next hit
+// goes through Event_Killed, which fires OnKilled that missions listen for.
+static void HitTank(int tank, bool retry)
+{
+    if (retry && GetEntProp(tank, Prop_Data, "m_iHealth") > 1)
+    {
+        SetEntProp(tank, Prop_Data, "m_iHealth", 1);
+    }
+    float origin[3];
+    GetEntPropVector(tank, Prop_Data, "m_vecAbsOrigin", origin);
+    int weapon = GetEntPropEnt(g_Defender, Prop_Send, "m_hActiveWeapon");
+    float force[3];
+    SDKHooks_TakeDamage(tank, g_Defender, g_Defender, 1000000.0,
+        DMG_BLAST | DMG_CRIT, weapon, force, origin);
 }
 
 static bool IsDefenderBot(int client)
