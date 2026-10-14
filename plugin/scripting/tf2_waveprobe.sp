@@ -42,6 +42,8 @@ int g_PlayerTeam = 2;
 int g_EnemyTeam = 3;
 int g_SpawnSerial;
 int g_BotKills;
+#define ALLY_TANK_GRACE_SECONDS 15.0
+
 int g_TankKills;
 int g_BotSpawns;
 int g_TankSpawns;
@@ -678,6 +680,22 @@ static bool IsRealTank(int tank)
         && GetEntProp(tank, Prop_Data, "m_iMaxHealth") > 0;
 }
 
+// A tank on the players' team is the mission's to end while an enemy tank
+// lives: shrouded shrieks loses the wave when its red tank dies, and its
+// redwin_relay kills that tank itself once the blue one is down.
+static bool EnemyTankAlive()
+{
+    int tank = -1;
+    while ((tank = FindEntityByClassname(tank, "tank_boss")) != -1)
+    {
+        if (IsRealTank(tank) && GetEntProp(tank, Prop_Send, "m_iTeamNum") != g_PlayerTeam)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 static int RegisterTank(int tank)
 {
     // A tank with no edict (SigMod makes some entities server-side only)
@@ -910,12 +928,18 @@ public Action Timer_Probe(Handle timer)
         }
     }
 
+    bool enemyTank = EnemyTankAlive();
     int tank = -1;
     while ((tank = FindEntityByClassname(tank, "tank_boss")) != -1)
     {
         if (!IsRealTank(tank)) continue;
         int slot = RegisterTank(tank);
         if (slot < 0) return Plugin_Continue;
+        if (enemyTank && GetEntProp(tank, Prop_Send, "m_iTeamNum") == g_PlayerTeam)
+        {
+            g_TankDeadline[slot] = now + ALLY_TANK_GRACE_SECONDS;
+            continue;
+        }
         if (now >= g_TankDeadline[slot])
         {
             bool retry = g_TankKillPending[slot];
