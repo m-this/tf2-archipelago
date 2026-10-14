@@ -34,15 +34,16 @@ import (
 const sigmodKey = "sigsegv-mvm"
 
 type options struct {
-	root    string
-	packs   string
-	sigmod  string
-	probe   string
-	rconpw  string
-	port    int
-	install bool
-	serve   bool
-	bots    bool
+	root     string
+	packs    string
+	sigmod   string
+	probe    string
+	rconpw   string
+	port     int
+	install  bool
+	serve    bool
+	bots     bool
+	noSigmod bool
 }
 
 func main() {
@@ -55,6 +56,7 @@ func main() {
 	flag.IntVar(&opt.port, "port", 27015, "game port, also rcon")
 	flag.BoolVar(&opt.install, "install", false, "install the server, the packs, SigMod and the probe, then exit")
 	flag.BoolVar(&opt.serve, "serve", false, "run the game server until interrupted")
+	flag.BoolVar(&opt.noSigmod, "no-sigmod", os.Getenv("WINBED_NO_SIGMOD") == "1", "load no SigMod, as a server without it runs (WINBED_NO_SIGMOD=1)")
 	flag.BoolVar(&opt.bots, "bots", os.Getenv("WINBED_BOTS") == "1", "fill RED with defender bots, which shop at the upgrade station (WINBED_BOTS=1)")
 	flag.Parse()
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
@@ -88,8 +90,10 @@ func bedSettings(opt options) settings.Settings {
 	s.InstallRoot = opt.root
 	s.CommunityContentDir = filepath.Join(opt.root, "community")
 	s.CommunityPacks = strings.Split(opt.packs, ",")
-	s.SrcdsMods = []string{sigmodKey}
-	s.SrcdsModLoading = settings.ModLoadingAlways
+	if !opt.noSigmod {
+		s.SrcdsMods = []string{sigmodKey}
+		s.SrcdsModLoading = settings.ModLoadingAlways
+	}
 	s.SrcdsRconPw = opt.rconpw
 	s.SrcdsPort = opt.port
 	s.SrcdsMaxPlayers = 32
