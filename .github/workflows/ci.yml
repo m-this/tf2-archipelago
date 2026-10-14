@@ -95,9 +95,9 @@ jobs:
   web:
     runs-on: ubuntu-latest
     container:
-      image: node:26-slim
+      image: node:26.11.1-slim
     steps:
-      # ca-certificates is not optional: node:26-slim ships none, so git cannot
+      # ca-certificates is not optional: node:26.11.1-slim ships none, so git cannot
       # verify github.com and checkout fails with "Problem with the SSL CA
       # cert" before anything else runs. npm needs it for the same reason.
       # The plugin job installs it on debian:stable-slim for the same reason.
@@ -110,7 +110,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
 
@@ -133,7 +133,7 @@ jobs:
       # Both: the report says which test failed, and test-results holds the
       # trace and the error context Playwright keeps for one that did.
       - if: failure()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: |
@@ -176,7 +176,7 @@ jobs:
       # The defender mod is a Go module dependency rather than a checkout, so
       # staging it needs a toolchain. Version from go.mod, the same file that
       # pins the mod.
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
 

@@ -39,7 +39,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
 
@@ -172,7 +172,7 @@ jobs:
       # attestation is the only check somebody has on a file this workflow built,
       # and a nightly build is exactly the file nobody has a reason to trust.
       - name: attest the binaries
-        uses: actions/attest-build-provenance@v3
+        uses: actions/attest-build-provenance@v4
         with:
           subject-path: |
             dist/tf2ap.exe
