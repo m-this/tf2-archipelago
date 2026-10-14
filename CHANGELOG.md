@@ -51,6 +51,12 @@ in the release notes, so this file is the only place to write it.
   came from game functions the Windows SigMod had not found. We played the
   missions on a Windows server with scripted defender bots; all but one mission
   played through, and that one still stops at its first wave.
+- **More SigMod mods work on a Windows server.** Weapon effects, death yells
+  and entity limits did nothing there, because the Windows SigMod had not found
+  the game functions they hook. They now run. We played the missions on a
+  Windows server with scripted defender bots: five of eight groups played
+  through. Three missions still lose waves (Dismal Devilry, Dust to Dust and
+  Trespasser Remaster) and are being looked at.
 
 ## v1.18.1
 
