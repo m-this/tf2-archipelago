@@ -26,6 +26,11 @@ in the release notes, so this file is the only place to write it.
 
 ### Fixed
 
+- **Caliginous Caper wave 666 no longer ends when the 64 Spies die.** Valve
+  lists the tanks that wait for the Spies ahead of them, and the game ends the
+  wave on the tick the last Spy dies, before the tanks, the crit robots and the
+  Uber Medics that follow. The repaired file now lists each group after the
+  ones it waits for. The server writes it again at start.
 - **Weapon buffs no longer pile up on Windows servers.** Each time the game
   rebuilt your buffs, the reserve ammo and the health you were holding went up
   by the buff again, and switching weapons rebuilds them twice. A +25% reserve

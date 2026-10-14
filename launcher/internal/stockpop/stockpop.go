@@ -2,8 +2,9 @@
 //
 // Valve ships the wave as mvm_ghost_town_666.pop inside tf2_misc_dir.vpk. It
 // names a tank path Ghost Town does not have and lacks the setting that spawns
-// the Halloween robots, so the plugin plays a repaired copy under its own name
-// rather than shipping Valve's file.
+// the Halloween robots, and it lists the tanks of wave07 ahead of the Spies they
+// wait for, which ends the wave when the Spies die. The plugin plays a repaired
+// copy under its own name rather than shipping Valve's file.
 package stockpop
 
 import (
@@ -81,6 +82,7 @@ func repair(body []byte) ([]byte, error) {
 		return nil, errors.New("the _666 mission has no recognized tank path")
 	}
 	body = bytes.ReplaceAll(body, tankPathStock, tankPathMap)
+	body = orderWaveSpawns(body)
 
 	// Without the event setting, TF2 spawns the regular robot models.
 	if bytes.Contains(body, eventSetting) {

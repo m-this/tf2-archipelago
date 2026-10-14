@@ -263,3 +263,52 @@ func TestDestinationIsTheRuntimeName(t *testing.T) {
 		t.Errorf("Destination = %q, want %q", got, want)
 	}
 }
+
+// waveSpawn is one WaveSpawn block in the layout of Valve's file.
+func waveSpawn(name, wait, body string) string {
+	s := "\t\tWaveSpawn //" + name + "\n\t\t{\n\t\t\tName \"" + name + "\"\n"
+	if wait != "" {
+		s += "\t\t\tWaitForAllDead \"" + wait + "\"\n"
+	}
+	return s + "\t\t\t" + body + "\n\t\t}\n"
+}
+
+func waveOf(spawns ...string) string {
+	out := "WaveSchedule\n{\n\tCanBotsAttackWhileInSpawnRoom no\n\tWave\n\t{\n"
+	for _, s := range spawns {
+		out += s
+	}
+	return out + "\t}\n}\n"
+}
+
+func repairedWave(spawns ...string) string {
+	return waveOf(spawns...)[:len("WaveSchedule\n{\n\tCanBotsAttackWhileInSpawnRoom no\n")] +
+		"\tEventPopfile Halloween\n" +
+		waveOf(spawns...)[len("WaveSchedule\n{\n\tCanBotsAttackWhileInSpawnRoom no\n"):]
+}
+
+// Valve lists the 07a tanks, which wait for every "wave06" spawn, before the
+// 64 spies that are one of them. The game skips a waiting WaveSpawn when it
+// decides whether the wave is done, so the tick the last spy dies finds every
+// other spawn done or waiting and ends the wave with the tanks never started.
+func TestInstallListsAWaveSpawnAfterTheOnesItWaitsFor(t *testing.T) {
+	t.Parallel()
+	soldiers := waveSpawn("wave06", "wave05", "Class Soldier")
+	tanks := waveSpawn("wave07", "wave06", "Tank { StartingPathTrackNode \"boss_path_a1\" }")
+	tanksFixed := waveSpawn("wave07", "wave06", "Tank { StartingPathTrackNode \"boss_path_1\" }")
+	spies := waveSpawn("wave06", "wave05", "Class Spy")
+	snipers := waveSpawn("wave08a", "wave07", "Class Sniper")
+	earlier := waveSpawn("wave05", "", "Class Scout")
+
+	tfDir := t.TempDir()
+	writeVPK(t, tfDir, 2, stockFile(waveOf(earlier, soldiers, tanks, spies, snipers)))
+	destination := Destination(tfDir)
+	if _, err := Install(tfDir, destination); err != nil {
+		t.Fatal(err)
+	}
+	got, err := os.ReadFile(destination)
+	want := repairedWave(earlier, soldiers, spies, tanksFixed, snipers)
+	if err != nil || string(got) != want {
+		t.Fatalf("installed mission = %q, %v; want %q", got, err, want)
+	}
+}
