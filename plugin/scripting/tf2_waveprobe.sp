@@ -388,7 +388,10 @@ public Action Command_Status(int client, int argc)
         if (GetClientTeam(player) == g_EnemyTeam && IsPlayerAlive(player)) alive++;
     }
     int tank = -1;
-    while ((tank = FindEntityByClassname(tank, "tank_boss")) != -1) alive++;
+    while ((tank = FindEntityByClassname(tank, "tank_boss")) != -1)
+    {
+        if (IsRealTank(tank)) alive++;
+    }
     float progress = -1.0;
     if (g_InitialEnemies > 0 && remaining >= 0)
     {
@@ -660,12 +663,17 @@ static bool IsScriptedTimerBot(int bot)
     return StrEqual(name, "waveprobe_timer");
 }
 
-public void OnEntityCreated(int entity, const char[] classname)
+// TankExt renames its think entity "tank_boss" so the engine broadcasts a tank
+// spawn: it has no team and no health, and a hit on it kills nothing. A real
+// tank sits on the enemy team with health, and has an edict above the players.
+// The classname alone is not enough, and a created entity has neither yet, so
+// tanks are registered from the tick, not from OnEntityCreated.
+static bool IsRealTank(int tank)
 {
-    if (g_State == Probe_Running && StrEqual(classname, "tank_boss"))
-    {
-        RegisterTank(entity);
-    }
+    int index = tank < 0 ? EntRefToEntIndex(tank) : tank;
+    return index > MaxClients && index <= 2048
+        && GetEntProp(tank, Prop_Send, "m_iTeamNum") == g_EnemyTeam
+        && GetEntProp(tank, Prop_Data, "m_iMaxHealth") > 0;
 }
 
 static int RegisterTank(int tank)
@@ -903,6 +911,7 @@ public Action Timer_Probe(Handle timer)
     int tank = -1;
     while ((tank = FindEntityByClassname(tank, "tank_boss")) != -1)
     {
+        if (!IsRealTank(tank)) continue;
         int slot = RegisterTank(tank);
         if (slot < 0) return Plugin_Continue;
         if (now >= g_TankDeadline[slot])
