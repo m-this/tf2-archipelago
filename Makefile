@@ -469,7 +469,7 @@ apworld-build:
 	docker rm "$$id"
 
 # The standalone launcher only needs the packaged world, not an Archipelago
-# server image. Archipelago 0.6.7's APWorldContainer format is version 7; the
+# server image. Archipelago 0.6.8's APWorldContainer format is version 7; the
 # standard-library packager mirrors its archive layout and manifest stamping so
 # WSL users do not need Docker (or the optional zip command) to build the exe.
 apworld-package:

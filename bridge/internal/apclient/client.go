@@ -43,7 +43,7 @@ const (
 )
 
 // version is the Archipelago release this client is written against.
-var version = Version{Class: "Version", Major: 0, Minor: 6, Build: 7}
+var version = Version{Class: "Version", Major: 0, Minor: 6, Build: 8}
 
 // permanentError wraps a failure reconnecting cannot fix; the bridge stops rather than retry.
 type permanentError struct{ err error }

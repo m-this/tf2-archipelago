@@ -7,7 +7,7 @@
 
 [tool.ruff]
 line-length = 100
-# Archipelago 0.6.7 supports 3.11 to 3.13, so the world may not use anything
+# Archipelago 0.6.8 supports 3.11 to 3.13, so the world may not use anything
 # newer than the oldest of those.
 target-version = "py311"
 src = ["apworld"]

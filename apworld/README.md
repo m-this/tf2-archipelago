@@ -35,7 +35,7 @@ expressed as data. The reasoning is in [ADR
 
 ## Running it
 
-There is no Archipelago in this repo. Point a 0.6.7 checkout at this folder:
+There is no Archipelago in this repo. Point a 0.6.8 checkout at this folder:
 
 ```sh
 ln -s "$PWD/tf2_mvm" <archipelago>/worlds/tf2_mvm     # a folder must live in worlds/

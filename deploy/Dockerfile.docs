@@ -5,7 +5,7 @@
 # each language's own SUMMARY.md as they already stand. The table of contents
 # keeps one home per language rather than growing a second one for the build.
 
-FROM node:24-alpine AS build
+FROM node:24.21.0-alpine AS build
 ARG HONKIT_VERSION
 
 WORKDIR /src
@@ -35,5 +35,5 @@ RUN cp CONTEXT.md docs/en/glossary.md \
 	&& npx --yes honkit@${HONKIT_VERSION} build docs /book \
 	&& cp docs-index.html /book/index.html
 
-FROM nginx:1.31.4-alpine
+FROM nginx:1.31.6-alpine
 COPY --from=build /book /usr/share/nginx/html

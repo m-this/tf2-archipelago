@@ -58,7 +58,7 @@ fi
 if [ ! -d "$tf2utils" ]; then
 	echo "fetching TF2Utils $TF2UTILS_VERSION includes"
 	mkdir -p "$tf2utils"
-	curl -fsSL "https://github.com/nosoop/SM-TFUtils/archive/refs/heads/$TF2UTILS_VERSION.tar.gz" |
+	curl -fsSL "https://github.com/nosoop/SM-TFUtils/archive/refs/tags/$TF2UTILS_VERSION.tar.gz" |
 		tar xz -C "$tf2utils" --strip-components=1
 fi
 

@@ -891,7 +891,7 @@ class TestMedalGoalFinalBoss(TF2MvMTestBase):
     }
 
     def test_the_goal_reads_the_goal_mission_medal(self) -> None:
-        state = self.multiworld.get_all_state(False)
+        state = self.multiworld.get_all_state()
         self.assertTrue(self.multiworld.completion_condition[self.player](state))
 
         medal = data.MEDAL_NAMES[self.world.goal_mission.id]
@@ -908,7 +908,7 @@ class TestMedalGoalMissionsanity(TF2MvMTestBase):
     }
 
     def test_the_goal_counts_the_medals(self) -> None:
-        state = self.multiworld.get_all_state(False)
+        state = self.multiworld.get_all_state()
         self.assertTrue(self.multiworld.completion_condition[self.player](state))
 
         # One short of every mission is one short of the goal.
