@@ -36,6 +36,16 @@ in the release notes, so this file is the only place to write it.
   Linux server we measured did not do this. We ran ten rebuilds in a row on a
   Windows and a Linux server with scripted defender bots, but no real player
   has checked it yet.
+- **Windows servers run on the 2026-10-14 TF2 update.** The update moved the
+  game code SigMod patches, and a SigMod built for the old game refuses to
+  load on the new one. The Windows launcher now installs a SigMod built for TF2
+  11117211. Missions that need SigMod load again.
+- **Windows SigMod servers no longer crash when bots use items or when a
+  mission is cleared.** A bot using an item (a canteen, say) could crash the
+  server, and so could clearing a mission with a thousand robots or more. Both
+  came from game functions the Windows SigMod had not found. We played the
+  missions on a Windows server with scripted defender bots; all but one mission
+  played through, and that one still stops at its first wave.
 
 ## v1.18.1
 
