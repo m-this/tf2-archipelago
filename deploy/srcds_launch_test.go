@@ -75,7 +75,7 @@ func runLaunchWithStuckUpdates(t *testing.T, stuck int) launchRun {
 		"STEAMAPPDIR="+game,
 		"STEAMAPPID=232250",
 		"STEAMAPP=tf",
-		"TF2AP_MMSOURCE_VERSION=1.12.0-git1227",
+		"TF2AP_MMSOURCE_VERSION=2.0.0-git1480",
 		"TF2AP_SOURCEMOD_VERSION=1.12.0-git7255",
 		"SRCDS_MAXPLAYERS=32",
 		"SRCDS_STARTMAP=mvm_decoy",
