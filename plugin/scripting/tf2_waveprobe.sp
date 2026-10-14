@@ -665,14 +665,16 @@ static bool IsScriptedTimerBot(int bot)
 
 // TankExt renames its think entity "tank_boss" so the engine broadcasts a tank
 // spawn: it has no team and no health, and a hit on it kills nothing. A real
-// tank sits on the enemy team with health, and has an edict above the players.
-// The classname alone is not enough, and a created entity has neither yet, so
-// tanks are registered from the tick, not from OnEntityCreated.
+// tank has a team, health, and an edict above the players. The team is the
+// mission's to choose: creepside tanks sit on team 1 and 2, not the enemy team,
+// and the wave waits for them all the same. The classname alone is not enough,
+// and a created entity has neither yet, so tanks are registered from the tick,
+// not from OnEntityCreated.
 static bool IsRealTank(int tank)
 {
     int index = tank < 0 ? EntRefToEntIndex(tank) : tank;
     return index > MaxClients && index <= 2048
-        && GetEntProp(tank, Prop_Send, "m_iTeamNum") == g_EnemyTeam
+        && GetEntProp(tank, Prop_Send, "m_iTeamNum") > 0
         && GetEntProp(tank, Prop_Data, "m_iMaxHealth") > 0;
 }
 
