@@ -128,10 +128,14 @@ apply_patches cbasenpc
 apply_patches actions
 apply_patches ripext
 
-# The tf2 manifest points the linker at lib/linux; the 32-bit libraries it
-# actually links against live in lib/public/linux. CBaseNPC resolves the real
-# path itself, Actions does not.
-[ "$windows" = 1 ] || ln -sfn public/linux "$src/hl2sdk-tf2/lib/linux"
+# The tf2 manifest points the linker at lib/linux (lib/public on Windows); the
+# 32-bit libraries it actually links against live in lib/public/linux
+# (lib/public/x86). CBaseNPC resolves the real path itself, Actions does not.
+if [ "$windows" = 1 ]; then
+	cp "$src"/hl2sdk-tf2/lib/public/x86/*.lib "$src/hl2sdk-tf2/lib/public/"
+else
+	ln -sfn public/linux "$src/hl2sdk-tf2/lib/linux"
+fi
 
 # AMBuild runs from its checkout rather than a pip install: nothing touches
 # the host's Python and nothing unpinned comes from PyPI.
