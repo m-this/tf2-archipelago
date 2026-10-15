@@ -613,7 +613,8 @@ static int Bots_LowestPriorityBot(bool[] leaving)
     for (int client = 1; client <= MaxClients; client++)
     {
         if (leaving[client] || !IsClientInGame(client) || !IsFakeClient(client)
-            || IsClientSourceTV(client) || GetClientTeam(client) != TeamRed)
+            || IsClientSourceTV(client) || GetClientTeam(client) != TeamRed
+            || !Bots_IsDefenderBot(client))
         {
             continue;
         }
@@ -625,6 +626,19 @@ static int Bots_LowestPriorityBot(bool[] leaving)
         }
     }
     return chosen;
+}
+
+// Whether the defender mod answers for this fake client. A robot a mission put
+// on RED (trespasser's military, remedic's Chief Medic) is a fake client on RED
+// too, and it is not a seat anybody can give back: kicking it loses the wave.
+// A mod too old to have the native answers for nobody, so every bot stays one.
+static bool Bots_IsDefenderBot(int client)
+{
+    if (GetFeatureStatus(FeatureType_Native, "Defenderbots_GetSeatRank") != FeatureStatus_Available)
+    {
+        return true;
+    }
+    return Defenderbots_GetSeatRank(client) >= 0;
 }
 
 // How late in line this bot stands when somebody has to leave, as the defender
