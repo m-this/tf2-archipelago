@@ -37,6 +37,7 @@ int g_ExpectedWave;
 int g_ObservedWave;
 int g_Seed;
 int g_Defender;
+char g_DefenderHitBy[64];
 TFClassType g_DefenderClass = TFClass_Scout;
 int g_PlayerTeam = 2;
 int g_EnemyTeam = 3;
@@ -295,7 +296,11 @@ static void EnsureDefender()
     {
         if (!IsClientInGame(g_Defender)) return;
         if (GetClientTeam(g_Defender) != g_PlayerTeam)
+        {
+            LogMessage("WAVEPROBE defender is on team %d, last hit by \"%s\"; putting it back on %d",
+                GetClientTeam(g_Defender), g_DefenderHitBy, g_PlayerTeam);
             ChangeClientTeam(g_Defender, g_PlayerTeam);
+        }
         if (TF2_GetPlayerClass(g_Defender) != g_DefenderClass)
         {
             TF2_SetPlayerClass(g_Defender, g_DefenderClass);
@@ -322,6 +327,10 @@ public Action DefenderDamage(int victim, int &attacker, int &inflictor,
         && IsClientInGame(victim) && GetClientTeam(victim) == g_PlayerTeam
         && (g_ProtectBots || victim == g_Defender))
     {
+        if (victim == g_Defender && attacker > 0 && attacker <= MaxClients && IsClientInGame(attacker))
+        {
+            GetClientName(attacker, g_DefenderHitBy, sizeof(g_DefenderHitBy));
+        }
         return Plugin_Handled;
     }
     return Plugin_Continue;
