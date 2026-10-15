@@ -16,6 +16,11 @@
 #     with the patches in deploy/patches; the Docker image does that in a
 #     stage of its own. See build-extensions.sh.
 #
+#     CBASENPC_WINDOWS_DLL names a Windows CBaseNPC built with those patches
+#     (build-cbasenpc-windows.sh) and replaces the released one. The released
+#     binary keeps the previous map's navigation areas after a changelevel,
+#     and the bots then loop in a nav walk at the next wave start.
+#
 #   - The four SourcePawn plugins are compiled here, always. They are bytecode,
 #     so one build serves both platforms, spcomp takes seconds, and compiling
 #     is what lets us carry the compile fix TF2Attributes needs. Compiling
@@ -273,6 +278,11 @@ else
 		"$work/prebuilt/actions/actions.ext/extensions/actions.ext.2.tf2.so" \
 		"$work/prebuilt/actions/actions.ext/extensions/actions.ext.2.tf2.dll" \
 		"$out/addons/sourcemod/extensions/"
+
+	if [ -n "${CBASENPC_WINDOWS_DLL:-}" ]; then
+		[ -f "$CBASENPC_WINDOWS_DLL" ] || { echo "CBASENPC_WINDOWS_DLL: $CBASENPC_WINDOWS_DLL is not a file" >&2; exit 1; }
+		cp "$CBASENPC_WINDOWS_DLL" "$out/addons/sourcemod/extensions/cbasenpc.ext.2.tf2.dll"
+	fi
 
 	# The Windows zip's gamedata is the same file as the Linux one; either does.
 	cp "$work/prebuilt/cbasenpc-linux/addons/sourcemod/gamedata/cbasenpc.txt" \
