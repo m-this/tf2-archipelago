@@ -64,18 +64,27 @@ new ServerVersion. It lists the pins keyed to the game. Work through it:
 
 - Latest drops: `https://sm.alliedmods.net/smdrop/<branch>/sourcemod-latest-linux`
   and `https://mms.alliedmods.net/mmsdrop/<branch>/mmsource-latest-linux`.
-- Stay on the newest drop of the stable branch. SourceMod 1.13 raises the
+- Stay on the newest drop of the stable branch. SourceMod 1.13 raised the
   extension API to 9 and refuses every extension built for 1.12 ("Extension
-  version is too old to load (8, max is 9)"): SigMod, REST in Pawn, Actions and
-  CBaseNPC all have to be rebuilt first. PR #200 and bead apw-rb0 track it.
+  version is too old to load (8, max is 9)"; the 9 is the minimum it accepts,
+  the message calls it the max). SigMod (both platforms), REST in Pawn, Actions
+  and CBaseNPC are therefore all built against the SourceMod commit of the pin:
+  SigMod by m-this/sigsegv-mvm-win (`sourcemod_ref` input of `main.yml` on
+  `master` and of `windows.yml` on `main`), the other three by
+  `deploy/bots/build-extensions.sh`, which `.github/workflows/extensions.yml`
+  runs on Linux and Windows and the image runs in a stage of its own. Moving
+  the SourceMod commit means the patches under `deploy/patches/` still apply
+  and the Extensions run builds, then both beds with the new bundle.
 - `SOURCEMOD_SRC_COMMIT` is the commit the drop was built from, found from the
   build number in alliedmodders/sourcemod.
 - The bots compile with their own drop (`SOURCEMOD_VERSION` in
   tf2-mvm-bots-go's `plugin/testbed/versions.env`) and require a runtime of at
   least `SOURCEMOD_RUNTIME_MIN`. Bump them together when the runtime moves.
 - REST in Pawn, CBaseNPC, Actions, tf2attributes, TFEconData and tf2utils are
-  built from source by the image, patched from `deploy/patches/`. A bump means
-  the patches still apply; read `deploy/patches/README.md`.
+  built from source, patched from `deploy/patches/`. The first three are
+  extensions (binaries per SourceMod API), the other three are plugins (bytecode:
+  a plugin compiled by an older spcomp still runs on a newer SourceMod). A bump
+  means the patches still apply; read `deploy/patches/README.md`.
 
 ## Upstream SigMod
 

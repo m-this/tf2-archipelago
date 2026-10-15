@@ -1,0 +1,12 @@
+diff --git a/extensions/dhooks/vhook.cpp b/extensions/dhooks/vhook.cpp
+index 2f4074e..4247e29 100644
+--- a/extensions/dhooks/vhook.cpp
++++ b/extensions/dhooks/vhook.cpp
+@@ -250,6 +250,7 @@ DHooksManager::DHooksManager(HookSetup *setup, void *iface, IPluginFunction *rem
+ 	this->callback->post = post;
+ 	this->callback->hookType = setup->hookType;
+ 	this->callback->params = setup->params;
++	this->callback->int64_address = plugincb->GetParentRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE;
+ 
+ 	this->addr = 0;
+ 

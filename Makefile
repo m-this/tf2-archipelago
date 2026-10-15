@@ -498,7 +498,7 @@ bots:
 # from it starts a server with no defender bots and says nothing. $(1) is the
 # suffix the platform's extensions have.
 define require_extensions
-	@for name in actions.ext.2.tf2 cbasenpc.ext.2.tf2 rip.ext; do \
+	@for name in actions.ext.2.tf2 cbasenpc.ext.2.tf2 rip.ext dhooks.ext; do \
 		[ -s "deploy/bots/build/package/addons/sourcemod/extensions/$$name.$(1)" ] || { \
 			echo "missing $$name.$(1) in deploy/bots/build/package; set BOTS_EXTENSIONS_DIR to the bundle .github/workflows/extensions.yml built" >&2; \
 			exit 1; }; \

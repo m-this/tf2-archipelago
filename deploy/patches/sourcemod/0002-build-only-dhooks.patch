@@ -1,0 +1,38 @@
+diff --git a/AMBuildScript b/AMBuildScript
+index 1953def..850cbee 100644
+--- a/AMBuildScript
++++ b/AMBuildScript
+@@ -699,33 +699,9 @@ if getattr(builder.options, 'scripting_only', False):
+   ]
+ else:
+   BuildScripts = [
+-    'loader/AMBuilder',
+-    'core/AMBuilder',
+-    'core/logic/AMBuilder',
+-    'extensions/bintools/AMBuilder',
+-    'extensions/clientprefs/AMBuilder',
+-    'extensions/curl/AMBuilder',
+-    'extensions/cstrike/AMBuilder',
+     'extensions/dhooks/AMBuilder',
+-    'extensions/geoip/AMBuilder',
+-    'extensions/mysql/AMBuilder',
+-    'extensions/pgsql/AMBuilder',
+-    'extensions/regex/AMBuilder',
+-    'extensions/sdkhooks/AMBuilder',
+-    'extensions/sdktools/AMBuilder',
+-    'extensions/sqlite/AMBuilder',
+-    'extensions/tf2/AMBuilder',
+-    'extensions/topmenus/AMBuilder',
+-    'extensions/updater/AMBuilder',
+   ]
+ 
+-  if builder.backend == 'amb2':
+-    BuildScripts += [
+-      'plugins/AMBuilder',
+-      'tools/buildbot/PackageHelpers',
+-      'tools/buildbot/PackageScript',
+-    ]
+-
+ builder.Build(BuildScripts, { 'SM': SM, 'SP': SP })
+ 
+ if builder.options.breakpad_dump:

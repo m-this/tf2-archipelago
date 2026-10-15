@@ -1,5 +1,6 @@
 #!/bin/sh
-# Build CBaseNPC, Actions and REST in Pawn from source into $BOTS_OUT.
+# Build CBaseNPC, Actions, REST in Pawn and a patched DHooks from source into
+# $BOTS_OUT.
 #
 # SourceMod 1.13 raised the extension API to 9 and refuses every extension built
 # for 8, so none of the three can be taken from its release any more: they are
@@ -124,6 +125,7 @@ submodules sourcemod
 submodules cbasenpc
 submodules actions
 
+apply_patches sourcemod
 apply_patches cbasenpc
 apply_patches actions
 apply_patches ripext
@@ -175,6 +177,11 @@ build() {
 build cbasenpc --extension-only
 build actions
 build ripext --enable-optimize
+# SourceMod 1.13.0-git7477 leaves DHooksInfo::int64_address unset on a virtual
+# hook, so a callback's Address `this` is sometimes an int64 passed by reference
+# (a stack address in the plugin) and sometimes a cell. Patched and built here
+# until a drop carries the fix; patch 0002 makes the build produce only dhooks.
+build sourcemod --enable-optimize --no-mysql --disable-auto-versioning
 
 if [ "$windows" = 1 ]; then
 	suffix=dll
@@ -185,6 +192,8 @@ mkdir -p "$out/addons/sourcemod/extensions" "$out/addons/sourcemod/gamedata"
 cp "$src/cbasenpc/build/package/addons/sourcemod/extensions/cbasenpc.ext.2.tf2.$suffix" \
 	"$src/actions/build/package/addons/sourcemod/extensions/actions.ext.2.tf2.$suffix" \
 	"$src/ripext/build/package/addons/sourcemod/extensions/rip.ext.$suffix" \
+	"$out/addons/sourcemod/extensions/"
+cp "$(find "$src/sourcemod/build/extensions/dhooks" -name "dhooks.ext.$suffix" | head -n 1)" \
 	"$out/addons/sourcemod/extensions/"
 cp "$src/cbasenpc/build/package/addons/sourcemod/gamedata/cbasenpc.txt" \
 	"$src/actions/build/package/addons/sourcemod/gamedata/actions.games.txt" \

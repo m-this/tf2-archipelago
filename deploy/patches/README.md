@@ -31,9 +31,11 @@ generated-code check failed on it.
 | `actions/0003-terminate-handle-instead-of-assigning-index.patch` | Only for a from-source build. `CBaseHandle::operator=` takes an `IHandleEntity*`, not an index. |
 | `cbasenpc/0002-build-on-sourcemod-1.13.patch` | SourceMod 1.13 merged `IPluginContext` into `IPluginRuntime`. `FindPluginByContext` takes the context itself now, so `context->GetContext()` is gone; `GetFunctionByNameEx`, which walked `GetPublicsNum`/`GetPublicByIndex` and which nothing calls, is dropped. |
 | `actions/0004-build-on-sourcemod-1.13.patch` | Two headers forward-declare `SourcePawn::IPluginContext` as a class. It is a typedef of `IPluginRuntime` in 1.13, so they include `sp_vm_api.h` instead. |
+| `sourcemod/0001-dhooks-set-int64-address-on-virtual-hooks.patch` | SourceMod 1.13.0-git7477 never sets `DHooksInfo::int64_address` for a virtual hook (`DHooksManager` in `vhook.cpp`; only the detour path does). A callback declared `(Address pThis, ...)` then gets either the pointer or, when the byte happens to be nonzero, the address of an int64 on the plugin's stack, so `view_as<IVision>(pThis).GetBot()` faults in CBaseNPC with a small address. Linux mostly reads zero from fresh pages; a Windows server read garbage on every map start. The extension is built from the pinned SourceMod commit and replaces the drop's `dhooks.ext`. Drop it when a drop carries the fix. |
+| `sourcemod/0002-build-only-dhooks.patch` | Only for `build-extensions.sh`. The root `AMBuildScript` builds every extension, the core and the plugins; this leaves dhooks. |
 | `ripext/0001-build-on-sourcemod-1.13.patch` | `sm_stringhashmap.h` is `sm_hashmap.h` in 1.13, and `StringHashMap` lives in `SourceMod`. `-Werror` is dropped, because the bundled zlib's K&R definitions are an error to clang 15 and later. The package script no longer copies `ca-bundle.crt`, which upstream's CI generates from a download; the image and the launcher keep the release's copy, and only take `rip.ext` from this build. |
 
-Every extension is built from source: SourceMod 1.13 raised the extension API to
+Every extension is built from source, and so is DHooks: SourceMod 1.13 raised the extension API to
 9 and refuses anything built for 8, which is every upstream release of CBaseNPC,
 Actions and REST in Pawn. `build-extensions.sh` builds the three against the
 SourceMod commit `versions.env` pins, on Linux for the Docker image (a stage of

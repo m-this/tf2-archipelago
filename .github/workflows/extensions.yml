@@ -1,6 +1,6 @@
 name: Extensions
 
-# CBaseNPC, Actions and REST in Pawn, built for Linux and Windows against the
+# CBaseNPC, Actions, REST in Pawn and DHooks, built for Linux and Windows against the
 # SourceMod commit versions.env pins. SourceMod 1.13 refuses an extension built
 # for 1.12, and no release of the three is built for 1.13, so a launcher or a
 # bot package cannot take them from upstream any more.
@@ -23,6 +23,7 @@ on:
       - deploy/patches/cbasenpc/**
       - deploy/patches/actions/**
       - deploy/patches/ripext/**
+      - deploy/patches/sourcemod/**
       - deploy/bots/build-extensions.sh
       - .github/workflows/extensions.yml
 
@@ -42,7 +43,7 @@ jobs:
       - id: key
         run: |
           pins=$(grep -E '^(HL2SDK|SOURCEMOD_SRC|METAMOD_SRC|AMBUILD|CBASENPC|ACTIONS|RIPEXT)_' deploy/env/versions.env | sha256sum | cut -c1-16)
-          echo "key=extensions-$pins-${{ hashFiles('deploy/patches/cbasenpc/**', 'deploy/patches/actions/**', 'deploy/patches/ripext/**', 'deploy/bots/build-extensions.sh', 'deploy/Dockerfile.srcds', '.github/workflows/extensions.yml') }}" >> "$GITHUB_OUTPUT"
+          echo "key=extensions-$pins-${{ hashFiles('deploy/patches/cbasenpc/**', 'deploy/patches/actions/**', 'deploy/patches/ripext/**', 'deploy/patches/sourcemod/**', 'deploy/bots/build-extensions.sh', 'deploy/Dockerfile.srcds', '.github/workflows/extensions.yml') }}" >> "$GITHUB_OUTPUT"
       - id: cache
         uses: actions/cache/restore@v6
         with:
@@ -124,7 +125,7 @@ jobs:
           key: ${{ needs.plan.outputs.key }}
       - name: both platforms are there
         run: |
-          for name in actions.ext.2.tf2 cbasenpc.ext.2.tf2 rip.ext; do
+          for name in actions.ext.2.tf2 cbasenpc.ext.2.tf2 rip.ext dhooks.ext; do
             for suffix in so dll; do
               test -s "extensions/addons/sourcemod/extensions/$name.$suffix" || { echo "missing $name.$suffix" >&2; exit 1; }
             done
