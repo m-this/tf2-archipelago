@@ -204,7 +204,7 @@ jobs:
         run: |
           sudo=; [ "$(id -u)" = 0 ] || sudo=sudo
           $sudo apt-get update
-          $sudo apt-get install --yes --no-install-recommends clang gcc-multilib g++-multilib
+          $sudo apt-get install --yes --no-install-recommends python3 clang gcc-multilib g++-multilib
 
       # Proves the remaining patches still apply and the mod still compiles. The
       # image runs the same script, so a break shows up here rather than at a tag.
