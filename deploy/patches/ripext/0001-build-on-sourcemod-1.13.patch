@@ -1,0 +1,36 @@
+diff --git a/PackageScript b/PackageScript
+index 1ce28b1..2d899ca 100644
+--- a/PackageScript
++++ b/PackageScript
+@@ -56,9 +56,6 @@ CopyFiles('pawn/scripting/include/ripext', 'addons/sourcemod/scripting/include/r
+ #  'otherconfig.cfg,
+ #  ]
+ #)
+-CopyFiles(builder.buildPath, 'addons/sourcemod/configs/ripext',
+-  [ 'ca-bundle.crt' ]
+-)
+ 
+ # Copy binaries.
+ for cxx_task in Extension.extensions:
+diff --git a/extension.h b/extension.h
+index f4564fd..aca16c0 100644
+--- a/extension.h
++++ b/extension.h
+@@ -25,7 +25,7 @@
+ #include <string>
+ #include <curl/curl.h>
+ #include <jansson.h>
+-#include <sm_stringhashmap.h>
++#include <sm_hashmap.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <uv.h>
+@@ -36,7 +36,7 @@
+ 
+ extern uv_loop_t *g_Loop;
+ 
+-typedef StringHashMap<std::string> HTTPHeaderMap;
++typedef SourceMod::StringHashMap<std::string> HTTPHeaderMap;
+ 
+ class IHTTPContext
+ {

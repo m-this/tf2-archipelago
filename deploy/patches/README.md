@@ -29,11 +29,17 @@ generated-code check failed on it.
 | `actions/0001-drop-libudis86-and-asm-sources.patch` | Only for a from-source build of the extension. SourceMod removed `public/libudis86` and `public/asm` in commit `e07c120c`; the AMBuilder still lists them. |
 | `actions/0002-do-not-treat-sdk-warnings-as-errors.patch` | Only for a from-source build. `-Werror` against the current hl2sdk fails on `#pragma warning` blocks in `vstdlib/random.h`. |
 | `actions/0003-terminate-handle-instead-of-assigning-index.patch` | Only for a from-source build. `CBaseHandle::operator=` takes an `IHandleEntity*`, not an index. |
+| `cbasenpc/0002-build-on-sourcemod-1.13.patch` | SourceMod 1.13 merged `IPluginContext` into `IPluginRuntime`. `FindPluginByContext` takes the context itself now, so `context->GetContext()` is gone; `GetFunctionByNameEx`, which walked `GetPublicsNum`/`GetPublicByIndex` and which nothing calls, is dropped. |
+| `actions/0004-build-on-sourcemod-1.13.patch` | Two headers forward-declare `SourcePawn::IPluginContext` as a class. It is a typedef of `IPluginRuntime` in 1.13, so they include `sp_vm_api.h` instead. |
+| `ripext/0001-build-on-sourcemod-1.13.patch` | `sm_stringhashmap.h` is `sm_hashmap.h` in 1.13, and `StringHashMap` lives in `SourceMod`. The package script no longer copies `ca-bundle.crt`, which upstream's CI generates from a download; the image and the launcher keep the release's copy, and only take `rip.ext` from this build. |
 
-The CBaseNPC and three Actions patches matter only to
-`build-extensions.sh`, which the Docker image runs in a stage of its own for
-the CBaseNPC map-lifecycle fix and `BOTS_BUILD_EXTENSIONS=1` runs on a laptop.
-The normal build downloads the two extensions from their releases.
+Every extension is built from source: SourceMod 1.13 raised the extension API to
+9 and refuses anything built for 8, which is every upstream release of CBaseNPC,
+Actions and REST in Pawn. `build-extensions.sh` builds the three against the
+SourceMod commit `versions.env` pins, on Linux for the Docker image (a stage of
+its own) and on a Windows runner for the launcher
+(`.github/workflows/extensions.yml`). The CBaseNPC patch that matters at runtime
+is 0001, the map-lifecycle fix.
 
 Two more facts the build depends on, explained in the scripts. The defender
 mod compiles with SourceMod 1.12.0-git7164's `spcomp`, and git7246's segfaults

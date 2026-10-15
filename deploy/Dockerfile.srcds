@@ -60,9 +60,11 @@ RUN CGO_ENABLED=0 go build -trimpath -o /rcon ./launcher/cmd/rcon \
 	&& CGO_ENABLED=0 go build -trimpath -o /sigmodpatch ./launcher/cmd/sigmodpatch
 
 
-# CBaseNPC and Actions, compiled, so the image carries the patches in
-# deploy/patches/cbasenpc. The released CBaseNPC can leave its tools-side
-# navigation cache empty after a changelevel.
+# CBaseNPC, Actions and REST in Pawn, compiled against the pinned SourceMod
+# commit. SourceMod 1.13 refuses extensions built for API 8, which every release
+# of the three is. The image also carries the patches in deploy/patches/cbasenpc:
+# the released CBaseNPC can leave its tools-side navigation cache empty after a
+# changelevel.
 #
 # A minute and a half of fetching and compiling, so this stage sees nothing
 # that does not change its output, and CI keeps its layers between runs. The
@@ -72,7 +74,7 @@ RUN CGO_ENABLED=0 go build -trimpath -o /rcon ./launcher/cmd/rcon \
 FROM debian:stable-slim AS extension-pins
 
 COPY deploy/env/versions.env /versions.env
-RUN grep -E '^(HL2SDK|SOURCEMOD_SRC|METAMOD_SRC|AMBUILD|CBASENPC|ACTIONS)_' \
+RUN grep -E '^(HL2SDK|SOURCEMOD_SRC|METAMOD_SRC|AMBUILD|CBASENPC|ACTIONS|RIPEXT)_' \
 	/versions.env >/extension-pins.env
 
 
@@ -92,6 +94,7 @@ WORKDIR /repo
 COPY --from=extension-pins /extension-pins.env deploy/env/versions.env
 COPY deploy/patches/cbasenpc deploy/patches/cbasenpc
 COPY deploy/patches/actions deploy/patches/actions
+COPY deploy/patches/ripext deploy/patches/ripext
 COPY deploy/bots/build-extensions.sh deploy/bots/build-extensions.sh
 RUN BOTS_OUT=/extensions sh deploy/bots/build-extensions.sh \
 	&& rm -rf deploy/bots/build
@@ -120,11 +123,9 @@ COPY deploy/bots deploy/bots
 # every start, but the package carries it so a server it has never configured
 # still has names rather than six bots called "You forgot to give me a name!".
 COPY launcher/internal/botnames launcher/internal/botnames
-# build.sh stages the released extensions for both platforms. This image is
-# Linux and carries the ones built above instead.
-RUN sh deploy/bots/build.sh \
-	&& rm deploy/bots/build/package/addons/sourcemod/extensions/*.ext.2.tf2.dll
-COPY --from=extensions /extensions/addons deploy/bots/build/package/addons
+# The extensions are the ones built above, so build.sh compiles only the plugins.
+COPY --from=extensions /extensions /extensions
+RUN BOTS_EXTENSIONS_DIR=/extensions sh deploy/bots/build.sh
 
 
 FROM cm2network/tf2:sourcemod
@@ -149,6 +150,7 @@ RUN apt-get update \
 	&& unzip -oq /tmp/ripext.zip -d /tmp/ripext \
 	&& cp -r /tmp/ripext/addons /opt/tf2-archipelago/ \
 	&& rm -rf /opt/tf2-archipelago/addons/sourcemod/scripting \
+	&& rm -rf /opt/tf2-archipelago/addons/sourcemod/extensions \
 	&& rm -rf /tmp/ripext.zip /tmp/ripext \
 	&& mkdir -p /opt/tf2-mods/sigsegv-mvm \
 	&& curl -fsSL -o /tmp/sigsegv.zip \
@@ -178,8 +180,8 @@ COPY --from=bots /repo/deploy/bots/build/package/addons \
 RUN set -eu; \
 	provided="$(ldd --version | head -1 | grep -oE '[0-9]+\.[0-9]+$')"; \
 	[ -n "$provided" ] || { echo "cannot read this image's glibc version" >&2; exit 1; }; \
-	for name in actions cbasenpc; do \
-		file="/opt/tf2-archipelago/addons/sourcemod/extensions/$name.ext.2.tf2.so"; \
+	for name in actions.ext.2.tf2 cbasenpc.ext.2.tf2 rip.ext; do \
+		file="/opt/tf2-archipelago/addons/sourcemod/extensions/$name.so"; \
 		if [ ! -s "$file" ]; then \
 			echo "missing defender-bot extension: $file" >&2; \
 			exit 1; \

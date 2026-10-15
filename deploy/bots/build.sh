@@ -9,12 +9,11 @@
 #
 # Two kinds of artifact, handled differently:
 #
-#   - The two compiled extensions (CBaseNPC, Actions) are downloaded from the
-#     pinned upstream releases, 32-bit for Linux and Windows. TF2's dedicated
-#     server is 32-bit on both. Building them needs a C++ toolchain and several
-#     CPU-minutes. BOTS_BUILD_EXTENSIONS=1 builds them from source instead,
-#     with the patches in deploy/patches; the Docker image does that in a
-#     stage of its own. See build-extensions.sh.
+#   - The compiled extensions (CBaseNPC, Actions, REST in Pawn) are built from
+#     source against the pinned SourceMod commit, with the patches in
+#     deploy/patches: build-extensions.sh, which needs a C++ toolchain and
+#     several CPU-minutes. BOTS_EXTENSIONS_DIR names a tree built elsewhere
+#     instead. The Docker image builds them in a stage of its own.
 #
 #     CBASENPC_WINDOWS_DLL names a Windows CBaseNPC built with those patches
 #     (build-cbasenpc-windows.sh) and replaces the released one. The released
@@ -250,45 +249,25 @@ fi
 
 # --- The extensions ---
 
-if [ "${BOTS_BUILD_EXTENSIONS:-0}" = 1 ]; then
-	BOTS_WORK="$work" BOTS_OUT="$out" sh "$root/deploy/bots/build-extensions.sh"
+# SourceMod 1.13 refuses an extension built for API 8, which is every release of
+# the three, so they are built from source against the pinned SourceMod commit
+# (build-extensions.sh), or taken from a tree that was: BOTS_EXTENSIONS_DIR holds
+# addons/sourcemod/{extensions,gamedata} for one or both platforms. The Docker
+# image builds Linux in a stage of its own and hands the tree over this way, and
+# CI builds Windows on a Windows runner and hands that one over.
+if [ -n "${BOTS_EXTENSIONS_DIR:-}" ]; then
+	[ -d "$BOTS_EXTENSIONS_DIR/addons/sourcemod/extensions" ] || {
+		echo "BOTS_EXTENSIONS_DIR=$BOTS_EXTENSIONS_DIR has no addons/sourcemod/extensions" >&2
+		exit 1
+	}
+	cp -r "$BOTS_EXTENSIONS_DIR/addons/." "$out/addons/"
 else
-	if [ ! -d "$work/prebuilt" ]; then
-		mkdir -p "$work/prebuilt/cbasenpc-linux" "$work/prebuilt/cbasenpc-windows" \
-			"$work/prebuilt/actions"
-
-		echo "fetching CBaseNPC $CBASENPC_VERSION"
-		curl -fsSL "https://github.com/TF2-DMB/CBaseNPC/releases/download/$CBASENPC_VERSION/cbasenpc${CBASENPC_VERSION}_linux.tar.gz" |
-			tar xz -C "$work/prebuilt/cbasenpc-linux"
-		curl -fsSL -o "$work/cbasenpc-windows.zip" \
-			"https://github.com/TF2-DMB/CBaseNPC/releases/download/$CBASENPC_VERSION/cbasenpc${CBASENPC_VERSION}_windows.zip"
-		unzip -oq "$work/cbasenpc-windows.zip" -d "$work/prebuilt/cbasenpc-windows"
-
-		# One zip carries every game and both architectures. TF2 srcds is
-		# 32-bit on Linux and on Windows, so the x64 copies are not taken.
-		echo "fetching Actions $ACTIONS_VERSION"
-		curl -fsSL -o "$work/actions.zip" \
-			"https://github.com/Vinillia/actions.ext/releases/download/$ACTIONS_VERSION/actions.ext.zip"
-		unzip -oq "$work/actions.zip" -d "$work/prebuilt/actions"
-		rm -f "$work/cbasenpc-windows.zip" "$work/actions.zip"
-	fi
-
-	cp "$work/prebuilt/cbasenpc-linux/addons/sourcemod/extensions/cbasenpc.ext.2.tf2.so" \
-		"$work/prebuilt/cbasenpc-windows/addons/sourcemod/extensions/cbasenpc.ext.2.tf2.dll" \
-		"$work/prebuilt/actions/actions.ext/extensions/actions.ext.2.tf2.so" \
-		"$work/prebuilt/actions/actions.ext/extensions/actions.ext.2.tf2.dll" \
-		"$out/addons/sourcemod/extensions/"
+	BOTS_WORK="$work" BOTS_OUT="$out" sh "$root/deploy/bots/build-extensions.sh"
 
 	if [ -n "${CBASENPC_WINDOWS_DLL:-}" ]; then
 		[ -f "$CBASENPC_WINDOWS_DLL" ] || { echo "CBASENPC_WINDOWS_DLL: $CBASENPC_WINDOWS_DLL is not a file" >&2; exit 1; }
 		cp "$CBASENPC_WINDOWS_DLL" "$out/addons/sourcemod/extensions/cbasenpc.ext.2.tf2.dll"
 	fi
-
-	# The Windows zip's gamedata is the same file as the Linux one; either does.
-	cp "$work/prebuilt/cbasenpc-linux/addons/sourcemod/gamedata/cbasenpc.txt" \
-		"$out/addons/sourcemod/gamedata/"
-	cp "$src/actions/sourcemod/gamedata/actions.games.txt" \
-		"$out/addons/sourcemod/gamedata/"
 fi
 
 # --- The plugins ---

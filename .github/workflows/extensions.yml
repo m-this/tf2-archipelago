@@ -1,0 +1,136 @@
+name: Extensions
+
+# CBaseNPC, Actions and REST in Pawn, built for Linux and Windows against the
+# SourceMod commit versions.env pins. SourceMod 1.13 refuses an extension built
+# for 1.12, and no release of the three is built for 1.13, so a launcher or a
+# bot package cannot take them from upstream any more.
+#
+# One artifact, `extensions`: a tree rooted at addons/ holding both platforms.
+# deploy/bots/build.sh takes it as BOTS_EXTENSIONS_DIR. The docker image builds
+# the Linux half again in a stage of its own, from the same script.
+#
+# The result is cached under a key of everything that decides it, so nightly and
+# release runs that change none of it build nothing.
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  # What changes the binaries, so a pull request that moves a pin or a patch
+  # builds them on both platforms before it merges.
+  pull_request:
+    paths:
+      - deploy/env/versions.env
+      - deploy/patches/cbasenpc/**
+      - deploy/patches/actions/**
+      - deploy/patches/ripext/**
+      - deploy/bots/build-extensions.sh
+      - .github/workflows/extensions.yml
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      key: ${{ steps.key.outputs.key }}
+      hit: ${{ steps.cache.outputs.cache-hit }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+      - id: key
+        run: |
+          pins=$(grep -E '^(HL2SDK|SOURCEMOD_SRC|METAMOD_SRC|AMBUILD|CBASENPC|ACTIONS|RIPEXT)_' deploy/env/versions.env | sha256sum | cut -c1-16)
+          echo "key=extensions-$pins-${{ hashFiles('deploy/patches/cbasenpc/**', 'deploy/patches/actions/**', 'deploy/patches/ripext/**', 'deploy/bots/build-extensions.sh', 'deploy/Dockerfile.srcds', '.github/workflows/extensions.yml') }}" >> "$GITHUB_OUTPUT"
+      - id: cache
+        uses: actions/cache/restore@v6
+        with:
+          path: extensions
+          key: ${{ steps.key.outputs.key }}
+          lookup-only: true
+
+  linux:
+    needs: plan
+    if: needs.plan.outputs.hit != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+      # The image's own extensions stage: Debian Bookworm, the release the TF2
+      # image is, so the objects ask for no newer glibc than it has.
+      - name: build
+        run: |
+          docker build --target extensions -f deploy/Dockerfile.srcds -t extensions .
+          id=$(docker create extensions)
+          docker cp "$id:/extensions" linux
+          docker rm "$id"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: extensions-linux
+          path: linux
+          if-no-files-found: error
+
+  windows:
+    needs: plan
+    if: needs.plan.outputs.hit != 'true'
+    runs-on: windows-2022
+    env:
+      # The checkouts are patched, and a patch has LF context: Git for Windows
+      # would turn the files into CRLF.
+      GIT_CONFIG_COUNT: '1'
+      GIT_CONFIG_KEY_0: core.autocrlf
+      GIT_CONFIG_VALUE_0: 'false'
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      # AMBuild finds Visual Studio itself and builds for x86 when asked.
+      - name: build
+        run: BOTS_OUT="$PWD/windows" sh deploy/bots/build-extensions.sh
+      - uses: actions/upload-artifact@v7
+        with:
+          name: extensions-windows
+          path: windows
+          if-no-files-found: error
+
+  bundle:
+    needs: [plan, linux, windows]
+    if: ${{ !failure() && !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - if: needs.plan.outputs.hit != 'true'
+        uses: actions/download-artifact@v8
+        with:
+          pattern: extensions-*
+          path: parts
+      - if: needs.plan.outputs.hit != 'true'
+        name: merge
+        run: |
+          mkdir extensions
+          cp -r parts/extensions-linux/addons extensions/
+          cp -r parts/extensions-windows/addons/. extensions/addons/
+          find extensions -type f | sort
+      - uses: actions/cache@v6
+        with:
+          path: extensions
+          key: ${{ needs.plan.outputs.key }}
+      - name: both platforms are there
+        run: |
+          for name in actions.ext.2.tf2 cbasenpc.ext.2.tf2 rip.ext; do
+            for suffix in so dll; do
+              test -s "extensions/addons/sourcemod/extensions/$name.$suffix" || { echo "missing $name.$suffix" >&2; exit 1; }
+            done
+          done
+      - uses: actions/upload-artifact@v7
+        with:
+          name: extensions
+          path: extensions
+          if-no-files-found: error

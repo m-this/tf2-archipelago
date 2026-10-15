@@ -1,5 +1,10 @@
 #!/bin/sh
-# Build CBaseNPC and Actions from source, for Linux, into $BOTS_OUT.
+# Build CBaseNPC, Actions and REST in Pawn from source into $BOTS_OUT.
+#
+# SourceMod 1.13 raised the extension API to 9 and refuses every extension built
+# for 8, so none of the three can be taken from its release any more: they are
+# rebuilt against the SourceMod commit versions.env pins. A release of any of
+# them is only usable again once it is built against 1.13 itself.
 #
 # The Docker image takes this path so it carries the patches in
 # deploy/patches/cbasenpc. `make bots-from-source` takes it on a laptop, which
@@ -10,13 +15,21 @@
 # so one commit of this repository builds one binary and a cache keyed on these
 # inputs cannot hold a stale one. Submodules follow from their parent's commit.
 #
-# Linux only: the Windows .dll needs MSVC. Needs git, python3, clang and a
-# 32-bit toolchain (gcc-multilib g++-multilib). TF2's dedicated server is
-# 32-bit, and CBaseNPC has no 64-bit build at all.
+# On Linux it needs git, python3, clang and a 32-bit toolchain (gcc-multilib
+# g++-multilib). On a Windows runner it needs git, Python and MSVC's x86
+# environment already set up, and writes the .dll files. TF2's dedicated server
+# is 32-bit, and CBaseNPC has no 64-bit build at all.
 set -eu
 
 root=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 . "$root/deploy/env/versions.env"
+
+case $(uname -s) in
+MINGW* | MSYS* | CYGWIN*) windows=1 ;;
+*) windows=0 ;;
+esac
+python=${PYTHON:-python3}
+[ "$windows" = 1 ] && python=${PYTHON:-python}
 
 work=${BOTS_WORK:-$root/deploy/bots/build}
 out=${BOTS_OUT:-$work/package}
@@ -90,15 +103,22 @@ apply_patches() {
 
 tag_is TF2-DMB/CBaseNPC "$CBASENPC_VERSION" "$CBASENPC_COMMIT"
 tag_is Vinillia/actions.ext "$ACTIONS_VERSION" "$ACTIONS_COMMIT"
+tag_is ErikMinekus/sm-ripext "$RIPEXT_VERSION" "$RIPEXT_COMMIT"
 
 # The SDK is 633 MB checked out whole and the build reads four directories of
 # it. game/server is one of them: enginecallback.h lives there.
-checkout alliedmodders/hl2sdk "$HL2SDK_COMMIT" hl2sdk-tf2 public game common lib/public/linux
+if [ "$windows" = 1 ]; then
+	sdk_libs=lib/public
+else
+	sdk_libs=lib/public/linux
+fi
+checkout alliedmodders/hl2sdk "$HL2SDK_COMMIT" hl2sdk-tf2 public game common $sdk_libs
 checkout alliedmodders/sourcemod "$SOURCEMOD_SRC_COMMIT" sourcemod
 checkout alliedmodders/metamod-source "$METAMOD_SRC_COMMIT" metamod
 checkout alliedmodders/ambuild "$AMBUILD_COMMIT" ambuild
 checkout TF2-DMB/CBaseNPC "$CBASENPC_COMMIT" cbasenpc
 checkout Vinillia/actions.ext "$ACTIONS_COMMIT" actions
+checkout ErikMinekus/sm-ripext "$RIPEXT_COMMIT" ripext
 
 submodules sourcemod
 submodules cbasenpc
@@ -106,19 +126,24 @@ submodules actions
 
 apply_patches cbasenpc
 apply_patches actions
+apply_patches ripext
 
 # The tf2 manifest points the linker at lib/linux; the 32-bit libraries it
 # actually links against live in lib/public/linux. CBaseNPC resolves the real
 # path itself, Actions does not.
-ln -sfn public/linux "$src/hl2sdk-tf2/lib/linux"
+[ "$windows" = 1 ] || ln -sfn public/linux "$src/hl2sdk-tf2/lib/linux"
 
 # AMBuild runs from its checkout rather than a pip install: nothing touches
 # the host's Python and nothing unpinned comes from PyPI.
-export PYTHONPATH="$src/ambuild" PATH="$src/ambuild/scripts:$PATH"
+if [ "$windows" = 1 ]; then
+	export PYTHONPATH=$(cygpath -w "$src/ambuild")
+else
+	export PYTHONPATH="$src/ambuild" PATH="$src/ambuild/scripts:$PATH"
+fi
 
 # clang, not gcc: Actions declares a __cdecl function-pointer alias in a
 # template that gcc rejects outright.
-export CC=clang CXX=clang++
+[ "$windows" = 1 ] || export CC=clang CXX=clang++
 
 # $1 directory under $src, then extra configure arguments.
 build() {
@@ -133,22 +158,29 @@ build() {
 	export SOURCE_DATE_EPOCH
 	# One && chain: set -e does not apply inside the left side of an ||.
 	(cd "$build" &&
-		python3 ../configure.py --hl2sdk-root "$src" --mms-path "$src/metamod" \
+		"$python" ../configure.py --hl2sdk-root "$src" --mms-path "$src/metamod" \
 			--sm-path "$src/sourcemod" --sdks tf2 --targets x86 "$@" &&
-		python3 -c 'from ambuild2.run import cli_run; cli_run()') >"$src/$name.log" 2>&1 || {
+		"$python" -c 'from ambuild2.run import cli_run; cli_run()') >"$src/$name.log" 2>&1 || {
 		cat "$src/$name.log" >&2
 		exit 1
 	}
 }
 
-# --extension-only: the bundled example plugin does not compile with a 1.12
-# compiler, and nothing here ships it.
+# --extension-only: the bundled example plugin is not shipped, and its plugin
+# build needs a compiler this one does not.
 build cbasenpc --extension-only
 build actions
+build ripext --enable-optimize
 
+if [ "$windows" = 1 ]; then
+	suffix=dll
+else
+	suffix=so
+fi
 mkdir -p "$out/addons/sourcemod/extensions" "$out/addons/sourcemod/gamedata"
-cp "$src/cbasenpc/build/package/addons/sourcemod/extensions/cbasenpc.ext.2.tf2.so" \
-	"$src/actions/build/package/addons/sourcemod/extensions/actions.ext.2.tf2.so" \
+cp "$src/cbasenpc/build/package/addons/sourcemod/extensions/cbasenpc.ext.2.tf2.$suffix" \
+	"$src/actions/build/package/addons/sourcemod/extensions/actions.ext.2.tf2.$suffix" \
+	"$src/ripext/build/package/addons/sourcemod/extensions/rip.ext.$suffix" \
 	"$out/addons/sourcemod/extensions/"
 cp "$src/cbasenpc/build/package/addons/sourcemod/gamedata/cbasenpc.txt" \
 	"$src/actions/build/package/addons/sourcemod/gamedata/actions.games.txt" \

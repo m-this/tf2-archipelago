@@ -95,7 +95,7 @@ GO_SRC := $$(find . -type f -name '*.go' -not -path './deploy/bots/build/*' -not
 .PHONY: help seed up down restart logs ps rcon winbed community-catalog community-check \
         check fmt fmt-check vet lint lint-fix fix-check vuln compile test \
         test-fast export apworld-lint \
-		apworld-fmt apworld-test apworld-build apworld-package plugin bots bots-from-source bots-gate \
+		apworld-fmt apworld-test apworld-build apworld-package plugin bots bots-gate \
         integration build docs \
         docs-build docs-down dist compose-release version-check clean \
         go-version-check \
@@ -484,17 +484,26 @@ plugin:
 # --- The defender bots ---
 
 # Stages the MvM bot stack into deploy/bots/build/package: four plugins
-# compiled from patched source, two extensions from the pinned upstream
-# releases for both Linux and Windows. The image runs this in its own stage;
-# this target is for looking at what it produces.
+# compiled from patched source and the three extensions (CBaseNPC, Actions, REST
+# in Pawn) built against the pinned SourceMod commit. SourceMod 1.13 refuses an
+# extension built for 1.12, so there is nothing to download any more. Here the
+# extensions are built for Linux and need clang and a 32-bit toolchain; the
+# Windows ones come from a Windows runner (.github/workflows/extensions.yml),
+# and BOTS_EXTENSIONS_DIR names a tree holding those, or both platforms, to use
+# instead of building. The image runs the same script in a stage of its own.
 bots:
 	./deploy/bots/build.sh
 
-# The same, but compiling the two extensions here instead of downloading them,
-# with the patches in deploy/patches, as the image does. Needs clang and a
-# 32-bit toolchain, and Linux.
-bots-from-source:
-	BOTS_BUILD_EXTENSIONS=1 ./deploy/bots/build.sh
+# The staged tree has to carry the platform's extensions, or the launcher built
+# from it starts a server with no defender bots and says nothing. $(1) is the
+# suffix the platform's extensions have.
+define require_extensions
+	@for name in actions.ext.2.tf2 cbasenpc.ext.2.tf2 rip.ext; do \
+		[ -s "deploy/bots/build/package/addons/sourcemod/extensions/$$name.$(1)" ] || { \
+			echo "missing $$name.$(1) in deploy/bots/build/package; set BOTS_EXTENSIONS_DIR to the bundle .github/workflows/extensions.yml built" >&2; \
+			exit 1; }; \
+	done
+endef
 
 # The defender bots' release gate: every wave of every mission the game volume
 # holds, with and without Bot Surge, fails on a bot that stays in spawn or
@@ -546,12 +555,14 @@ launcher-assets-common: plugin bots apworld-package
 # One platform's binaries per build: SourceMod loads the .so or the .dll by
 # platform and ignores the other, so each launcher carries only its own.
 launcher-assets: launcher-assets-common
+	$(call require_extensions,dll)
 	go run ./launcher/cmd/packagezip tree deploy/bots/build/package \
 		$(EMBED)/defender-bots-windows.zip --exclude-suffix .so
 	curl -fsSL -o $(EMBED)/sm-ripext-windows.zip \
 		"https://github.com/ErikMinekus/sm-ripext/releases/download/$(RIPEXT_VERSION)/sm-ripext-$(RIPEXT_VERSION)-windows.zip"
 
 launcher-assets-linux: launcher-assets-common
+	$(call require_extensions,so)
 	go run ./launcher/cmd/packagezip tree deploy/bots/build/package \
 		$(EMBED)/defender-bots-linux.zip --exclude-suffix .dll
 	curl -fsSL -o $(EMBED)/sm-ripext-linux.zip \

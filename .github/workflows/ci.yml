@@ -185,8 +185,8 @@ jobs:
       - name: spcomp
         run: make plugin
 
-      # The bot stack is downloads plus four spcomp runs, so the cache is what
-      # keeps it cheap: the pins and the patches are the only things that
+      # The bot stack is three extension builds plus four spcomp runs, so the cache is
+      # what keeps it cheap: the pins and the patches are the only things that
       # change what it produces, and all of them are hashed into the key.
       #
       # go.mod and go.sum are in there because the mod's generated SourcePawn is
@@ -197,6 +197,14 @@ jobs:
         with:
           path: deploy/bots/build
           key: bots-${{ hashFiles('deploy/env/versions.env', 'deploy/patches/**', 'deploy/bots/*.sh', 'go.mod', 'go.sum') }}
+
+      # The extensions are built from source against SourceMod 1.13's headers,
+      # for 32-bit Linux.
+      - name: extension toolchain
+        run: |
+          sudo=; [ "$(id -u)" = 0 ] || sudo=sudo
+          $sudo apt-get update
+          $sudo apt-get install --yes --no-install-recommends clang gcc-multilib g++-multilib
 
       # Proves the remaining patches still apply and the mod still compiles. The
       # image runs the same script, so a break shows up here rather than at a tag.

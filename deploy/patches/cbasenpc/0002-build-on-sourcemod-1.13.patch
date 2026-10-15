@@ -1,0 +1,66 @@
+diff --git a/extension/helpers.cpp b/extension/helpers.cpp
+index 2c777c7..f6ff0cf 100644
+--- a/extension/helpers.cpp
++++ b/extension/helpers.cpp
+@@ -5,23 +5,6 @@ extern IServerTools *servertools;
+ 
+ int nothing;
+ 
+-IPluginFunction *GetFunctionByNameEx(IPluginContext *pContext, const char *name)
+-{
+-	IPluginRuntime *pRuntime = pContext->GetRuntime();
+-	for(uint32_t i = 0; i < pRuntime->GetPublicsNum(); i++)
+-	{
+-		sp_public_t *pub = nullptr;
+-		if(pRuntime->GetPublicByIndex(i, &pub) == SP_ERROR_NONE)
+-		{
+-			if(strstr(pub->name, name) != nullptr)
+-			{
+-				return pRuntime->GetFunctionById(pub->funcid);
+-			}
+-		}
+-	}
+-	return nullptr;
+-}
+-
+ void MatrixToPawnMatrix(IPluginContext* context, cell_t* matAddr, const matrix3x4_t& mat)
+ {
+ 	for ( int r = 0; r < 3; r++ )
+diff --git a/extension/helpers.h b/extension/helpers.h
+index d4b7e0b..310ee35 100644
+--- a/extension/helpers.h
++++ b/extension/helpers.h
+@@ -174,7 +174,6 @@ void PawnMatrixToMatrix(IPluginContext* context, cell_t* matAddr, matrix3x4_t& m
+ 
+ const char *HandleErrorToString(HandleError err);
+ 
+-IPluginFunction *GetFunctionByNameEx(IPluginContext *pContext, const char *name);
+ 
+ string_t AllocPooledString(const char *pszValue);
+ 
+diff --git a/extension/natives/entityfactory.cpp b/extension/natives/entityfactory.cpp
+index c153fc2..7021d15 100644
+--- a/extension/natives/entityfactory.cpp
++++ b/extension/natives/entityfactory.cpp
+@@ -38,7 +38,7 @@ cell_t CPluginEntityFactory_Ctor(IPluginContext * context, const cell_t * params
+ 		return context->ThrowNativeError("Entity factory must have a classname");
+ 	}
+ 
+-	IPlugin* plugin = plsys->FindPluginByContext( context->GetContext() );
++	IPlugin* plugin = plsys->FindPluginByContext(context);
+ 	IPluginFunction *postConstructor = context->GetFunctionById(params[2]);
+ 	IPluginFunction *onRemove = context->GetFunctionById(params[3]);
+ 
+diff --git a/extension/natives/nextbot/behavior.cpp b/extension/natives/nextbot/behavior.cpp
+index 707dcc9..2ee76d6 100644
+--- a/extension/natives/nextbot/behavior.cpp
++++ b/extension/natives/nextbot/behavior.cpp
+@@ -39,7 +39,7 @@ cell_t NextBotActionFactory_Ctor(IPluginContext* context, const cell_t* params)
+ 		return context->ThrowNativeError("Action must have a name");
+ 	}
+ 	
+-	IPlugin* plugin = plsys->FindPluginByContext(context->GetContext());
++	IPlugin* plugin = plsys->FindPluginByContext(context);
+ 	CBaseNPCPluginActionFactory* factory = new CBaseNPCPluginActionFactory(plugin, name);
+ 	return factory->m_Handle;
+ }
