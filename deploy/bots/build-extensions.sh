@@ -162,10 +162,13 @@ build() {
 	# same pins on another day is the same binary.
 	SOURCE_DATE_EPOCH=$(git -C "$src/$name" log -1 --format=%ct)
 	export SOURCE_DATE_EPOCH
+	# SourceMod is the tree the others are built against, and has no --sm-path.
+	sm_path="--sm-path $src/sourcemod"
+	[ "$name" = sourcemod ] && sm_path=
 	# One && chain: set -e does not apply inside the left side of an ||.
 	(cd "$build" &&
 		"$python" ../configure.py --hl2sdk-root "$src" --mms-path "$src/metamod" \
-			--sm-path "$src/sourcemod" --sdks tf2 --targets x86 "$@" &&
+			$sm_path --sdks tf2 --targets x86 "$@" &&
 		"$python" -c 'from ambuild2.run import cli_run; cli_run()') >"$src/$name.log" 2>&1 || {
 		cat "$src/$name.log" >&2
 		exit 1
