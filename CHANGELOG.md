@@ -26,6 +26,13 @@ in the release notes, so this file is the only place to write it.
 
 ### Fixed
 
+- **Windows SigMod servers play every community mission to the end.** The
+  test servers now clear all 532 waves of the SigMod community missions.
+- **Spy stabs alert nearby robots** on Linux SigMod servers.
+- **The Your Eternal Reward unnerf works again on Linux.** The last TF2 update
+  had broken it.
+- **More SigMod mods work on Windows servers:** 254 of the 309 mods now load
+  in full.
 - **Caliginous Caper wave 666 no longer ends when the 64 Spies die.** Valve
   lists the tanks that wait for the Spies ahead of them, and the game ends the
   wave on the tick the last Spy dies, before the tanks, the crit robots and the
