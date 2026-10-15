@@ -870,6 +870,22 @@ static void RefreshAwaitedAllies(float now)
     }
 }
 
+// Trespasser's Plague Zombie infects the player it hits through an attribute
+// that runs fire-input-on-hit although the damage hook cancels the damage, and
+// Bonk! does not stop it on a fake client. With the probe's player alone on RED
+// the infection ends the wave as a loss at once, as no real player would
+// allow. The hit fires transform_relay, so a disabled relay ignores it.
+static void DisableInfection()
+{
+    char name[32];
+    int relay = -1;
+    while ((relay = FindEntityByClassname(relay, "logic_relay")) != -1)
+    {
+        GetEntPropString(relay, Prop_Data, "m_iName", name, sizeof(name));
+        if (StrEqual(name, "transform_relay")) AcceptEntityInput(relay, "Disable");
+    }
+}
+
 public Action Timer_Probe(Handle timer)
 {
     if (g_Defender > 0) EnsureDefender();
@@ -883,6 +899,7 @@ public Action Timer_Probe(Handle timer)
     {
         TF2_RespawnPlayer(g_Defender);
     }
+    if (g_State == Probe_Running) DisableInfection();
     SampleDefenders();
     if (g_State != Probe_Running)
     {
