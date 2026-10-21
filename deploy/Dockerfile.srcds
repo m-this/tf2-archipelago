@@ -35,7 +35,7 @@ RUN ./build.sh
 # The tree is listed rather than taken whole because the launcher's embedded
 # assets are .dockerignored: a COPY of everything would not compile. A test in
 # deploy keeps this list and what the two commands import in step.
-FROM golang:1.27 AS tools
+FROM golang:1.27.3 AS tools
 
 WORKDIR /repo
 COPY go.mod go.sum ./
@@ -113,7 +113,7 @@ RUN BOTS_OUT=/extensions sh deploy/bots/build-extensions.sh \
 # the native extensions on Bookworm, the same Debian release as the TF2 image
 # below: binaries built on the default Go image require a newer glibc and
 # SourceMod cannot load them in the server.
-FROM golang:1.27-bookworm AS bots
+FROM golang:1.27.3-bookworm AS bots
 
 RUN apt-get update \
 	&& apt-get install --yes --no-install-recommends git curl ca-certificates unzip \

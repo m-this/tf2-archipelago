@@ -80,7 +80,7 @@ func TestTheBotsStageCopiesWhatItsScriptReads(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	stage := between(t, string(dockerfile), "FROM golang:1.27-bookworm AS bots", "\nFROM ")
+	stage := between(t, string(dockerfile), "FROM golang:1.27.3-bookworm AS bots", "\nFROM ")
 
 	script, err := os.ReadFile("bots/build.sh")
 	if err != nil {
