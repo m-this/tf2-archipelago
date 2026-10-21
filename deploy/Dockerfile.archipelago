@@ -9,7 +9,7 @@
 # The player file writer is Go, built here so the runtime image carries one
 # static binary and no Go. It is the launcher's own renderer behind the MVM_*
 # environment, so the container and the exe write the same file.
-FROM golang:1.27 AS playeryaml
+FROM golang:1.27.3 AS playeryaml
 WORKDIR /src
 COPY go.mod go.sum ./
 COPY gamedata gamedata
