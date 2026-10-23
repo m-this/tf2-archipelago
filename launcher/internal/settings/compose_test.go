@@ -94,8 +94,6 @@ func TestEveryVariableOutsideTheContainersSaysWhy(t *testing.T) {
 		"SRCDS_BOT_TEAM_PRESETS":      "teams kept by the admin page, not played",
 		"SRCDS_BOT_CARD_ROLLS":        "read by the admin page's live bot view",
 		"BRIDGE_METRICS_PORT":         "compose interpolates it into the port and BRIDGE_METRICS_LISTEN",
-		"SRCDS_BLU_HEALTH_PCT":        "deploy/srcds-entrypoint.sh does not apply it yet",
-		"SRCDS_MOD_LOADING":           "deploy/srcds-entrypoint.sh does not apply it yet",
 	}
 	for _, v := range EnvVars {
 		_, listed := launcherOnly[v.Name]

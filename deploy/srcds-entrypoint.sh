@@ -96,10 +96,11 @@ reload_admin_cache() {
 	echo "[AP] wrote the admin list, but SourceMod did not answer sm_reloadadmins" >&2
 }
 
-# BOT_FILES renders the bots' loadout file; bot_custom_loadouts is what it said
-# the mod should do with it, read by install_server_cfg below.
+# BOT_FILES renders the bots' loadout file. PROVISION decides server.cfg, the
+# command line and the mods loaded, with the launcher's own Go: the image and
+# the launcher used to write each their own, and the two drifted both ways.
 BOT_FILES=${TF2AP_BOT_FILES:-/usr/local/bin/tf2ap-botfiles}
-bot_custom_loadouts=0
+PROVISION=${TF2AP_PROVISION:-/usr/local/bin/tf2ap-provision}
 
 # install_bot_files writes what the bots carry, from the SRCDS_BOT_* variables.
 #
@@ -113,15 +114,7 @@ bot_custom_loadouts=0
 # update to move an index would move only one of the two.
 install_bot_files() {
 	[ -x "$BOT_FILES" ] || return 0
-	said=$("$BOT_FILES" -root "$STAGE") || {
-		echo "[AP] could not write the bots' loadout file" >&2
-		return 0
-	}
-	bot_custom_loadouts=$(printf '%s' "$said" | tail -n 1)
-	case $bot_custom_loadouts in
-	0 | 1) ;;
-	*) bot_custom_loadouts=0 ;;
-	esac
+	"$BOT_FILES" -root "$STAGE" >/dev/null || echo "[AP] could not write the bots' loadout file" >&2
 }
 
 # SourceMod identifies an admin by Steam id, so the operator's list is the whole
@@ -182,194 +175,39 @@ sync_tree() {
 	done
 }
 
-# Server mods a community mission can require, by the keys community.json
-# uses, from SRCDS_MODS. Each one the image stages is a tree shaped like tf/
-# under $MODS/<key>. A key nothing was staged for is a line in the log, and
-# the seed generated with server_mods naming it will not find its missions.
+# The server mods this run loads, as provision decides them from SRCDS_MODS,
+# SRCDS_MOD_LOADING and the mission pool. Each one the image stages is a tree
+# shaped like tf/ under $MODS/<key>.
 install_mods() {
 	# SourceMod loads an extension because a file named after it sits beside
-	# it, and sync_tree only ever adds. So a mod taken out of SRCDS_MODS went
-	# on loading from the volume it was once synced into, and there was no way
-	# to stop it short of deleting the volume. Take the marker away first, then
-	# put it back for the mods that are still named.
+	# it, and sync_tree only ever adds. So a mod taken out of the run went on
+	# loading from the volume it was once synced into. Take the marker away
+	# first, then put it back for the mods this run loads.
 	rm -f "$GAME/addons/sourcemod/extensions/sigsegv.autoload"
 
-	[ -n "${SRCDS_MODS:-}" ] || return 0
-	for key in $(printf '%s' "${SRCDS_MODS}" | tr ',' ' '); do
+	mods=$("$PROVISION" mods) || return 1
+	for key in $mods; do
 		if [ ! -d "$MODS/$key" ]; then
-			echo "[AP] SRCDS_MODS names $key, which this image does not carry"
+			echo "[AP] the run loads $key, which this image does not carry"
 			continue
 		fi
 		sync_tree "$MODS/$key" "$GAME"
-		if [ "$key" = sigsegv-mvm ]; then
-			# SigMod's stock setting counts RED defender TFBots toward the
-			# invader limit and kicks them first when a wave fills it. The
-			# defender manager then adds one back every second. Keep the
-			# robot limit for BLU, but leave RED to its own team-size limit.
-			convars="$GAME/cfg/sigsegv_convars.cfg"
-			if [ -f "$convars" ] && grep -Eq '^sig_mvm_robot_limit_fix_red[[:space:]]+"1"' "$convars"; then
-				sed -i 's/^sig_mvm_robot_limit_fix_red[[:space:]]*"1"/sig_mvm_robot_limit_fix_red "0"/' "$convars"
-			fi
-		fi
 	done
 }
 
 # The game ships a sample server.cfg that sets "rcon_password changeme", and
 # server.cfg runs on map load, after the command line. So the password the
-# operator set is replaced by a published default on the first map, on a port
-# that is open to the network. That is the whole reason this file is generated
-# rather than left alone.
-#
-# It also owns the handful of settings the stack really cares about, so nothing
-# else has to be true about a file the game wrote.
+# operator set would be replaced by a published default on the first map. That
+# is the whole reason the file is generated rather than left alone. provision
+# also turns SigMod's RED robot limit off in the convar file SigMod ships, so
+# it runs after install_mods has synced that file.
 install_server_cfg() {
-	target="$GAME/cfg/server.cfg"
-	[ -d "$(dirname "$target")" ] || return 0
-
-	if [ "${SRCDS_BOTS:-1}" = 0 ]; then
-		bots_mode=0
-	else
-		bots_mode=2
-	fi
-
-	download_url="${SRCDS_DOWNLOADURL:-}"
-	if [ -z "$download_url" ] && [ -n "${FASTDL_HOST:-}" ]; then
-		download_url="http://${FASTDL_HOST}:${FASTDL_PORT:-27080}/tf"
-	fi
-	download_cfg=""
-	if [ -n "$download_url" ]; then
-		download_cfg="sv_downloadurl \"${download_url}\""
-	fi
-	sigmod_red_limit_cfg=""
-	case " $(printf '%s' "${SRCDS_MODS:-}" | tr ',' ' ') " in
-	*' sigsegv-mvm '*) sigmod_red_limit_cfg="// SigMod's RED robot-limit fix treats defender TFBots as invaders and
-// repeatedly kicks the last defender during crowded waves. Its BLU
-// robot limit remains enabled.
-sig_mvm_robot_limit_fix_red 0" ;;
-	esac
-
-	staged=$(mktemp)
-	cat >"$staged" <<-CFG
-	// Managed by the tf2-archipelago image. Edits here are replaced the next
-	// time the container starts.
-	//
-	// Generated because the game's own sample sets rcon_password to a
-	// published default, and this file runs after the command line that set
-	// the real one.
-	hostname "${SRCDS_HOSTNAME:-Mann vs Archipelago}"
-	rcon_password "${SRCDS_RCONPW}"
-	sv_password "${SRCDS_PW:-}"
-
-	// Mann vs Machine needs 32 slots to host at all and puts six players on
-	// RED, which is the number worth advertising.
-	sv_visiblemaxplayers 6
-
-	// A wave starts when enough players have readied up, and one is enough
-	// here. A private server is a handful of friends, so one of them arriving
-	// late is not a reason for the evening to stall, and it is what lets one
-	// player start a wave alone.
-	tf_mvm_min_players_to_start 1
-	${sigmod_red_limit_cfg}
-
-	// Team Fortress 2 moves an idle player to spectator after
-	// mp_idlemaxtime minutes. On a public server that frees a slot; here it
-	// takes a friend off RED, the bots fill the seat, and the game then
-	// refuses them back on a full team. Nobody wants their own seat given
-	// away for stepping out to the kitchen.
-	mp_idlemaxtime 0
-	mp_idledealmethod 0
-
-	// The defender bots. Valve tunes every wave for six players on RED, so a
-	// run with fewer than that is unwinnable without them.
-	//
-	// Mode 2 is AUTO_BOTS: the mod fills RED when mvm_begin_wave fires and
-	// tops it back up every second for the rest of the wave. Mode 0 leaves the
-	// bots to an admin's !addbots, which is what SRCDS_BOTS=0 means here: the
-	// plugins stay loaded, nothing spawns on its own.
-	//
-	// min_players -1 disables the mod's own ready-up gate. It defaults to 3
-	// and counts RED before the wave, where a solo player has no bots yet, so
-	// leaving it on blocks the F4 that would have spawned them.
-	sm_redbots_manager_mode ${bots_mode}
-	sm_redbots_manager_defender_team_size ${SRCDS_BOT_TEAM_SIZE:-6}
-	sm_redbots_manager_min_players -1
-	// Keep the bots between waves. The mod's default kicks every bot inside
-	// the mvm_wave_complete handler and respawns a fresh set at the next
-	// wave: five KickClient calls in the middle of the wave-end sequence.
-	// With the default, the game server froze at wave clear and the player
-	// lost the connection. With this, it has not. Nothing on a private
-	// server wants the reroll anyway.
-	sm_redbots_manager_kick_bots 0
-	// Classes the bots never play, and the classes they fill RED with, in
-	// order. A team named in the second beats the first.
-	sm_redbots_manager_class_blacklist "${SRCDS_BOT_CLASS_BLACKLIST:-}"
-	sm_redbots_manager_team_composition "${SRCDS_BOT_TEAM_COMP:-}"
-	// Whether the bots are handed what configs/defenderbots/loadout.cfg says.
-	// The image ships an example file there, so this is the whole of the
-	// question: 1 only when the settings named a loadout for a seat or a class.
-	sm_redbots_manager_use_custom_loadouts ${bot_custom_loadouts}
-	// What the bots look like, none of which changes how they play: a hat
-	// each, and an unusual effect on that hat.
-	sm_redbots_manager_bot_hats ${SRCDS_BOT_HATS:-1}
-	// Every bot buys its upgrades where it stands instead of walking to a
-	// station. 0 is how the mod has always played.
-	sm_redbots_manager_bot_buy_anywhere ${SRCDS_BOT_BUY_ANYWHERE:-0}
-	sm_redbots_manager_bot_hat_effects ${SRCDS_BOT_HAT_EFFECTS:-0}
-
-	// The mission the run starts on, how long a cleared mission stays on
-	// the scoreboard before the next one loads, and whether the bots'
-	// purchases reach the chat.
-	tf2ap_start_mission "${SRCDS_START_MISSION:-}"
-	tf2ap_next_mission_delay ${TF2AP_NEXT_MISSION_DELAY:-30}
-	tf2ap_bot_upgrades_chat ${TF2AP_BOT_UPGRADES_CHAT:-0}
-
-	// LAN mode skips Steam authentication, and refuses everyone who is not on
-	// the local network. On is the default, because the default has no
-	// SRCDS_TOKEN, and a server with no Steam session refuses every client
-	// that tries to join: LAN mode off without a token is the one combination
-	// that cannot work, and it fails as a join that hangs rather than as an
-	// error anybody can read.
-	//
-	// Turning it off is a deliberate pair with a real token. Do both.
-	sv_lan ${SRCDS_LAN:-1}
-	sv_use_steam_networking ${SRCDS_SDR_FAKEIP:-0}
-	sv_pure 0
-	sv_pausable 0
-	setpause 0
-
-	// Maps and other content come from this address over HTTP, when the
-	// stack has one to give: the fastdl service at FASTDL_HOST, or the
-	// operator's own SRCDS_DOWNLOADURL. The game server's own transfer can
-	// reach the end of a large packed BSP without the client accepting it,
-	// which restarts the download forever.
-	${download_cfg}
-	// A stock server refuses direct downloads larger than 16 MB. Potato maps
-	// such as Autumnull fit under Source's 64 MB direct-download cap. Kept on
-	// so a client that cannot reach sv_downloadurl still gets the map here.
-	sv_allowdownload 1
-	// Client uploads carry sprays and other player customization.
-	sv_allowupload 1
-	net_maxfilesize 64
-
-	// Long enough to stop a scan, short enough that fat-fingering the password
-	// does not lock the operator out for a day.
-	sv_rcon_banpenalty 15
-	sv_rcon_maxfailures 10
-	sv_rcon_log 1
-
-	exec banned_user.cfg
-	exec banned_ip.cfg
-	CFG
-
-	if cmp -s "$staged" "$target"; then
-		rm -f "$staged"
-		return 0
-	fi
-	mv "$staged" "$target"
-	chmod 0644 "$target"
+	[ -d "$GAME/cfg" ] || return 0
+	said=$("$PROVISION" install "$GAME") || return 1
+	[ "$said" = changed ] || return 0
 	echo "[AP] wrote server.cfg, rcon password from the environment"
 	if [ "${TAILSCALE_FASTDL:-0}" = 1 ]; then
-		echo "[AP] public Tailscale Funnel FastDL ready at $download_url"
+		echo "[AP] public Tailscale Funnel FastDL ready at ${SRCDS_DOWNLOADURL:-}"
 	fi
 }
 
@@ -425,49 +263,6 @@ install_plugin() {
 if [ "${TF2AP_ENTRYPOINT_LIBRARY:-0}" = 1 ]; then
 	return 0
 fi
-
-# SRCDS_REACH says in one word where players come from. The game understands
-# two separate things instead: sv_lan in server.cfg, and -enablefakeip on the
-# command line, which the image's own entrypoint adds for SRCDS_SDR_FAKEIP=1.
-# Resolving it here keeps the .env file with one answer rather than two that
-# can contradict each other.
-#
-# SRCDS_LAN on its own is the older spelling and still works: leaving
-# SRCDS_REACH unset changes nothing.
-case "${SRCDS_REACH:-}" in
-"") ;;
-lan)
-	SRCDS_LAN=1
-	SRCDS_SDR_FAKEIP=0
-	;;
-steam)
-	SRCDS_LAN=0
-	SRCDS_SDR_FAKEIP=1
-	;;
-port)
-	SRCDS_LAN=0
-	SRCDS_SDR_FAKEIP=0
-	;;
-*)
-	echo "[AP] SRCDS_REACH=${SRCDS_REACH} is not lan, steam or port: staying on the local network"
-	SRCDS_LAN=1
-	SRCDS_SDR_FAKEIP=0
-	;;
-esac
-
-# Every reach but lan logs in to Steam, and a server with no token never gets a
-# session: it refuses every player, the ones on the local network included. It
-# is worth more on the local network than it is refusing everybody.
-case "${SRCDS_TOKEN:-0}" in
-"" | 0)
-	if [ "${SRCDS_LAN:-0}" = 0 ]; then
-		echo "[AP] no SRCDS_TOKEN, so the server stays on the local network: get one at steamcommunity.com/dev/managegameservers for app id 440"
-		SRCDS_LAN=1
-		SRCDS_SDR_FAKEIP=0
-	fi
-	;;
-esac
-export SRCDS_LAN SRCDS_SDR_FAKEIP
 
 # Funnel setup can happen after the stack starts. Waiting here keeps the admin
 # UI reachable while ensuring SRCDS never starts with an empty download URL.

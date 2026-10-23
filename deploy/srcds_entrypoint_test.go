@@ -62,18 +62,15 @@ wait`)
 }
 
 /*
-The loadout file is written into the staged tree and the convar follows it.
+The loadout file is written into the staged tree.
 
-Both halves were missing in the stack: nothing wrote the file, so a loadout
-picked on the admin page reached .env and stopped there, and nothing set
-sm_redbots_manager_use_custom_loadouts, so the mod would have ignored the file
-even if it had been there.
-
-The renderer is stubbed here. What this covers is the entrypoint's half: that
-it runs before the sync that carries the file over, and that what it printed is
-what server.cfg ends up saying.
+Nothing wrote it once, so a loadout picked on the admin page reached .env and
+stopped there. Into the staged tree rather than the game, because sync_tree
+carries the staged file over. Whether the mod reads it is server.cfg's
+sm_redbots_manager_use_custom_loadouts, which provision decides from the same
+settings.
 */
-func TestTheBotLoadoutIsStagedAndTheConvarFollowsIt(t *testing.T) {
+func TestTheBotLoadoutIsStaged(t *testing.T) {
 	t.Parallel()
 
 	root := t.TempDir()
@@ -85,8 +82,7 @@ func TestTheBotLoadoutIsStagedAndTheConvarFollowsIt(t *testing.T) {
 	calls := filepath.Join(root, "botfiles-calls")
 
 	command := exec.Command("bash", "-c", `. deploy/srcds-entrypoint.sh
-install_bot_files
-echo "convar=$bot_custom_loadouts"`)
+install_bot_files`)
 	command.Dir = ".."
 	command.Env = append(os.Environ(),
 		"TF2AP_ENTRYPOINT_LIBRARY=1",
@@ -95,12 +91,8 @@ echo "convar=$bot_custom_loadouts"`)
 		"STEAMAPPDIR="+root,
 		"STEAMAPP=tf",
 	)
-	output, err := command.CombinedOutput()
-	if err != nil {
+	if output, err := command.CombinedOutput(); err != nil {
 		t.Fatalf("entrypoint test: %v\n%s", err, output)
-	}
-	if !strings.Contains(string(output), "convar=1") {
-		t.Fatalf("the convar did not follow the renderer:\n%s", output)
 	}
 
 	asked, err := os.ReadFile(calls)
@@ -110,36 +102,6 @@ echo "convar=$bot_custom_loadouts"`)
 	// The staged tree the image builds, which sync_tree copies into the game.
 	if got := strings.TrimSpace(string(asked)); got != "-root /opt/tf2-archipelago" {
 		t.Fatalf("the renderer was asked %q, want the staged tree", got)
-	}
-}
-
-// A renderer that fails leaves the bots on stock rather than taking the server
-// down with it: the convar stays 0 and the mod ignores whatever is on disk.
-func TestARefusedRenderLeavesTheBotsOnStock(t *testing.T) {
-	t.Parallel()
-
-	root := t.TempDir()
-	fake := filepath.Join(root, "botfiles")
-	if err := os.WriteFile(fake, []byte("#!/bin/sh\necho broken >&2\nexit 1\n"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-
-	command := exec.Command("bash", "-c", `. deploy/srcds-entrypoint.sh
-install_bot_files
-echo "convar=$bot_custom_loadouts"`)
-	command.Dir = ".."
-	command.Env = append(os.Environ(),
-		"TF2AP_ENTRYPOINT_LIBRARY=1",
-		"TF2AP_BOT_FILES="+fake,
-		"STEAMAPPDIR="+root,
-		"STEAMAPP=tf",
-	)
-	output, err := command.CombinedOutput()
-	if err != nil {
-		t.Fatalf("entrypoint test: %v\n%s", err, output)
-	}
-	if !strings.Contains(string(output), "convar=0") {
-		t.Fatalf("a failed render did not leave the convar off:\n%s", output)
 	}
 }
 
@@ -159,6 +121,8 @@ install_server_cfg`)
 		"STEAMAPP=tf",
 		"SRCDS_RCONPW=test",
 		"SRCDS_MODS=sigsegv-mvm",
+		"SRCDS_MOD_LOADING=always",
+		"TF2AP_PROVISION="+provisionBinary,
 	)
 	if output, err := command.CombinedOutput(); err != nil {
 		t.Fatalf("entrypoint test: %v\n%s", err, output)
@@ -188,6 +152,7 @@ install_server_cfg`)
 		"STEAMAPP=tf",
 		"SRCDS_RCONPW=test",
 		"SRCDS_MODS=",
+		"TF2AP_PROVISION="+provisionBinary,
 	)
 	if output, err := command.CombinedOutput(); err != nil {
 		t.Fatalf("entrypoint test: %v\n%s", err, output)
@@ -198,5 +163,54 @@ install_server_cfg`)
 	}
 	if strings.Contains(string(config), "sig_mvm_robot_limit_fix_red") || strings.Contains(string(config), "SigMod's RED robot-limit fix") {
 		t.Fatalf("server.cfg contains SigMod-only settings with SigMod disabled:\n%s", config)
+	}
+}
+
+// renderDockerServerCfg runs the entrypoint's server.cfg step the way the
+// image does and returns what it wrote.
+func renderDockerServerCfg(t *testing.T, env ...string) string {
+	t.Helper()
+	root := t.TempDir()
+	cfgDir := filepath.Join(root, "tf", "cfg")
+	if err := os.MkdirAll(cfgDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	command := exec.Command("bash", "-c", `. deploy/srcds-entrypoint.sh
+install_server_cfg`)
+	command.Dir = ".."
+	command.Env = append(os.Environ(),
+		"TF2AP_ENTRYPOINT_LIBRARY=1",
+		"STEAMAPPDIR="+root,
+		"STEAMAPP=tf",
+		"SRCDS_RCONPW=test",
+		"TF2AP_PROVISION="+provisionBinary,
+	)
+	command.Env = append(command.Env, env...)
+	if output, err := command.CombinedOutput(); err != nil {
+		t.Fatalf("entrypoint test: %v\n%s", err, output)
+	}
+	config, err := os.ReadFile(filepath.Join(cfgDir, "server.cfg"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(config)
+}
+
+// The start mission waits for ten seconds of game time, and an empty server
+// that hibernates never lets them pass (376b0994). The launcher wrote this
+// line; the image did not.
+func TestTheDockerServerStaysAwakeWhenEmpty(t *testing.T) {
+	t.Parallel()
+	if config := renderDockerServerCfg(t); !strings.Contains(config, "sv_hibernate_when_empty 0\n") {
+		t.Fatalf("server.cfg lets an empty server hibernate:\n%s", config)
+	}
+}
+
+// The robot health chosen on the admin page reaches the plugin.
+func TestTheDockerServerScalesRobotHealth(t *testing.T) {
+	t.Parallel()
+	config := renderDockerServerCfg(t, "SRCDS_BLU_HEALTH_PCT=150")
+	if !strings.Contains(config, "tf2ap_robot_health_scale 1.50\n") {
+		t.Fatalf("server.cfg does not carry SRCDS_BLU_HEALTH_PCT=150:\n%s", config)
 	}
 }

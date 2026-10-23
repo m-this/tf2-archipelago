@@ -14,6 +14,12 @@ in the release notes, so this file is the only place to write it.
   page counted those missions in the tier menu and the mission count. They
   are now left out. A `.env` without `TF2AP_COMMUNITY_PACKS` still draws from
   every pack, as before; an empty one draws from none.
+- **The Docker server plays like the launcher's.** It went to sleep when
+  the last player left, ignored the robot health set in the admin page, and
+  loaded SigMod whenever it was ticked rather than only when a mission in the
+  pool needs it. It now writes the same server.cfg and command line as the
+  launcher. The launcher in turn now keeps RED defenders out of SigMod's robot
+  limit, as Docker already did.
 
 ## v1.18.4
 

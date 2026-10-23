@@ -42,6 +42,7 @@ COPY go.mod go.sum ./
 COPY gamedata gamedata
 COPY launcher/cmd/rcon launcher/cmd/rcon
 COPY launcher/cmd/botfiles launcher/cmd/botfiles
+COPY launcher/cmd/provision launcher/cmd/provision
 COPY launcher/cmd/sigmodpatch launcher/cmd/sigmodpatch
 COPY launcher/cmd/stockpop launcher/cmd/stockpop
 COPY launcher/internal/rcon launcher/internal/rcon
@@ -50,12 +51,15 @@ COPY launcher/internal/botcards launcher/internal/botcards
 COPY launcher/internal/botlive launcher/internal/botlive
 COPY launcher/internal/botloadout launcher/internal/botloadout
 COPY launcher/internal/botnames launcher/internal/botnames
+COPY launcher/internal/fastdl launcher/internal/fastdl
+COPY launcher/internal/provision launcher/internal/provision
 COPY launcher/internal/runshape launcher/internal/runshape
 COPY launcher/internal/settings launcher/internal/settings
 COPY launcher/internal/sigmodpatch launcher/internal/sigmodpatch
 COPY launcher/internal/stockpop launcher/internal/stockpop
 RUN CGO_ENABLED=0 go build -trimpath -o /rcon ./launcher/cmd/rcon \
 	&& CGO_ENABLED=0 go build -trimpath -o /botfiles ./launcher/cmd/botfiles \
+	&& CGO_ENABLED=0 go build -trimpath -o /provision ./launcher/cmd/provision \
 	&& CGO_ENABLED=0 go build -trimpath -o /stockpop ./launcher/cmd/stockpop \
 	&& CGO_ENABLED=0 go build -trimpath -o /sigmodpatch ./launcher/cmd/sigmodpatch
 
@@ -124,6 +128,8 @@ COPY deploy/bots deploy/bots
 # every start, but the package carries it so a server it has never configured
 # still has names rather than six bots called "You forgot to give me a name!".
 COPY launcher/internal/botnames launcher/internal/botnames
+COPY launcher/internal/fastdl launcher/internal/fastdl
+COPY launcher/internal/provision launcher/internal/provision
 # The extensions are the ones built above, so build.sh compiles only the plugins.
 COPY --from=extensions /extensions /extensions
 RUN BOTS_EXTENSIONS_DIR=/extensions sh deploy/bots/build.sh
@@ -208,6 +214,7 @@ COPY deploy/srcds-entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY deploy/srcds-launch.sh /usr/local/bin/tf2ap-srcds-launch.sh
 COPY --from=tools /rcon /usr/local/bin/rcon
 COPY --from=tools /botfiles /usr/local/bin/tf2ap-botfiles
+COPY --from=tools /provision /usr/local/bin/tf2ap-provision
 COPY --from=tools /stockpop /usr/local/bin/tf2ap-stockpop
 
 RUN chown -R steam:steam /opt/tf2-archipelago /opt/tf2-mods \

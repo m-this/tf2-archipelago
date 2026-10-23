@@ -82,7 +82,7 @@ func runLaunchWithStuckUpdates(t *testing.T, stuck int) launchRun {
 		"SRCDS_PORT=27015",
 		"SRCDS_RCONPW=test",
 		"SRCDS_LAN=1",
-		"SRCDS_SDR_FAKEIP=0",
+		"TF2AP_PROVISION="+provisionBinary,
 	)
 	output, err := command.CombinedOutput()
 	calls, readErr := os.ReadFile(callsPath)

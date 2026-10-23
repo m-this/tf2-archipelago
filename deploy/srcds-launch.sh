@@ -1,6 +1,6 @@
 #!/bin/bash
-# Prepare the base TF2 installation, then start SRCDS the same way as the
-# native launcher. In particular, -condebug is the reliable source for the
+# Prepare the base TF2 installation, then start SRCDS with the command line the
+# native launcher uses. In particular, -condebug is the reliable source for the
 # FakeIP allocation line; 32-bit SRCDS block-buffers a redirected stdout pipe.
 #
 # Not -autoupdate, which the base image's entry.sh passes: with it, srcds_run
@@ -87,48 +87,11 @@ install_alliedmods "${TF2AP_SOURCEMOD_VERSION}" \
 
 cd "${STEAMAPPDIR}"
 
-flags=(
-	-game "${STEAMAPP}"
-	-usercon
-	-console
-	-condebug
-	-debug
-	-maxplayers "${SRCDS_MAXPLAYERS}"
-	-nowatchdog
-)
-commands=(
-	+map "${SRCDS_STARTMAP}"
-	+hostport "${SRCDS_PORT}"
-	+rcon_password "${SRCDS_RCONPW}"
-	+sv_lan "${SRCDS_LAN}"
-)
+# The command line comes from the same Go the native launcher builds its own
+# with, so the reach, the token and the start map mean the same in both.
+args_file=$(mktemp)
+"${TF2AP_PROVISION:-/usr/local/bin/tf2ap-provision}" args >"$args_file"
+mapfile -d '' -t args <"$args_file"
+rm -f "$args_file"
 
-if [ "${SRCDS_LAN}" = 0 ]; then
-	flags+=( -ip 0.0.0.0 )
-fi
-if [ "${SRCDS_SECURED:-1}" = 0 ]; then
-	flags+=( -insecure )
-fi
-if [ "${SRCDS_SDR_FAKEIP}" = 1 ]; then
-	flags+=( -enablefakeip )
-	commands+=( +sv_use_steam_networking 1 )
-fi
-case "${SRCDS_TOKEN:-0}" in
-"" | 0) ;;
-*)
-	if [ "${SRCDS_LAN}" = 0 ]; then
-		commands+=( +sv_setsteamaccount "${SRCDS_TOKEN}" )
-	fi
-	;;
-esac
-if [ -n "${SRCDS_PW:-}" ]; then
-	commands+=( +sv_password "${SRCDS_PW}" )
-fi
-if [ -n "${SRCDS_WORKSHOP_AUTHKEY:-}" ]; then
-	flags+=( -authkey "${SRCDS_WORKSHOP_AUTHKEY}" )
-fi
-if [ "${SRCDS_REPLAY:-0}" = 1 ]; then
-	flags+=( -replay )
-fi
-
-exec bash "${STEAMAPPDIR}/srcds_run" "${flags[@]}" "${commands[@]}"
+exec bash "${STEAMAPPDIR}/srcds_run" "${args[@]}"

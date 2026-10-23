@@ -51,6 +51,16 @@ var text = codec[string]{
 	format: func(value string) string { return value },
 }
 
+// named is text an empty value does not set. Compose passes a variable .env
+// leaves out as empty, and that names nothing.
+var named = codec[string]{
+	parse: func(value string) (string, bool) {
+		value = strings.TrimSpace(value)
+		return value, value != ""
+	},
+	format: func(value string) string { return value },
+}
+
 var number = codec[int]{
 	parse: func(value string) (int, bool) {
 		parsed, err := strconv.Atoi(strings.TrimSpace(value))

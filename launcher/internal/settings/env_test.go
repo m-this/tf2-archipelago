@@ -127,3 +127,13 @@ func TestSeatListsKeepTheirHoles(t *testing.T) {
 		t.Errorf("blacklist = %q", got)
 	}
 }
+
+// Compose passes SRCDS_START_MISSION empty when .env names none. That is not
+// a mission, so the map SRCDS_STARTMAP names still decides where the run starts.
+func TestAnEmptyStartMissionLeavesTheStartMap(t *testing.T) {
+	t.Setenv("SRCDS_STARTMAP", "mvm_bigrock")
+	t.Setenv("SRCDS_START_MISSION", "")
+	if got := ApplyEnv(Defaults()).SrcdsStartMission; got == "" || got == Defaults().SrcdsStartMission {
+		t.Errorf("start mission = %q, want a mission on mvm_bigrock", got)
+	}
+}

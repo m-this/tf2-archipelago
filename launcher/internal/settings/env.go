@@ -32,7 +32,10 @@ type EnvVar struct {
 var (
 	playerFile       = []string{"archipelago", "seed"}
 	playerFileBridge = []string{"archipelago", "seed", "bridge"}
-	gameServer       = []string{"srcds"}
+	// missionPool is read by the game server too: which missions can come up
+	// decides which server mods it loads.
+	missionPool = []string{"archipelago", "seed", "bridge", "srcds"}
+	gameServer  = []string{"srcds"}
 )
 
 /*
@@ -68,16 +71,16 @@ var EnvVars = []EnvVar{
 	bind("TF2AP_JOIN_HOST", nil, text, func(s *Settings) *string { return &s.SrcdsJoinHost }),
 	bind("SRCDS_MAXPLAYERS", gameServer, number, func(s *Settings) *int { return &s.SrcdsMaxPlayers }),
 	// The compose stack names a map; the launcher names a mission. Both work,
-	// the mission wins.
+	// the mission wins. An empty one names nothing, which is what Compose passes.
 	alias("SRCDS_STARTMAP", gameServer, readStartMap),
-	bind("SRCDS_START_MISSION", gameServer, text, func(s *Settings) *string { return &s.SrcdsStartMission }),
+	bind("SRCDS_START_MISSION", gameServer, named, func(s *Settings) *string { return &s.SrcdsStartMission }),
 	bind("SRCDS_TOKEN", gameServer, text, func(s *Settings) *string { return &s.SrcdsToken }),
 	// The older spelling, covering two of the three reaches. SRCDS_REACH wins.
 	alias("SRCDS_LAN", gameServer, readLan),
 	bind("SRCDS_REACH", gameServer, reach, func(s *Settings) *Reach { return &s.SrcdsReach }),
 	bind("SRCDS_ADMIN_STEAMIDS", gameServer, text, func(s *Settings) *string { return &s.SrcdsAdminSteamIDs }),
 	bind("SRCDS_MODS", []string{"archipelago", "seed", "bridge", "srcds"}, words, func(s *Settings) *[]string { return &s.SrcdsMods }),
-	bind("SRCDS_MOD_LOADING", nil, modLoading, func(s *Settings) *ModLoading { return &s.SrcdsModLoading }),
+	bind("SRCDS_MOD_LOADING", gameServer, modLoading, func(s *Settings) *ModLoading { return &s.SrcdsModLoading }),
 	bind("FASTDL_PORT", gameServer, number, func(s *Settings) *int { return &s.FastDLPort }),
 	bind("SRCDS_DOWNLOADURL", gameServer, text, func(s *Settings) *string { return &s.SrcdsDownloadURL }),
 	bind("TAILSCALE_FASTDL", []string{"srcds", "tailscale-fastdl"}, boolean, func(s *Settings) *bool { return &s.TailscaleFastDL }),
@@ -91,7 +94,7 @@ var EnvVars = []EnvVar{
 	bind("SRCDS_BOT_NAMES_EXCLUDED", gameServer, words, func(s *Settings) *[]string { return &s.SrcdsBotNamesExcluded }),
 	bind("SRCDS_BOT_NAMES_ADDED", gameServer, words, func(s *Settings) *[]string { return &s.SrcdsBotNamesAdded }),
 	bind("SRCDS_BOT_SEAT_NAMES", gameServer, seats, func(s *Settings) *[]string { return &s.SrcdsBotSeatNames }),
-	bind("SRCDS_BLU_HEALTH_PCT", nil, number, func(s *Settings) *int { return &s.SrcdsBluHealthPct }),
+	bind("SRCDS_BLU_HEALTH_PCT", gameServer, number, func(s *Settings) *int { return &s.SrcdsBluHealthPct }),
 	bind("SRCDS_BOT_TEAM_COMP", gameServer, seats, func(s *Settings) *[]string { return &s.SrcdsBotTeamComp }),
 	bind("SRCDS_BOT_SEAT_LOADOUTS", gameServer, seats, func(s *Settings) *[]string { return &s.SrcdsBotSeatLoadouts }),
 	bind("SRCDS_BOT_CARD_FORMS", gameServer, pairs, func(s *Settings) *map[string]string { return &s.SrcdsBotCardForms }),
@@ -115,10 +118,10 @@ var EnvVars = []EnvVar{
 	bind("MVM_TANKSANITY", playerFileBridge, boolean, func(s *Settings) *bool { return &s.MvmTanksanity }),
 	bind("MVM_SERVER_SETTINGS", playerFile, boolean, func(s *Settings) *bool { return &s.MvmServerSettings }),
 	bind("MVM_DEATH_LINK", playerFileBridge, boolean, func(s *Settings) *bool { return &s.MvmDeathLink }),
-	bind("MVM_EXCLUDED_MISSIONS", playerFileBridge, words, func(s *Settings) *[]string { return &s.MvmExcludedMissions }),
-	bind("MVM_START_MISSION", playerFileBridge, text, func(s *Settings) *string { return &s.MvmStartMission }),
+	bind("MVM_EXCLUDED_MISSIONS", missionPool, words, func(s *Settings) *[]string { return &s.MvmExcludedMissions }),
+	bind("MVM_START_MISSION", missionPool, text, func(s *Settings) *string { return &s.MvmStartMission }),
 	bind("MVM_START_CLASS", playerFileBridge, text, func(s *Settings) *string { return &s.MvmStartClass }),
-	bind("MVM_COMMUNITY_MISSIONS", playerFileBridge, boolean, func(s *Settings) *bool { return &s.MvmCommunityMissions }),
+	bind("MVM_COMMUNITY_MISSIONS", missionPool, boolean, func(s *Settings) *bool { return &s.MvmCommunityMissions }),
 	bind("MVM_MISSION_TICKET_IMPORTANCE", playerFile, text, func(s *Settings) *string { return &s.MvmMissionTicketImportance }),
 	bind("MVM_CLASS_UNLOCK_IMPORTANCE", playerFile, text, func(s *Settings) *string { return &s.MvmClassUnlockImportance }),
 	bind("MVM_WEAPON_SLOT_IMPORTANCE", playerFile, text, func(s *Settings) *string { return &s.MvmWeaponSlotImportance }),
