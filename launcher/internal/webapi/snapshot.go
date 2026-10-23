@@ -11,6 +11,7 @@ import (
 	"github.com/m-this/tf2-archipelago/launcher/internal/assets"
 	"github.com/m-this/tf2-archipelago/launcher/internal/botlive"
 	"github.com/m-this/tf2-archipelago/launcher/internal/form"
+	"github.com/m-this/tf2-archipelago/launcher/internal/provision"
 	"github.com/m-this/tf2-archipelago/launcher/internal/runshape"
 	apruntime "github.com/m-this/tf2-archipelago/launcher/internal/runtime"
 	"github.com/m-this/tf2-archipelago/launcher/internal/saveplan"
@@ -84,7 +85,7 @@ func (a *App) Snapshot() Snapshot {
 		}
 	}
 	s := a.settings
-	playing := apruntime.StartMap(s)
+	playing := provision.StartMap(s)
 	if running && a.mission != "" {
 		playing = a.mission
 	}

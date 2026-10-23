@@ -13,7 +13,11 @@ sv_visiblemaxplayers 6
 // A wave starts when enough players have readied up, and one is enough
 // here, so one player can start a wave alone.
 tf_mvm_min_players_to_start 1
-
+{{if .SigModLoaded}}
+// SigMod's RED robot-limit fix treats defender TFBots as invaders and kicks
+// the last defender during crowded waves. Its BLU robot limit stays on.
+sig_mvm_robot_limit_fix_red 0
+{{end}}
 // Team Fortress 2 moves an idle player to spectator after mp_idlemaxtime
 // minutes. Here that takes a friend off RED, the bots fill the seat, and the
 // game then refuses them back on a full team.
@@ -64,7 +68,9 @@ sv_hibernate_when_empty 0
 // The mission the run starts on, and whether the bots' purchases at the
 // upgrade station reach the chat.
 tf2ap_start_mission "{{.StartMission}}"
-tf2ap_bot_upgrades_chat {{.BotUpgradesChat}}
+{{with .NextMissionDelay}}// How long a cleared mission stays on the scoreboard before the next loads.
+tf2ap_next_mission_delay {{.}}
+{{end}}tf2ap_bot_upgrades_chat {{.BotUpgradesChat}}
 
 // LAN mode skips Steam authentication. The server has no Game Server Login
 // Token by default, so it never logs in to Steam, and a client trying to

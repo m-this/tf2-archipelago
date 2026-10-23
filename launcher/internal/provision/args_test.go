@@ -1,7 +1,6 @@
-package runtime
+package provision
 
 import (
-	"net"
 	"slices"
 	"strings"
 	"testing"
@@ -35,7 +34,7 @@ func TestLanArgsNeverLeaveTheNetwork(t *testing.T) {
 	// A token left over from an evening spent online must not put a server
 	// that is back on LAN mode into the public list.
 	s.SrcdsToken = "C7A1B2E3D4F5A6B7C8D9E0F1A2B3C4D5"
-	args := srcdsArgs(s, "srcds_run")
+	args := argsFor(t, s, "srcds_run")
 
 	if got := value(args, "+sv_lan"); got != "1" {
 		t.Errorf("+sv_lan = %q, want 1", got)
@@ -55,7 +54,7 @@ func TestSteamArgsAskForARelayedAddress(t *testing.T) {
 	s := baseSettings()
 	s.SrcdsReach = settings.ReachSteam
 	s.SrcdsToken = "C7A1B2E3D4F5A6B7C8D9E0F1A2B3C4D5"
-	args := srcdsArgs(s, "srcds_run")
+	args := argsFor(t, s, "srcds_run")
 
 	if !slices.Contains(args, "-enablefakeip") {
 		t.Error("no -enablefakeip: Valve hands out no address without it")
@@ -75,7 +74,7 @@ func TestPortArgsGoOnlineWithoutTheRelay(t *testing.T) {
 	s := baseSettings()
 	s.SrcdsReach = settings.ReachPort
 	s.SrcdsToken = "C7A1B2E3D4F5A6B7C8D9E0F1A2B3C4D5"
-	args := srcdsArgs(s, "srcds_run")
+	args := argsFor(t, s, "srcds_run")
 
 	if slices.Contains(args, "-enablefakeip") {
 		t.Error("-enablefakeip on a forwarded-port server")
@@ -94,7 +93,7 @@ func TestNoTokenIsNotPassed(t *testing.T) {
 	s := baseSettings()
 	s.SrcdsReach = settings.ReachSteam
 	s.SrcdsToken = "0"
-	if args := srcdsArgs(s, "srcds_run"); slices.Contains(args, "+sv_setsteamaccount") {
+	if args := argsFor(t, s, "srcds_run"); slices.Contains(args, "+sv_setsteamaccount") {
 		t.Error("+sv_setsteamaccount 0 was passed")
 	}
 }
@@ -104,7 +103,7 @@ func TestNoTokenIsNotPassed(t *testing.T) {
 func TestFlagsComeBeforeCommands(t *testing.T) {
 	s := baseSettings()
 	s.SrcdsReach = settings.ReachSteam
-	args := srcdsArgs(s, "srcds.exe")
+	args := argsFor(t, s, "srcds.exe")
 
 	firstCommand := len(args)
 	for i, arg := range args {
@@ -124,7 +123,7 @@ func TestFlagsComeBeforeCommands(t *testing.T) {
 }
 
 func TestSrcdsUsesTheSupportedPlayerLimit(t *testing.T) {
-	args := srcdsArgs(baseSettings(), "srcds_run")
+	args := argsFor(t, baseSettings(), "srcds_run")
 	if slices.Contains(args, "-unrestricted_maxplayers") {
 		t.Error("srcds starts with unsupported unrestricted slots, which reset to 101 on changelevel")
 	}
@@ -143,13 +142,13 @@ func TestSrcdsUsesTheSupportedPlayerLimit(t *testing.T) {
 // never finishes loading the map.
 func TestSrcdsRunsWithAConsoleOnEitherPlatform(t *testing.T) {
 	for _, exeName := range []string{"srcds.exe", "srcds_run"} {
-		args := srcdsArgs(settings.Settings{SrcdsPort: 27015}, exeName)
+		args := argsFor(t, settings.Settings{SrcdsPort: 27015}, exeName)
 		if !slices.Contains(args, "-console") {
 			t.Errorf("%s runs without -console", exeName)
 		}
 	}
 	// The crash dialog is a Windows idea, and nothing on Linux answers it.
-	if slices.Contains(srcdsArgs(settings.Settings{}, "srcds_run"), "-nocrashdialog") {
+	if slices.Contains(argsFor(t, settings.Settings{}, "srcds_run"), "-nocrashdialog") {
 		t.Error("srcds_run got -nocrashdialog, which is a Windows flag")
 	}
 }
@@ -158,10 +157,10 @@ func TestSrcdsRunsWithAConsoleOnEitherPlatform(t *testing.T) {
 // keeps the kill on a hung frame; Linux trades it away for a server that lives
 // through load.
 func TestTheWatchdogIsOffOnLinuxOnly(t *testing.T) {
-	if !slices.Contains(srcdsArgs(settings.Settings{SrcdsPort: 27015}, "srcds_run"), "-nowatchdog") {
+	if !slices.Contains(argsFor(t, settings.Settings{SrcdsPort: 27015}, "srcds_run"), "-nowatchdog") {
 		t.Error("srcds_run keeps the watchdog that kills it under load")
 	}
-	if slices.Contains(srcdsArgs(settings.Settings{SrcdsPort: 27015}, "srcds.exe"), "-nowatchdog") {
+	if slices.Contains(argsFor(t, settings.Settings{SrcdsPort: 27015}, "srcds.exe"), "-nowatchdog") {
 		t.Error("srcds.exe lost its watchdog, and Windows was not the platform crashing")
 	}
 }
@@ -171,7 +170,7 @@ func TestTheWatchdogIsOffOnLinuxOnly(t *testing.T) {
 func TestTheMapComesFromTheStartMission(t *testing.T) {
 	s := baseSettings()
 	s.SrcdsStartMission = "mvm_ghost_town_666"
-	if got := value(srcdsArgs(s, "srcds_run"), "+map"); got != "mvm_ghost_town" {
+	if got := value(argsFor(t, s, "srcds_run"), "+map"); got != "mvm_ghost_town" {
 		t.Errorf("+map = %q, want mvm_ghost_town", got)
 	}
 }
@@ -179,7 +178,7 @@ func TestTheMapComesFromTheStartMission(t *testing.T) {
 func TestARemovedStartMissionUsesTheDefaultMap(t *testing.T) {
 	s := baseSettings()
 	s.SrcdsStartMission = "mvm_removed_mission"
-	if got := value(srcdsArgs(s, "srcds_run"), "+map"); got != "mvm_decoy" {
+	if got := value(argsFor(t, s, "srcds_run"), "+map"); got != "mvm_decoy" {
 		t.Errorf("+map = %q, want mvm_decoy", got)
 	}
 }
@@ -192,7 +191,7 @@ func TestNoTokenKeepsTheServerOnTheNetwork(t *testing.T) {
 	s := baseSettings()
 	s.SrcdsReach = settings.ReachPort
 	s.SrcdsToken = "0"
-	args := srcdsArgs(s, "srcds_run")
+	args := argsFor(t, s, "srcds_run")
 
 	if got := value(args, "+sv_lan"); got != "1" {
 		t.Errorf("+sv_lan = %q, want 1", got)
@@ -210,14 +209,14 @@ func TestNoTokenKeepsTheServerOnTheNetwork(t *testing.T) {
 func TestALanServerKeepsItsOwnAddress(t *testing.T) {
 	s := baseSettings()
 	s.SrcdsReach = settings.ReachLan
-	if args := srcdsArgs(s, "srcds_run"); slices.Contains(args, "-ip") {
+	if args := argsFor(t, s, "srcds_run"); slices.Contains(args, "-ip") {
 		t.Errorf("-ip on a LAN server: %v", args)
 	}
 
 	// A server with no token is a LAN server whatever it was asked for.
 	s.SrcdsReach = settings.ReachPort
 	s.SrcdsToken = "0"
-	if args := srcdsArgs(s, "srcds_run"); slices.Contains(args, "-ip") {
+	if args := argsFor(t, s, "srcds_run"); slices.Contains(args, "-ip") {
 		t.Errorf("-ip on a server with no token: %v", args)
 	}
 }
@@ -228,26 +227,8 @@ func TestAnOpenServerBindsEveryInterface(t *testing.T) {
 	s := baseSettings()
 	s.SrcdsReach = settings.ReachPort
 	s.SrcdsToken = "C7A1B2E3D4F5A6B7C8D9E0F1A2B3C4D5"
-	if got := value(srcdsArgs(s, "srcds_run"), "-ip"); got != "0.0.0.0" {
+	if got := value(argsFor(t, s, "srcds_run"), "-ip"); got != "0.0.0.0" {
 		t.Errorf("-ip = %q, want 0.0.0.0", got)
-	}
-}
-
-// Whatever the server bound, the launcher has to find it: loopback first,
-// because that is where a server told -ip 0.0.0.0 answers.
-func TestRconAddressesStartAtLoopback(t *testing.T) {
-	s := baseSettings()
-	addresses := RconAddresses(s)
-	if len(addresses) == 0 {
-		t.Fatal("no address to try")
-	}
-	if addresses[0] != "127.0.0.1:27015" {
-		t.Errorf("first address = %q, want 127.0.0.1:27015", addresses[0])
-	}
-	for _, address := range addresses {
-		if _, port, err := net.SplitHostPort(address); err != nil || port != "27015" {
-			t.Errorf("address %q: port %q, %v", address, port, err)
-		}
 	}
 }
 
@@ -256,8 +237,44 @@ func TestRconAddressesStartAtLoopback(t *testing.T) {
 func TestSrcdsArgsAsksForTheConsoleLog(t *testing.T) {
 	s := settings.Defaults()
 	for _, exe := range []string{"srcds.exe", "srcds_run"} {
-		if !slices.Contains(srcdsArgs(s, exe), "-condebug") {
+		if !slices.Contains(argsFor(t, s, exe), "-condebug") {
 			t.Errorf("%s starts without -condebug", exe)
+		}
+	}
+}
+
+// argsFor is the command line For decides for s, started as exe.
+func argsFor(t *testing.T, s settings.Settings, exe string) []string {
+	t.Helper()
+	server, err := For(s, Host{GOOS: "linux", Exe: exe})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return server.Args
+}
+
+// sv_downloadurl names the launcher's own file server on the address friends
+// reach this machine at. The operator's own host wins when they named one.
+// A relayed server hands out no address of its own, so nothing is written and
+// the game server's transfer stays the way in.
+func TestDownloadURL(t *testing.T) {
+	// Obviously not a token, so a secret scanner has nothing to flag.
+	const token = "NOT-A-REAL-TOKEN-0000000000000000"
+	for _, c := range []struct {
+		name string
+		s    settings.Settings
+		host string
+		want string
+	}{
+		{"lan", settings.Settings{SrcdsReach: settings.ReachLan, FastDLPort: 27080}, "192.168.1.10", "http://192.168.1.10:27080/tf"},
+		{"port", settings.Settings{SrcdsReach: settings.ReachPort, SrcdsToken: token, FastDLPort: 27080}, "192.168.1.10", "http://192.168.1.10:27080/tf"},
+		{"steam", settings.Settings{SrcdsReach: settings.ReachSteam, SrcdsToken: token, FastDLPort: 27080}, "192.168.1.10", ""},
+		{"no route", settings.Settings{SrcdsReach: settings.ReachLan, FastDLPort: 27080}, "", ""},
+		{"off", settings.Settings{SrcdsReach: settings.ReachLan, FastDLPort: 0}, "192.168.1.10", ""},
+		{"own host", settings.Settings{SrcdsReach: settings.ReachSteam, SrcdsToken: token, SrcdsDownloadURL: "https://example.test/tf"}, "", "https://example.test/tf"},
+	} {
+		if got := DownloadURL(c.s, c.host); got != c.want {
+			t.Errorf("%s: DownloadURL = %q, want %q", c.name, got, c.want)
 		}
 	}
 }

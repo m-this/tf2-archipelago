@@ -164,7 +164,10 @@ landed in. The player uploads that archive to archipelago.gg.
 - `defender-bots-windows.zip` (gitignored, built by `make bots`, `.so` stripped)
 - `tf2_mvm.apworld` (gitignored, built without Docker by `make apworld-package`)
 - `tf2_archipelago.cfg` (committed)
-- `server.cfg.tmpl` (committed)
+
+`server.cfg.tmpl` lives in `internal/provision` instead. That package decides
+server.cfg, the srcds command line and the mods loaded for both the launcher
+and the Docker image, which calls it as `tf2ap-provision`.
 
 The first three are build artefacts, and a hand `go build` needs placeholders
 in their place. Such a build also leaves the version strings empty, so

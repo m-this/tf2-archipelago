@@ -412,32 +412,6 @@ func TestTheDebugLevelSomebodyChoseIsLeftAlone(t *testing.T) {
 	}
 }
 
-// sv_downloadurl names the launcher's own file server on the address friends
-// reach this machine at. The operator's own host wins when they named one.
-// A relayed server hands out no address of its own, so nothing is written and
-// the game server's transfer stays the way in.
-func TestDownloadURL(t *testing.T) {
-	// Obviously not a token, so a secret scanner has nothing to flag.
-	const token = "NOT-A-REAL-TOKEN-0000000000000000"
-	for _, c := range []struct {
-		name string
-		s    settings.Settings
-		host string
-		want string
-	}{
-		{"lan", settings.Settings{SrcdsReach: settings.ReachLan, FastDLPort: 27080}, "192.168.1.10", "http://192.168.1.10:27080/tf"},
-		{"port", settings.Settings{SrcdsReach: settings.ReachPort, SrcdsToken: token, FastDLPort: 27080}, "192.168.1.10", "http://192.168.1.10:27080/tf"},
-		{"steam", settings.Settings{SrcdsReach: settings.ReachSteam, SrcdsToken: token, FastDLPort: 27080}, "192.168.1.10", ""},
-		{"no route", settings.Settings{SrcdsReach: settings.ReachLan, FastDLPort: 27080}, "", ""},
-		{"off", settings.Settings{SrcdsReach: settings.ReachLan, FastDLPort: 0}, "192.168.1.10", ""},
-		{"own host", settings.Settings{SrcdsReach: settings.ReachSteam, SrcdsToken: token, SrcdsDownloadURL: "https://example.test/tf"}, "", "https://example.test/tf"},
-	} {
-		if got := DownloadURL(c.s, c.host); got != c.want {
-			t.Errorf("%s: DownloadURL = %q, want %q", c.name, got, c.want)
-		}
-	}
-}
-
 func TestServerCfgCarriesTheDownloadURL(t *testing.T) {
 	s := settings.Settings{
 		InstallRoot:      t.TempDir(),
@@ -458,5 +432,30 @@ func TestServerCfgCarriesTheDownloadURL(t *testing.T) {
 	}
 	if got := directive(body, "sv_downloadurl"); got != "" {
 		t.Errorf("sv_downloadurl = %q with nothing to point it at:\n%s", got, body)
+	}
+}
+
+// SigMod counts RED defender bots as invaders and kicks them in crowded waves
+// unless this is off. The image wrote it; the launcher did not.
+func TestServerCfgLeavesREDOutOfSigModsRobotLimit(t *testing.T) {
+	s := settings.Defaults()
+	s.SrcdsRconPw = "test"
+	s.SrcdsMods = []string{"sigsegv-mvm"}
+	s.SrcdsModLoading = settings.ModLoadingAlways
+	body, err := RenderServerCfg(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(body, "sig_mvm_robot_limit_fix_red 0\n") {
+		t.Fatalf("server.cfg with SigMod loaded leaves RED in the robot limit:\n%s", body)
+	}
+
+	s.SrcdsMods = nil
+	body, err = RenderServerCfg(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(body, "sig_mvm_robot_limit_fix_red") {
+		t.Fatalf("server.cfg without SigMod names a SigMod convar:\n%s", body)
 	}
 }

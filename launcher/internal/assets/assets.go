@@ -28,9 +28,6 @@ var apworld []byte
 //go:embed embedded/tf2_archipelago.cfg
 var pluginConfig []byte
 
-//go:embed embedded/server.cfg.tmpl
-var serverCfgTemplate string
-
 // Version constants. Injected via -ldflags "-X ...". Empty means the binary
 // was built without the Makefile (a hand build), which is fine for development
 // but the installer refuses to run without them set.
@@ -104,10 +101,6 @@ func Apworld() []byte { return apworld }
 // PluginConfig returns tf2_archipelago.cfg, copied verbatim into the server's
 // cfg/sourcemod/ directory.
 func PluginConfig() []byte { return pluginConfig }
-
-// ServerCfgTemplate returns the server.cfg text/template source. See
-// srcdsconfig for the fields it expects.
-func ServerCfgTemplate() string { return serverCfgTemplate }
 
 // SigsegvMVM is the SigMod release this platform installs: the version and the
 // checksum of the package to download. Nothing above this asks which platform

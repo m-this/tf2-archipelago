@@ -1,7 +1,6 @@
-// Package srcdsconfig renders the game server's configuration files from the
-// launcher's settings. It is the Go port of the install_server_cfg and
-// install_admin functions in deploy/srcds-entrypoint.sh: server.cfg,
-// admins_simple.ini, and the plugin's own tf2_archipelago.cfg.
+// Package srcdsconfig writes the game server's configuration files from the
+// launcher's settings: server.cfg through provision, admins_simple.ini, the
+// bots' files, and the plugin's own tf2_archipelago.cfg.
 package srcdsconfig
 
 import (
@@ -9,16 +8,16 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
-	"text/template"
 
 	"github.com/m-this/tf2-archipelago/launcher/internal/assets"
 	"github.com/m-this/tf2-archipelago/launcher/internal/botfiles"
 	"github.com/m-this/tf2-archipelago/launcher/internal/botlive"
 	"github.com/m-this/tf2-archipelago/launcher/internal/botloadout"
 	"github.com/m-this/tf2-archipelago/launcher/internal/botnames"
-	"github.com/m-this/tf2-archipelago/launcher/internal/fastdl"
 	"github.com/m-this/tf2-archipelago/launcher/internal/lanaddr"
+	"github.com/m-this/tf2-archipelago/launcher/internal/provision"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 )
 
@@ -28,7 +27,11 @@ import (
 // start.
 func Install(s settings.Settings) error {
 	gameDir := filepath.Join(s.InstallRoot, "tf-dedicated", "tf")
-	if err := installServerCfg(gameDir, s); err != nil {
+	server, err := Server(s)
+	if err != nil {
+		return err
+	}
+	if _, err := server.Install(gameDir); err != nil {
 		return err
 	}
 	if err := installAdmins(gameDir, s.SrcdsAdminSteamIDs); err != nil {
@@ -44,65 +47,26 @@ func Install(s settings.Settings) error {
 	return installPluginCfg(gameDir)
 }
 
-func installServerCfg(gameDir string, s settings.Settings) error {
-	target := filepath.Join(gameDir, "cfg", "server.cfg")
-	if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
-		return fmt.Errorf("cannot create the cfg directory: %w", err)
+// Host is the machine the launcher runs on, starting exe.
+func Host(exe string) provision.Host {
+	return provision.Host{GOOS: runtime.GOOS, Exe: exe, LanHost: lanaddr.Preferred()}
+}
+
+// Server is what the game server starts with on this machine.
+func Server(s settings.Settings) (provision.Server, error) {
+	exe := "srcds_run"
+	if runtime.GOOS == "windows" {
+		exe = "srcds.exe"
 	}
-	rendered, err := RenderServerCfg(s)
-	if err != nil {
-		return err
-	}
-	return writeIfChanged(target, []byte(rendered))
+	return provision.For(s, Host(exe))
 }
 
 // RenderServerCfg returns what server.cfg holds for these settings, without
 // writing it. The debug bundle uses it to say whether the file the server is
 // reading still matches the settings the launcher holds.
 func RenderServerCfg(s settings.Settings) (string, error) {
-	tmpl, err := template.New("server.cfg").Parse(assets.ServerCfgTemplate())
-	if err != nil {
-		return "", fmt.Errorf("cannot parse the server.cfg template: %w", err)
-	}
-	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, map[string]any{
-		"Hostname":          s.SrcdsHostname,
-		"RconPassword":      s.SrcdsRconPw,
-		"PlayerPassword":    s.SrcdsPw,
-		"Lan":               boolToInt(s.EffectiveReach().Lan()),
-		"BotsMode":          botsMode(s.SrcdsBots),
-		"BotTeamSize":       s.SrcdsBotTeamSize,
-		"BotClassBlacklist": botloadout.Blacklist(s.SrcdsBotClassBlacklist),
-		"BotTeamComp":       botloadout.Composition(s.SrcdsBotTeamComp, s.SrcdsBotClassBlacklist),
-		"BotCustomLoadouts": boolToInt(botlive.LibraryOf(s).Anything(s.SrcdsBotLoadouts,
-			botlive.SeatsOf(s))),
-		"BotUpgradesChat": boolToInt(s.BotUpgradesChat),
-		"BluHealth":       scaleOf(s.SrcdsBluHealthPct),
-		"BotHats":         boolToInt(s.SrcdsBotHats),
-		"BotBuyAnywhere":  boolToInt(s.SrcdsBotBuyAnywhere),
-		"BotHatEffects":   boolToInt(s.SrcdsBotHatEffects),
-		"StartMission":    s.SrcdsStartMission,
-		"DownloadURL":     DownloadURL(s, lanaddr.Preferred()),
-	}); err != nil {
-		return "", fmt.Errorf("cannot render server.cfg: %w", err)
-	}
-	return buf.String(), nil
-}
-
-// DownloadURL is what sv_downloadurl holds: the operator's own host when they
-// named one, otherwise the launcher's file server on the address the friends
-// on the network reach this machine at. Empty leaves the game server's in-band
-// transfer, which is all a relayed client can reach anyway: over Steam the
-// players never see this machine's address, and with no route out there is no
-// address to give.
-func DownloadURL(s settings.Settings, lanHost string) string {
-	if s.SrcdsDownloadURL != "" {
-		return s.SrcdsDownloadURL
-	}
-	if s.FastDLPort <= 0 || lanHost == "" || s.EffectiveReach().SteamNetworking() {
-		return ""
-	}
-	return fastdl.URL(lanHost, s.FastDLPort)
+	server, err := Server(s)
+	return server.ServerCfg, err
 }
 
 // installAdmins writes admins_simple.ini from a comma/space/newline-separated
@@ -239,42 +203,6 @@ func splitAdmins(list string) []string {
 		return r == ',' || r == '\n' || r == '\t' || r == ' '
 	})
 	return out
-}
-
-// botsMode maps the on/off setting to the mod's convar: 2 is AUTO_BOTS, 0
-// leaves the bots to an admin.
-func botsMode(enabled bool) int {
-	if enabled {
-		return 2
-	}
-	return 0
-}
-
-/*
-	scaleOf is the mod's float for a percentage the settings hold.
-
-The mod accepts 0.1 through 10.0 and reads 1.0 as neutral, so a page nobody has
-touched writes 1.0 and changes nothing. A zero is somebody who has not set it
-rather than somebody asking for zero-health robots.
-*/
-func scaleOf(pct int) string {
-	if pct <= 0 {
-		pct = settings.RobotHealthPercentNeutral
-	}
-	if pct < settings.RobotHealthPercentMin {
-		pct = settings.RobotHealthPercentMin
-	}
-	if pct > settings.RobotHealthPercentMax {
-		pct = settings.RobotHealthPercentMax
-	}
-	return fmt.Sprintf("%.2f", float64(pct)/100.0)
-}
-
-func boolToInt(b bool) int {
-	if b {
-		return 1
-	}
-	return 0
 }
 
 func writeIfChanged(path string, content []byte) error {
