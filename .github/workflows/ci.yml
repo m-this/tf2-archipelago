@@ -21,7 +21,7 @@ jobs:
   go:
     runs-on: ubuntu-latest
     container:
-      image: golang:1.27
+      image: golang:1.27.3
     steps:
       # checkout is a JavaScript action, so the runner execs node inside the
       # container. None of the images below ship one; every one is Debian.
