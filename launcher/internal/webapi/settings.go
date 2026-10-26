@@ -281,10 +281,14 @@ func (a *App) Dispatch(id string) error {
 	// lists passed, and it was missing from the switch below, so the browser
 	// got "settings action \"bots.name_add\" is not wired" and no name was
 	// ever added. One list, and it is form.Act's.
-	if next, said, ok := form.Act(s, id); ok {
+	next, said, err := form.Act(s, id)
+	switch {
+	case err == nil:
 		a.mutateDraft(func(state *form.State) { *state = next })
 		a.Notify(said)
 		return nil
+	case !errors.Is(err, form.ErrNotAct):
+		return err
 	}
 
 	switch id {

@@ -141,8 +141,20 @@
           (input)="set(named, $any($event.target).value)"
           (keydown.enter)="saveTeam()"
         />
-        <app-button size="small" tone="primary" (press)="saveTeam()">{{ saveLabel() }}</app-button>
-        <app-button size="small" tone="danger" (press)="removeTeam()">Delete</app-button>
+        <app-button
+          size="small"
+          tone="primary"
+          [disabled]="typedName() === ''"
+          (press)="saveTeam()"
+          >{{ saveLabel() }}</app-button
+        >
+        <app-button
+          size="small"
+          tone="danger"
+          [disabled]="typedName() === ''"
+          (press)="removeTeam()"
+          >Delete</app-button
+        >
       }
     </div>
   </div>

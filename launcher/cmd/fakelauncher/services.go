@@ -132,9 +132,14 @@ func (s settingsRPC) DispatchAction(_ context.Context, request *connect.Request[
 	// The buttons whose whole effect is on the draft are answered the way
 	// the launcher answers them, by the same code. The rest only log.
 	if s.fake.draft != nil {
-		if next, said, ok := form.Act(*s.fake.draft, request.Msg.GetId()); ok {
+		next, said, err := form.Act(*s.fake.draft, request.Msg.GetId())
+		switch {
+		case err == nil:
 			s.fake.draft = &next
 			s.fake.notice, s.fake.noticeSeq = said, s.fake.noticeSeq+1
+		case !errors.Is(err, form.ErrNotAct):
+			s.fake.mu.Unlock()
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 	}
 	screen := s.fake.screenLocked().Proto()
