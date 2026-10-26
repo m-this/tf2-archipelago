@@ -603,3 +603,21 @@ void BuffLevels_ForgetClient(int client)
     BuffLevels_ForgetShot(client);
     g_SelfBlastHealth[client] = 0;
 }
+
+// A buff rebuild must not leave more ammo than it found: on Windows, setting a
+// percentage max-ammo attribute scales the held ammo again on every rebuild. A
+// spawn or a resupply is the exception, as the game means the player to be full,
+// so there the ceiling is the buffed maximum. A negative maximum is no refill.
+int BuffLevels_AmmoKept(int saved, int now, int maximum)
+{
+    int ceiling = saved;
+    if (maximum > ceiling)
+    {
+        ceiling = maximum;
+    }
+    if (now > ceiling)
+    {
+        return ceiling;
+    }
+    return now;
+}

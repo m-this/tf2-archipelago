@@ -388,3 +388,19 @@ func TestAShotWithoutTheBuffSweepsNothing(t *testing.T) {
 `)
 	wantCells(t, "unbuffed shot", got, 0, 0)
 }
+
+// A rebuild in the middle of a life keeps the ammo it found, however far the
+// attribute scaled it (apw-b14o). A spawn or a resupply keeps up to the buffed
+// maximum, so a max-metal buff starts the Engineer on 300 (apw-hntl), and a
+// second resupply on a full reserve still cannot climb past it.
+func TestBuffLevelsAmmoKeptAcrossRebuild(t *testing.T) {
+	got := levelsDriver(t, `
+    printnum(BuffLevels_AmmoKept(31, 46, -1));
+    printnum(BuffLevels_AmmoKept(200, 300, -1));
+    printnum(BuffLevels_AmmoKept(200, 300, 300));
+    printnum(BuffLevels_AmmoKept(300, 450, 300));
+    printnum(BuffLevels_AmmoKept(120, 180, 300));
+    printnum(BuffLevels_AmmoKept(150, 100, 300));
+`)
+	wantCells(t, "ammo kept", got, 31, 200, 300, 300, 180, 100)
+}

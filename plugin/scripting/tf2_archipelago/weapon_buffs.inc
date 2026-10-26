@@ -14,6 +14,8 @@
 #define WeaponBuffProviderTargetName "tf2ap_weapon_buff_provider"
 #define WeaponBuffProviderListMax 32
 #define AmmoTypeCount 32
+// TF_AMMO_COUNT: CTFPlayer::GetMaxAmmo indexes a table of this many types.
+#define MaxAmmoTypeCount 7
 #define ItemChargeMeterMaximum 100.0
 #define RocketPackReadyCharge 50.0
 
@@ -34,6 +36,7 @@ ConVar g_WeaponBuffDefenderBots;
 bool g_WeaponBuffFiringExtra;
 int g_WeaponBuffLastExtra;
 Handle g_WeaponBuffFlareCreate;
+Handle g_WeaponBuffGetMaxAmmo;
 Handle g_WeaponBuffArrowCreate;
 Handle g_WeaponBuffProjectileGetDamage;
 Handle g_WeaponBuffProjectileSetDamage;
@@ -97,6 +100,7 @@ void WeaponBuffs_Init()
     HookEvent("rocketpack_launch", WeaponBuffs_RocketPackLaunch);
     WeaponBuffs_InitDisposableSentryHook();
     WeaponBuffs_InitProjectileCalls();
+    WeaponBuffs_InitMaxAmmoCall();
     UserMsg jarated = GetUserMessageId("PlayerJarated");
     if (jarated == INVALID_MESSAGE_ID || GetUserMessageType() != UM_BitBuf)
     {
@@ -496,6 +500,29 @@ public void WeaponBuffs_DefenderBotsChanged(ConVar convar,
             WeaponBuffs_Remove(client);
         }
     }
+}
+
+static void WeaponBuffs_InitMaxAmmoCall()
+{
+    GameData config = LoadGameConfigFile("tf2_archipelago");
+    if (config == null)
+    {
+        LogError("Spawn and resupply keep the unbuffed ammo: tf2_archipelago gamedata is missing.");
+        return;
+    }
+    StartPrepSDKCall(SDKCall_Player);
+    if (PrepSDKCall_SetFromConf(config, SDKConf_Signature, "CTFPlayer::GetMaxAmmo"))
+    {
+        PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+        PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+        PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+        g_WeaponBuffGetMaxAmmo = EndPrepSDKCall();
+    }
+    if (g_WeaponBuffGetMaxAmmo == null)
+    {
+        LogError("Spawn and resupply keep the unbuffed ammo: CTFPlayer::GetMaxAmmo is not found.");
+    }
+    delete config;
 }
 
 static void WeaponBuffs_InitProjectileCalls()
@@ -2828,17 +2855,25 @@ static void WeaponBuffs_SaveVitals(int client, int[] vitals)
     vitals[AmmoTypeCount] = GetClientHealth(client);
 }
 
-static void WeaponBuffs_RestoreVitals(int client, const int[] vitals)
+static void WeaponBuffs_RestoreVitals(int client, const int[] vitals, bool refill)
 {
     if (!g_WeaponBuffKeepVitals.BoolValue)
     {
         return;
     }
+    refill = refill && g_WeaponBuffGetMaxAmmo != null;
     for (int type = 0; type < AmmoTypeCount; type++)
     {
-        if (GetEntProp(client, Prop_Send, "m_iAmmo", 4, type) > vitals[type])
+        int maximum = -1;
+        if (refill && type > 0 && type < MaxAmmoTypeCount)
         {
-            SetEntProp(client, Prop_Send, "m_iAmmo", vitals[type], 4, type);
+            maximum = SDKCall(g_WeaponBuffGetMaxAmmo, client, type, -1);
+        }
+        int now = GetEntProp(client, Prop_Send, "m_iAmmo", 4, type);
+        int kept = BuffLevels_AmmoKept(vitals[type], now, maximum);
+        if (kept != now)
+        {
+            SetEntProp(client, Prop_Send, "m_iAmmo", kept, 4, type);
         }
     }
     if (GetClientHealth(client) > vitals[AmmoTypeCount])
@@ -2847,7 +2882,8 @@ static void WeaponBuffs_RestoreVitals(int client, const int[] vitals)
     }
 }
 
-void WeaponBuffs_Apply(int client)
+// refill is for a spawn or a resupply, where the game fills the player up.
+void WeaponBuffs_Apply(int client, bool refill = false)
 {
     bool runBuffs = g_HaveUnlocks && WeaponBuffs_CanUseRunBuffs(client);
     if ((!runBuffs && !BotCards_HasInnates(client)) || !IsPlayerAlive(client))
@@ -2925,7 +2961,7 @@ void WeaponBuffs_Apply(int client)
     WeaponBuffs_ApplyDisposableSentryPrediction(client, provider);
     WeaponBuffs_ApplyPassives(client, provider);
     TF2Attrib_ClearCache(entity);
-    WeaponBuffs_RestoreVitals(client, vitals);
+    WeaponBuffs_RestoreVitals(client, vitals, refill);
 }
 
 // The card diagnostic distinguishes configured innates from effects actually

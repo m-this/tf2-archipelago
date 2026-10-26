@@ -8,6 +8,11 @@ in the release notes, so this file is the only place to write it.
 
 ### Fixed
 
+- **Max ammo and max metal buffs fill you up again when you spawn.** Since
+  1.18.3 an Engineer with a max metal buff started on 200 metal and only got
+  300 at the next resupply. Spawning and resupplying now give the buffed
+  amount. A buff rebuild in the middle of a life still never adds ammo, so
+  the Windows pile-up stays fixed.
 - **The Docker stack only draws from the community packs you ticked.** With
   `MVM_EXCLUDED_MISSIONS` empty, `make seed` and the self-hosted multiworld
   could pick a mission from a pack unticked in the admin page, and the admin
