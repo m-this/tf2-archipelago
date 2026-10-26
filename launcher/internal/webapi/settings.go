@@ -115,10 +115,8 @@ func (a *App) SaveSettings(restart bool) error {
 		if plan.Team {
 			if err := srcdsconfig.Install(written); err != nil {
 				a.Say("cannot write the bot files: %v", err)
-			} else {
-				for _, command := range botlive.Commands(before, written) {
-					a.SendRCON(command)
-				}
+			} else if err := a.applyLocalTeam(before, written); err != nil {
+				a.Notify("settings saved, but the live bot team was not applied: " + err.Error())
 			}
 		}
 		switch {
@@ -199,18 +197,7 @@ func (a *App) applyAttachedTeam(before, after settings.Settings) error {
 	if !strings.Contains(reply, "Bot file sync OK") {
 		return fmt.Errorf("copy bot files into the game: %s", strings.TrimSpace(reply))
 	}
-	for _, command := range botlive.Commands(before, after) {
-		reply, err := client.Exec(command)
-		if err != nil {
-			return fmt.Errorf("%s: %w", command, err)
-		}
-		if strings.Contains(reply, "Unknown command") || strings.Contains(reply, "cards unchanged") ||
-			strings.Contains(reply, "Cannot read the new lineup") ||
-			strings.Contains(reply, "No card loadout file to reload") {
-			return fmt.Errorf("%s: %s", command, reply)
-		}
-	}
-	return nil
+	return applyLineup(client.Exec, botlive.Commands(before, after))
 }
 
 func (a *App) reportRoom(s settings.Settings, typed string, parseErr error) {
