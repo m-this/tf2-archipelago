@@ -57,6 +57,10 @@ checkout() {
 		fi
 		git -C "$dir" fetch --quiet --depth 1 $filter origin "$commit"
 		git -C "$dir" checkout --quiet --detach FETCH_HEAD
+	elif [ $# -gt 0 ]; then
+		# A checkout left by an older version of this script may lack a
+		# directory the list now names; the blobs come from the promisor.
+		git -C "$dir" sparse-checkout set --cone "$@"
 	fi
 	git -C "$dir" reset --quiet --hard
 	git -C "$dir" clean --quiet -fdx
@@ -107,14 +111,20 @@ tag_is ErikMinekus/sm-ripext "$RIPEXT_VERSION" "$RIPEXT_COMMIT"
 # Actions has no tag on the commit its v4.0.1 release was built from, so it goes
 # by ACTIONS_COMMIT alone, here and in build.sh (versions.env says why).
 
-# The SDK is 633 MB checked out whole and the build reads four directories of
-# it. game/server is one of them: enginecallback.h lives there.
+# The SDK is 633 MB checked out whole and the build reads seven directories of
+# it. game/server is one of them: enginecallback.h lives there. tier1 and
+# mathlib, and the utils/lzma tier1 includes, are the others: hl2sdk-manifests
+# builds both libraries from their AMBuilder for
+# an extension built on it (Actions is one), and finds nothing to link
+# when they are missing. Windows then fails to link; Linux links anyway and
+# leaves ConVar_Register, g_pCVar and V_snprintf undefined, so the extension
+# fails to load.
 if [ "$windows" = 1 ]; then
 	sdk_libs=lib/public
 else
 	sdk_libs=lib/public/linux
 fi
-checkout alliedmodders/hl2sdk "$HL2SDK_COMMIT" hl2sdk-tf2 public game common $sdk_libs
+checkout alliedmodders/hl2sdk "$HL2SDK_COMMIT" hl2sdk-tf2 public game common tier1 mathlib utils/lzma $sdk_libs
 checkout alliedmodders/sourcemod "$SOURCEMOD_SRC_COMMIT" sourcemod
 checkout alliedmodders/metamod-source "$METAMOD_SRC_COMMIT" metamod
 checkout alliedmodders/ambuild "$AMBUILD_COMMIT" ambuild
