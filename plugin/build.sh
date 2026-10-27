@@ -44,7 +44,7 @@ fi
 if [ ! -d "$tf2attributes" ]; then
 	echo "fetching tf2attributes $TF2ATTRIBUTES_VERSION includes"
 	mkdir -p "$tf2attributes"
-	curl -fsSL "https://github.com/FlaminSarge/tf2attributes/archive/refs/tags/$TF2ATTRIBUTES_VERSION.tar.gz" |
+	curl -fsSL "https://github.com/$TF2ATTRIBUTES_REPO/archive/$TF2ATTRIBUTES_VERSION.tar.gz" |
 		tar xz -C "$tf2attributes" --strip-components=1
 fi
 

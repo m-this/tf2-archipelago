@@ -1,0 +1,192 @@
+diff --git a/scripting/include/cbasenpc/baseanimating.inc b/scripting/include/cbasenpc/baseanimating.inc
+index bbb3cfb..7c50445 100644
+--- a/scripting/include/cbasenpc/baseanimating.inc
++++ b/scripting/include/cbasenpc/baseanimating.inc
+@@ -132,7 +132,7 @@ methodmap CBaseAnimating < CBaseEntity
+ 	 * @return		Memory address of CStudioHdr.
+ 	 * @error 		Invalid entity.
+ 	 */
+-	public native Address GetModelPtr();
++	public native any GetModelPtr();
+ 
+ 	/**
+ 	 * Retrieves the parameter index of a named pose parameter.
+diff --git a/scripting/include/cbasenpc/baseanimatingoverlay.inc b/scripting/include/cbasenpc/baseanimatingoverlay.inc
+index d7de063..e2358f4 100644
+--- a/scripting/include/cbasenpc/baseanimatingoverlay.inc
++++ b/scripting/include/cbasenpc/baseanimatingoverlay.inc
+@@ -43,16 +43,16 @@ enum //CAnimationLayer
+ methodmap CAnimationOverlay  
+ {
+ 	#pragma deprecated Use CAnimationLayer instead
+-	public CAnimationOverlay(Address address)
++	public CAnimationOverlay(any address)
+ 	{
+ 		return view_as<CAnimationOverlay>(address);
+ 	}
+ 	
+-	property Address Address  
++	property any Address  
+ 	{
+ 		public get()  
+ 		{
+-			return view_as<Address>(this); 
++			return view_as<any>(this); 
+ 		}
+ 	}
+ 	
+@@ -66,12 +66,12 @@ methodmap CAnimationOverlay
+ 
+ 	public any Get(int iOffset) 
+ 	{ 
+-		return LoadFromAddress(this.Address + view_as<Address>(iOffset), NumberType_Int32); 
++		return LoadFromAddress(this.Address + view_as<any>(iOffset), NumberType_Int32); 
+ 	}
+ 	
+ 	public void Set(int iOffset, any iValue) 
+ 	{ 
+-		StoreToAddress(this.Address + view_as<Address>(iOffset), iValue, NumberType_Int32); 
++		StoreToAddress(this.Address + view_as<any>(iOffset), iValue, NumberType_Int32); 
+ 	}
+ 	
+ 	#pragma deprecated Use CAnimationLayer.IsActive() instead
+diff --git a/scripting/include/cbasenpc/baseentity.inc b/scripting/include/cbasenpc/baseentity.inc
+index 2f56c21..5765c8f 100644
+--- a/scripting/include/cbasenpc/baseentity.inc
++++ b/scripting/include/cbasenpc/baseentity.inc
+@@ -53,7 +53,7 @@ methodmap CBaseEntity
+ 	 * @return		Memory address of CServerNetworkProperty.
+ 	 * @error 		Invalid entity.
+ 	 */
+-	public native Address NetworkProp();
++	public native any NetworkProp();
+ 
+ 	/**
+ 	 * Obtains the entity's CCollisionProperty.
+@@ -61,7 +61,7 @@ methodmap CBaseEntity
+ 	 * @return		Memory address of CCollisionProperty.
+ 	 * @error 		Invalid entity.
+ 	 */
+-	public native Address CollisionProp();
++	public native any CollisionProp();
+ 
+ 	/**
+ 	 * Informs the server that the network properties of this entity changed.
+@@ -78,7 +78,7 @@ methodmap CBaseEntity
+ 	 * @param varAddr	Entity networked property address.
+ 	 * @error 		Invalid entity.
+ 	 */
+-	public native void NetworkStateChangedVar(Address varAddr);
++	public native void NetworkStateChangedVar(any varAddr);
+ 
+ 	/**
+ 	 * Gets the entity simulation time.
+diff --git a/scripting/include/cbasenpc/entityfactory.inc b/scripting/include/cbasenpc/entityfactory.inc
+index 5a772aa..7bd9573 100644
+--- a/scripting/include/cbasenpc/entityfactory.inc
++++ b/scripting/include/cbasenpc/entityfactory.inc
+@@ -60,7 +60,7 @@ typeset CEntityFactoryOnRemoveCallback
+ 
+ typeset CEntityFactoryNextBot
+ {
+-	function INextBot (Address link);
++	function INextBot (any link);
+ };
+ 
+ methodmap CEntityFactory < Handle
+diff --git a/scripting/include/cbasenpc/nav.inc b/scripting/include/cbasenpc/nav.inc
+index c15d3a2..9e95f1a 100644
+--- a/scripting/include/cbasenpc/nav.inc
++++ b/scripting/include/cbasenpc/nav.inc
+@@ -181,7 +181,7 @@ methodmap CNavMesh
+ 	/**
+ 	 * Pointer to TheNavMesh.
+ 	 */
+-	property Address Address
++	property any Address
+ 	{
+ 		public native get();
+ 	}
+diff --git a/scripting/include/cbasenpc/nextbot.inc b/scripting/include/cbasenpc/nextbot.inc
+index 2f2be98..7ac44c1 100644
+--- a/scripting/include/cbasenpc/nextbot.inc
++++ b/scripting/include/cbasenpc/nextbot.inc
+@@ -410,10 +410,10 @@ methodmap ToolsNextBot < INextBot
+ 	 * @param entity     Entity address
+ 	 * @return           The created NextBot interface
+ 	 */
+-	public native ToolsNextBot(Address entity);
++	public native ToolsNextBot(any entity);
+ }
+ 
+-stock INextBot ToolsNextBot_Factory(Address entity)
++stock INextBot ToolsNextBot_Factory(any entity)
+ {
+ 	return ToolsNextBot(entity);
+ }
+@@ -429,7 +429,7 @@ methodmap ToolsNextBotPlayer < ToolsNextBot
+ 	 * @param entity     Entity address
+ 	 * @return           The created NextBot interface
+ 	 */
+-	public native ToolsNextBotPlayer(Address entity);
++	public native ToolsNextBotPlayer(any entity);
+ 
+ 	/*
+ 	 * Defines whether or not the nextbot interface should update when
+@@ -442,7 +442,7 @@ methodmap ToolsNextBotPlayer < ToolsNextBot
+ 	}
+ }
+ 
+-stock INextBot ToolsNextBotPlayer_Factory(Address entity)
++stock INextBot ToolsNextBotPlayer_Factory(any entity)
+ {
+ 	return ToolsNextBotPlayer(entity);
+ }
+diff --git a/scripting/include/cbasenpc/nextbot/behavior.inc b/scripting/include/cbasenpc/nextbot/behavior.inc
+index cae4034..a954c0b 100644
+--- a/scripting/include/cbasenpc/nextbot/behavior.inc
++++ b/scripting/include/cbasenpc/nextbot/behavior.inc
+@@ -76,10 +76,10 @@ typeset ActionEventResponderCallback
+ 	
+ 	// OnContact
+ 	// result is a CGameTrace* structure
+-	function int (NextBotAction action, int actor, int other, Address result);
+-	function int (NextBotAction action, CBaseCombatCharacter actor, CBaseEntity other, Address result);
+-	function void (NextBotAction action, int actor, int other, Address result);
+-	function void (NextBotAction action, CBaseCombatCharacter actor, CBaseEntity other, Address result);
++	function int (NextBotAction action, int actor, int other, any result);
++	function int (NextBotAction action, CBaseCombatCharacter actor, CBaseEntity other, any result);
++	function void (NextBotAction action, int actor, int other, any result);
++	function void (NextBotAction action, CBaseCombatCharacter actor, CBaseEntity other, any result);
+ 
+ 	// OnMoveToSuccess
+ 	function int (NextBotAction action, int actor, Path path);
+@@ -203,11 +203,11 @@ typeset ActionEventResponderCallback
+ 
+ 	// OnSpokeConcept
+ 	// response is AI_Response*
+-	function int (NextBotAction action, int actor, int who, const char[] concept, Address response);
+-	function int (NextBotAction action, CBaseCombatCharacter actor, CBaseCombatCharacter who, const char[] concept, Address response);
++	function int (NextBotAction action, int actor, int who, const char[] concept, any response);
++	function int (NextBotAction action, CBaseCombatCharacter actor, CBaseCombatCharacter who, const char[] concept, any response);
+ 
+-	function void (NextBotAction action, int actor, int who, const char[] concept, Address response);
+-	function void (NextBotAction action, CBaseCombatCharacter actor, CBaseCombatCharacter who, const char[] concept, Address response);
++	function void (NextBotAction action, int actor, int who, const char[] concept, any response);
++	function void (NextBotAction action, CBaseCombatCharacter actor, CBaseCombatCharacter who, const char[] concept, any response);
+ 
+ 	// OnWeaponFired
+ 	function int (NextBotAction action, int actor, int whoFired, int weapon);
+diff --git a/scripting/include/cbasenpc/takedamageinfo.inc b/scripting/include/cbasenpc/takedamageinfo.inc
+index 3ac8f50..871403a 100644
+--- a/scripting/include/cbasenpc/takedamageinfo.inc
++++ b/scripting/include/cbasenpc/takedamageinfo.inc
+@@ -17,7 +17,7 @@ methodmap CTakeDamageInfo
+ 	 *
+ 	 * @return		The CTakeDamageInfo.
+ 	 */
+-	public native CTakeDamageInfo(Address ptr);
++	public native CTakeDamageInfo(any ptr);
+ 
+ 	/**
+ 	 * Initializes the CTakeDamageInfo's values.

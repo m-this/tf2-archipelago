@@ -85,6 +85,14 @@ new ServerVersion. It lists the pins keyed to the game. Work through it:
   extensions (binaries per SourceMod API), the other three are plugins (bytecode:
   a plugin compiled by an older spcomp still runs on a newer SourceMod). A bump
   means the patches still apply; read `deploy/patches/README.md`.
+- On 1.13 `Address` is an int64 and a plugin compiled there passes one to a
+  native by reference, and gets one back through a hidden first parameter. A
+  native that reads its Address with `GetNativeCell` (tf2attributes v1.7.5,
+  every CBaseNPC native) then reads a stack address. The plugins are therefore
+  on their int64 lines (TFEconData x64 tags, tf2attributes#71), and the CBaseNPC
+  and Actions includes declare their pointer parameters `any`, which is what
+  their C++ reads. Check a new release of any of them against this before
+  bumping it.
 
 ## Upstream SigMod
 

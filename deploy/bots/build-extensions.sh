@@ -103,8 +103,9 @@ apply_patches() {
 }
 
 tag_is TF2-DMB/CBaseNPC "$CBASENPC_VERSION" "$CBASENPC_COMMIT"
-tag_is Vinillia/actions.ext "$ACTIONS_VERSION" "$ACTIONS_COMMIT"
 tag_is ErikMinekus/sm-ripext "$RIPEXT_VERSION" "$RIPEXT_COMMIT"
+# Actions has no tag on the commit its v4.0.1 release was built from, so it goes
+# by ACTIONS_COMMIT alone, here and in build.sh (versions.env says why).
 
 # The SDK is 633 MB checked out whole and the build reads four directories of
 # it. game/server is one of them: enginecallback.h lives there.
@@ -180,7 +181,7 @@ build() {
 build cbasenpc --extension-only
 build actions
 build ripext --enable-optimize
-# SourceMod 1.13.0-git7477 leaves DHooksInfo::int64_address unset on a virtual
+# SourceMod 1.13.0-git7481 leaves DHooksInfo::int64_address unset on a virtual
 # hook, so a callback's Address `this` is sometimes an int64 passed by reference
 # (a stack address in the plugin) and sometimes a cell. Patched and built here
 # until a drop carries the fix; patch 0002 makes the build produce only dhooks.

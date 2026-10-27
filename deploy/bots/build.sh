@@ -52,7 +52,7 @@ mkdir -p "$src" "$out/addons/sourcemod/plugins" \
 
 git config --global advice.detachedHead false 2>/dev/null || true
 
-# $1 repo, $2 ref, $3 directory
+# $1 repo, $2 ref (a tag, a branch or a full commit), $3 directory
 #
 # The checkouts survive between runs, here and in CI's cache, and that is worth
 # having: a clone of six repositories is most of this script's time. It is
@@ -71,7 +71,10 @@ fetch() {
 		rm -rf "$src/$3"
 	fi
 	echo "fetching $1@$2"
-	git clone --quiet --depth 1 --branch "$2" "https://github.com/$1" "$src/$3"
+	mkdir -p "$src/$3"
+	git -C "$src/$3" init --quiet
+	git -C "$src/$3" fetch --quiet --depth 1 "https://github.com/$1" "$2"
+	git -C "$src/$3" checkout --quiet FETCH_HEAD
 	printf '%s\n' "$2" >"$stamp"
 }
 
@@ -100,7 +103,7 @@ apply_patches() {
 
 # --- Sources for the plugins ---
 
-fetch FlaminSarge/tf2attributes "$TF2ATTRIBUTES_VERSION" tf2attributes
+fetch "$TF2ATTRIBUTES_REPO" "$TF2ATTRIBUTES_VERSION" tf2attributes
 fetch nosoop/SM-TFEconData "$TFECONDATA_VERSION" tf_econ_data
 fetch nosoop/SM-TFUtils "$TF2UTILS_VERSION" tf2utils
 fetch nosoop/stocksoup "$STOCKSOUP_REF" stocksoup-root/stocksoup
@@ -186,18 +189,24 @@ generate_from_module
 # The include roots the plugins compile against. Only the includes are needed,
 # so these are checkouts of source we never build.
 fetch TF2-DMB/CBaseNPC "$CBASENPC_VERSION" cbasenpc
-fetch Vinillia/actions.ext "$ACTIONS_VERSION" actions
+fetch Vinillia/actions.ext "$ACTIONS_COMMIT" actions
 
+# CBaseNPC and Actions are patched here for their includes, which build-extensions.sh
+# does not reach when BOTS_EXTENSIONS_DIR hands over extensions built elsewhere.
+# Their build patches ride along and change nothing a plugin reads.
 apply_patches tf2attributes
 apply_patches tf_econ_data
+apply_patches tf2utils
+apply_patches cbasenpc
+apply_patches actions
 
 # --- The compiler, which the mod names and we do not ---
 #
-# spcomp from SOURCEMOD_VERSION, which plugin/build.sh uses for our own plugin,
-# is 1.13, and the defender mod's includes do not compile there (CBaseNPC casts
-# Address to int). So the mod compiles with the drop its own CI uses, and the
-# mod is where that drop is named: plugin/testbed/versions.env, read here out of
-# the module cache, with the tarball's sha256 next to it.
+# The mod compiles with the drop its own CI uses, and the mod is where that
+# drop is named: plugin/testbed/versions.env, read here out of the module cache,
+# with the tarball's sha256 next to it. It is 1.13 like SOURCEMOD_VERSION, which
+# plugin/build.sh uses for our own plugin, but the mod's file says so and this
+# one does not repeat it. The three gamedata plugins compile with it too.
 #
 # One pin, the same way the mod's own version is the go.mod requirement and
 # nothing else. versions.env used to carry a copy as

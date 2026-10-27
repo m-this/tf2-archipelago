@@ -1,0 +1,28 @@
+diff --git a/sourcemod/include/actions.inc b/sourcemod/include/actions.inc
+index bf4f7f5..6f73806 100644
+--- a/sourcemod/include/actions.inc
++++ b/sourcemod/include/actions.inc
+@@ -815,7 +815,7 @@ methodmap BehaviorAction < BehaviorActionListeners
+  	*/
+ 	public any Get( int offset, NumberType type = NumberType_Int32 )
+ 	{
+-		return view_as<any>(LoadFromAddress(view_as<Address>(this) + view_as<Address>(offset), type));
++		return view_as<any>(LoadFromAddress(view_as<int>(this) + offset, type));
+ 	}
+ 	
+ 	/**
+@@ -830,12 +830,12 @@ methodmap BehaviorAction < BehaviorActionListeners
+  #if SOURCEMOD_V_MINOR < 11
+ 	public void Set( int offset, any data, NumberType type = NumberType_Int32 )
+ 	{
+-		StoreToAddress(view_as<Address>(this) + view_as<Address>(offset), data, type);
++		StoreToAddress(view_as<int>(this) + offset, data, type);
+ 	}
+  #else
+ 	public void Set( int offset, any data, NumberType type = NumberType_Int32, bool updateMemAccess = false )
+ 	{
+-		StoreToAddress(view_as<Address>(this) + view_as<Address>(offset), data, type, updateMemAccess);
++		StoreToAddress(view_as<int>(this) + offset, data, type, updateMemAccess);
+ 	}
+  #endif
+ 

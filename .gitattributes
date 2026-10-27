@@ -25,4 +25,4 @@ plugin/scripting/tf2_archipelago/weapon_buffs_data.inc linguist-generated=true
 # mechanical changes in code review.
 apworld/tf2_mvm/data/*.json linguist-generated=true
 gamedata/testdata/ids-frozen.json linguist-generated=true
-deploy/patches/**/*.patch whitespace=-blank-at-eol,-space-before-tab
+deploy/patches/**/*.patch -text whitespace=-blank-at-eol,-space-before-tab

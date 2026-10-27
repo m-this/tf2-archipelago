@@ -8,6 +8,13 @@ in the release notes, so this file is the only place to write it.
 
 ### Fixed
 
+- **Attribute lookups on the server read the right memory.** The plugin's
+  TF2Attributes lookup handed over its result in the form SourceMod 1.13
+  uses, to a TF2Attributes that did not read it that way. TF2Attributes is now
+  the int64 port, compiled for 1.13.
+- **The defender bots run on SourceMod 1.13**, the same build as the server,
+  with the current Actions (v4.0.1) and TF Econ Data. Before, the bots were
+  compiled with 1.12 because their dependencies did not compile on 1.13.
 - **The Docker stack only draws from the community packs you ticked.** With
   `MVM_EXCLUDED_MISSIONS` empty, `make seed` and the self-hosted multiworld
   could pick a mission from a pack unticked in the admin page, and the admin

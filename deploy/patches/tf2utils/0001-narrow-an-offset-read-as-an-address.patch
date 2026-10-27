@@ -1,0 +1,15 @@
+diff --git a/scripting/tf2utils.sp b/scripting/tf2utils.sp
+index a2829f2..ee01f09 100644
+--- a/scripting/tf2utils.sp
++++ b/scripting/tf2utils.sp
+@@ -486,8 +486,8 @@ public void OnPluginStart() {
+ 	offs_CEconWearable_bAlwaysValid = GameConfGetAddressOffset(hGameConf,
+ 			"CEconWearable::m_bAlwaysValid");
+ 	
+-	offs_CTFPlayer_flLastDamageTime = GameConfGetAddressOffset(hGameConf,
+-			"CTFPlayer::m_flLastDamageTime");
++	offs_CTFPlayer_flLastDamageTime = view_as<int>(GameConfGetAddressOffset(hGameConf,
++			"CTFPlayer::m_flLastDamageTime"));
+ 	
+ 	// allocate 5 chars for each value + delimiter
+ 	char damageTypes[MAX_DOT_DAMAGE_TYPES * 5];
