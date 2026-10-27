@@ -1,0 +1,19 @@
+diff --git a/extension/natives/nextbot/path.cpp b/extension/natives/nextbot/path.cpp
+index a7dd29c..b020be2 100644
+--- a/extension/natives/nextbot/path.cpp
++++ b/extension/natives/nextbot/path.cpp
+@@ -579,14 +579,6 @@ cell_t ComputeToTarget(IPluginContext* context, const cell_t* params) {
+ 		return 0;
+ 	}
+ 
+-
+-	cell_t* vec;
+-	context->LocalToPhysAddr(params[3], &vec);
+-	Vector vecGoal;
+-	PawnVectorToVector(vec, vecGoal);
+-	float maxPathLength = sp_ctof(params[4]);
+-	bool includePathIfGoalFails = params[5];
+-	
+ 	SMPathFollowerCost func(bot, path->pCostFunction);
+ 	
+ 	return path->Compute(bot, (CBaseCombatCharacter*)entity, func, sp_ctof(params[4]), (params[5]) ? true : false);

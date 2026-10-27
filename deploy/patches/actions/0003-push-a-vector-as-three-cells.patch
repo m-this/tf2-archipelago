@@ -1,0 +1,22 @@
+diff --git a/source/actions/propagation/propagation.h b/source/actions/propagation/propagation.h
+index ea71ddf..f9bff8b 100644
+--- a/source/actions/propagation/propagation.h
++++ b/source/actions/propagation/propagation.h
+@@ -145,7 +145,7 @@ public:
+ 		}
+ 		else if constexpr (std::is_same_v<type, Vector>)
+ 		{
+-			fn->PushArray(const_cast<cell_t*>(reinterpret_cast<const cell_t*>(&arg)), sizeof(Vector));
++			fn->PushArray(const_cast<cell_t*>(reinterpret_cast<const cell_t*>(&arg)), sizeof(Vector) / sizeof(cell_t));
+ 		}
+ 		else if constexpr (std::is_same_v<type, const char*>)
+ 		{
+@@ -203,7 +203,7 @@ public:
+ 				}
+ 				else if constexpr (std::is_same_v<TReturn, Vector>)
+ 				{
+-					fn->PushArray((cell_t*)result, sizeof(Vector), SM_PARAM_COPYBACK);
++					fn->PushArray((cell_t*)result, sizeof(Vector) / sizeof(cell_t), SM_PARAM_COPYBACK);
+ 				}
+ 				else
+ 				{
