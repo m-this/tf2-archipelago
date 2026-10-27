@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Code, ConnectError, Transport } from '@connectrpc/connect';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SettingsStore } from '@app/settings/settings-store';
 import { LAUNCHER_TRANSPORT } from '@app/transport/connect-transport';
@@ -56,6 +56,10 @@ describe('the settings store', () => {
       providers: [{ provide: LAUNCHER_TRANSPORT, useValue: transport }],
     });
     store = TestBed.inject(SettingsStore);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('waits for the typing to stop before telling the launcher', () => {
