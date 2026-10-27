@@ -1,0 +1,42 @@
+diff --git a/source/actions/processor/vtableswap.cpp b/source/actions/processor/vtableswap.cpp
+index fed660b..fcfc6d7 100644
+--- a/source/actions/processor/vtableswap.cpp
++++ b/source/actions/processor/vtableswap.cpp
+@@ -54,10 +54,17 @@ class ProcessorVtableManager
+ 		vtable* vptr01;
+ 	};
+ 
++	// A copy of a vtable keeps the two words the ABI puts in front of it,
++	// offset-to-top and the type info, or dynamic_cast and typeid on an
++	// action read whatever lies before the copy while a handler runs.
++	static constexpr size_t vtable_prefix_size = 2;
++
+ 	struct slot
+ 	{
+-		object obj;		
++		object obj;
++		void* prefix00[vtable_prefix_size];
+ 		vtable vt00;
++		void* prefix01[vtable_prefix_size];
+ 		vtable vt01;
+ 	};
+ 
+@@ -160,6 +167,18 @@ private:
+ 		object_internals* action_obj = GetObjectInternals(action);
+ 		object_internals* processor_obj = GetObjectInternals(g_pActionProcessor);
+ 
++		std::memcpy(
++			s->prefix00,
++			reinterpret_cast<void**>(action_obj->vt.vptr00) - vtable_prefix_size,
++			sizeof(s->prefix00)
++		);
++
++		std::memcpy(
++			s->prefix01,
++			reinterpret_cast<void**>(action_obj->vt.vptr01) - vtable_prefix_size,
++			sizeof(s->prefix01)
++		);
++
+ 		std::memcpy(
+ 			s->vt00.functions,
+ 			action_obj->vt.vptr00->functions,
