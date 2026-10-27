@@ -194,9 +194,10 @@ apply_patches tf_econ_data
 # --- The compiler, which the mod names and we do not ---
 #
 # spcomp from SOURCEMOD_VERSION, which plugin/build.sh uses for our own plugin,
-# segfaults on the defender mod: upstream issue #5, no diagnostic, exit 139. So
-# the mod compiles with the drop its own CI uses, and the mod is where that drop
-# is named: plugin/testbed/versions.env, read here out of the module cache.
+# is 1.13, and the defender mod's includes do not compile there (CBaseNPC casts
+# Address to int). So the mod compiles with the drop its own CI uses, and the
+# mod is where that drop is named: plugin/testbed/versions.env, read here out of
+# the module cache, with the tarball's sha256 next to it.
 #
 # One pin, the same way the mod's own version is the go.mod requirement and
 # nothing else. versions.env used to carry a copy as
@@ -219,6 +220,7 @@ defenderbots_pin() {
 
 defenderbots_sourcemod_branch=$(defenderbots_pin SOURCEMOD_BRANCH)
 defenderbots_sourcemod_version=$(defenderbots_pin SOURCEMOD_VERSION)
+defenderbots_sourcemod_sha256=$(defenderbots_pin SOURCEMOD_SHA256)
 
 # The same stamp rule the checkouts use: a compiler left from the previous pin
 # compiles and says nothing, and a build that silently used the old compiler is
@@ -228,8 +230,11 @@ if [ ! -d "$work/spcomp" ] || [ "$(cat "$spcomp_stamp" 2>/dev/null)" != "$defend
 	echo "fetching SourceMod $defenderbots_sourcemod_version, which $defenderbots_module compiles with"
 	rm -rf "$work/spcomp"
 	mkdir -p "$work/spcomp"
-	curl -fsSL "https://sm.alliedmods.net/smdrop/$defenderbots_sourcemod_branch/sourcemod-$defenderbots_sourcemod_version-linux.tar.gz" |
-		tar xz -C "$work/spcomp"
+	curl -fsSL -o "$work/sourcemod.tar.gz" \
+		"https://sm.alliedmods.net/smdrop/$defenderbots_sourcemod_branch/sourcemod-$defenderbots_sourcemod_version-linux.tar.gz"
+	echo "$defenderbots_sourcemod_sha256  $work/sourcemod.tar.gz" | sha256sum -c -
+	tar xzf "$work/sourcemod.tar.gz" -C "$work/spcomp"
+	rm -f "$work/sourcemod.tar.gz"
 	printf '%s\n' "$defenderbots_sourcemod_version" >"$spcomp_stamp"
 fi
 sm="$work/spcomp/addons/sourcemod/scripting"
