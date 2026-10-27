@@ -743,7 +743,7 @@ public void Event_InventoryApplied(Event event, const char[] name, bool dontBroa
     {
         Unlocks_EnforceSlots(client);
     }
-    WeaponBuffs_Apply(client);
+    WeaponBuffs_Apply(client, true);
     MissionModifiers_OnInventoryApplied(client);
 }
 

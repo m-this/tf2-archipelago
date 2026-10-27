@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { Subject, concatMap, exhaustMap, filter, tap } from 'rxjs';
+import { Subject, concatMap, exhaustMap, filter, map, tap } from 'rxjs';
 
 import { LauncherStore } from '@app/server/launcher-store';
 import { SettingsStore } from '@app/settings/settings-store';
@@ -78,7 +78,11 @@ export class BotLineup {
     return known ? 'Update' : 'Save as new';
   });
 
-  readonly fired = new Subject<string>();
+  /** The name Save would keep the seats under, empty when there is none to
+      send: the launcher refuses a team with no name. */
+  readonly typedName = computed(() => this.value(this.teamName()).trim());
+
+  readonly fired = new Subject<{ id: string; said: string }>();
   readonly answered = new Subject<{ id: string; value: string; said: string }>();
 
   constructor() {
@@ -104,12 +108,12 @@ export class BotLineup {
 
     this.fired
       .pipe(
-        concatMap((id) => this.settings.dispatch(id)),
-        tap((refusal) => {
-          if (refusal !== '') {
-            this.feedback.set(refusal);
-          }
-        }),
+        concatMap((press) =>
+          this.settings
+            .dispatch(press.id)
+            .pipe(map((refusal) => (refusal === '' ? press.said : refusal))),
+        ),
+        tap((said) => this.feedback.set(said)),
         takeUntilDestroyed(),
       )
       .subscribe();
@@ -146,13 +150,17 @@ export class BotLineup {
   }
 
   saveTeam(): void {
-    this.fired.next('bots.save_team');
-    this.feedback.set('Saved the current seats.');
+    const name = this.typedName();
+    if (name !== '') {
+      this.fired.next({ id: 'bots.save_team', said: `Saved the team as ${name}.` });
+    }
   }
 
   removeTeam(): void {
-    this.fired.next('bots.remove_team');
-    this.feedback.set('Removed that lineup.');
+    const name = this.typedName();
+    if (name !== '') {
+      this.fired.next({ id: 'bots.remove_team', said: `Removed the team ${name}.` });
+    }
   }
 
   value(field: Field | undefined): string {

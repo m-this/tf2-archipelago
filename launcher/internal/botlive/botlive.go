@@ -277,6 +277,12 @@ func WithoutTeam(s settings.Settings) settings.Settings {
 	s.SrcdsBotLoadouts = nil
 	s.SrcdsBotClassBlacklist = nil
 	s.SrcdsBotTeamSize = 0
+	// Names and card rolls reach the server through the loadout file and
+	// sm_redbots_reload_names, which Commands sends.
+	s.SrcdsBotSeatNames = nil
+	s.SrcdsBotCardRolls = nil
+	s.SrcdsBotNamesExcluded = nil
+	s.SrcdsBotNamesAdded = nil
 	// The saved teams are the launcher's own list and reach the server through
 	// nothing at all, so naming one is never a reason to restart either.
 	s.SrcdsBotTeamPresets = nil

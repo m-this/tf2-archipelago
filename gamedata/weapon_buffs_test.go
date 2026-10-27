@@ -632,7 +632,7 @@ func TestPluginImplementsAmmoOnHitForClippedAndMeleeWeapons(t *testing.T) {
 		}
 	}
 
-	apply := substanceSourceFunction(t, "void WeaponBuffs_Apply(int client)")
+	apply := substanceSourceFunction(t, "void WeaponBuffs_Apply(int client, bool refill")
 	for _, required := range []string{
 		"effect == ClipSizeEffect",
 		"EnergyClipSizeAttributeClass",

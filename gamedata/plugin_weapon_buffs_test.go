@@ -72,7 +72,7 @@ func TestWeaponBuffsStayOutOfMvMShopping(t *testing.T) {
 			t.Fatalf("private attribute provider has no %s", required)
 		}
 	}
-	apply := sourceFunction(t, buffs, "void WeaponBuffs_Apply(int client)")
+	apply := sourceFunction(t, buffs, "void WeaponBuffs_Apply(int client, bool refill")
 	for _, required := range []string{
 		"TF2Attrib_RemoveAll(provider)",
 		"TF2Attrib_ClearCache(entity)",
@@ -144,7 +144,7 @@ func TestDisposableSentryBuffHasAnIndependentBuildAllowance(t *testing.T) {
 	}
 
 	// Which items predict how many is TestDisposableSentriesShareTheConstructionPDAsPool.
-	apply := sourceFunction(t, buffs, "void WeaponBuffs_Apply(int client)")
+	apply := sourceFunction(t, buffs, "void WeaponBuffs_Apply(int client, bool refill")
 	if !strings.Contains(apply, "WeaponBuffs_ApplyDisposableSentryPrediction(client, provider)") {
 		t.Fatal("client prediction mirror is not installed with the provider")
 	}
@@ -391,7 +391,7 @@ func TestWeaponBuffOwnershipPolicyDefaultsToPlayers(t *testing.T) {
 	}
 
 	for _, signature := range []string{
-		"void WeaponBuffs_Apply(int client)",
+		"void WeaponBuffs_Apply(int client, bool refill",
 		"public void WeaponBuffs_OnTakeDamagePost",
 		"static void WeaponBuffs_FireExtraProjectiles(any reference)",
 		"public void WeaponBuffs_SubstanceProjectileSpawned(int entity)",
@@ -538,7 +538,7 @@ func TestSelfBlastBuffsPreserveTheNativeExplosionAndPush(t *testing.T) {
 		t.Fatal("no-self-blast still applies an attribute that changes explosion visuals")
 	}
 
-	apply := sourceFunction(t, buffs, "void WeaponBuffs_Apply(int client)")
+	apply := sourceFunction(t, buffs, "void WeaponBuffs_Apply(int client, bool refill")
 	if !strings.Contains(apply, "WeaponBuffs_ClearOldSelfBlastAttributes(client)") {
 		t.Fatal("buff application does not clear old self-blast attributes")
 	}

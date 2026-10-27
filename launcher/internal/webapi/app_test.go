@@ -2,6 +2,7 @@ package webapi
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"slices"
@@ -418,7 +419,7 @@ func TestEveryStateOnlyActionReachesFormAct(t *testing.T) {
 		if spec.Kind != form.Action && spec.Kind != form.Confirm {
 			continue
 		}
-		if _, _, ok := form.Act(state, spec.ID); !ok {
+		if _, _, err := form.Act(state, spec.ID); errors.Is(err, form.ErrNotAct) {
 			continue
 		}
 		if err := app.Dispatch(spec.ID); err != nil && strings.Contains(err.Error(), "is not wired") {
@@ -444,4 +445,21 @@ func TestMissionTableAndBridgeAgreeOnAnUntickedPack(t *testing.T) {
 		}
 	}
 	t.Fatal("the mission is missing from the table")
+}
+
+// Save this team with the name box empty used to answer the browser with
+// success and the refusal as a notice beside it, so the lineup said it saved
+// (apw-fjv8). A refusal is the call's error, which the browser draws as one.
+func TestARefusedTeamSaveIsTheDispatchError(t *testing.T) {
+	app := New(settings.Defaults(), nil)
+	app.OpenSettings("")
+	for id, want := range map[string]string{
+		"bots.save_team":   "name the team first",
+		"bots.remove_team": "name the team to remove first",
+	} {
+		err := app.Dispatch(id)
+		if err == nil || !strings.Contains(err.Error(), want) {
+			t.Errorf("%s with no name answered %v, want %q", id, err, want)
+		}
+	}
 }
