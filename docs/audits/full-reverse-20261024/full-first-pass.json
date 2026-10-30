@@ -1,0 +1,40 @@
+{
+  "reverse_cases": {
+    "eligible": 112,
+    "tested": 112,
+    "passed": 90
+  },
+  "planned_cases": 2454,
+  "eligible_cases": 2454,
+  "tested_cases": 2454,
+  "passed_cases": 2393,
+  "stability_percent": 97.51,
+  "verified_coverage_percent": 97.51,
+  "outcomes": {
+    "passed": 2393,
+    "wave failed": 21,
+    "wave 0": 0,
+    "no enemies spawned": 0,
+    "wave timed out": 26,
+    "probe error": 8,
+    "changelevel failure": 6,
+    "load blocked": 0,
+    "inconclusive": 0,
+    "not run": 0,
+    "reverse objective": 0
+  },
+  "by_mode": {
+    "normal": {
+      "eligible": 1227,
+      "tested": 1227,
+      "passed": 1195,
+      "stability_percent": 97.39
+    },
+    "surge": {
+      "eligible": 1227,
+      "tested": 1227,
+      "passed": 1198,
+      "stability_percent": 97.64
+    }
+  }
+}

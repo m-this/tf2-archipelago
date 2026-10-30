@@ -89,11 +89,10 @@ func TestCheck(t *testing.T) {
 			why:     "Moonlight Archive is not on this server: download or import it on the Missions page",
 		},
 		{
-			name:    "a map with no navigation mesh, whatever the server holds",
+			name:    "a map with embedded navigation is playable",
 			server:  everything,
 			popFile: swampFever,
-			want:    NoNavMesh,
-			why:     "missing maps/mvm_bogland_rc12.nav",
+			want:    Playable,
 		},
 		{
 			name:    "a SigMod mission on a server that loads SigMod",
@@ -201,12 +200,12 @@ func TestPlayableIsCheckOverTheCatalog(t *testing.T) {
 	if !slices.Equal(playable, want) {
 		t.Fatalf("Playable() holds %d missions, Check passes %d", len(playable), len(want))
 	}
-	for _, popFile := range []string{decoy, homestead} {
+	for _, popFile := range []string{decoy, homestead, swampFever} {
 		if !slices.ContainsFunc(playable, func(m gamedata.Mission) bool { return m.PopFile == popFile }) {
 			t.Errorf("%s is missing from the playable missions", popFile)
 		}
 	}
-	for _, popFile := range []string{troubleInTown, pointOfImpact, swampFever} {
+	for _, popFile := range []string{troubleInTown, pointOfImpact} {
 		if slices.ContainsFunc(playable, func(m gamedata.Mission) bool { return m.PopFile == popFile }) {
 			t.Errorf("%s is playable on a server that cannot play it", popFile)
 		}
@@ -228,7 +227,7 @@ func TestShownLeavesOutOnlyMissingPacks(t *testing.T) {
 		t.Errorf("%s is shown without its pack", troubleInTown)
 	}
 	if valveOnly := (Server{}).Shown(); slices.ContainsFunc(valveOnly, func(v Verdict) bool { return v.Mission.PopFile == swampFever }) {
-		t.Errorf("%s is shown without its pack because its map has no navigation mesh", swampFever)
+		t.Errorf("%s is shown without its pack", swampFever)
 	}
 }
 

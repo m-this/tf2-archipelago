@@ -7,6 +7,7 @@ package main
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -109,7 +110,7 @@ func run(output string, sources []string) error {
 	if err := os.Rename(temporary, output); err != nil {
 		return err
 	}
-	fmt.Printf("added %d maps and %d missions; updated %d existing SigMod requirements\n", addedMaps, added, marked)
+	fmt.Printf("added %d maps and %d missions; updated %d existing mission requirements\n", addedMaps, added, marked)
 	return nil
 }
 
@@ -163,8 +164,7 @@ func addMissions(catalog *manifest, mapIDs map[string]uint8, nav map[string]bool
 		}
 		if at, found := existing[popFile]; found {
 			previous := catalog.Missions[at].Requires
-			if previous != requirement && (previous == "" || previous == "sigsegv-mvm") &&
-				(requirement == "" || requirement == "sigsegv-mvm") {
+			if previous != requirement && (previous == "" || previous == "sigsegv-mvm" || previous == "no_nav") {
 				catalog.Missions[at].Requires, marked = requirement, marked+1
 			}
 			if row.Loadout == "medic_only" || catalog.Missions[at].Loadout == "medic_only" {
@@ -237,7 +237,15 @@ func readArchive(path string, bsp, nav map[string]bool, populations map[string]p
 		name = strings.TrimPrefix(name, "tf/")
 		switch {
 		case strings.HasPrefix(name, "maps/mvm_") && strings.HasSuffix(name, ".bsp"):
-			bsp[strings.TrimSuffix(filepath.Base(name), ".bsp")] = true
+			mapName := strings.TrimSuffix(filepath.Base(name), ".bsp")
+			bsp[mapName] = true
+			embedded, err := archiveBSPNavigation(entry, mapName)
+			if err != nil {
+				return fmt.Errorf("%s: %w", name, err)
+			}
+			if embedded {
+				nav[mapName] = true
+			}
 		case strings.HasPrefix(name, "maps/mvm_") && strings.HasSuffix(name, ".nav"):
 			nav[strings.TrimSuffix(filepath.Base(name), ".nav")] = true
 		case strings.HasPrefix(name, "scripts/population/") && strings.HasSuffix(strings.ToLower(name), ".pop"):
@@ -310,4 +318,49 @@ func humanName(value string) string {
 		}
 	}
 	return strings.Join(words, " ")
+}
+
+// Source checks the map-named nav and maps/embed.nav inside the BSP pak lump
+// after looking for a loose file. Inspect that ZIP without extracting assets.
+func archiveBSPNavigation(entry *zip.File, mapName string) (bool, error) {
+	stream, err := entry.Open()
+	if err != nil {
+		return false, err
+	}
+	defer func() { _ = stream.Close() }()
+	const headerSize = 8 + 64*16 + 4
+	var header [headerSize]byte
+	if _, err := io.ReadFull(stream, header[:]); err != nil {
+		return false, err
+	}
+	if string(header[:4]) != "VBSP" {
+		return false, errors.New("invalid BSP header")
+	}
+	const pakLump = 8 + 40*16
+	offset := uint64(binary.LittleEndian.Uint32(header[pakLump:]))
+	size := uint64(binary.LittleEndian.Uint32(header[pakLump+4:]))
+	if size == 0 {
+		return false, nil
+	}
+	if offset < headerSize || offset+size > entry.UncompressedSize64 || size > 512<<20 {
+		return false, errors.New("invalid or oversized BSP pak lump")
+	}
+	if _, err := io.CopyN(io.Discard, stream, int64(offset)-headerSize); err != nil {
+		return false, err
+	}
+	body := make([]byte, int(size))
+	if _, err := io.ReadFull(stream, body); err != nil {
+		return false, err
+	}
+	pak, err := zip.NewReader(bytes.NewReader(body), int64(len(body)))
+	if err != nil {
+		return false, err
+	}
+	for _, file := range pak.File {
+		name := strings.ToLower(strings.ReplaceAll(file.Name, `\`, "/"))
+		if file.UncompressedSize64 > 0 && (name == "maps/"+mapName+".nav" || name == "maps/embed.nav") {
+			return true, nil
+		}
+	}
+	return false, nil
 }

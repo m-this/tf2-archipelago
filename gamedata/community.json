@@ -217,8 +217,7 @@
       "difficulty": "advanced",
       "waves": 4,
       "has_tank": true,
-      "has_giant": true,
-      "requires": "no_nav"
+      "has_giant": true
     },
     {
       "id": 108,
@@ -239,7 +238,6 @@
       "waves": 5,
       "has_tank": true,
       "has_giant": true,
-      "requires": "no_nav",
       "pack": "mlarchive-assets.zip"
     },
     {
@@ -1265,7 +1263,7 @@
       "waves": 8,
       "has_tank": true,
       "has_giant": true,
-      "requires": "no_nav"
+      "requires": "sigsegv-mvm"
     },
     {
       "id": 207,
@@ -1275,8 +1273,7 @@
       "difficulty": "advanced",
       "waves": 6,
       "has_tank": true,
-      "has_giant": true,
-      "requires": "no_nav"
+      "has_giant": true
     },
     {
       "id": 208,
@@ -1287,7 +1284,7 @@
       "waves": 7,
       "has_tank": true,
       "has_giant": true,
-      "requires": "no_nav"
+      "requires": "sigsegv-mvm"
     },
     {
       "id": 209,
@@ -1298,7 +1295,7 @@
       "waves": 7,
       "has_tank": true,
       "has_giant": true,
-      "requires": "no_nav"
+      "requires": "sigsegv-mvm"
     },
     {
       "id": 210,
@@ -1430,8 +1427,7 @@
       "difficulty": "advanced",
       "waves": 6,
       "has_tank": true,
-      "has_giant": true,
-      "requires": "no_nav"
+      "has_giant": true
     },
     {
       "id": 222,
@@ -1441,8 +1437,7 @@
       "difficulty": "advanced",
       "waves": 6,
       "has_tank": true,
-      "has_giant": true,
-      "requires": "no_nav"
+      "has_giant": true
     },
     {
       "id": 223,
@@ -1453,7 +1448,6 @@
       "waves": 1,
       "has_tank": true,
       "has_giant": true,
-      "requires": "no_nav",
       "pack": "mlarchive-assets.zip"
     },
     {
@@ -1465,7 +1459,6 @@
       "waves": 6,
       "has_tank": true,
       "has_giant": true,
-      "requires": "no_nav",
       "pack": "mlarchive-assets.zip"
     },
     {
@@ -1477,7 +1470,7 @@
       "waves": 5,
       "has_tank": true,
       "has_giant": true,
-      "requires": "no_nav"
+      "requires": "sigsegv-mvm"
     },
     {
       "id": 226,
@@ -1487,8 +1480,7 @@
       "difficulty": "expert",
       "waves": 6,
       "has_tank": true,
-      "has_giant": true,
-      "requires": "no_nav"
+      "has_giant": true
     },
     {
       "id": 227,
@@ -1499,7 +1491,7 @@
       "waves": 5,
       "has_tank": true,
       "has_giant": true,
-      "requires": "no_nav"
+      "requires": "sigsegv-mvm"
     },
     {
       "id": 228,
@@ -1543,7 +1535,7 @@
       "waves": 6,
       "has_tank": true,
       "has_giant": true,
-      "requires": "no_nav"
+      "requires": "sigsegv-mvm"
     },
     {
       "id": 232,
@@ -1554,7 +1546,7 @@
       "waves": 1,
       "has_tank": true,
       "has_giant": true,
-      "requires": "no_nav"
+      "requires": "sigsegv-mvm"
     },
     {
       "id": 233,
@@ -1774,7 +1766,7 @@
       "waves": 8,
       "has_tank": true,
       "has_giant": true,
-      "requires": "no_nav"
+      "requires": "sigsegv-mvm"
     },
     {
       "id": 253,
@@ -2314,19 +2306,18 @@
       "id": 302,
       "pop_file": "mvm_villa_b13f_adv_forgotten",
       "name": "Forgotten",
-      "loadout": "medic_only",
       "map_id": 147,
       "difficulty": "advanced",
       "waves": 7,
       "has_tank": true,
       "has_giant": true,
-      "requires": "sigsegv-mvm"
+      "requires": "sigsegv-mvm",
+      "loadout": "medic_only"
     },
     {
       "id": 303,
       "pop_file": "mvm_villa_b13f_adv_recalled_to_life",
       "name": "Recalled To Life",
-      "loadout": "medic_only",
       "map_id": 147,
       "difficulty": "advanced",
       "waves": 6,

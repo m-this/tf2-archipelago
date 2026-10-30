@@ -1,5 +1,13 @@
 # Mann vs Archipelago
 
+[![Ubuntu 24.04 stability](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fm-this%2Ftf2-archipelago%2Fstability-badges%2Fubuntu24.json)](https://github.com/m-this/tf2-archipelago/releases/tag/stability)
+[![Windows stability](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fm-this%2Ftf2-archipelago%2Fstability-badges%2Fwindows.json)](https://github.com/m-this/tf2-archipelago/releases/tag/stability)
+[![Docker stability](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fm-this%2Ftf2-archipelago%2Fstability-badges%2Fdocker.json)](https://github.com/m-this/tf2-archipelago/releases/tag/stability)
+
+Daily checks use the latest TF2 server. Badges show **passed / planned**;
+red means a check failed. [Report and test setup](docs/stability.md).
+Check the report date: results expire after 36 hours.
+
 An [Archipelago](https://archipelago.gg) randomizer for Team Fortress 2, in
 Mann vs Machine mode. The classes, the weapon slots and the missions start
 locked. The team clears waves to unlock them, and bots fill the empty seats.

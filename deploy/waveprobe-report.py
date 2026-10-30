@@ -74,12 +74,49 @@ def load_results(run_dir):
         if plan[key]["state"] == "unsupported_reverse":
             return "reverse objective"
         if key in observed:
-            return classify(observed[key], load_errors.get(key[:2]))
+            result = classify(observed[key], load_errors.get(key[:2]))
+            if "_rev_" in key[0] and result == "passed" and not reverse_completion_witness(key, observed[key]):
+                return "probe error"
+            return result
         if key[:2] in load_errors:
             return classify(load_errors[key[:2]])
         return "not run"
 
     return plan, observed, load_errors, files, outcome
+
+
+def reverse_completion_witness(key, row):
+    """Validate native evidence independently of the controller's verdict."""
+    mission, _, wave = key
+    objective = row.get("objective") or {}
+    if not isinstance(objective, dict):
+        return False
+    def positive(name):
+        return type(objective.get(name)) is int and objective[name] > 0
+    method = objective.get("method")
+    bosses = {"mvm_coaltown_rev_adv_computer_crash", "mvm_autumnull_rc2_rev_exp_codename_omega"}
+    if mission in bosses and wave == 6:
+        return method == "native-combat-clear" and positive("target_kills")
+    if objective.get("blu_won") is not True:
+        return False
+    arctic = mission == "mvm_cyberia_rc6a_rev_arctic_arrangement"
+    if arctic and wave == 4:
+        return method == "native-combat-victory" and type(row.get("tanks")) is int and row["tanks"] >= 5 and type(row.get("bots")) is int and row["bots"] > 0
+    robotfactory = "mvm_robotfactory_b30_rev_adv_short_circuit_execution"
+    route = arctic or mission == "mvm_teien_rc6_rev_adv_shogun_slaughter" or (mission == robotfactory and wave == 3)
+    if route:
+        return method == "native-route-objective" and positive("point_captures")
+    if mission == robotfactory:
+        if wave == 1:
+            return method == "native-repair" and (objective.get("repairs") == 5 or objective.get("repair_completed") is True)
+        if wave == 2:
+            return method == "native-escort" and objective.get("escort_stages") == 3
+    if mission == "mvm_hideout_b3_rev_adv_galois":
+        if wave == 4:
+            return positive("tank_deliveries") or positive("captures")
+        if wave == 5:
+            return method == "native-combat-victory" and type(row.get("bots")) is int and row["bots"] > 0
+    return positive("captures")
 
 
 def main(run_dir):
@@ -100,10 +137,15 @@ def main(run_dir):
         mode_passed = sum(outcomes[key] == "passed" for key in keys)
         per_mode[mode] = {"eligible": len(keys), "tested": mode_tested,
                           "passed": mode_passed,
-                          "stability_percent": round(100 * mode_passed / mode_tested, 2) if mode_tested else None}
-    summary = {"planned_cases": len(plan), "eligible_cases": eligible,
+                          "stability_percent": round(100 * mode_passed / len(keys), 2) if keys else None}
+    reverse = [key for key in plan if "_rev_" in key[0] and plan[key]["state"] != "unsupported_reverse"]
+    summary = {"reverse_cases": {"eligible": len(reverse),
+                                "tested": sum(outcomes[key] != "not run" for key in reverse),
+                                "passed": sum(outcomes[key] == "passed" for key in reverse)},
+               "planned_cases": len(plan), "eligible_cases": eligible,
                "tested_cases": tested, "passed_cases": passed,
-               "stability_percent": round(100 * passed / tested, 2) if tested else None,
+               "stability_percent": round(100 * passed / eligible, 2) if eligible else None,
+               "tested_pass_percent": round(100 * passed / tested, 2) if tested else None,
                "verified_coverage_percent": round(100 * passed / eligible, 2) if eligible else None,
                "outcomes": {name: counts[name] for name in RESULTS}, "by_mode": per_mode}
     (run_dir / "SUMMARY.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
@@ -111,21 +153,10 @@ def main(run_dir):
     print("# MvM wave smoke probe\n")
     if settings.get("scope"):
         print(f"Subset: {safe(settings['scope'])}.\n")
-    print(f"## Stability score: **{pct(passed, tested)}** ({passed}/{tested} tested wave/mode cases passed)\n")
-    print(f"**Verified coverage:** {pct(passed, eligible)} ({passed}/{eligible} eligible cases); "
-          f"**tested:** {tested}/{eligible}; **missions:** {len({key[0] for key in plan})}. "
-          "A pass requires the game's wave-complete event and an observed enemy spawn.\n")
-    print("The stability score uses tested cases; verified coverage uses the full eligible plan, "
-          "so unrun waves cannot silently improve it. Reverse objectives are excluded.\n")
-    print("This score measures the current automated probe at the configured speed and "
-          "kill timing. A nonpass is a reproducible probe observation, not by itself "
-          "proof that a player cannot finish the wave.\n")
-    print(f"Started {settings.get('started_utc', 'unknown')} · {settings.get('shards', '?')} isolated servers · "
-          f"requested speed {settings.get('speed', '?')}× · {settings.get('wave_timeout', '?')} "
-          f"**real-time** limit after wave start · seed {settings.get('seed', '1')}.\n")
-    if settings.get("first_pass_timeout"):
-        print(f"Every wave gets a {settings['first_pass_timeout']} first pass; every nonpass is "
-              f"retried with the {settings.get('wave_timeout', '?')} real-time limit before the final score.\n")
+    print(f"## Stability score: **{pct(passed, eligible)}** ({passed}/{eligible} planned cases passed)\n")
+    print(f"Tested **{tested}/{eligible}** · {len({key[0] for key in plan})} missions · "
+          f"{settings.get('speed', '?')}× · seed {settings.get('seed', '1')} · "
+          f"screen {settings.get('first_pass_timeout', '?')}, retry {settings.get('wave_timeout', '?')} wall time.\n")
     if settings.get("source_commit") or settings.get("main_commit"):
         print(f"Source commit `{settings.get('source_commit', 'unknown')}` · "
               f"upstream main `{settings.get('main_commit', 'unknown')}`.\n")
@@ -133,25 +164,21 @@ def main(run_dir):
         print(f"Retry runner commit `{settings['retry_commit']}`. The first pass used the source commit above.\n")
     print("| Result | Bot Surge off | Bot Surge on | Total |\n| --- | ---: | ---: | ---: |")
     for name in RESULTS:
+        if not counts[name]:
+            continue
         normal = sum(value == name for key, value in outcomes.items() if key[1] == "normal")
         surge = sum(value == name for key, value in outcomes.items() if key[1] == "surge")
         print(f"| {name.title()} | {normal} | {surge} | **{counts[name]}** |")
     print()
-    print("**Wave failed** is the game's loss event; **Wave 0** means the population manager did "
-          "not initialize a wave; **No enemies spawned** means no BLU bot or tank was observed "
-          "in a standard wave. **Wave timed out** means no completion after the real-time limit "
-          "despite observed enemies. **Changelevel failure** means the responsive server "
-          "remained on a different map after the load deadline; the command reply and map "
-          "states are recorded below. Probe errors and other load blocks are separate.\n")
     print("| Mode | Stability | Passed | Tested | Eligible |\n| --- | ---: | ---: | ---: | ---: |")
     for mode in modes:
         part = per_mode[mode]
-        print(f"| {MODES[mode]} | {pct(part['passed'], part['tested'])} | "
+        print(f"| {MODES[mode]} | {pct(part['passed'], part['eligible'])} | "
               f"{part['passed']} | {part['tested']} | {part['eligible']} |")
     print()
 
     issue_names = set(RESULTS[1:-2])
-    issues = sorted((key for key, value in outcomes.items() if value in issue_names),
+    issues = sorted((key for key, value in outcomes.items() if value in issue_names or value == "not run"),
                     key=lambda key: (plan[key]["map"], key[0], key[2], key[1]))
     if issues:
         print("## Waves to inspect\n")
@@ -203,7 +230,7 @@ def main(run_dir):
         print(f"## Not run\n\n{counts['not run']} eligible cases have no result; see `plan.jsonl`.\n")
     reverse = {key[0] for key, value in outcomes.items() if value == "reverse objective"}
     if reverse:
-        print(f"## Reverse objectives\n\n{len(reverse)} missions need a separate BLU objective simulator "
+        print(f"## Reverse objectives\n\n{len(reverse)} missions require objective simulators or validation beyond the enabled bomb/carrier subset "
               "and are excluded from the score.\n")
     print("## Files\n\n- [Machine-readable summary](SUMMARY.json)")
     for path in files:

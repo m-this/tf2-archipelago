@@ -37,6 +37,25 @@ class RetestRecoveryTest(unittest.TestCase):
             self.assertEqual(result["outcome"], "changelevel failure")
             self.assertEqual(result["changelevel"], evidence)
 
+    def test_balanced_partition_and_native_rcon_host_survive_retries(self):
+        for profile, flag in [("reverse_bombs", "-reverse-bombs"), ("reverse_objectives", "-reverse-objectives")]:
+            with tempfile.TemporaryDirectory() as folder:
+                root = pathlib.Path(folder)
+                (root/"config.txt").write_text(f"shards=2\nspeed=50\nwave_timeout=1s\nrcon_host=172.20.144.1\n{profile}=1\n")
+                (root/"partition.json").write_text(json.dumps({"shards":2,"missions":{"first":0,"second":1}}))
+                base = {"map":"mvm_decoy", "mode":"normal", "wave":1}
+                (root/"plan.jsonl").write_text("".join(json.dumps({**base,"mission":m,"state":"planned"})+"\n" for m in ["first","second"]))
+                probe = root/"probe"
+                probe.write_text("#!/bin/sh\nprintf '%s\\n' \"$@\" > '"+str(root/"args")+"'\necho '"+json.dumps({**base,"mission":"second","state":"passed","outcome":"passed"})+"'\n")
+                probe.chmod(0o755)
+                retest.main(root,probe,[0],[1])
+                result = json.loads((root/"retest-0.jsonl").read_text())
+                self.assertEqual(result["mission"], "second")
+                args = (root/"args").read_text().splitlines()
+                self.assertEqual(args[args.index("-rcon")+1],"172.20.144.1:27035")
+                self.assertEqual(args[args.index("-speed")+1],"50")
+                self.assertIn(flag, args)
+
     def test_queue_spreads_map_loads(self):
         cases = [("a1", "map_a"), ("a2", "map_a"),
                  ("b1", "map_b"), ("b2", "map_b"),

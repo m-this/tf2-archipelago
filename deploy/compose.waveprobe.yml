@@ -20,6 +20,7 @@ services:
       SRCDS_REACH: lan
       SRCDS_BOTS: 0
       SRCDS_MODS: sigsegv-mvm
+      SRCDS_MOD_LOADING: always
       TF2AP_TEST_MODE: 0
     ports:
       - "127.0.0.1:${WAVEPROBE_RCON_PORT:-27035}:27015/tcp"

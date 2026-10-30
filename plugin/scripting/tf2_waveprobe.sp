@@ -33,6 +33,7 @@ enum ProbeState
 };
 
 ProbeState g_State;
+int g_ProbeGeneration;
 int g_ExpectedWave;
 int g_ObservedWave;
 int g_Seed;
@@ -40,6 +41,27 @@ int g_Defender;
 TFClassType g_DefenderClass = TFClass_Scout;
 int g_PlayerTeam = 2;
 int g_EnemyTeam = 3;
+bool g_ReverseObjectives;
+bool g_ReverseCombat;
+char g_CombatTarget[64] = "THE CORRUPTED";
+int g_UserCommands;
+bool g_ReverseRoute;
+bool g_ReverseRepair;
+bool g_RepairCompleted;
+int g_RepairTarget = -1;
+int g_ObjectiveRepairs;
+int g_ObjectiveTankDeliveries;
+int g_ObjectiveEscortStages;
+bool g_ReverseEscort;
+bool g_ReverseCombatVictory;
+int g_ObjectivePointCaptures;
+float g_ObjectiveVisitAt;
+int g_ObjectiveVisits;
+int g_ObjectivePickups;
+int g_ObjectiveCaptures;
+int g_ObjectiveTargetKills;
+bool g_ReverseBluWon;
+bool g_ConfigsReady;
 int g_SpawnSerial;
 int g_BotKills;
 #define ALLY_TANK_GRACE_SECONDS 15.0
@@ -106,10 +128,15 @@ bool g_HasHatch;
 
 public void OnPluginStart()
 {
+    RegAdminCmd("sm_waveprobe_ready", Command_Ready, ADMFLAG_ROOT, "Ready the disposable player through the native client command");
     RegAdminCmd("sm_waveprobe_arm", Command_Arm, ADMFLAG_ROOT,
         "Arm a wave test: sm_waveprobe_arm <wave> [seed]");
     RegAdminCmd("sm_waveprobe_status", Command_Status, ADMFLAG_ROOT,
         "Print machine-readable wave test state");
+    RegAdminCmd("sm_waveprobe_reverse_objectives", Command_ReverseObjectives, ADMFLAG_ROOT,
+        "Opt in to experimental physical reverse-objective simulation: <0|1>");
+    RegAdminCmd("sm_waveprobe_objectives", Command_Objectives, ADMFLAG_ROOT,
+        "Print reverse objective entities without changing them");
     RegAdminCmd("sm_waveprobe_debug", Command_Debug, ADMFLAG_ROOT,
         "Print a snapshot of the wave and living invaders");
     RegAdminCmd("sm_waveprobe_reset", Command_Reset, ADMFLAG_ROOT,
@@ -126,12 +153,26 @@ public void OnPluginStart()
     HookEvent("player_spawn", Event_PlayerSpawn);
     HookEvent("player_death", Event_PlayerDeath);
     HookEvent("teamplay_flag_event", Event_FlagEvent);
+    HookEvent("teamplay_round_win", Event_ReverseRoundWin);
+    HookEvent("teamplay_point_captured", Event_ReversePointCaptured);
+    HookEntityOutput("logic_relay", "OnTrigger", AuthoredObjectiveOutput);
     CreateTimer(PROBE_TICK, Timer_Probe, _, TIMER_REPEAT);
 }
 
 public void OnMapStart()
 {
+    g_ConfigsReady = false;
     ResetProbe();
+}
+
+public void OnConfigsExecuted()
+{
+    g_ConfigsReady = true;
+}
+
+public void OnMapEnd()
+{
+    g_ConfigsReady = false;
 }
 
 public void OnPluginEnd()
@@ -171,6 +212,20 @@ public void ClientSpawnPost(int client)
 
 static void ResetProbe()
 {
+    g_ProbeGeneration++;
+    g_ObjectiveVisitAt = 0.0;
+    g_ObjectiveVisits = 0;
+    g_ObjectivePickups = 0;
+    g_ObjectiveCaptures = 0;
+    g_ObjectiveTargetKills = 0;
+    g_RepairTarget = -1;
+    g_ObjectiveRepairs = 0;
+    g_RepairCompleted = false;
+    g_ObjectiveTankDeliveries = 0;
+    g_ObjectiveEscortStages = 0;
+    g_UserCommands = 0;
+    g_ObjectivePointCaptures = 0;
+    g_ReverseBluWon = false;
     g_State = Probe_Idle;
     g_ExpectedWave = 0;
     g_ObservedWave = 0;
@@ -248,7 +303,7 @@ public Action Command_Wake(int client, int argc)
 {
     if (argc < 1)
     {
-        ReplyToCommand(client, "usage: sm_waveprobe_wake <red|blue> [scout|medic]");
+        ReplyToCommand(client, "usage: sm_waveprobe_wake <red|blue> [scout|medic|engineer]");
         return Plugin_Handled;
     }
     char team[16];
@@ -265,7 +320,7 @@ public Action Command_Wake(int client, int argc)
     }
     else
     {
-        ReplyToCommand(client, "usage: sm_waveprobe_wake <red|blue> [scout|medic]");
+        ReplyToCommand(client, "usage: sm_waveprobe_wake <red|blue> [scout|medic|engineer]");
         return Plugin_Handled;
     }
     g_DefenderClass = TFClass_Scout;
@@ -277,9 +332,13 @@ public Action Command_Wake(int client, int argc)
         {
             g_DefenderClass = TFClass_Medic;
         }
+        else if (StrEqual(playerClass, "engineer", false))
+        {
+            g_DefenderClass = TFClass_Engineer;
+        }
         else if (!StrEqual(playerClass, "scout", false))
         {
-            ReplyToCommand(client, "usage: sm_waveprobe_wake <red|blue> [scout|medic]");
+            ReplyToCommand(client, "usage: sm_waveprobe_wake <red|blue> [scout|medic|engineer]");
             return Plugin_Handled;
         }
     }
@@ -402,7 +461,7 @@ public Action Command_Status(int client, int argc)
         if (progress > 100.0) progress = 100.0;
     }
     ReplyToCommand(client,
-        "WAVEPROBE state=%s reason=%s map=%s pop=%s max=%d gamewave=%d expected=%d observed=%d botspawns=%d tankspawns=%d bots=%d tanks=%d attempts=%d alive=%d remaining=%d initial=%d progress=%.1f red=%d blue=%d defender=%d defteam=%d defclass=%d playerteam=%d enemyteam=%d elapsed=%.1f",
+        "WAVEPROBE state=%s reason=%s map=%s pop=%s max=%d gamewave=%d expected=%d observed=%d botspawns=%d tankspawns=%d bots=%d tanks=%d attempts=%d alive=%d remaining=%d initial=%d progress=%.1f red=%d blue=%d defender=%d defteam=%d defclass=%d playerteam=%d enemyteam=%d elapsed=%.1f objectives=%d pickups=%d captures=%d configsready=%d objectivekind=%s targetkills=%d pointcaps=%d usercommands=%d repairs=%d tankdeliveries=%d bluwon=%d escortstages=%d repaircomplete=%d",
         state, g_FailureReason[0] == '\0' ? "none" : g_FailureReason,
         map, pop, maxWaves, gameWave, g_ExpectedWave,
         g_ObservedWave, g_BotSpawns, g_TankSpawns, g_BotKills, g_TankKills,
@@ -411,7 +470,180 @@ public Action Command_Status(int client, int argc)
         g_Defender, g_Defender > 0 && IsClientInGame(g_Defender) ? GetClientTeam(g_Defender) : 0,
         g_Defender > 0 && IsClientInGame(g_Defender) ? view_as<int>(TF2_GetPlayerClass(g_Defender)) : 0,
         g_PlayerTeam, g_EnemyTeam,
-        GetGameTime() - (g_StartedAt > 0.0 ? g_StartedAt : g_ArmedAt));
+        GetGameTime() - (g_StartedAt > 0.0 ? g_StartedAt : g_ArmedAt), g_ObjectiveVisits, g_ObjectivePickups, g_ObjectiveCaptures, g_ConfigsReady, g_ReverseEscort ? "escort" : (g_ReverseRepair ? "repair" : (g_ReverseCombatVictory ? "combat-victory" : (g_ReverseRoute ? "route" : (g_ReverseCombat ? "combat" : "bomb")))), g_ObjectiveTargetKills, g_ObjectivePointCaptures, g_UserCommands, g_ObjectiveRepairs, g_ObjectiveTankDeliveries, g_ReverseBluWon, g_ObjectiveEscortStages, g_RepairCompleted);
+    return Plugin_Handled;
+}
+
+public Action Command_ReverseObjectives(int client, int argc)
+{
+    char arg[8];
+    GetCmdArg(1, arg, sizeof(arg));
+    if (argc < 1 || argc > 3 || (!StrEqual(arg, "0") && !StrEqual(arg, "1")))
+    {
+        ReplyToCommand(client, "usage: sm_waveprobe_reverse_objectives <0|1> [bomb|combat|route]");
+        return Plugin_Handled;
+    }
+    bool enabled = StrEqual(arg, "1");
+    g_ReverseCombat = false;
+    g_ReverseRoute = false;
+    g_ReverseRepair = false;
+    g_ReverseEscort = false;
+    g_ReverseCombatVictory = false;
+    if (argc >= 2)
+    {
+        char kind[16]; GetCmdArg(2, kind, sizeof(kind));
+        if (!StrEqual(kind, "bomb") && !StrEqual(kind, "combat") && !StrEqual(kind, "route") && !StrEqual(kind, "repair") && !StrEqual(kind, "escort") && !StrEqual(kind, "combat-victory"))
+        {
+            ReplyToCommand(client, "unknown reverse objective kind");
+            return Plugin_Handled;
+        }
+        g_ReverseCombat = StrEqual(kind, "combat");
+        g_ReverseRoute = StrEqual(kind, "route");
+        g_ReverseRepair = StrEqual(kind, "repair");
+        g_ReverseEscort = StrEqual(kind, "escort");
+        g_ReverseCombatVictory = StrEqual(kind, "combat-victory");
+    }
+    if (argc == 3) GetCmdArg(3, g_CombatTarget, sizeof(g_CombatTarget));
+    else strcopy(g_CombatTarget, sizeof(g_CombatTarget), "THE CORRUPTED");
+    g_ReverseObjectives = enabled;
+    ReplyToCommand(client, "WAVEPROBE reverse_objectives=%d objectivekind=%s", g_ReverseObjectives, g_ReverseEscort ? "escort" : (g_ReverseRepair ? "repair" : (g_ReverseCombatVictory ? "combat-victory" : (g_ReverseRoute ? "route" : (g_ReverseCombat ? "combat" : "bomb")))));
+    return Plugin_Handled;
+}
+
+static void VisitObjective(int entity)
+{
+    float mins[3], maxs[3], center[3], velocity[3];
+    if (!EntityBounds(entity, mins, maxs)) return;
+    for (int axis = 0; axis < 3; axis++) center[axis] = (mins[axis] + maxs[axis]) * 0.5;
+    TeleportEntity(g_Defender, center, NULL_VECTOR, velocity);
+    g_ObjectiveVisits++;
+    LogMessage("WAVEPROBE reverse visit entity=%d position=%.1f,%.1f,%.1f", entity, center[0], center[1], center[2]);
+}
+
+// Match an area with its native point. The distance fallback covers custom
+// point templates whose engine does not expose the capture-area point handle.
+static int PointForArea(int area)
+{
+    if (HasEntProp(area, Prop_Data, "m_hPoint"))
+    {
+        int bound = GetEntPropEnt(area, Prop_Data, "m_hPoint");
+        if (bound > MaxClients && IsValidEntity(bound)) return bound;
+    }
+    float mins[3], maxs[3], center[3];
+    if (!EntityBounds(area, mins, maxs)) return -1;
+    for (int axis = 0; axis < 3; axis++) center[axis] = (mins[axis] + maxs[axis]) * 0.5;
+    int nearest = -1, point = -1;
+    float distance = 256.0;
+    while ((point = FindEntityByClassname(point, "team_control_point")) != -1)
+    {
+        float origin[3]; GetEntPropVector(point, Prop_Send, "m_vecOrigin", origin);
+        float current = GetVectorDistance(center, origin);
+        if (current < distance) { nearest = point; distance = current; }
+    }
+    return nearest;
+}
+
+static bool VisitUncapturedPoint()
+{
+    int area = -1, selected = -1, lowest = 2147483647;
+    while ((area = FindEntityByClassname(area, "trigger_capture_area")) != -1)
+    {
+        if (HasEntProp(area, Prop_Data, "m_bDisabled") && GetEntProp(area, Prop_Data, "m_bDisabled") != 0) continue;
+        int point = PointForArea(area);
+        if (point <= MaxClients || !IsValidEntity(point)) continue;
+        if (GetEntProp(point, Prop_Send, "m_iTeamNum") == g_PlayerTeam) continue;
+        if (HasEntProp(point, Prop_Data, "m_bLocked") && GetEntProp(point, Prop_Data, "m_bLocked") != 0) continue;
+        int order = HasEntProp(point, Prop_Data, "m_iPointIndex") ? GetEntProp(point, Prop_Data, "m_iPointIndex") : point;
+        if (order < lowest) { selected = area; lowest = order; }
+    }
+    if (selected == -1) return false;
+    // Native touch/capture code enforces prerequisites and team permissions.
+    // No ownership, capture progress or map output is written by the probe.
+    float position[3], mins[3], maxs[3];
+    GetClientAbsOrigin(g_Defender, position);
+    position[2] += 40.0;
+    bool inside = EntityBounds(selected, mins, maxs);
+    for (int axis = 0; axis < 3; axis++)
+        if (position[axis] < mins[axis] || position[axis] > maxs[axis]) inside = false;
+    // Repeated teleports can interrupt the native capture timer. Stand still
+    // until the authored point finishes capturing, however long that takes.
+    if (!inside) VisitObjective(selected);
+    return true;
+}
+
+public void Event_ReversePointCaptured(Event event, const char[] name, bool dontBroadcast)
+{
+    if (!g_ReverseRoute || g_PlayerTeam != 3 || g_State != Probe_Running || event.GetInt("team") != g_PlayerTeam) return;
+    g_ObjectivePointCaptures++;
+    LogMessage("WAVEPROBE native point capture index=%d team=%d total=%d", event.GetInt("cp"), event.GetInt("team"), g_ObjectivePointCaptures);
+}
+
+// Experimental bomb-delivery fixture. Do not fire outputs, enable zones,
+// change team filters or manufacture wins. The authored mission decides when
+// its hatch accepts a real flag-carrying player entering the enabled volume.
+static void SimulateReverseObjectives(float now)
+{
+    if (!g_ReverseObjectives || g_ReverseCombat || g_ReverseCombatVictory || g_ReverseEscort || g_PlayerTeam != 3 || g_Defender < 1
+        || !IsClientInGame(g_Defender) || !IsPlayerAlive(g_Defender)
+        || now - g_StartedAt < 30.0 || now < g_ObjectiveVisitAt) return;
+    g_ObjectiveVisitAt = now + 10.0;
+    if (g_ReverseRepair) { VisitRepairObjective(); return; }
+    if (g_ReverseRoute && VisitUncapturedPoint()) return;
+    ConVar capture = FindConVar("sig_mvm_bluhuman_flag_capture");
+    ConVar pickup = FindConVar("sig_mvm_bluhuman_flag_pickup");
+    // Missions that forbid human deployment need their authored allied
+    // carrier. Do not steal its bomb or override the mission's policy.
+    if (capture == null || !capture.BoolValue || pickup == null || !pickup.BoolValue) return;
+    bool carrying = false;
+    int flag = -1, available = -1;
+    while ((flag = FindEntityByClassname(flag, "item_teamflag")) != -1)
+    {
+        int owner = GetEntPropEnt(flag, Prop_Send, "m_hOwnerEntity");
+        if (owner == g_Defender) carrying = true;
+        if (owner > 0) continue;
+        if (HasEntProp(flag, Prop_Send, "m_bDisabled") && GetEntProp(flag, Prop_Send, "m_bDisabled") != 0) continue;
+        if (GetEntProp(flag, Prop_Send, "m_iTeamNum") != g_PlayerTeam) continue;
+        if (available == -1) available = flag;
+    }
+    if (!carrying)
+    {
+        if (available > 0) VisitObjective(available);
+        return;
+    }
+    int zone = -1;
+    while ((zone = FindEntityByClassname(zone, "func_capturezone")) != -1)
+    {
+        if (GetEntProp(zone, Prop_Data, "m_bDisabled") != 0) continue;
+        int team = GetEntProp(zone, Prop_Send, "m_iTeamNum");
+        if (team != 0 && team != g_PlayerTeam) continue;
+        VisitObjective(zone);
+        return;
+    }
+}
+
+public Action Command_Objectives(int client, int argc)
+{
+    static const char classes[][] = { "item_teamflag", "func_capturezone", "trigger_capture_area", "team_control_point", "func_tracktrain", "team_round_timer", "obj_dispenser", "obj_sentrygun" };
+    for (int c = 0; c < sizeof(classes); c++)
+    {
+        int entity = -1;
+        while ((entity = FindEntityByClassname(entity, classes[c])) != -1)
+        {
+            char name[128];
+            GetEntPropString(entity, Prop_Data, "m_iName", name, sizeof(name));
+            float mins[3], maxs[3], center[3];
+            if (EntityBounds(entity, mins, maxs))
+                for (int axis = 0; axis < 3; axis++) center[axis] = (mins[axis] + maxs[axis]) * 0.5;
+            int team = HasEntProp(entity, Prop_Send, "m_iTeamNum") ? GetEntProp(entity, Prop_Send, "m_iTeamNum") : -1;
+            int disabled = HasEntProp(entity, Prop_Data, "m_bDisabled") ? GetEntProp(entity, Prop_Data, "m_bDisabled")
+                : (HasEntProp(entity, Prop_Send, "m_bDisabled") ? GetEntProp(entity, Prop_Send, "m_bDisabled") : -1);
+            int owner = HasEntProp(entity, Prop_Send, "m_hOwnerEntity") ? GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity") : -1;
+            ReplyToCommand(client, "WAVEPROBE_OBJECTIVE entity=%d class=%s name=%s team=%d disabled=%d owner=%d center=%.1f,%.1f,%.1f", entity, classes[c], name, team, disabled, owner, center[0], center[1], center[2]);
+        }
+    }
+    ConVar capture = FindConVar("sig_mvm_bluhuman_flag_capture");
+    ConVar pickup = FindConVar("sig_mvm_bluhuman_flag_pickup");
+    ReplyToCommand(client, "WAVEPROBE_REVERSE enabled=%d visits=%d pickups=%d captures=%d human_capture=%d human_pickup=%d", g_ReverseObjectives, g_ObjectiveVisits, g_ObjectivePickups, g_ObjectiveCaptures, capture == null ? -1 : capture.IntValue, pickup == null ? -1 : pickup.IntValue);
     return Plugin_Handled;
 }
 
@@ -489,6 +721,34 @@ public void Event_WaveComplete(Event event, const char[] name, bool dontBroadcas
     {
         return;
     }
+    if (g_PlayerTeam == 3 && g_ReverseObjectives)
+    {
+        // Capture, round-win and wave-complete can be emitted in different
+        // orders in one engine frame. Read the complete native outcome after
+        // those events; an enemy victory still fails immediately in its hook.
+        RequestFrame(FinalizeReverseCompletion, g_ProbeGeneration);
+        return;
+    }
+    CompleteObservedWave();
+}
+
+public void FinalizeReverseCompletion(any generation)
+{
+    // A map reload, reset or a later arm invalidates a pending callback.
+    if (generation != g_ProbeGeneration || g_State != Probe_Running) return;
+    CompleteObservedWave();
+}
+
+static void CompleteObservedWave()
+{
+    if (g_PlayerTeam == 3 && g_ReverseObjectives
+        && (g_ReverseCombat ? (g_ObjectiveTargetKills < 1) : ((g_ObjectiveCaptures < 1 && g_ObjectiveTankDeliveries < 1 && (!g_ReverseEscort || g_ObjectiveEscortStages < 3) && (!g_ReverseRepair || (g_ObjectiveRepairs < 5 && !g_RepairCompleted)) && (!g_ReverseCombatVictory || g_BotKills < 1) && (!g_ReverseRoute || g_ObjectivePointCaptures < 1)) || !g_ReverseBluWon)))
+    {
+        g_State = Probe_Failed;
+        strcopy(g_FailureReason, sizeof(g_FailureReason), "objective_unwitnessed");
+        LogError("WAVEPROBE reverse completion without native capture and BLU win evidence");
+        return;
+    }
     g_State = Probe_Passed;
     LogMessage("WAVEPROBE passed wave=%d seconds=%.1f bots=%d tanks=%d",
         g_ObservedWave, GetGameTime() - g_StartedAt, g_BotKills, g_TankKills);
@@ -507,6 +767,16 @@ public void Event_WaveFailed(Event event, const char[] name, bool dontBroadcast)
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
     int bot = GetClientOfUserId(event.GetInt("userid"));
+    if (g_State == Probe_Running && g_ReverseCombat && bot > 0 && IsClientInGame(bot)
+        && GetClientTeam(bot) == g_EnemyTeam)
+    {
+        char killed[64]; GetClientName(bot, killed, sizeof(killed));
+        if (StrEqual(killed, g_CombatTarget))
+        {
+            g_ObjectiveTargetKills++;
+            LogMessage("WAVEPROBE authored combat target died: %s", killed);
+        }
+    }
     if (bot > 0 && g_BotKillPending[bot])
     {
         g_BotKills++;
@@ -525,8 +795,37 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 // its popfile names: accursed's Chief took the bomb at its spawn and never
 // killed the entity wave 6 waits on. So a robot with a boss health bar drops
 // the bomb as it takes it, and lives until the wear-down reaches it.
+public void Event_ReverseRoundWin(Event event, const char[] name, bool dontBroadcast)
+{
+    if (g_PlayerTeam != 3) return;
+    LogMessage("WAVEPROBE reverse round_win team=%d state=%d expected=%d observed=%d captures=%d", event.GetInt("team"), view_as<int>(g_State), g_ExpectedWave, g_ObservedWave, g_ObjectiveCaptures);
+    if (!g_ReverseObjectives || g_State != Probe_Running) return;
+    int winner = event.GetInt("team");
+    if (winner == g_PlayerTeam) g_ReverseBluWon = true;
+    else if (winner == g_EnemyTeam && (!g_ReverseCombat || g_ObjectiveTargetKills < 1))
+    {
+        // SigMod's reverse bookkeeping can suppress mvm_wave_failed. The
+        // native winning team remains authoritative about a lost objective.
+        g_State = Probe_Failed;
+        strcopy(g_FailureReason, sizeof(g_FailureReason), "wave_failed");
+    }
+}
+
 public void Event_FlagEvent(Event event, const char[] name, bool dontBroadcast)
 {
+    int player = event.GetInt("player");
+    if (g_PlayerTeam == 3)
+    {
+        LogMessage("WAVEPROBE reverse flag raw event=%d player=%d team=%d state=%d expected=%d observed=%d", event.GetInt("eventtype"), player, player >= 1 && player <= MaxClients && IsClientInGame(player) ? GetClientTeam(player) : -1, view_as<int>(g_State), g_ExpectedWave, g_ObservedWave);
+    }
+    if (g_State == Probe_Running && g_PlayerTeam == 3 && player >= 1 && player <= MaxClients
+        && IsClientInGame(player) && GetClientTeam(player) == g_PlayerTeam)
+    {
+        int type = event.GetInt("eventtype");
+        if (type == 1) g_ObjectivePickups++;
+        if (type == 2) g_ObjectiveCaptures++;
+        LogMessage("WAVEPROBE reverse flag event=%d player=%d", type, player);
+    }
     if (g_State != Probe_Running || event.GetInt("eventtype") != 1) return;
     int carrier = event.GetInt("player");
     if (carrier < 1 || carrier > MaxClients || !IsClientInGame(carrier) || GetClientTeam(carrier) != g_EnemyTeam
@@ -625,6 +924,7 @@ static bool IsWaveRobot(int bot)
     if (bot == g_Defender || !IsClientInGame(bot)) return false;
     int team = GetClientTeam(bot);
     if (team == g_EnemyTeam) return true;
+    if (g_PlayerTeam == 3 && team == g_PlayerTeam) return false;
     if (team < 1 || !IsFakeClient(bot) || !HasEntProp(bot, Prop_Send, "m_iszClassIcon")) return false;
     char icon[64];
     GetEntPropString(bot, Prop_Send, "m_iszClassIcon", icon, sizeof(icon));
@@ -881,7 +1181,8 @@ public Action Timer_Probe(Handle timer)
     }
 
     float now = GetGameTime();
-    CaptureWhenStalled(now);
+    if (g_PlayerTeam != 3) CaptureWhenStalled(now);
+    SimulateReverseObjectives(now);
     RefreshAwaitedAllies(now);
     for (int bot = 1; bot <= MaxClients; bot++)
     {
@@ -935,7 +1236,7 @@ public Action Timer_Probe(Handle timer)
         if (!IsRealTank(tank)) continue;
         int slot = RegisterTank(tank);
         if (slot < 0) return Plugin_Continue;
-        if (enemyTank && GetEntProp(tank, Prop_Send, "m_iTeamNum") == g_PlayerTeam)
+        if ((enemyTank || g_PlayerTeam == 3) && GetEntProp(tank, Prop_Send, "m_iTeamNum") == g_PlayerTeam)
         {
             g_TankDeadline[slot] = now + ALLY_TANK_GRACE_SECONDS;
             continue;
@@ -1217,4 +1518,115 @@ public Action Command_ProtectBots(int client, int argc)
     g_ProtectBots = StringToInt(arg) != 0;
     ReplyToCommand(client, "WAVEPROBE protect_bots=%d", g_ProtectBots);
     return Plugin_Handled;
+}
+
+public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon)
+{
+    if (client == g_Defender && g_State == Probe_Running)
+    {
+        g_UserCommands++;
+        if (g_ReverseRepair && g_RepairTarget > MaxClients && IsValidEntity(g_RepairTarget))
+        {
+            int wrench = GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
+            if (wrench > MaxClients && IsValidEntity(wrench))
+            {
+                float eyes[3], target[3], direction[3];
+                GetClientEyePosition(client, eyes);
+                GetEntPropVector(g_RepairTarget, Prop_Send, "m_vecOrigin", target);
+                target[2] += 32.0;
+                MakeVectorFromPoints(eyes, target, direction);
+                GetVectorAngles(direction, angles);
+                // Use native weapon selection when changing weapons, then
+                // hold primary attack with the active wrench.
+                weapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon") == wrench ? 0 : wrench;
+                buttons |= IN_ATTACK;
+                return Plugin_Changed;
+            }
+        }
+    }
+    return Plugin_Continue;
+}
+
+// Only native player commands repair the buildings. Their Lua callbacks,
+// metal consumption, repair order, shielding and completion outputs remain
+// authoritative; the probe never writes building health or fires those outputs.
+static void VisitRepairObjective()
+{
+    if (g_RepairCompleted)
+    {
+        g_RepairTarget = -1;
+        return;
+    }
+    int order[5] = {0, 2, 4, 1, 3};
+    g_ObjectiveRepairs = 0;
+    g_RepairTarget = -1;
+    for (int i = 0; i < sizeof(order); i++)
+    {
+        char target[32]; Format(target, sizeof(target), "objective1_%d", order[i]);
+        int entity = -1;
+        while ((entity = FindEntityByClassname(entity, "obj_dispenser")) != -1)
+        {
+            char name[64]; GetEntPropString(entity, Prop_Data, "m_iName", name, sizeof(name));
+            if (!StrEqual(name, target)) continue;
+            if (GetEntProp(entity, Prop_Data, "m_iHealth") >= 2000) g_ObjectiveRepairs++;
+            else if (g_RepairTarget == -1) g_RepairTarget = entity;
+        }
+    }
+    if (g_RepairTarget == -1) return;
+    float origin[3], position[3], velocity[3];
+    GetEntPropVector(g_RepairTarget, Prop_Send, "m_vecOrigin", origin);
+    GetClientAbsOrigin(g_Defender, position);
+    if (GetVectorDistance(origin, position) > 72.0)
+    {
+        origin[0] -= 48.0;
+        TeleportEntity(g_Defender, origin, NULL_VECTOR, velocity);
+        g_ObjectiveVisits++;
+    }
+}
+
+public Action Command_Ready(int client, int argc)
+{
+    if (g_Defender > 0 && IsClientInGame(g_Defender))
+    {
+        FakeClientCommand(g_Defender, "tournament_player_readystate 1");
+        ReplyToCommand(client, "WAVEPROBE player ready");
+    }
+    return Plugin_Handled;
+}
+
+// Observe authored objective outputs; never trigger them. The allowlist binds
+// each witness to the exact mission and wave whose population defines it.
+public void AuthoredObjectiveOutput(const char[] output, int caller, int activator, float delay)
+{
+    if (g_State != Probe_Running || g_PlayerTeam != 3 || !IsValidEntity(caller)) return;
+    char pop[256], name[128];
+    int manager = FindEntityByClassname(-1, "tf_objective_resource");
+    if (manager == -1) return;
+    GetEntPropString(manager, Prop_Send, "m_iszMvMPopfileName", pop, sizeof(pop));
+    GetEntPropString(caller, Prop_Data, "m_iName", name, sizeof(name));
+    if (StrContains(pop, "mvm_hideout_b3_rev_adv_galois") != -1 && g_ExpectedWave == 4 && StrEqual(name, "boss_deploy_relay"))
+    {
+        g_ObjectiveTankDeliveries++;
+        LogMessage("WAVEPROBE native authored tank delivery output");
+    }
+    if (StrContains(pop, "mvm_robotfactory_b30_rev_adv_short_circuit_execution") != -1
+        && g_ExpectedWave == 1 && StrEqual(name, "objective1Done"))
+    {
+        // Lua emits this only after all five native repairs and the chief's
+        // defeat. Preserve its evidence if victory removes the buildings
+        // before the next periodic health sample.
+        g_RepairCompleted = true;
+        g_RepairTarget = -1;
+        LogMessage("WAVEPROBE native authored five-building repair completion");
+    }
+    if (StrContains(pop, "mvm_robotfactory_b30_rev_adv_short_circuit_execution") != -1 && g_ExpectedWave == 2)
+    {
+        if ((StrEqual(name, "objective2_advance") && g_ObjectiveEscortStages == 0)
+            || (StrEqual(name, "objective2_AlmostDone") && g_ObjectiveEscortStages == 1)
+            || (StrEqual(name, "objective2_Done") && g_ObjectiveEscortStages == 2))
+        {
+            g_ObjectiveEscortStages++;
+            LogMessage("WAVEPROBE native escort stage=%d", g_ObjectiveEscortStages);
+        }
+    }
 }

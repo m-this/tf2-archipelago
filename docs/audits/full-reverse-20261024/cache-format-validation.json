@@ -1,0 +1,19 @@
+{
+  "checked_utc": "2026-10-24T23:50:13.833685+00:00",
+  "stored_cache_key": "bots-bda335876de9d0fab847e6dfdae8be77425b2d729c063f2436fdf9a98fb52ab6",
+  "stored_cache_ref": "refs/heads/main",
+  "stored_cache_version": "d101ac4dc6a621e8bbd756388278bad3fe0754b28a1dd147e4726f0e103580fd",
+  "gzip_version": "d101ac4dc6a621e8bbd756388278bad3fe0754b28a1dd147e4726f0e103580fd",
+  "zstd_version": "ed20387f4165e4ddbfcb3beb571097738d8b3811bc2689bdee0492859ac372a7",
+  "cache_algorithm_source": "https://github.com/actions/toolkit/blob/main/packages/cache/src/internal/cacheUtils.ts",
+  "build_environment": "debian:stable-slim; nodejs, git, ca-certificates, curl, unzip, make, python3; no zstd executable",
+  "restore_action": "actions/cache/restore@v6",
+  "blocked_attempt": "https://github.com/kelly-cs/tf2-archipelago/actions/runs/40143779285",
+  "blocked_attempt_result": "The visible key existed but its gzip cache version did not match the Ubuntu VM compression version. Build then failed on the pinned compiler archive HTTP 404; measurements were skipped.",
+  "local_debian_container_bed_build": "passed: both complete native bed packages; no zstd executable present",
+  "hosted_cache_hit_verified": "https://github.com/kelly-cs/tf2-archipelago/actions/runs/40144449522",
+  "hosted_pinned_plugins": "the restored cache supplied the exact compiler; all four pinned defender plugins compiled",
+  "subsequent_hosted_blocker": "Go VCS stamping refused the container-owned checkout; the exact checked-out physical workspace is now added to safe.directory, matching existing CI",
+  "local_ownership_regression": "untrusted root/container fixture fails Git status before the workspace trust step; buildvcs=true succeeds afterwards and embeds vcs.revision",
+  "local_full_postbuild_preflight": "passed canonical 2628-case plan, twelve partitions [220 x 6, 218 x 6], and shards_json/parallel job outputs"
+}

@@ -1,0 +1,64 @@
+{
+  "run_url": "https://github.com/kelly-cs/tf2-archipelago/actions/runs/40211297573",
+  "measured_utc": "2026-10-26T01:56:44.254835+00:00",
+  "tested_commit": "cdc55f55b3edfd0ba76f210ac5730ed58697970f",
+  "environments": {
+    "ubuntu24": {
+      "passed": 2574,
+      "planned": 2628,
+      "tested": 2628,
+      "percent": 97.95,
+      "outcomes": {
+        "passed": 2574,
+        "wave failed": 23,
+        "wave 0": 0,
+        "no enemies spawned": 0,
+        "wave timed out": 15,
+        "probe error": 2,
+        "changelevel failure": 14,
+        "load blocked": 0,
+        "inconclusive": 0,
+        "not run": 0,
+        "reverse objective": 0
+      }
+    },
+    "docker": {
+      "passed": 2350,
+      "planned": 2628,
+      "tested": 2408,
+      "percent": 89.42,
+      "outcomes": {
+        "passed": 2350,
+        "wave failed": 25,
+        "wave 0": 0,
+        "no enemies spawned": 0,
+        "wave timed out": 15,
+        "probe error": 3,
+        "changelevel failure": 14,
+        "load blocked": 1,
+        "inconclusive": 0,
+        "not run": 220,
+        "reverse objective": 0
+      }
+    },
+    "windows": {
+      "passed": 1547,
+      "planned": 2628,
+      "tested": 2499,
+      "percent": 58.87,
+      "outcomes": {
+        "passed": 1547,
+        "wave failed": 68,
+        "wave 0": 0,
+        "no enemies spawned": 3,
+        "wave timed out": 86,
+        "probe error": 657,
+        "changelevel failure": 0,
+        "load blocked": 138,
+        "inconclusive": 0,
+        "not run": 129,
+        "reverse objective": 0
+      }
+    }
+  }
+}

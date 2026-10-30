@@ -1,0 +1,47 @@
+[
+  {
+    "environment": "docker",
+    "started_utc": "2026-10-27T01:41:00.885029+00:00",
+    "finished_utc": "2026-10-27T01:49:31.161849+00:00",
+    "source_commit": "f733ae5b186db93a8c9bfb6ff2cc9a6ad170cfcf",
+    "run_url": "https://github.com/kelly-cs/tf2-archipelago/actions/runs/40433350366",
+    "installed_version": "11138802",
+    "fresh": true,
+    "startup": true,
+    "completed": true,
+    "robot_limiter": true,
+    "crash_free": true,
+    "install_attempts": 1,
+    "passed": 14,
+    "planned": 14,
+    "phase_seconds": {
+      "plan.jsonl": 0.03,
+      "install.log": 382.73,
+      "ownership.log": 0.77,
+      "shard-0.jsonl": 77.63,
+      "retest.log": 0.11
+    }
+  },
+  {
+    "environment": "windows",
+    "started_utc": "2026-10-27T01:40:45.510540+00:00",
+    "finished_utc": "2026-10-27T01:49:03.073036+00:00",
+    "source_commit": "f733ae5b186db93a8c9bfb6ff2cc9a6ad170cfcf",
+    "run_url": "https://github.com/kelly-cs/tf2-archipelago/actions/runs/40433350366",
+    "installed_version": "11138802",
+    "fresh": true,
+    "startup": true,
+    "completed": true,
+    "robot_limiter": true,
+    "crash_free": true,
+    "install_attempts": 1,
+    "passed": 14,
+    "planned": 14,
+    "phase_seconds": {
+      "plan.jsonl": 0.03,
+      "install.log": 364.59,
+      "shard-0.jsonl": 85.4,
+      "retest.log": 0.18
+    }
+  }
+]

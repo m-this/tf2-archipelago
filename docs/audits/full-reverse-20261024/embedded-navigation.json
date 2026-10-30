@@ -1,0 +1,30 @@
+[
+  {
+    "map": "mvm_bogland_rc12",
+    "matching_external_nav": [],
+    "embedded_nav": [
+      "maps/embed.nav"
+    ]
+  },
+  {
+    "map": "mvm_cyberia_rc6a",
+    "matching_external_nav": [],
+    "embedded_nav": [
+      "maps/mvm_cyberia_rc6a.nav"
+    ]
+  },
+  {
+    "map": "mvm_decompose_rc7",
+    "matching_external_nav": [],
+    "embedded_nav": [
+      "maps/mvm_decompose_rc7.nav"
+    ]
+  },
+  {
+    "map": "mvm_mansion_rc2c",
+    "matching_external_nav": [],
+    "embedded_nav": [
+      "maps/mvm_mansion_rc2c.nav"
+    ]
+  }
+]

@@ -10205,8 +10205,7 @@
       "has_tank": true,
       "has_giant": true,
       "community": true,
-      "playable": false,
-      "requires": "no_nav",
+      "playable": true,
       "locations": [
         {
           "id": 7442010701,
@@ -10331,8 +10330,7 @@
       "has_tank": true,
       "has_giant": true,
       "community": true,
-      "playable": false,
-      "requires": "no_nav",
+      "playable": true,
       "locations": [
         {
           "id": 7442010901,
@@ -17865,7 +17863,7 @@
       "has_giant": true,
       "community": true,
       "playable": false,
-      "requires": "no_nav",
+      "requires": "sigsegv-mvm",
       "locations": [
         {
           "id": 7442020601,
@@ -17954,8 +17952,7 @@
       "has_tank": true,
       "has_giant": true,
       "community": true,
-      "playable": false,
-      "requires": "no_nav",
+      "playable": true,
       "locations": [
         {
           "id": 7442020701,
@@ -18033,7 +18030,7 @@
       "has_giant": true,
       "community": true,
       "playable": false,
-      "requires": "no_nav",
+      "requires": "sigsegv-mvm",
       "locations": [
         {
           "id": 7442020801,
@@ -18117,7 +18114,7 @@
       "has_giant": true,
       "community": true,
       "playable": false,
-      "requires": "no_nav",
+      "requires": "sigsegv-mvm",
       "locations": [
         {
           "id": 7442020901,
@@ -18993,8 +18990,7 @@
       "has_tank": true,
       "has_giant": true,
       "community": true,
-      "playable": false,
-      "requires": "no_nav",
+      "playable": true,
       "locations": [
         {
           "id": 7442022101,
@@ -19071,8 +19067,7 @@
       "has_tank": true,
       "has_giant": true,
       "community": true,
-      "playable": false,
-      "requires": "no_nav",
+      "playable": true,
       "locations": [
         {
           "id": 7442022201,
@@ -19149,8 +19144,7 @@
       "has_tank": true,
       "has_giant": true,
       "community": true,
-      "playable": false,
-      "requires": "no_nav",
+      "playable": true,
       "locations": [
         {
           "id": 7442022301,
@@ -19197,8 +19191,7 @@
       "has_tank": true,
       "has_giant": true,
       "community": true,
-      "playable": false,
-      "requires": "no_nav",
+      "playable": true,
       "locations": [
         {
           "id": 7442022401,
@@ -19276,7 +19269,7 @@
       "has_giant": true,
       "community": true,
       "playable": false,
-      "requires": "no_nav",
+      "requires": "sigsegv-mvm",
       "locations": [
         {
           "id": 7442022501,
@@ -19359,8 +19352,7 @@
       "has_tank": true,
       "has_giant": true,
       "community": true,
-      "playable": false,
-      "requires": "no_nav",
+      "playable": true,
       "locations": [
         {
           "id": 7442022601,
@@ -19450,7 +19442,7 @@
       "has_giant": true,
       "community": true,
       "playable": false,
-      "requires": "no_nav",
+      "requires": "sigsegv-mvm",
       "locations": [
         {
           "id": 7442022701,
@@ -19744,7 +19736,7 @@
       "has_giant": true,
       "community": true,
       "playable": false,
-      "requires": "no_nav",
+      "requires": "sigsegv-mvm",
       "locations": [
         {
           "id": 7442023101,
@@ -19822,7 +19814,7 @@
       "has_giant": true,
       "community": true,
       "playable": false,
-      "requires": "no_nav",
+      "requires": "sigsegv-mvm",
       "locations": [
         {
           "id": 7442023201,
@@ -21254,7 +21246,7 @@
       "has_giant": true,
       "community": true,
       "playable": false,
-      "requires": "no_nav",
+      "requires": "sigsegv-mvm",
       "locations": [
         {
           "id": 7442025201,

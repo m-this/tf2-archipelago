@@ -88,19 +88,21 @@ func TestAttachedMissionPoolExplainsMissingSigmodFiles(t *testing.T) {
 	t.Fatal("SigMod mission is missing from the attached mission pool")
 }
 
-func TestMissionPoolRowsNameTheExactMissingNavigationMesh(t *testing.T) {
-	rows := testMissionPoolRows(form.NewState(settings.Defaults()),
+func TestMissionPoolAcceptsEmbeddedNavigation(t *testing.T) {
+	state := form.NewState(settings.Defaults())
+	state.Settings.CommunityPacks = []string{settings.CommunityPackPotato}
+	rows := testMissionPoolRows(state,
 		[]string{settings.CommunityPackPotato}, nil)
 	for _, row := range rows {
 		if row.Field != "missions.pool.mvm_bogland_rc12_adv_swamp_fever" {
 			continue
 		}
-		if !row.Disabled || row.Map != "mvm_bogland_rc12" || row.Compatibility != "Missing maps/mvm_bogland_rc12.nav" {
-			t.Fatalf("missing-NAV mission row = %+v", row)
+		if row.Disabled || row.Map != "mvm_bogland_rc12" || row.Compatibility != "Ready" {
+			t.Fatalf("embedded-NAV mission row = %+v", row)
 		}
 		return
 	}
-	t.Fatal("missing-NAV mission is missing from the mission table")
+	t.Fatal("embedded-NAV mission is missing from the mission table")
 }
 
 func TestMissionPoolRowsExplainDifficultyFloor(t *testing.T) {

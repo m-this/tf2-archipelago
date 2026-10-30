@@ -1,0 +1,81 @@
+{
+  "scan_utc": "2026-10-24T22:54:26.448696+00:00",
+  "final": true,
+  "verdict": "failed",
+  "workers": [
+    {
+      "worker": 0,
+      "crash_signature_lines": 0,
+      "categories": [],
+      "worker_stopped": true
+    },
+    {
+      "worker": 1,
+      "crash_signature_lines": 0,
+      "categories": [],
+      "worker_stopped": true
+    },
+    {
+      "worker": 2,
+      "crash_signature_lines": 0,
+      "categories": [],
+      "worker_stopped": true
+    },
+    {
+      "worker": 3,
+      "crash_signature_lines": 0,
+      "categories": [],
+      "worker_stopped": true
+    },
+    {
+      "worker": 4,
+      "crash_signature_lines": 0,
+      "categories": [],
+      "worker_stopped": true
+    },
+    {
+      "worker": 5,
+      "crash_signature_lines": 0,
+      "categories": [],
+      "worker_stopped": true
+    },
+    {
+      "worker": 6,
+      "crash_signature_lines": 0,
+      "categories": [],
+      "worker_stopped": true
+    },
+    {
+      "worker": 7,
+      "crash_signature_lines": 0,
+      "categories": [],
+      "worker_stopped": true
+    },
+    {
+      "worker": 8,
+      "crash_signature_lines": 1,
+      "categories": [
+        "segmentation fault"
+      ],
+      "worker_stopped": true
+    },
+    {
+      "worker": 9,
+      "crash_signature_lines": 0,
+      "categories": [],
+      "worker_stopped": true
+    },
+    {
+      "worker": 10,
+      "crash_signature_lines": 0,
+      "categories": [],
+      "worker_stopped": true
+    },
+    {
+      "worker": 11,
+      "crash_signature_lines": 0,
+      "categories": [],
+      "worker_stopped": true
+    }
+  ]
+}

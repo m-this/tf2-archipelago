@@ -1,0 +1,22 @@
+$ version
+Build Label:          11138802   # Uniquely identifies each build
+Network PatchVersion: 11138802   # Determines client and server compatibility
+Protocol version:           24   # High level network protocol version
+Server version:       11138802
+Server AppID:           232250
+$ host_timescale
+"host_timescale" = "50" ( def. "1.0" )
+ replicated
+ - Prescale the clock by this amount.
+$ tf_allow_server_hibernation
+"tf_allow_server_hibernation" = "0" ( def. "1" )
+ game
+ - Allow the server to hibernate when empty.
+$ sv_cheats
+"sv_cheats" = "1" ( def. "0" )
+ notify replicated
+ - Allow cheats on server
+$ sig_mvm_robot_limit
+"sig_mvm_robot_limit" = "1" ( def. "0" )
+ notify
+ - Mod: modify/enhance/fix some population manager code related to the robot limit in MvM

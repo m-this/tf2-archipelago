@@ -1,0 +1,75 @@
+[
+  {
+    "environment": "ubuntu24",
+    "commit": "c2744b0e5c450d9827031c5ca435ee4245305878",
+    "run_url": "https://github.com/kelly-cs/tf2-archipelago/actions/runs/40435744059",
+    "started_utc": "2026-10-27T02:08:13.254938+00:00",
+    "finished_utc": "2026-10-27T02:15:23.396855+00:00",
+    "installed_version": "11138802",
+    "startup": true,
+    "fresh": true,
+    "completed": true,
+    "crash_free": true,
+    "robot_limiter": true,
+    "install_attempts": 1,
+    "startup_attempts": 1,
+    "phase_seconds": {
+      "plan.jsonl": 0.02,
+      "install.log": 358.22,
+      "shard-0.jsonl": 50.47,
+      "retest.log": 0.16
+    },
+    "passed": 14,
+    "planned": 14,
+    "host_setup_seconds": 52.0
+  },
+  {
+    "environment": "docker",
+    "commit": "c2744b0e5c450d9827031c5ca435ee4245305878",
+    "run_url": "https://github.com/kelly-cs/tf2-archipelago/actions/runs/40435744059",
+    "started_utc": "2026-10-27T02:08:04.602510+00:00",
+    "finished_utc": "2026-10-27T02:17:45.354176+00:00",
+    "installed_version": "11138802",
+    "startup": true,
+    "fresh": true,
+    "completed": true,
+    "crash_free": true,
+    "robot_limiter": true,
+    "install_attempts": 1,
+    "startup_attempts": 1,
+    "phase_seconds": {
+      "plan.jsonl": 0.03,
+      "install.log": 458.34,
+      "ownership.log": 0.72,
+      "shard-0.jsonl": 68.62,
+      "retest.log": 0.16
+    },
+    "passed": 14,
+    "planned": 14,
+    "host_setup_seconds": 21.0
+  },
+  {
+    "environment": "windows",
+    "commit": "c2744b0e5c450d9827031c5ca435ee4245305878",
+    "run_url": "https://github.com/kelly-cs/tf2-archipelago/actions/runs/40435744059",
+    "started_utc": "2026-10-27T02:07:20.749784+00:00",
+    "finished_utc": "2026-10-27T02:16:00.173601+00:00",
+    "installed_version": "11138802",
+    "startup": true,
+    "fresh": true,
+    "completed": true,
+    "crash_free": true,
+    "robot_limiter": true,
+    "install_attempts": 1,
+    "startup_attempts": 1,
+    "phase_seconds": {
+      "plan.jsonl": 0.02,
+      "install.log": 451.61,
+      "shard-0.jsonl": 48.34,
+      "retest.log": 0.15
+    },
+    "passed": 14,
+    "planned": 14,
+    "host_setup_seconds": 1.0
+  }
+]

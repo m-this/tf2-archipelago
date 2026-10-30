@@ -63,8 +63,10 @@ func Planned(packs, mods []string) Server {
 // is the last thing it says, because ticking the pack is all that is left to
 // do: a mission that also needs a mod the server cannot load says so first.
 func (s Server) Check(mission gamedata.Mission) Verdict {
-	verdict := Verdict{Mission: mission, managed: s.ManagedExternally, platform: s.Platform}
-	verdict.Reason = s.reason(mission)
+	verdict := Verdict{
+		Mission: mission, managed: s.ManagedExternally, platform: s.Platform,
+		Reason: s.reason(mission),
+	}
 	return verdict
 }
 

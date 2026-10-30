@@ -1,0 +1,12 @@
+{
+  "checked_utc": "2026-10-24T23:32:21.937411+00:00",
+  "latest_server_version": "11138802",
+  "fresh": true,
+  "workers": [
+    {
+      "worker": "worker-0-after.txt",
+      "running_version": "11138802",
+      "robot_limiter_enabled": true
+    }
+  ]
+}

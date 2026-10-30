@@ -1,0 +1,32 @@
+{
+  "checked_utc": "2026-10-24T23:36:37.908117+00:00",
+  "latest_server_version": "11138802",
+  "fresh": true,
+  "workers": [
+    {
+      "worker": "worker-0-after.txt",
+      "running_version": "11138802",
+      "robot_limiter_enabled": true
+    },
+    {
+      "worker": "worker-1-after.txt",
+      "running_version": "11138802",
+      "robot_limiter_enabled": true
+    },
+    {
+      "worker": "worker-2-after.txt",
+      "running_version": "11138802",
+      "robot_limiter_enabled": true
+    },
+    {
+      "worker": "worker-3-after.txt",
+      "running_version": "11138802",
+      "robot_limiter_enabled": true
+    },
+    {
+      "worker": "worker-4-after.txt",
+      "running_version": "11138802",
+      "robot_limiter_enabled": true
+    }
+  ]
+}

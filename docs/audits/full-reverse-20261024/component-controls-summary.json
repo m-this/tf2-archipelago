@@ -1,0 +1,75 @@
+[
+  {
+    "trial": "wrench-native-20",
+    "excluded_from_mission_scores": true,
+    "setup": "synthetic buildings; native wrench input and authored callbacks thereafter",
+    "selected_native_samples": [
+      {
+        "health": "2",
+        "metal": "200"
+      },
+      {
+        "health": "1542",
+        "metal": "166"
+      },
+      {
+        "health": "2000",
+        "metal": "200"
+      }
+    ]
+  },
+  {
+    "trial": "wrench-native-50",
+    "excluded_from_mission_scores": true,
+    "setup": "synthetic buildings; native wrench input and authored callbacks thereafter",
+    "selected_native_samples": [
+      {
+        "health": "2000",
+        "metal": "125"
+      },
+      {
+        "health": "2000",
+        "metal": "200"
+      }
+    ]
+  },
+  {
+    "trial": "wrench-native-five-targets-50-ready",
+    "excluded_from_mission_scores": true,
+    "setup": "synthetic buildings; native wrench input and authored callbacks thereafter",
+    "selected_native_samples": [
+      {
+        "health": "2",
+        "metal": "185"
+      },
+      {
+        "health": "2",
+        "metal": "175"
+      },
+      {
+        "health": "2",
+        "metal": "70"
+      },
+      {
+        "health": "726",
+        "metal": "0"
+      },
+      {
+        "health": "377",
+        "metal": "0"
+      },
+      {
+        "health": "752",
+        "metal": "0"
+      },
+      {
+        "health": "1277",
+        "metal": "0"
+      },
+      {
+        "health": "1802",
+        "metal": "0"
+      }
+    ]
+  }
+]

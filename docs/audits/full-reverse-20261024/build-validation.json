@@ -1,0 +1,25 @@
+{
+  "checked_utc": "2026-10-24T23:07:30.062718+00:00",
+  "canonical_cases": 2628,
+  "reverse_cases": 122,
+  "excluded_catalog_missions": 0,
+  "native_controller_and_production_bed_plans_match": true,
+  "production_linux_and_windows_probe_identical": true,
+  "frozen_native_and_production_probe_executable_code_identical": true,
+  "runtime_data_difference": "compiler timestamp only",
+  "probe_source_sha256": "9c6f25d0713b82c8906ae12834d348e5c06cb592653f0f18bd7e07b2eb2370e6",
+  "gates": [
+    "full Go race/shuffle test suite",
+    "54 Python harness/report/retry tests",
+    "213 apworld tests and apworld lint",
+    "Go lint: zero issues",
+    "fmt-check and fix-check",
+    "actionlint and bash syntax",
+    "complete Linux and Windows production stability-bed builds"
+  ],
+  "final_source_commit": "939f877",
+  "arctic_native_profiles": "10/10 passed at 20x and 50x with final health, version, limiter and unchanged staged/installed plugin proof",
+  "final_health_regressions": "transient RCON failure, incomplete configs and persistent unhealthy timeout",
+  "production_ci_debian_container_bed_build": "complete Linux and Windows beds built successfully with pinned Go 1.27.0 and the production Debian tool packages",
+  "production_cache_format": "gzip; computed version matches the stored exact dependency cache entry"
+}

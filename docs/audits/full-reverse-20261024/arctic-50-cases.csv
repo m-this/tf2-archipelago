@@ -1,0 +1,11 @@
+mission,mode,wave,result,bot_spawns,tank_spawns,wall_seconds,native_objective
+mvm_cyberia_rc6a_rev_arctic_arrangement,normal,1,passed,74,0,6.05765939,"{""blu_won"": true, ""captures"": 0, ""method"": ""native-route-objective"", ""pickups"": 0, ""point_captures"": 1, ""visits"": 1}"
+mvm_cyberia_rc6a_rev_arctic_arrangement,normal,2,passed,56,0,4.014620114,"{""blu_won"": true, ""captures"": 0, ""method"": ""native-route-objective"", ""pickups"": 0, ""point_captures"": 1, ""visits"": 1}"
+mvm_cyberia_rc6a_rev_arctic_arrangement,normal,3,passed,50,0,4.013771575,"{""blu_won"": true, ""captures"": 0, ""method"": ""native-route-objective"", ""pickups"": 0, ""point_captures"": 1, ""visits"": 1}"
+mvm_cyberia_rc6a_rev_arctic_arrangement,normal,4,passed,17,5,2.012605418,"{""blu_won"": true, ""captures"": 0, ""method"": ""native-combat-victory"", ""pickups"": 2, ""visits"": 0}"
+mvm_cyberia_rc6a_rev_arctic_arrangement,normal,5,passed,76,0,7.015667952,"{""blu_won"": true, ""captures"": 0, ""method"": ""native-route-objective"", ""pickups"": 0, ""point_captures"": 1, ""visits"": 1}"
+mvm_cyberia_rc6a_rev_arctic_arrangement,surge,1,passed,79,0,5.009534217,"{""blu_won"": true, ""captures"": 0, ""method"": ""native-route-objective"", ""pickups"": 0, ""point_captures"": 1, ""visits"": 1}"
+mvm_cyberia_rc6a_rev_arctic_arrangement,surge,2,passed,56,0,4.014156025,"{""blu_won"": true, ""captures"": 0, ""method"": ""native-route-objective"", ""pickups"": 0, ""point_captures"": 1, ""visits"": 1}"
+mvm_cyberia_rc6a_rev_arctic_arrangement,surge,3,passed,50,0,4.012109922,"{""blu_won"": true, ""captures"": 0, ""method"": ""native-route-objective"", ""pickups"": 0, ""point_captures"": 1, ""visits"": 1}"
+mvm_cyberia_rc6a_rev_arctic_arrangement,surge,4,passed,15,5,2.017528895,"{""blu_won"": true, ""captures"": 0, ""method"": ""native-combat-victory"", ""pickups"": 2, ""visits"": 0}"
+mvm_cyberia_rc6a_rev_arctic_arrangement,surge,5,passed,74,0,6.016705101,"{""blu_won"": true, ""captures"": 0, ""method"": ""native-route-objective"", ""pickups"": 0, ""point_captures"": 1, ""visits"": 1}"

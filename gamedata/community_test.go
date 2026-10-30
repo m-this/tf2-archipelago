@@ -174,7 +174,7 @@ func TestCommunityCatalogueCounts(t *testing.T) {
 	if got, want := len(communityMissions), 201; got != want {
 		t.Errorf("community missions = %d, want %d", got, want)
 	}
-	for requirement, want := range map[string]int{"ready": 79, "sigsegv-mvm": 106, "no_nav": 16} {
+	for requirement, want := range map[string]int{"ready": 87, "sigsegv-mvm": 114, "no_nav": 0} {
 		if got := counts[requirement]; got != want {
 			t.Errorf("%s missions = %d, want %d", requirement, got, want)
 		}
@@ -185,6 +185,8 @@ func TestPortableCommunityMissionCountsByMap(t *testing.T) {
 	want := map[string]int{
 		"mvm_area_52_rc3":        9,
 		"mvm_autumnull_rc2":      2,
+		"mvm_bogland_rc12":       2,
+		"mvm_cyberia_rc6a":       6,
 		"mvm_condemned_b3":       2,
 		"mvm_downpour_rc3a":      4,
 		"mvm_frostwynd_rc1":      2,

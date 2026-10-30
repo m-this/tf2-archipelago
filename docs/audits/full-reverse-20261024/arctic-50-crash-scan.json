@@ -1,0 +1,9 @@
+{
+  "checked_utc": "2026-10-24T23:32:21.979704+00:00",
+  "workers": [
+    {
+      "worker": "worker-0-console.log.gz",
+      "crash_signatures": 0
+    }
+  ]
+}

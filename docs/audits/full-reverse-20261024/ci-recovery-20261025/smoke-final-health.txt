@@ -1,0 +1,52 @@
+$ version
+Build Label:          11138802   # Uniquely identifies each build
+Network PatchVersion: 11138802   # Determines client and server compatibility
+Protocol version:           24   # High level network protocol version
+Server version:       11138802
+Server AppID:           232250
+
+$ sm plugins list
+[SM] Listing 23 plugins:
+  01 "Defender TFBots" (2.53.0) by m-this, after Officer Spy
+  02 "Anti-Flood" (1.13.0.7477) by AlliedModders LLC
+  03 "Basic Commands" (1.13.0.7477) by AlliedModders LLC
+  04 "[TF2] Econ Data" (0.19.1) by nosoop
+  05 "Admin Menu" (1.13.0.7477) by AlliedModders LLC
+  06 "TF2 Utils" (1.5.0) by nosoop
+  07 "Basic Votes" (1.13.0.7477) by AlliedModders LLC
+  08 "[TF2] TF2Attributes" (1.7.5) by FlaminSarge
+  09 "TF2 MvM wave probe" (0.1.0) by tf2-archipelago
+  10 "Admin Help" (1.13.0.7477) by AlliedModders LLC
+  11 "Admin File Reader" (1.13.0.7477) by AlliedModders LLC
+  12 "Fun Votes" (1.13.0.7477) by AlliedModders LLC
+  13 "Reserved Slots" (1.13.0.7477) by AlliedModders LLC
+  14 "Player Commands" (1.13.0.7477) by AlliedModders LLC
+  15 "TF2 MvM Archipelago" (1.18.4) by mathis
+  16 "Basic Comm Control" (1.13.0.7477) by AlliedModders LLC
+  17 "Nextmap" (1.13.0.7477) by AlliedModders LLC
+  18 "Basic Info Triggers" (1.13.0.7477) by AlliedModders LLC
+  19 "Sound Commands" (1.13.0.7477) by AlliedModders LLC
+  20 "Basic Ban Commands" (1.13.0.7477) by AlliedModders LLC
+  21 "Client Preferences" (1.13.0.7477) by AlliedModders LLC
+  22 "Basic Chat" (1.13.0.7477) by AlliedModders LLC
+  23 "Fun Commands" (1.13.0.7477) by AlliedModders LLC
+
+$ sm exts list
+[SM] Displaying 14 extensions:
+[01] Automatic Updater (1.13.0.7477): Updates SourceMod gamedata files
+[02] Webternet (1.13.0.7477): Extension for interacting with URLs
+[03] sigsegv MvM (Oct 15 2026): sigsegv's Mann vs Machine mods
+[04] TF2 Tools (1.13.0.7477): TF2 extended functionality
+[05] BinTools (1.13.0.7477): Low-level C/C++ Calling API
+[06] SDK Hooks (1.13.0.7477): Source SDK Hooks
+[07] SDK Tools (1.13.0.7477): Source SDK Tools
+[08] Actions (3.9.2): Nextbot action tree manager
+[09] CBaseNPC (Manual Build): Primarily exposes valve's NextBot framework. But also various functions from public SDK.
+[10] DHooks (1.13.0-manual): Dynamic Hooks
+[11] REST in Pawn (1.3.2): Provides HTTP and JSON natives for plugins
+[12] Top Menus (1.13.0.7477): Creates sorted nested menus
+[13] Client Preferences (1.13.0.7477): Saves client preference settings
+[14] SQLite (1.13.0.7477): SQLite Driver
+
+$ sm_waveprobe_status
+WAVEPROBE state=passed reason=none map=mvm_rottenburg pop=mvm_rottenburg_rev_int_breaking_walls max=6 gamewave=2 expected=1 observed=1 botspawns=100 tankspawns=0 bots=51 tanks=0 attempts=51 alive=0 remaining=1087 initial=1095 progress=0.7 red=0 blue=1 defender=10 defteam=3 defclass=1 playerteam=3 enemyteam=2 elapsed=178.0 objectives=1 pickups=1 captures=1 configsready=1 objectivekind=bomb targetkills=0 pointcaps=0 usercommands=11053 repairs=0 tankdeliveries=0 bluwon=1 escortstages=0 repaircomplete=0

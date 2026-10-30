@@ -62,7 +62,7 @@ func TestStartMissionChoicesFollowTheVerdict(t *testing.T) {
 	}{
 		{"mvm_decoy", true},
 		{"mvm_kelly_rc1b_adv_homestead_happenings", true},
-		{"mvm_bogland_rc12_adv_swamp_fever", false},
+		{"mvm_bogland_rc12_adv_swamp_fever", true},
 		{"mvm_bronx_rc2_adv_point_of_impact", false},
 		{"mvm_area_52_rc3_int_anomalous_materials", false},
 	}

@@ -1,0 +1,11 @@
+{
+  "source_base": "911e08a26b15d6c0e2b96ce6b2fdac085b992017",
+  "controller_source_diff_sha256": "e4b7d5c17e67e3da3268356944ecf2a815147a9462d97e79146a75aa639ca0a3",
+  "controller_sha256": "1f52f61e715cae5d1868926d2d7887550aa0ad10dacc36f933346597f1a39575",
+  "commands_after_last_server_boot": {
+    "host_timescale 50": 4,
+    "sv_cheats 1": 4,
+    "sm_waveprobe_reverse_objectives 1": 16,
+    "tf_allow_server_hibernation 0": 4
+  }
+}

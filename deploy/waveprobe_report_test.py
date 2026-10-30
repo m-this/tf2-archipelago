@@ -13,6 +13,108 @@ spec.loader.exec_module(report)
 
 
 class ReportOutcomeTest(unittest.TestCase):
+    def test_native_objective_witnesses_are_bound_to_mission_wave_and_victory(self):
+        fixtures = [
+            ("mvm_robotfactory_b30_rev_adv_short_circuit_execution", 1,
+             {"method": "native-repair", "repairs": 4, "repair_completed": True, "blu_won": True}),
+            ("mvm_teien_rc6_rev_adv_shogun_slaughter", 1,
+             {"method": "native-route-objective", "point_captures": 4, "blu_won": True}),
+            ("mvm_robotfactory_b30_rev_adv_short_circuit_execution", 1,
+             {"method": "native-repair", "repairs": 5, "blu_won": True}),
+            ("mvm_robotfactory_b30_rev_adv_short_circuit_execution", 2,
+             {"method": "native-escort", "escort_stages": 3, "blu_won": True}),
+            ("mvm_hideout_b3_rev_adv_galois", 4,
+             {"tank_deliveries": 1, "blu_won": True}),
+            ("mvm_hideout_b3_rev_adv_galois", 5,
+             {"method": "native-combat-victory", "blu_won": True}),
+        ]
+        with tempfile.TemporaryDirectory() as folder:
+            root = pathlib.Path(folder)
+            for mission, wave, objective in fixtures:
+                for target, evidence, expected in [
+                    (mission, objective, 1),
+                    (mission, {**objective, "blu_won": False}, 0),
+                    ("mvm_coaltown_rev_adv_computer_crash", objective, 0),
+                    (mission, {}, 0),
+                ]:
+                    with self.subTest(mission=mission, target=target, evidence=evidence):
+                        case = {"mission": target, "wave": wave, "mode": "normal", "map": "fixture"}
+                        (root / "plan.jsonl").write_text(json.dumps({**case, "state": "planned"}) + "\n")
+                        row = {**case, "state": "passed", "outcome": "passed", "bots": 4,
+                               "bot_spawns": 4, "objective": evidence}
+                        (root / "shard-0.jsonl").write_text(json.dumps(row) + "\n")
+                        with contextlib.redirect_stdout(io.StringIO()):
+                            report.main(root)
+                        summary = json.loads((root / "SUMMARY.json").read_text())
+                        self.assertEqual(summary["eligible_cases"], 1)
+                        self.assertEqual(summary["passed_cases"], expected)
+
+    def test_capture_cannot_replace_a_different_native_objective_or_blu_victory(self):
+        self.assertTrue(report.reverse_completion_witness(
+            ("mvm_hideout_b3_rev_adv_galois", "surge", 4),
+            {"objective": {"captures": 1, "blu_won": True}}))
+        for mission, wave in [
+            ("mvm_teien_rc6_rev_adv_shogun_slaughter", 1),
+            ("mvm_robotfactory_b30_rev_adv_short_circuit_execution", 1),
+            ("mvm_robotfactory_b30_rev_adv_short_circuit_execution", 2),
+            ("mvm_coaltown_rev_adv_computer_crash", 6),
+            ("mvm_autumnull_rc2_rev_exp_codename_omega", 6),
+            ("mvm_hideout_b3_rev_adv_galois", 5),
+        ]:
+            with self.subTest(mission=mission):
+                self.assertFalse(report.reverse_completion_witness(
+                    (mission, "normal", wave),
+                    {"objective": {"captures": 1, "blu_won": True}}))
+        for victory in (False, None):
+            self.assertFalse(report.reverse_completion_witness(
+                ("mvm_rottenburg_rev_int_breaking_walls", "normal", 1),
+                {"objective": {"captures": 1, "blu_won": victory}}))
+
+    def test_arctic_tank_stage_requires_all_five_enemy_tank_deaths(self):
+        key = ("mvm_cyberia_rc6a_rev_arctic_arrangement", "normal", 4)
+        for tanks, victory, want in [(5, True, True), (4, True, False), (0, True, False), (5, False, False)]:
+            self.assertEqual(report.reverse_completion_witness(key, {
+                "bots": 8, "tanks": tanks,
+                "objective": {"method": "native-combat-victory", "blu_won": victory}}), want)
+        for wave in [1, 2, 3, 5]:
+            self.assertTrue(report.reverse_completion_witness((key[0], "normal", wave), {
+                "objective": {"method": "native-route-objective", "blu_won": True, "point_captures": 1}}))
+            self.assertFalse(report.reverse_completion_witness((key[0], "normal", wave), {
+                "objective": {"captures": 1, "blu_won": True}}))
+
+    def test_supported_reverse_counts_in_score_but_missing_capture_evidence_does_not(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = pathlib.Path(folder)
+            ordinary = {"mission": "mvm_decoy", "map": "mvm_decoy", "mode": "normal", "wave": 1}
+            reverse = {**ordinary, "mission": "mvm_rottenburg_rev_int_breaking_walls"}
+            unsupported = {**ordinary, "mission": "mvm_teien_rc6_rev_adv_shogun_slaughter"}
+            (root/"plan.jsonl").write_text("".join(json.dumps({**row, "state": state}) + "\n"
+                for row, state in [(ordinary, "planned"), (reverse, "planned"), (unsupported, "unsupported_reverse")]))
+            for captures in [1, 0]:
+                rows = [{**ordinary, "state": "passed", "outcome": "passed"},
+                        {**reverse, "state": "passed", "outcome": "passed", "objective": {"captures": captures, "blu_won": True}}]
+                (root/"shard-0.jsonl").write_text("".join(json.dumps(row) + "\n" for row in rows))
+                with contextlib.redirect_stdout(io.StringIO()):
+                    report.main(root)
+                summary = json.loads((root/"SUMMARY.json").read_text())
+                self.assertEqual(summary["eligible_cases"], 2)
+                self.assertEqual(summary["passed_cases"], 1 + captures)
+                self.assertEqual(summary["reverse_cases"], {"eligible": 1, "tested": 1, "passed": captures})
+                self.assertEqual(summary["outcomes"]["reverse objective"], 1)
+                self.assertEqual(summary["outcomes"]["probe error"], 1 - captures)
+
+    def test_combat_exception_needs_the_authored_wave_and_target_witness(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = pathlib.Path(folder)
+            for wave, kills, expected in [(6, 1, 1), (6, 0, 0), (5, 1, 0)]:
+                case = {"mission": "mvm_coaltown_rev_adv_computer_crash", "map": "mvm_coaltown", "mode": "normal", "wave": wave}
+                (root/"plan.jsonl").write_text(json.dumps({**case, "state": "planned"}) + "\n")
+                (root/"shard-0.jsonl").write_text(json.dumps({**case, "state": "passed", "outcome": "passed", "bots": 7,
+                    "objective": {"method": "native-combat-clear", "target_kills": kills}}) + "\n")
+                with contextlib.redirect_stdout(io.StringIO()): report.main(root)
+                summary = json.loads((root/"SUMMARY.json").read_text())
+                self.assertEqual(summary["passed_cases"], expected)
+
     def test_changelevel_failure_is_counted_and_shows_map_evidence(self):
         with tempfile.TemporaryDirectory() as folder:
             root = pathlib.Path(folder)
@@ -102,11 +204,11 @@ class ReportOutcomeTest(unittest.TestCase):
             self.assertEqual(summary["eligible_cases"], 6)
             self.assertEqual(summary["tested_cases"], 5)
             self.assertEqual(summary["passed_cases"], 1)
-            self.assertEqual(summary["stability_percent"], 20.0)
+            self.assertEqual(summary["stability_percent"], 16.67)
             self.assertEqual(summary["by_mode"]["normal"]["tested"], 3)
             self.assertEqual(summary["by_mode"]["surge"]["tested"], 2)
             text = output.getvalue()
-            self.assertIn("Stability score: **20.0%**", text)
+            self.assertIn("Stability score: **16.7%**", text)
             self.assertIn("| Wave Failed | 0 | 1 |", text)
             self.assertIn("| Wave 0 | 1 | 0 |", text)
             self.assertIn("| No Enemies Spawned | 0 | 1 |", text)

@@ -1,0 +1,12 @@
+$ version
+Build Label:          11138802   # Uniquely identifies each build
+Network PatchVersion: 11138802   # Determines client and server compatibility
+Protocol version:           24   # High level network protocol version
+Server version:       11138802
+Server AppID:           232250
+$ sm_waveprobe_status
+WAVEPROBE state=idle reason=none map=mvm_decoy pop=mvm_decoy_adv_grutesque_getaway max=0 gamewave=0 expected=0 observed=0 botspawns=0 tankspawns=0 bots=0 tanks=0 attempts=0 alive=0 remaining=0 initial=0 progress=-1.0 red=0 blue=0 defender=0 defteam=0 defclass=0 playerteam=2 enemyteam=3 elapsed=1.0 objectives=0 pickups=0 captures=0 configsready=1 objectivekind=bomb targetkills=0 pointcaps=0 usercommands=0 repairs=0 tankdeliveries=0 bluwon=0 escortstages=0 repaircomplete=0
+$ sig_mvm_robot_limit
+"sig_mvm_robot_limit" = "1" ( def. "0" )
+ notify
+ - Mod: modify/enhance/fix some population manager code related to the robot limit in MvM

@@ -11,20 +11,21 @@ import (
 
 const sigmodMissionField = "missions.pool.mvm_bronx_rc2_adv_point_of_impact"
 
-func TestMissingNavigationMeshMissionNamesItsMapAndStaysOff(t *testing.T) {
+func TestEmbeddedNavigationMissionIsSelectable(t *testing.T) {
 	state := NewState(settings.Defaults())
+	state.Settings.CommunityPacks = []string{settings.CommunityPackPotato}
 	field, ok := Build(state, Env{
 		CommunityAvailable: []string{settings.CommunityPackPotato},
 		Platform:           "linux",
 	}).Field("missions.pool.mvm_bogland_rc12_adv_swamp_fever")
 	if !ok {
-		t.Fatal("missing-NAV mission is missing from the mission list")
+		t.Fatal("embedded-NAV mission is missing from the mission list")
 	}
-	if !field.Disabled || field.Value != "false" || !strings.Contains(field.Reason, "maps/mvm_bogland_rc12.nav") {
-		t.Fatalf("missing-NAV mission field = %+v", field)
+	if field.Disabled || strings.Contains(field.Reason, "maps/mvm_bogland_rc12.nav") {
+		t.Fatalf("embedded-NAV mission field = %+v", field)
 	}
-	if !strings.Contains(field.Help, "maps/mvm_bogland_rc12.nav") {
-		t.Fatalf("missing-NAV mission help = %q", field.Help)
+	if strings.Contains(field.Help, "maps/mvm_bogland_rc12.nav") {
+		t.Fatalf("embedded-NAV mission help = %q", field.Help)
 	}
 }
 

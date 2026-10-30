@@ -1,0 +1,81 @@
+{
+  "full-local-v7": {
+    "shards": "12",
+    "speed": "50",
+    "seed": "1",
+    "first_pass_timeout": "180s",
+    "wave_timeout": "900s",
+    "started_utc": "2026-10-24T20:39:42Z",
+    "source_commit": "3821b156e32db015a90856224367f9d69c2aac3a",
+    "main_commit": "ed503f0575b5e10303368961b0d0f00178af8334",
+    "controller_sha256": "639569680842f5bb6b97f0fe1e6cf3e386e1fc5b6eff46106208f61a0b75e8f6",
+    "frozen_plugins": {
+      "probe_sha256": "d218190ed09f7ca2d6c6a1fa35b39b37a36b74d4d2d2f566aa44d466baccb6cd",
+      "ap_sha256": "cf7313c04260d2a0ccd2a4687a7c92dda91f733989591b12f17229bfa5c2c428"
+    }
+  },
+  "full-reverse-final": {
+    "shards": "3",
+    "speed": "50",
+    "seed": "1",
+    "first_pass_timeout": "180s",
+    "wave_timeout": "900s",
+    "started_utc": "2026-10-24T22:11:01.570484+00:00",
+    "source_commit": "3821b156e32db015a90856224367f9d69c2aac3a+candidate.diff",
+    "scope": "all playable reverse missions",
+    "controller_sha256": "8ee8ab933ee55289ab698e1b0268318a31337b993297d4eb8d34d5e68c3b5075",
+    "frozen_plugins": {
+      "probe_sha256": "3deb623031be598fb0f6931f039b8e12b44706c6b9e5c2afa650511b6fadf9eb",
+      "ap_sha256": "cf7313c04260d2a0ccd2a4687a7c92dda91f733989591b12f17229bfa5c2c428",
+      "controller_sha256": "8ee8ab933ee55289ab698e1b0268318a31337b993297d4eb8d34d5e68c3b5075"
+    }
+  },
+  "restored-nav-validated": {
+    "shards": "5",
+    "speed": "50",
+    "seed": "1",
+    "first_pass_timeout": "180s",
+    "wave_timeout": "900s",
+    "started_utc": "2026-10-24T23:06:32.657918+00:00",
+    "source_commit": "aefef03c51da027739e150a8229d6e99ef02e8b6+candidate.diff",
+    "scope": "all previously no_nav catalog missions",
+    "controller_sha256": "25d1639a07aacf6158b8e82b4f66a87eeecc0f7c9df81b73f399f126589b5afb",
+    "frozen_plugins": {
+      "probe_sha256": "3deb623031be598fb0f6931f039b8e12b44706c6b9e5c2afa650511b6fadf9eb",
+      "ap_sha256": "cf7313c04260d2a0ccd2a4687a7c92dda91f733989591b12f17229bfa5c2c428",
+      "controller_sha256": "25d1639a07aacf6158b8e82b4f66a87eeecc0f7c9df81b73f399f126589b5afb"
+    }
+  },
+  "arctic-native-20-verified": {
+    "shards": "1",
+    "speed": "20",
+    "seed": "1",
+    "first_pass_timeout": "180s",
+    "wave_timeout": "900s",
+    "started_utc": "2026-10-24T23:27:45.378348+00:00",
+    "source_commit": "1253d13d650020d98a33eaae3ffd929297bbd54c+candidate.diff",
+    "scope": "Arctic native objective profile at 20x",
+    "controller_sha256": "972642cc9312bfa8ea8565fe5c1e6dde03943925f8095a322cc36928453811ca",
+    "frozen_plugins": {
+      "probe_sha256": "3deb623031be598fb0f6931f039b8e12b44706c6b9e5c2afa650511b6fadf9eb",
+      "ap_sha256": "cf7313c04260d2a0ccd2a4687a7c92dda91f733989591b12f17229bfa5c2c428",
+      "controller_sha256": "972642cc9312bfa8ea8565fe5c1e6dde03943925f8095a322cc36928453811ca"
+    }
+  },
+  "arctic-native-50-verified": {
+    "shards": "1",
+    "speed": "50",
+    "seed": "1",
+    "first_pass_timeout": "180s",
+    "wave_timeout": "900s",
+    "started_utc": "2026-10-24T23:27:47.418194+00:00",
+    "source_commit": "1253d13d650020d98a33eaae3ffd929297bbd54c+candidate.diff",
+    "scope": "Arctic native objective profile at 50x",
+    "controller_sha256": "972642cc9312bfa8ea8565fe5c1e6dde03943925f8095a322cc36928453811ca",
+    "frozen_plugins": {
+      "probe_sha256": "3deb623031be598fb0f6931f039b8e12b44706c6b9e5c2afa650511b6fadf9eb",
+      "ap_sha256": "cf7313c04260d2a0ccd2a4687a7c92dda91f733989591b12f17229bfa5c2c428",
+      "controller_sha256": "972642cc9312bfa8ea8565fe5c1e6dde03943925f8095a322cc36928453811ca"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "canonical_cases": 2628,
+  "unique_attempted_cases": 2628,
+  "missing_cases": 0,
+  "excluded_cases": 0,
+  "reverse_cases_on_final_native_probe": 122,
+  "reverse_passed_on_final_native_probe": 103,
+  "reverse_outcomes": {
+    "passed": 103,
+    "wave failed": 17,
+    "probe error": 2
+  },
+  "cohorts": {
+    "full-local-v7": 2454,
+    "full-reverse-final": 112,
+    "restored-nav-validated": 174,
+    "arctic-native-20-verified": 10,
+    "arctic-native-50-verified": 10
+  },
+  "note": "Cohorts are reported separately; this is coverage evidence, not a uniform final-build full-catalog stability score."
+}

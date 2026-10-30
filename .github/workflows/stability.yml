@@ -1,0 +1,325 @@
+name: Daily stability
+
+on:
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: Full catalog, standard smoke, or reverse bomb smoke check
+        type: choice
+        options: ['full', 'smoke', 'reverse-smoke']
+        default: 'full'
+      shards:
+        description: Mission shards per environment
+        type: choice
+        options: ['12', '6', '18', '20']
+        default: '12'
+      parallel:
+        description: Maximum concurrent hosted measurement jobs
+        type: choice
+        options: ['12', '18', '20']
+        default: '12'
+
+permissions:
+  contents: read
+
+env:
+  STABILITY_PUBLISH_REF: refs/heads/main
+  STABILITY_SCOPE: ${{ inputs.scope == 'reverse-smoke' && 'smoke' || inputs.scope || 'full' }}
+  STABILITY_MISSION: ${{ inputs.scope == 'reverse-smoke' && 'mvm_rottenburg_rev_int_breaking_walls' || inputs.scope == 'smoke' && 'mvm_decoy_expert1' || 'all' }}
+  STABILITY_SHARDS: ${{ (inputs.scope == 'smoke' || inputs.scope == 'reverse-smoke') && '1' || inputs.shards || '12' }}
+  STABILITY_PARALLEL: ${{ inputs.parallel || '12' }}
+  STABILITY_SPEED: '50'
+
+concurrency:
+  group: daily-stability
+  cancel-in-progress: false
+
+jobs:
+  extensions:
+    if: github.server_url == 'https://github.com'
+    uses: ./.github/workflows/extensions.yml
+
+  build:
+    needs: extensions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    # Production CI writes its bots cache here using gzip (no zstd binary).
+    # Cache versions include compression, so the plain Ubuntu VM misses it.
+    container:
+      image: debian:stable-slim
+    outputs:
+      shards_json: ${{ steps.partition.outputs.shards_json }}
+      parallel: ${{ steps.partition.outputs.parallel }}
+    steps:
+      - name: Prepare the production CI build environment
+        run: |
+          apt-get update
+          apt-get install --yes --no-install-recommends nodejs git ca-certificates curl unzip make python3 python3-packaging g++
+      - uses: actions/checkout@v7
+      - name: Trust the checked-out workspace for Go VCS stamping
+        run: git config --global --add safe.directory "$(pwd -P)"
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - uses: actions/download-artifact@v8
+        with:
+          name: extensions
+          path: extensions
+      # Reuse CI's exact production dependency cache. build.sh still verifies
+      # its pin stamps and recompiles the plugins; no floating fallback compiler.
+      - uses: actions/cache@v6
+        with:
+          path: deploy/bots/build
+          key: bots-${{ hashFiles('deploy/env/versions.env', 'deploy/patches/**', 'deploy/bots/*.sh', 'deploy/bots/*.py', 'go.mod', 'go.sum') }}
+      - name: Build the native beds with production installer assets
+        env:
+          BOTS_EXTENSIONS_DIR: ${{ github.workspace }}/extensions
+        run: make stability-bed
+      - name: Record the full canonical wave plan
+        run: dist/linuxbed/waveprobe -plan -mode both -reverse-objectives -mission "$STABILITY_MISSION" > dist/plan.jsonl
+      - name: Balance whole missions over the canonical plan
+        id: partition
+        run: |
+          python3 deploy/waveprobe_partition.py dist/plan.jsonl dist/partition.json --shards "$STABILITY_SHARDS"
+          python3 - <<'PY'
+          import json, os
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('shards_json=' + json.dumps(list(range(int(os.environ['STABILITY_SHARDS'])))) + '\n')
+              output.write('parallel=' + os.environ['STABILITY_PARALLEL'] + '\n')
+          PY
+      - uses: actions/upload-artifact@v7
+        with:
+          name: stability-beds
+          path: |
+            dist/linuxbed
+            dist/winbed
+            dist/plan.jsonl
+            dist/partition.json
+          if-no-files-found: error
+
+  image:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+      # Share production nightly/release layers. Cache misses still build the
+      # same pinned image; TF2 itself is updated in each disposable server.
+      - uses: docker/setup-buildx-action@v4
+        id: buildx
+        with:
+          use: false
+      - uses: crazy-max/ghaction-github-runtime@v4
+      - name: Build the production image once for every Docker shard
+        run: |
+          . deploy/env/versions.env
+          docker buildx build --builder "${{ steps.buildx.outputs.name }}" --load --pull \
+            -f deploy/Dockerfile.srcds -t tf2ap-stability:current \
+            --cache-from type=gha,scope=srcds \
+            --cache-to type=gha,scope=srcds,mode=max,ignore-error=true \
+            --build-arg "RIPEXT_VERSION=$RIPEXT_VERSION" \
+            --build-arg "SOURCEMOD_VERSION=$SOURCEMOD_VERSION" \
+            --build-arg "MMSOURCE_VERSION=$MMSOURCE_VERSION" \
+            --build-arg "SIGSEGV_MVM_VERSION=$SIGSEGV_MVM_VERSION" \
+            --build-arg "SIGSEGV_MVM_SHA256=$SIGSEGV_MVM_SHA256" .
+      - name: Export the exact measured image
+        run: docker image save tf2ap-stability:current | gzip > stability-image.tar.gz
+      - uses: actions/upload-artifact@v7
+        with:
+          name: stability-image
+          path: stability-image.tar.gz
+          compression-level: 0
+          retention-days: 7
+          if-no-files-found: error
+
+  measure:
+    needs: [build, image]
+    if: always() && needs.build.result == 'success'
+    strategy:
+      fail-fast: false
+      max-parallel: ${{ fromJSON(needs.build.outputs.parallel) }}
+      matrix:
+        shard: ${{ fromJSON(needs.build.outputs.shards_json) }}
+        environment: [ubuntu24, docker, windows]
+        include:
+          - environment: ubuntu24
+            runner: ubuntu-24.04
+            bed: linuxbed
+          - environment: docker
+            runner: ubuntu-24.04
+            bed: linuxbed
+          - environment: windows
+            runner: windows-2022
+            bed: winbed
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 350
+    env:
+      STABILITY_ENV: ${{ matrix.environment }}
+      STABILITY_BED: ${{ matrix.bed }}
+      STABILITY_SHARD: ${{ matrix.shard }}
+      STABILITY_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set the daily package cache key
+        if: runner.os == 'Linux'
+        id: apt-key
+        shell: bash
+        run: echo "day=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache/restore@v6
+        continue-on-error: true
+        if: runner.os == 'Linux'
+        id: apt-restore
+        with:
+          path: ${{ runner.temp }}/tf2ap-apt-cache
+          key: stability-apt-${{ matrix.environment }}-${{ hashFiles('deploy/stability-host.py') }}-${{ steps.apt-key.outputs.day }}
+          restore-keys: stability-apt-${{ matrix.environment }}-${{ hashFiles('deploy/stability-host.py') }}-
+      - name: Reclaim optional SDK space and check the game volume
+        id: host
+        timeout-minutes: 30
+        env:
+          STABILITY_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+          STABILITY_APT_CACHE: ${{ runner.temp }}/tf2ap-apt-cache
+        shell: python
+        run: |
+          import runpy
+          runpy.run_path("deploy/stability-host.py", run_name="__main__")
+      - uses: actions/cache/save@v6
+        continue-on-error: true
+        if: always() && runner.os == 'Linux' && steps.apt-restore.outputs.cache-hit != 'true' && steps.host.outputs.apt_cache_files == 'true' && steps.apt-restore.outputs.cache-primary-key != ''
+        with:
+          path: ${{ runner.temp }}/tf2ap-apt-cache
+          key: ${{ steps.apt-restore.outputs.cache-primary-key }}
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - uses: actions/download-artifact@v8
+        with:
+          name: stability-beds
+          path: beds
+      - uses: actions/download-artifact@v8
+        if: matrix.environment == 'docker'
+        with:
+          name: stability-image
+          path: image
+      - name: Load the shared production Docker image
+        if: matrix.environment == 'docker'
+        run: docker image load --input image/stability-image.tar.gz
+      - name: Start the mod and run every eligible wave in both modes
+        shell: python
+        run: |
+          import os, pathlib, secrets, subprocess, sys
+          bed = pathlib.Path('beds') / os.environ['STABILITY_BED']
+          if os.name != 'nt':
+              for name in ('winbed', 'waveprobe', 'rcon'):
+                  (bed / name).chmod(0o755)
+          password = secrets.token_hex(24)
+          print('::add-mask::' + password, flush=True)
+          os.environ['WAVEPROBE_RCONPW'] = password
+          root = pathlib.Path(os.environ['STABILITY_GAME_PARENT']) / ('tf2ap-stability-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
+          with open(os.environ['GITHUB_ENV'], 'a') as env:
+              env.write('STABILITY_ROOT=' + str(root) + '\n')
+          sys.exit(subprocess.call([sys.executable, 'deploy/stability-run.py',
+              '--environment', os.environ['STABILITY_ENV'], '--bed', str(bed),
+              '--root', str(root), '--output', 'stability-result',
+              '--reverse-objectives', '--hours', '4.5', '--speed', os.environ['STABILITY_SPEED'],
+              '--shards', os.environ['STABILITY_SHARDS'], '--shard', os.environ['STABILITY_SHARD'],
+              '--partition', 'beds/partition.json', '--mission', os.environ['STABILITY_MISSION']]))
+      - name: Preserve results even when startup or waves fail
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: stability-${{ matrix.environment }}-${{ matrix.shard }}
+          path: stability-result
+          retention-days: 30
+      - name: Remove this run's disposable game files
+        if: always()
+        shell: python
+        run: |
+          import os, pathlib, shutil, subprocess
+          value = os.environ.get('STABILITY_ROOT')
+          if value:
+              root = pathlib.Path(value)
+              if os.environ['STABILITY_ENV'] == 'docker' and root.exists():
+                  subprocess.run(['docker', 'run', '--rm', '--user', 'root', '--entrypoint', 'chown',
+                      '-v', str(root) + ':/cleanup', 'tf2ap-stability:current', '-R',
+                      str(os.getuid()) + ':' + str(os.getgid()), '/cleanup'], check=True)
+              shutil.rmtree(root, ignore_errors=False) if root.exists() else None
+
+  report:
+    needs: [extensions, build, image, measure]
+    if: always() && github.server_url == 'https://github.com'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          pattern: stability-*-*
+          path: measurements
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          name: stability-beds
+          path: measurements/stability-beds
+      - name: Collect environment evidence
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, shutil
+          for environment in ('ubuntu24', 'docker', 'windows'):
+              root = pathlib.Path('evidence') / environment
+              root.mkdir(parents=True, exist_ok=True)
+              for shard in range(int(os.environ['STABILITY_SHARDS'])):
+                  source = pathlib.Path('measurements') / f'stability-{environment}-{shard}'
+                  if source.exists():
+                      shutil.move(str(source), str(root / f'part-{shard}'))
+          PY
+      - name: Calculate the scores (missing environments are failures)
+        id: score
+        continue-on-error: true
+        run: |
+          python3 deploy/stability-report.py evidence dashboard --commit "$GITHUB_SHA" --run-url "$RUN_URL" --check-live \
+            --shards "$STABILITY_SHARDS" --plan measurements/stability-beds/plan.jsonl \
+            --partition measurements/stability-beds/partition.json --scope "$STABILITY_SCOPE" \
+            --run-attempt "$GITHUB_RUN_ATTEMPT"
+      - name: Show the consolidated dashboard
+        if: always()
+        run: cat dashboard/RELEASE.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: stability-dashboard
+          path: dashboard
+          retention-days: 30
+          if-no-files-found: error
+      # Preserve each attempt before updating the rolling README dashboard.
+      # Do not clobber historical assets: reruns have a different attempt tag.
+      - name: Archive this run's report and evidence
+        if: github.ref == env.STABILITY_PUBLISH_REF && env.STABILITY_SCOPE == 'full'
+        run: |
+          gh release create "stability-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" dashboard/* \
+            --target "$GITHUB_SHA" --prerelease --latest=false \
+            --title "Stability run ${GITHUB_RUN_ID}, attempt ${GITHUB_RUN_ATTEMPT}" \
+            --notes-file dashboard/RELEASE.md
+      # A dedicated prerelease keeps stable URLs for the README widgets and
+      # reports. No commits on main and no effect on releases/latest.
+      - name: Publish the dated dashboard and widgets
+        if: github.ref == env.STABILITY_PUBLISH_REF && env.STABILITY_SCOPE == 'full'
+        run: |
+          if ! gh release view stability >/dev/null 2>&1; then
+            gh release create stability --target "$GITHUB_SHA" --prerelease --latest=false \
+              --title 'Daily stability' --notes-file dashboard/RELEASE.md
+          fi
+          gh release upload stability dashboard/* --clobber
+          gh release edit stability --prerelease --latest=false --notes-file dashboard/RELEASE.md
+          python3 deploy/stability-publish.py dashboard --repository "$GITHUB_REPOSITORY"
+      - name: Fail the daily check when any environment is unverified or failing
+        if: steps.score.outcome != 'success'
+        run: exit 1

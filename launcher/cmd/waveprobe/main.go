@@ -30,6 +30,7 @@ type options struct {
 	loadWait   time.Duration
 	shard      int
 	shards     int
+	partition  string
 	startWave  int
 	endWave    int
 	failFast   bool
@@ -41,6 +42,11 @@ type options struct {
 	maps       string
 	onePerMap  bool
 	pops       string
+
+	reverseObjectives bool
+	reverseBombs      bool
+	reverse           bool
+	reverseOnly       bool
 }
 
 type probeStatus struct {
@@ -66,6 +72,19 @@ type probeStatus struct {
 	EnemyTeam  int
 	Elapsed    float64
 	Progress   float64
+
+	RepairComplete  int
+	ObjectiveVisits int
+	EscortStages    int
+	Repairs         int
+	TankDeliveries  int
+	BluWon          int
+	TargetKills     int
+	FlagPickups     int
+	PointCaptures   int
+	ObjectiveKind   string
+	ConfigsReady    int
+	FlagCaptures    int
 }
 
 type sample struct {
@@ -78,7 +97,23 @@ type sample struct {
 	Progress    float64 `json:"progress_percent"`
 }
 
+type objectiveEvidence struct {
+	RepairCompleted bool   `json:"repair_completed,omitempty"`
+	EscortStages    int    `json:"escort_stages,omitempty"`
+	Repairs         int    `json:"repairs,omitempty"`
+	TankDeliveries  int    `json:"tank_deliveries,omitempty"`
+	BluWon          bool   `json:"blu_won,omitempty"`
+	PointCaptures   int    `json:"point_captures,omitempty"`
+	TargetKills     int    `json:"target_kills,omitempty"`
+	Method          string `json:"method"`
+	Visits          int    `json:"visits"`
+	Pickups         int    `json:"pickups"`
+	Captures        int    `json:"captures"`
+}
+
 type result struct {
+	Objective *objectiveEvidence `json:"objective,omitempty"`
+
 	Mission     string               `json:"mission"`
 	Map         string               `json:"map"`
 	Mode        string               `json:"mode"`
@@ -191,16 +226,21 @@ func main() {
 	flag.StringVar(&opt.mission, "mission", "all", "population file name or all")
 	flag.StringVar(&opt.mode, "mode", "both", "normal, surge, or both")
 	flag.IntVar(&opt.seed, "seed", 1, "seed for each spawn's 15-25 game-second lifetime")
-	flag.IntVar(&opt.speed, "speed", 20, "isolated server host_timescale")
+	flag.IntVar(&opt.speed, "speed", 50, "isolated server host_timescale")
 	flag.DurationVar(&opt.timeout, "timeout", 15*time.Minute, "wall-clock timeout after the wave starts")
 	flag.DurationVar(&opt.loadWait, "load-timeout", 90*time.Second, "wall-clock timeout for a map or mission load")
 	flag.IntVar(&opt.shard, "shard", 0, "zero-based mission shard")
 	flag.IntVar(&opt.shards, "shards", 1, "number of mission shards")
+	flag.StringVar(&opt.partition, "partition", "", "balanced mission partition JSON (legacy CRC32 when empty)")
 	flag.IntVar(&opt.startWave, "start-wave", 1, "first wave to test (single mission only)")
 	flag.IntVar(&opt.endWave, "end-wave", 0, "last wave to test (0 means mission end)")
 	flag.BoolVar(&opt.failFast, "fail-fast", false, "stop after the first failed wave")
 	flag.BoolVar(&opt.includeSig, "include-sigmod", true, "test SigMod missions")
 	flag.BoolVar(&opt.onlySig, "only-sigmod", false, "test SigMod missions and nothing else")
+	flag.BoolVar(&opt.reverseObjectives, "reverse-objectives", false, "test every playable reverse mission, including capture, repair, escort and combat objectives")
+	flag.BoolVar(&opt.reverseBombs, "reverse-bombs", false, "enable validated reverse bomb/carrier missions; other reverse objectives remain excluded")
+	flag.BoolVar(&opt.reverseOnly, "reverse-only", false, "select only reverse missions; requires -experimental-reverse")
+	flag.BoolVar(&opt.reverse, "experimental-reverse", false, "opt in to experimental reverse objective tests (excluded by default)")
 	flag.BoolVar(&opt.plan, "plan", false, "print planned wave tests without connecting to a server")
 	flag.BoolVar(&opt.defenders, "defenders", false, "record how the RED defender bots move in each wave")
 	flag.IntVar(&opt.waves, "waves", 0, "test only the first N waves of each mission (0 means all)")
@@ -215,11 +255,14 @@ func main() {
 }
 
 func run(opt options) error {
+	if opt.reverseOnly && !opt.reverse && !opt.reverseBombs && !opt.reverseObjectives {
+		return errors.New("-reverse-only requires -reverse-bombs, -reverse-objectives or -experimental-reverse")
+	}
 	if opt.shards < 1 || opt.shard < 0 || opt.shard >= opt.shards {
 		return errors.New("shard must be in [0, shards)")
 	}
-	if opt.speed < 1 || opt.speed > 20 {
-		return errors.New("speed must be between 1 and 20")
+	if opt.speed < 1 || opt.speed > 50 {
+		return errors.New("speed must be between 1 and 50")
 	}
 	if opt.timeout <= 0 || opt.loadWait <= 0 {
 		return errors.New("time limits must be positive")
@@ -243,8 +286,8 @@ func run(opt options) error {
 	if opt.plan {
 		return writePlan(missions, modes, opt)
 	}
-	if opt.mission != "all" && strings.Contains(opt.mission, "_rev_") {
-		return errors.New("reverse MvM needs a BLU objective simulator; kill-only waveprobe cannot validate it")
+	if opt.mission != "all" && strings.Contains(opt.mission, "_rev_") && !reverseEnabled(opt.mission, opt) {
+		return errors.New("reverse mission is outside the enabled objective profile; use -experimental-reverse for independent investigation")
 	}
 	password := os.Getenv("WAVEPROBE_RCONPW")
 	if password == "" {
@@ -258,6 +301,48 @@ func run(opt options) error {
 	return runMissions(server, opt, missions, modes)
 }
 
+func reverseObjectiveKind(pop string, wave int) string {
+	if pop == "mvm_cyberia_rc6a_rev_arctic_arrangement" {
+		if wave == 4 {
+			return "combat-victory"
+		}
+		return "route"
+	}
+	if pop == "mvm_robotfactory_b30_rev_adv_short_circuit_execution" && wave == 2 {
+		return "escort"
+	}
+	if pop == "mvm_robotfactory_b30_rev_adv_short_circuit_execution" && wave == 1 {
+		return "repair"
+	}
+	if pop == "mvm_hideout_b3_rev_adv_galois" && wave == 5 {
+		return "combat-victory"
+	}
+	if pop == "mvm_teien_rc6_rev_adv_shogun_slaughter" || pop == "mvm_robotfactory_b30_rev_adv_short_circuit_execution" {
+		return "route"
+	}
+	if (pop == "mvm_coaltown_rev_adv_computer_crash" || pop == "mvm_autumnull_rc2_rev_exp_codename_omega") && wave == 6 {
+		return "combat"
+	}
+	return "bomb"
+}
+
+// The legacy bomb profile remains available for comparisons; the full profile
+// includes every playable mission and counts failures against coverage.
+func reverseEnabled(pop string, opt options) bool {
+	if opt.reverse || opt.reverseObjectives {
+		return true
+	}
+	if !opt.reverseBombs {
+		return false
+	}
+	switch pop {
+	case "mvm_rottenburg_rev_int_breaking_walls", "mvm_coaltown_rev_adv_computer_crash", "mvm_bigrock_rev_adv_denominator":
+		return true
+	default:
+		return false
+	}
+}
+
 func writePlan(missions []gamedata.Mission, modes []string, opt options) error {
 	for _, mission := range missions {
 		played, ok := gamedata.MapByID(mission.Map)
@@ -267,7 +352,7 @@ func writePlan(missions []gamedata.Mission, modes []string, opt options) error {
 		for _, mode := range modes {
 			for wave := opt.startWave; wave <= lastWave(mission, opt); wave++ {
 				state := "planned"
-				if strings.Contains(mission.PopFile, "_rev_") {
+				if strings.Contains(mission.PopFile, "_rev_") && !reverseEnabled(mission.PopFile, opt) {
 					state = "unsupported_reverse"
 				}
 				writeResult(result{
@@ -284,12 +369,37 @@ func (s *server) prepare(opt options) error {
 	if err := s.await(3*time.Minute, func(probeStatus) bool { return true }); err != nil {
 		return fmt.Errorf("test plugin is unavailable at %s: %w", opt.address, err)
 	}
+	if opt.reverse || opt.reverseBombs || opt.reverseObjectives {
+		reply, err := s.exec("sm_waveprobe_reverse_objectives 1")
+		if err != nil {
+			return err
+		}
+		if !strings.Contains(reply, "WAVEPROBE reverse_objectives=1") {
+			return errors.New("test plugin does not support experimental reverse objectives")
+		}
+	}
 	if _, err := s.exec("sv_cheats 1"); err != nil {
 		return err
 	}
-	// A bot reaching the hatch would test an undefended loss, not population
-	// progression. Valve provides this cvar specifically for bot testing.
-	if _, err := s.exec("tf_bot_flag_kill_on_touch 1"); err != nil {
+	// Fake clients do not wake MvM like a human connection. Keep this headless
+	// test awake so SigMod's production robot allocator can populate its pool.
+	// This is also the fixture used by SigMod's Linux and Windows test beds;
+	// do not disable sig_mvm_robot_limit or alter tf_mvm_max_invaders instead.
+	if _, err := s.exec("tf_allow_server_hibernation 0"); err != nil {
+		return err
+	}
+	if reply, err := s.exec("tf_allow_server_hibernation"); err != nil {
+		return fmt.Errorf("read tf_allow_server_hibernation: %w", err)
+	} else if !cvarMatches(reply, "tf_allow_server_hibernation", 0) {
+		return fmt.Errorf("headless server wake-up did not stick: %q", reply)
+	}
+	// Ordinary waves use Valve's kill-on-pickup test fixture. Reverse
+	// objectives need their allied carriers alive, including between runs.
+	pickupKill := "1"
+	if opt.reverse || opt.reverseBombs || opt.reverseObjectives {
+		pickupKill = "0"
+	}
+	if _, err := s.exec("tf_bot_flag_kill_on_touch " + pickupKill); err != nil {
 		return err
 	}
 	if _, err := s.exec(fmt.Sprintf("host_timescale %d", opt.speed)); err != nil {
@@ -304,16 +414,26 @@ func (s *server) prepare(opt options) error {
 	}
 	if reply, err := s.exec("host_timescale"); err != nil {
 		return fmt.Errorf("read host_timescale: %w", err)
-	} else if !timescaleMatches(reply, opt.speed) {
+	} else if !cvarMatches(reply, "host_timescale", opt.speed) {
 		return fmt.Errorf("host_timescale %d did not stick: %q", opt.speed, reply)
 	}
 	return nil
 }
 
+// A native server can restart after an engine crash while this controller stays
+// alive. Reapply the verified headless fixture before every mission load,
+// including recovery loads; the server's defaults cannot carry a 50x sweep.
+func (s *server) loadPrepared(opt options, mapName string, mission gamedata.Mission, mode string, force bool) error {
+	if err := s.prepare(opt); err != nil {
+		return fmt.Errorf("restore probe fixture: %w", err)
+	}
+	return s.load(mapName, mission, mode, opt.loadWait, force)
+}
+
 func runMissions(s *server, opt options, missions []gamedata.Mission, modes []string) error {
 	failures := 0
 	for _, mission := range missions {
-		if strings.Contains(mission.PopFile, "_rev_") {
+		if strings.Contains(mission.PopFile, "_rev_") && !reverseEnabled(mission.PopFile, opt) {
 			continue
 		}
 		played, ok := gamedata.MapByID(mission.Map)
@@ -321,7 +441,7 @@ func runMissions(s *server, opt options, missions []gamedata.Mission, modes []st
 			return fmt.Errorf("unknown map for %s", mission.PopFile)
 		}
 		for _, mode := range modes {
-			if err := s.load(played.Name, mission, mode, opt.loadWait, false); err != nil {
+			if err := s.loadPrepared(opt, played.Name, mission, mode, false); err != nil {
 				writeResult(loadFailure(mission.PopFile, played.Name, mode, err))
 				failures++
 				if opt.failFast {
@@ -371,7 +491,7 @@ func (s *server) runWaves(opt options, mapName string, mission gamedata.Mission,
 		}
 		// The failed wave may still be running. Reload the mission and jump
 		// ahead so later waves are tested independently too.
-		if err := s.load(mapName, mission, mode, opt.loadWait, true); err != nil {
+		if err := s.loadPrepared(opt, mapName, mission, mode, true); err != nil {
 			writeResult(loadFailure(mission.PopFile, mapName, mode, err))
 			failures++
 			break
@@ -412,6 +532,27 @@ func (s *server) recordWave(opt options, mapName string, mission gamedata.Missio
 		Attempts: status.Attempts, Alive: status.Alive, Remaining: status.Remaining,
 		Progress: status.Progress, Seconds: time.Since(started).Seconds(), GameSeconds: status.Elapsed,
 	}
+	if strings.Contains(mission.PopFile, "_rev_") {
+		row.Objective = &objectiveEvidence{Method: "bomb-delivery-and-allied-carrier", Visits: status.ObjectiveVisits, Pickups: status.FlagPickups, Captures: status.FlagCaptures}
+	}
+	if row.Objective != nil && reverseObjectiveKind(mission.PopFile, wave) == "combat" {
+		row.Objective.Method = "native-combat-clear"
+		row.Objective.TargetKills = status.TargetKills
+	}
+	if row.Objective != nil {
+		row.Objective.EscortStages = status.EscortStages
+		row.Objective.Repairs = status.Repairs
+		row.Objective.RepairCompleted = status.RepairComplete == 1
+		row.Objective.TankDeliveries = status.TankDeliveries
+		row.Objective.BluWon = status.BluWon == 1
+		if kind := reverseObjectiveKind(mission.PopFile, wave); kind == "repair" || kind == "combat-victory" || kind == "escort" {
+			row.Objective.Method = "native-" + kind
+		}
+	}
+	if row.Objective != nil && reverseObjectiveKind(mission.PopFile, wave) == "route" {
+		row.Objective.Method = "native-route-objective"
+		row.Objective.PointCaptures = status.PointCaptures
+	}
 	row.Outcome = classifyWave(status, err)
 	if opt.defenders {
 		row.StartedUTC = started.UTC().Format(time.RFC3339)
@@ -426,16 +567,7 @@ func (s *server) recordWave(opt options, mapName string, mission gamedata.Missio
 			row.Error = "the wave completed without an observed enemy spawn"
 		}
 		row.Timeline = timeline
-		if snapshot, debugErr := s.exec("sm_waveprobe_debug"); debugErr == nil {
-			row.Debug = strings.TrimSpace(snapshot)
-		} else {
-			row.Debug = "debug snapshot unavailable: " + debugErr.Error()
-		}
-		// SigMod's own view of the wave: which wave spawn is waiting on what.
-		// An unknown command on a server without it says so and costs nothing.
-		if waves, wavesErr := s.exec("sig_wave_dump"); wavesErr == nil && strings.Contains(waves, "sig_wave_dump:") {
-			row.Debug += "\n" + strings.TrimSpace(waves)
-		}
+		row.Debug = s.debugSnapshot(row.Objective != nil)
 	}
 	writeResult(row)
 	if row.Outcome == "passed" {
@@ -453,6 +585,16 @@ func classifyWave(status probeStatus, err error) string {
 		return "wave 0"
 	case status.Reason == "wave_failed":
 		return "wave failed"
+	case status.State == "passed" && err == nil && status.BotSpawns+status.TankSpawns == 0:
+		return "no enemies spawned"
+	case status.State == "passed" && err == nil && status.PlayerTeam == 3 && status.BluWon == 1 && (status.TankDeliveries > 0 || (status.ObjectiveKind == "escort" && status.EscortStages == 3) || (status.ObjectiveKind == "repair" && (status.Repairs == 5 || status.RepairComplete == 1)) || (status.ObjectiveKind == "combat-victory" && status.Bots > 0)):
+		return "passed"
+	case status.State == "passed" && err == nil && status.PlayerTeam == 3 && status.ObjectiveKind == "combat" && status.TargetKills > 0:
+		return "passed"
+	case status.State == "passed" && err == nil && status.PlayerTeam == 3 && status.ObjectiveKind == "route" && status.PointCaptures > 0 && status.BluWon == 1:
+		return "passed"
+	case status.State == "passed" && status.PlayerTeam == 3 && status.FlagCaptures == 0:
+		return "probe error"
 	case status.State == "passed" && err == nil && status.BotSpawns+status.TankSpawns > 0:
 		return "passed"
 	case status.State == "idle" || status.State == "armed":
@@ -468,6 +610,23 @@ func classifyWave(status probeStatus, err error) string {
 }
 
 func selectMissions(opt options) ([]gamedata.Mission, error) {
+	var partitions struct {
+		Shards   int            `json:"shards"`
+		Missions map[string]int `json:"missions"`
+	}
+	if opt.partition != "" {
+		body, err := os.ReadFile(opt.partition)
+		if err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(body, &partitions); err != nil {
+			return nil, err
+		}
+		if partitions.Shards != opt.shards {
+			return nil, errors.New("partition shard count differs from -shards")
+		}
+	}
+
 	installed := map[string]bool{}
 	if opt.pops != "" {
 		body, err := os.ReadFile(opt.pops)
@@ -479,24 +638,27 @@ func selectMissions(opt options) ([]gamedata.Mission, error) {
 		}
 	}
 	if opt.mission != "all" {
-		mission, ok := gamedata.MissionByPopFile(opt.mission)
-		if !ok {
-			return nil, fmt.Errorf("unknown mission %q", opt.mission)
-		}
-		if opt.startWave < 1 || opt.startWave > int(mission.Waves) ||
-			(opt.endWave > 0 && (opt.endWave < opt.startWave || opt.endWave > int(mission.Waves))) {
-			return nil, errors.New("wave range is outside the mission")
-		}
-		return []gamedata.Mission{mission}, nil
+		return selectSingleMission(opt)
 	}
 	var selected []gamedata.Mission
 	for _, mission := range gamedata.Missions {
+		if opt.reverseOnly && !strings.Contains(mission.PopFile, "_rev_") {
+			continue
+		}
 		requirement := gamedata.MissionRequirement(mission.ID)
 		if requirement == "no_nav" || (requirement == "sigsegv-mvm" && !opt.includeSig) ||
 			(requirement != "sigsegv-mvm" && opt.onlySig) {
 			continue
 		}
-		if crc32.ChecksumIEEE([]byte(mission.PopFile))%uint32(opt.shards) != uint32(opt.shard) {
+		assigned := int(crc32.ChecksumIEEE([]byte(mission.PopFile)) % uint32(opt.shards))
+		if opt.partition != "" {
+			value, ok := partitions.Missions[mission.PopFile]
+			if !ok || value < 0 || value >= opt.shards {
+				return nil, fmt.Errorf("partition missing or invalid for %s", mission.PopFile)
+			}
+			assigned = value
+		}
+		if assigned != opt.shard {
 			continue
 		}
 		if opt.pops != "" && gamedata.IsCommunityMission(mission.ID) && !installed[mission.PopFile] {
@@ -510,20 +672,7 @@ func selectMissions(opt options) ([]gamedata.Mission, error) {
 		}
 		selected = append(selected, mission)
 	}
-	sort.Slice(selected, func(i, j int) bool {
-		left, _ := gamedata.MapByID(selected[i].Map)
-		right, _ := gamedata.MapByID(selected[j].Map)
-		if left.Name == right.Name {
-			return selected[i].PopFile < selected[j].PopFile
-		}
-		return left.Name < right.Name
-	})
-	if opt.onePerMap {
-		selected = slices.CompactFunc(selected, func(left, right gamedata.Mission) bool {
-			return left.Map == right.Map
-		})
-	}
-	return selected, nil
+	return orderMissions(selected, opt.onePerMap), nil
 }
 
 func writeResult(row result) {
@@ -585,6 +734,7 @@ func parseStatus(reply string) (probeStatus, error) {
 		}
 	}
 	var status probeStatus
+	status.ObjectiveKind = fields["objectivekind"]
 	status.State = fields["state"]
 	status.Reason = fields["reason"]
 	status.Map = fields["map"]
@@ -616,6 +766,15 @@ func parseStatus(reply string) (probeStatus, error) {
 			return probeStatus{}, fmt.Errorf("invalid %s in probe reply %q: %w", field.name, reply, err)
 		}
 	}
+	for name, dest := range map[string]*int{"objectives": &status.ObjectiveVisits, "pickups": &status.FlagPickups, "captures": &status.FlagCaptures, "configsready": &status.ConfigsReady, "targetkills": &status.TargetKills, "pointcaps": &status.PointCaptures, "repairs": &status.Repairs, "repaircomplete": &status.RepairComplete, "tankdeliveries": &status.TankDeliveries, "bluwon": &status.BluWon, "escortstages": &status.EscortStages} {
+		if value, ok := fields[name]; ok {
+			parsed, err := strconv.Atoi(value)
+			if err != nil {
+				return probeStatus{}, fmt.Errorf("invalid %s: %w", name, err)
+			}
+			*dest = parsed
+		}
+	}
 	status.Elapsed, err = strconv.ParseFloat(fields["elapsed"], 64)
 	if err != nil {
 		return probeStatus{}, fmt.Errorf("invalid elapsed in probe reply %q: %w", reply, err)
@@ -630,9 +789,9 @@ func parseStatus(reply string) (probeStatus, error) {
 	return status, nil
 }
 
-func timescaleMatches(reply string, speed int) bool {
+func cvarMatches(reply, name string, want int) bool {
 	equals := strings.IndexByte(reply, '=')
-	if equals < 0 {
+	if equals < 0 || strings.Trim(strings.TrimSpace(reply[:equals]), "\"") != name {
 		return false
 	}
 	start := strings.IndexByte(reply[equals+1:], '"')
@@ -645,7 +804,7 @@ func timescaleMatches(reply string, speed int) bool {
 		return false
 	}
 	value, err := strconv.ParseFloat(reply[start+1:start+1+end], 64)
-	return err == nil && value == float64(speed)
+	return err == nil && value == float64(want)
 }
 
 func (s *server) await(timeout time.Duration, predicate func(probeStatus) bool) error {
@@ -665,11 +824,20 @@ func (s *server) await(timeout time.Duration, predicate func(probeStatus) bool) 
 	return fmt.Errorf("timed out after %s (last status %+v)", timeout, last)
 }
 
+func reverseMissionTransitionPending(status probeStatus) bool {
+	return status.State == "passed" && status.Max > 0 && status.Expected == status.Max && strings.Contains(status.Pop, "_rev_")
+}
+
 func (s *server) load(mapName string, mission gamedata.Mission, mode string, timeout time.Duration, forceMapReload bool) error {
 	status, err := s.status()
 	if err != nil {
 		return err
 	}
+	status, reload, err := s.settleReverseMission(status, timeout)
+	if err != nil {
+		return err
+	}
+	forceMapReload = forceMapReload || reload
 	if forceMapReload || status.Map != mapName {
 		// The server may drop the RCON connection as changelevel runs. The
 		// status poll, rather than that connection, determines success.
@@ -679,7 +847,9 @@ func (s *server) load(mapName string, mission gamedata.Mission, mode string, tim
 			// has actually restarted the population manager.
 			time.Sleep(2 * time.Second)
 		}
-		if err := s.await(timeout, func(st probeStatus) bool { return st.Map == mapName }); err != nil {
+		if err := s.await(timeout, func(st probeStatus) bool {
+			return st.Map == mapName && (!strings.Contains(mission.PopFile, "_rev_") || st.ConfigsReady == 1)
+		}); err != nil {
 			// A responsive server still on the old map is direct evidence that
 			// changelevel did not complete. Preserve the command reply and both
 			// observed maps; a lost RCON connection alone is not that evidence.
@@ -722,6 +892,7 @@ func (s *server) load(mapName string, mission gamedata.Mission, mode string, tim
 	}
 	loaded := func(st probeStatus) bool {
 		return st.Map == mapName && st.Pop == mission.PopFile &&
+			(!strings.Contains(mission.PopFile, "_rev_") || st.ConfigsReady == 1) &&
 			st.Max == int(mission.Waves) && st.GameWave == 1 &&
 			st.DefTeam == playerTeam && st.DefClass == playerClass && st.PlayerTeam == playerTeam &&
 			st.EnemyTeam == 5-playerTeam
@@ -750,6 +921,9 @@ func (s *server) classifyLoadError(mapName string, mission gamedata.Mission, cau
 }
 
 func probeClassName(mission gamedata.Mission) string {
+	if mission.PopFile == "mvm_robotfactory_b30_rev_adv_short_circuit_execution" {
+		return "engineer"
+	}
 	if gamedata.MissionLoadout(mission.ID) == "medic_only" {
 		return "medic"
 	}
@@ -779,10 +953,20 @@ func (s *server) configureMode(mission gamedata.Mission, mode string) (string, i
 		teamName = "blue"
 		playerTeam = 3
 	}
+	flagKill := "1"
+	if playerTeam == 3 {
+		flagKill = "0"
+	}
+	if _, err := s.exec("tf_bot_flag_kill_on_touch " + flagKill); err != nil {
+		return "", 0, 0, err
+	}
 	className := probeClassName(mission)
 	playerClass := 1 // TFClass_Scout
-	if className == "medic" {
+	switch className {
+	case "medic":
 		playerClass = 5 // TFClass_Medic
+	case "engineer":
+		playerClass = 9 // TFClass_Engineer
 	}
 	if _, err := s.exec("sm_waveprobe_wake " + teamName + " " + className); err != nil {
 		return "", 0, 0, err
@@ -830,10 +1014,13 @@ func (s *server) testWave(mission gamedata.Mission, wave, seed int, timeout, loa
 		}
 		return status, nil, fmt.Errorf("wave %d was not initialized: %w", wave, err)
 	}
+	if err := s.configureReverseObjective(mission, wave); err != nil {
+		return probeStatus{}, nil, err
+	}
 	if _, err := s.exec(fmt.Sprintf("sm_waveprobe_arm %d %d", wave, seed)); err != nil {
 		return probeStatus{}, nil, err
 	}
-	if _, err := s.exec("mp_restartgame 1"); err != nil {
+	if err := s.startArmedWave(mission); err != nil {
 		return probeStatus{}, nil, err
 	}
 	last, err := s.waitWaveStart(mission, wave, loadWait)
@@ -1021,4 +1208,100 @@ func parseDefender(name string, fields map[string]string) (defender, error) {
 		}
 	}
 	return row, nil
+}
+
+func selectSingleMission(opt options) ([]gamedata.Mission, error) {
+	mission, ok := gamedata.MissionByPopFile(opt.mission)
+	if !ok {
+		return nil, fmt.Errorf("unknown mission %q", opt.mission)
+	}
+	if opt.startWave < 1 || opt.startWave > int(mission.Waves) ||
+		(opt.endWave > 0 && (opt.endWave < opt.startWave || opt.endWave > int(mission.Waves))) {
+		return nil, errors.New("wave range is outside the mission")
+	}
+	if opt.reverseOnly && !strings.Contains(mission.PopFile, "_rev_") {
+		return nil, errors.New("-reverse-only requires a reverse mission")
+	}
+	return []gamedata.Mission{mission}, nil
+}
+
+// Completed reverse missions may rotate automatically or stay on the victory
+// map. Let pending native rotation settle before loading the next fixture.
+func (s *server) settleReverseMission(before probeStatus, timeout time.Duration) (probeStatus, bool, error) {
+	if !reverseMissionTransitionPending(before) {
+		return before, false, nil
+	}
+	fmt.Fprintf(os.Stderr, "waveprobe: waiting for %s's completed reverse mission transition\n", before.Pop)
+	err := s.await(min(timeout, 10*time.Second), func(st probeStatus) bool {
+		return st.ConfigsReady == 1 && st.State == "idle" && st.Expected == 0 && (st.Map != before.Map || st.Pop != before.Pop)
+	})
+	reload := err != nil
+	if reload {
+		fmt.Fprintf(os.Stderr, "waveprobe: completed mission stayed on its victory map; loading next fixture: %v\n", err)
+	}
+	status, err := s.status()
+	return status, reload, err
+}
+
+func (s *server) configureReverseObjective(mission gamedata.Mission, wave int) error {
+	if strings.Contains(mission.PopFile, "_rev_") {
+		kind := reverseObjectiveKind(mission.PopFile, wave)
+		command := "sm_waveprobe_reverse_objectives 1 " + kind
+		if mission.PopFile == "mvm_autumnull_rc2_rev_exp_codename_omega" && wave == 6 {
+			command += ` "Overseer"`
+		}
+		reply, err := s.exec(command)
+		if err != nil {
+			return err
+		}
+		if !strings.Contains(reply, "WAVEPROBE reverse_objectives=1") || !strings.Contains(reply, "objectivekind="+kind) {
+			return errors.New("reverse objective simulator unavailable after map load")
+		}
+	}
+	return nil
+}
+
+func orderMissions(selected []gamedata.Mission, onePerMap bool) []gamedata.Mission {
+	sort.Slice(selected, func(i, j int) bool {
+		left, _ := gamedata.MapByID(selected[i].Map)
+		right, _ := gamedata.MapByID(selected[j].Map)
+		if left.Name == right.Name {
+			return selected[i].PopFile < selected[j].PopFile
+		}
+		return left.Name < right.Name
+	})
+	if onePerMap {
+		selected = slices.CompactFunc(selected, func(left, right gamedata.Mission) bool {
+			return left.Map == right.Map
+		})
+	}
+	return selected
+}
+
+func (s *server) startArmedWave(mission gamedata.Mission) error {
+	command := "mp_restartgame 1"
+	if strings.Contains(mission.PopFile, "_rev_") {
+		command = "sm_waveprobe_ready"
+	}
+	_, err := s.exec(command)
+	return err
+}
+
+func (s *server) debugSnapshot(reverse bool) string {
+	snapshot, err := s.exec("sm_waveprobe_debug")
+	if err != nil {
+		snapshot = "debug snapshot unavailable: " + err.Error()
+	}
+	snapshot = strings.TrimSpace(snapshot)
+	if reverse {
+		if objectives, err := s.exec("sm_waveprobe_objectives"); err == nil {
+			snapshot += "\n" + strings.TrimSpace(objectives)
+		}
+	}
+	// SigMod's own view of each wave spawn and its dependencies. An unknown
+	// command on a server without SigMod is not evidence of a wave failure.
+	if waves, err := s.exec("sig_wave_dump"); err == nil && strings.Contains(waves, "sig_wave_dump:") {
+		snapshot += "\n" + strings.TrimSpace(waves)
+	}
+	return snapshot
 }

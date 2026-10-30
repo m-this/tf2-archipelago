@@ -1,6 +1,7 @@
 package gamedata
 
 import (
+	"maps"
 	"strings"
 	"testing"
 )
@@ -42,10 +43,14 @@ func TestRequirementLabels(t *testing.T) {
 }
 
 func TestMissingNavigationMeshNamesTheMapAsset(t *testing.T) {
+	saved := communityContent
+	defer func() { communityContent = saved }()
 	mission, ok := MissionByPopFile("mvm_bogland_rc12_adv_swamp_fever")
 	if !ok {
-		t.Fatal("missing-NAV fixture mission is not in the catalog")
+		t.Fatal("missing fixture mission")
 	}
+	communityContent.Requirements = maps.Clone(communityContent.Requirements)
+	communityContent.Requirements[mission.ID] = "no_nav"
 	if got, want := MissingNavigationMesh(mission.ID), "maps/mvm_bogland_rc12.nav"; got != want {
 		t.Errorf("MissingNavigationMesh = %q, want %q", got, want)
 	}

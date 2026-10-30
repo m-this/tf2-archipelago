@@ -1,0 +1,26 @@
+[
+  {
+    "plugin": "tf2_defenderbots.smx",
+    "code_matches": true,
+    "data_matches": false,
+    "code_sha256": "5bca3ac6aeb52313c2813e1b9027bdd8944f056c7eaac3357a83f7ad28d5b414"
+  },
+  {
+    "plugin": "tf_econ_data.smx",
+    "code_matches": true,
+    "data_matches": false,
+    "code_sha256": "4c131f7826da933e6a4d2f62b47d26544e71405b0f38359f292371af0dc0dc9a"
+  },
+  {
+    "plugin": "tf2utils.smx",
+    "code_matches": true,
+    "data_matches": false,
+    "code_sha256": "38f53c7d87be2d36ad60bc6dd62d9fdcb53c3db52d1d7b9913be089e0887255d"
+  },
+  {
+    "plugin": "tf2attributes.smx",
+    "code_matches": true,
+    "data_matches": false,
+    "code_sha256": "54b54331f23a105c88005361b15075ef447541fe96b439d366ed286584a74085"
+  }
+]

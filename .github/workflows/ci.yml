@@ -167,7 +167,7 @@ jobs:
       - name: install node and the fetch tools
         run: |
           apt-get update
-          apt-get install --yes --no-install-recommends nodejs git ca-certificates curl unzip make
+          apt-get install --yes --no-install-recommends nodejs git ca-certificates curl unzip make python3 python3-packaging g++
 
       - uses: actions/checkout@v7
         with:
@@ -196,7 +196,7 @@ jobs:
       - uses: actions/cache@v6
         with:
           path: deploy/bots/build
-          key: bots-${{ hashFiles('deploy/env/versions.env', 'deploy/patches/**', 'deploy/bots/*.sh', 'go.mod', 'go.sum') }}
+          key: bots-${{ hashFiles('deploy/env/versions.env', 'deploy/patches/**', 'deploy/bots/*.sh', 'deploy/bots/*.py', 'go.mod', 'go.sum') }}
 
       # The extensions are built from source against SourceMod 1.13's headers,
       # for 32-bit Linux.

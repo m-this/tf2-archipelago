@@ -1,0 +1,8 @@
+{
+  "requested_drop": "1.12.0-git7164",
+  "sourcemod_commit": "6b6dbc6c06971a551111520208d14bb36277c819",
+  "sourcepawn_commit": "c96fab0258aacc360866856e0c9e8de418ade083",
+  "ambuild_commit": "01212cb57c96561f664b6dfb2ee10e66de6f81e4",
+  "build_number": 7164,
+  "recovery": "official source; rev-list build identity verified"
+}

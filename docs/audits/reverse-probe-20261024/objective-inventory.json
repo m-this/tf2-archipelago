@@ -1,0 +1,194 @@
+[
+  {
+    "mission": "mvm_autumnull_rc2_rev_exp_codename_omega",
+    "requires": "sigsegv-mvm",
+    "waves": 6,
+    "declared": {
+      "BluHumanFlagCapture": "1",
+      "BluHumanFlagPickup": "1",
+      "ReverseWinConditions": "1"
+    },
+    "entity_mentions": {
+      "func_tracktrain": 0,
+      "trigger_capture_area": 0,
+      "team_control_point": 0,
+      "func_capturezone": 0
+    }
+  },
+  {
+    "mission": "mvm_bigrock_rev_adv_denominator",
+    "requires": "sigsegv-mvm",
+    "waves": 5,
+    "declared": {
+      "BluHumanFlagCapture": "0",
+      "BluHumanFlagPickup": "1",
+      "ReverseWinConditions": "1"
+    },
+    "entity_mentions": {
+      "func_tracktrain": 0,
+      "trigger_capture_area": 0,
+      "team_control_point": 0,
+      "func_capturezone": 0
+    }
+  },
+  {
+    "mission": "mvm_bigrock_rev_adv_numerator",
+    "requires": "sigsegv-mvm",
+    "waves": 5,
+    "declared": {
+      "BluHumanFlagCapture": "1",
+      "BluHumanFlagPickup": "1",
+      "ReverseWinConditions": "1"
+    },
+    "entity_mentions": {
+      "func_tracktrain": 0,
+      "trigger_capture_area": 0,
+      "team_control_point": 0,
+      "func_capturezone": 0
+    }
+  },
+  {
+    "mission": "mvm_coaltown_rev_adv_computer_crash",
+    "requires": "sigsegv-mvm",
+    "waves": 6,
+    "declared": {
+      "BluHumanFlagCapture": "1",
+      "BluHumanFlagPickup": "1",
+      "ReverseWinConditions": "1"
+    },
+    "entity_mentions": {
+      "func_tracktrain": 0,
+      "trigger_capture_area": 0,
+      "team_control_point": 0,
+      "func_capturezone": 0
+    }
+  },
+  {
+    "mission": "mvm_cyberia_rc6a_rev_arctic_arrangement",
+    "requires": "no_nav",
+    "waves": 5,
+    "declared": {
+      "BluHumanFlagCapture": "not declared in this file",
+      "BluHumanFlagPickup": "1",
+      "ReverseWinConditions": "1"
+    },
+    "entity_mentions": {
+      "func_tracktrain": 0,
+      "trigger_capture_area": 0,
+      "team_control_point": 0,
+      "func_capturezone": 0
+    }
+  },
+  {
+    "mission": "mvm_encounter_b20a_rev_adv_backup_security_protocol",
+    "requires": "sigsegv-mvm",
+    "waves": 2,
+    "declared": {
+      "BluHumanFlagCapture": "1",
+      "BluHumanFlagPickup": "0",
+      "ReverseWinConditions": "1"
+    },
+    "entity_mentions": {
+      "func_tracktrain": 0,
+      "trigger_capture_area": 0,
+      "team_control_point": 0,
+      "func_capturezone": 0
+    }
+  },
+  {
+    "mission": "mvm_hideout_b3_rev_adv_galois",
+    "requires": "sigsegv-mvm",
+    "waves": 5,
+    "declared": {
+      "BluHumanFlagCapture": "not declared in this file",
+      "BluHumanFlagPickup": "not declared in this file",
+      "ReverseWinConditions": "1"
+    },
+    "entity_mentions": {
+      "func_tracktrain": 0,
+      "trigger_capture_area": 0,
+      "team_control_point": 0,
+      "func_capturezone": 0
+    }
+  },
+  {
+    "mission": "mvm_legerdemain_a6e_rev_adv_castle_crush",
+    "requires": "sigsegv-mvm",
+    "waves": 8,
+    "declared": {
+      "BluHumanFlagCapture": "1",
+      "BluHumanFlagPickup": "1",
+      "ReverseWinConditions": "1"
+    },
+    "entity_mentions": {
+      "func_tracktrain": 0,
+      "trigger_capture_area": 0,
+      "team_control_point": 0,
+      "func_capturezone": 0
+    }
+  },
+  {
+    "mission": "mvm_robotfactory_b30_rev_adv_short_circuit_execution",
+    "requires": "sigsegv-mvm",
+    "waves": 3,
+    "declared": {
+      "BluHumanFlagCapture": "0",
+      "BluHumanFlagPickup": "0",
+      "ReverseWinConditions": "1"
+    },
+    "entity_mentions": {
+      "func_tracktrain": 0,
+      "trigger_capture_area": 4,
+      "team_control_point": 4,
+      "func_capturezone": 0
+    }
+  },
+  {
+    "mission": "mvm_rottenburg_rev_int_breaking_walls",
+    "requires": "sigsegv-mvm",
+    "waves": 6,
+    "declared": {
+      "BluHumanFlagCapture": "1",
+      "BluHumanFlagPickup": "1",
+      "ReverseWinConditions": "1"
+    },
+    "entity_mentions": {
+      "func_tracktrain": 0,
+      "trigger_capture_area": 0,
+      "team_control_point": 0,
+      "func_capturezone": 0
+    }
+  },
+  {
+    "mission": "mvm_rottenburg_rev_int_spanner_switchup",
+    "requires": "sigsegv-mvm",
+    "waves": 5,
+    "declared": {
+      "BluHumanFlagCapture": "1",
+      "BluHumanFlagPickup": "1",
+      "ReverseWinConditions": "1"
+    },
+    "entity_mentions": {
+      "func_tracktrain": 0,
+      "trigger_capture_area": 0,
+      "team_control_point": 0,
+      "func_capturezone": 0
+    }
+  },
+  {
+    "mission": "mvm_teien_rc6_rev_adv_shogun_slaughter",
+    "requires": "sigsegv-mvm",
+    "waves": 5,
+    "declared": {
+      "BluHumanFlagCapture": "1",
+      "BluHumanFlagPickup": "1",
+      "ReverseWinConditions": "1"
+    },
+    "entity_mentions": {
+      "func_tracktrain": 0,
+      "trigger_capture_area": 4,
+      "team_control_point": 4,
+      "func_capturezone": 0
+    }
+  }
+]

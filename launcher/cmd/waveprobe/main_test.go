@@ -1,14 +1,20 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/m-this/tf2-archipelago/gamedata"
 )
 
 func TestParseStatus(t *testing.T) {
-	got, err := parseStatus("[SM] WAVEPROBE state=passed reason=none map=mvm_decoy pop=mvm_decoy_advanced3 max=6 gamewave=2 expected=1 observed=1 botspawns=45 tankspawns=1 bots=42 tanks=1 attempts=46 alive=0 remaining=0 initial=45 progress=100.0 defender=3 defteam=2 defclass=1 playerteam=2 enemyteam=3 elapsed=70.5")
+	reply := "[SM] WAVEPROBE state=passed reason=none map=mvm_decoy pop=mvm_decoy_advanced3 max=6 gamewave=2 expected=1 observed=1 botspawns=45 tankspawns=1 bots=42 tanks=1 attempts=46 alive=0 remaining=0 initial=45 progress=100.0 defender=3 defteam=2 defclass=1 playerteam=2 enemyteam=3 elapsed=70.5"
+	got, err := parseStatus(reply)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -19,6 +25,13 @@ func TestParseStatus(t *testing.T) {
 		got.DefTeam != 2 || got.PlayerTeam != 2 || got.EnemyTeam != 3 {
 		t.Fatalf("status = %+v", got)
 	}
+	if withObjective, err := parseStatus(reply + " objectives=3 pickups=2 captures=1 configsready=1"); err != nil || withObjective.ObjectiveVisits != 3 || withObjective.FlagPickups != 2 || withObjective.FlagCaptures != 1 || withObjective.ConfigsReady != 1 {
+		t.Fatalf("objective evidence: %+v, %v", withObjective, err)
+	}
+	if _, err := parseStatus(reply + " captures=broken"); err == nil {
+		t.Fatal("invalid capture evidence accepted")
+	}
+
 	if _, err := parseStatus("Unknown command sm_waveprobe_status"); err == nil {
 		t.Fatal("missing test plugin looked healthy")
 	}
@@ -89,11 +102,11 @@ func TestProbeClassName(t *testing.T) {
 
 func TestTimescaleMatches(t *testing.T) {
 	for _, reply := range []string{`host_timescale = "10" ( def. "1" )`, `host_timescale = "10.000000"`} {
-		if !timescaleMatches(reply, 10) {
+		if !cvarMatches(reply, "host_timescale", 10) {
 			t.Errorf("did not accept %q", reply)
 		}
 	}
-	if timescaleMatches(`host_timescale = "1" ( def. "1" )`, 10) {
+	if cvarMatches(`host_timescale = "1" ( def. "1" )`, "host_timescale", 10) {
 		t.Fatal("accepted unchanged clock")
 	}
 }
@@ -184,5 +197,304 @@ func TestLastWave(t *testing.T) {
 				t.Fatalf("got %d, want %d", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestHeadlessWakeReadback(t *testing.T) {
+	if !cvarMatches(`"tf_allow_server_hibernation" = "0" ( def. "1" )`, "tf_allow_server_hibernation", 0) {
+		t.Fatal("did not recognize an awake headless server")
+	}
+	for _, reply := range []string{
+		`"tf_allow_server_hibernation" = "1" ( def. "0" )`,
+		`Unknown command "tf_allow_server_hibernation"`,
+		`"another_cvar" = "0"`,
+	} {
+		if cvarMatches(reply, "tf_allow_server_hibernation", 0) {
+			t.Fatalf("accepted unverified wake-up: %q", reply)
+		}
+	}
+}
+
+func TestPartitionManifestOverridesHashAndRefusesIncompleteCoverage(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "partition.json")
+	assignments := make(map[string]int)
+	for i, mission := range gamedata.Missions {
+		assignments[mission.PopFile] = i % 3
+	}
+	write := func(shards int) {
+		t.Helper()
+		body, err := json.Marshal(map[string]any{"shards": shards, "missions": assignments})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, body, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write(3)
+	seen := make(map[string]bool)
+	for shard := range 3 {
+		selected, err := selectMissions(options{mission: "all", includeSig: true, shards: 3, shard: shard, partition: path})
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, mission := range selected {
+			if seen[mission.PopFile] || assignments[mission.PopFile] != shard {
+				t.Fatalf("invalid assignment for %s", mission.PopFile)
+			}
+			seen[mission.PopFile] = true
+		}
+	}
+	for _, mission := range gamedata.Missions {
+		if gamedata.MissionRequirement(mission.ID) != "no_nav" && !seen[mission.PopFile] {
+			t.Fatalf("missing %s", mission.PopFile)
+		}
+	}
+	write(4)
+	if _, err := selectMissions(options{mission: "all", shards: 3, partition: path}); err == nil {
+		t.Fatal("accepted wrong shard count")
+	}
+	clear(assignments)
+	write(3)
+	if _, err := selectMissions(options{mission: "all", shards: 3, partition: path}); err == nil {
+		t.Fatal("accepted a missing mission")
+	}
+}
+
+func TestReverseCompletionNeedsNativeFlagCaptureEvidence(t *testing.T) {
+	status := probeStatus{State: "passed", PlayerTeam: 3, BotSpawns: 4}
+	if got := classifyWave(status, nil); got != "probe error" {
+		t.Fatalf("unwitnessed completion classified %s", got)
+	}
+	status.FlagCaptures = 1
+	if got := classifyWave(status, nil); got != "passed" {
+		t.Fatalf("native capture classified %s", got)
+	}
+}
+
+func TestReverseSelectionIsExplicitAndKeepsUnsupportedCoverageByDefault(t *testing.T) {
+	if err := run(options{reverseOnly: true}); err == nil || !strings.Contains(err.Error(), "requires -reverse-bombs") {
+		t.Fatalf("reverse-only without opt-in: %v", err)
+	}
+	opt := options{mission: "all", shards: 1, includeSig: true, reverseOnly: true, startWave: 1}
+	missions, err := selectMissions(opt)
+	if err != nil || len(missions) == 0 {
+		t.Fatalf("reverse catalog: %v, %d missions", err, len(missions))
+	}
+	for _, m := range missions {
+		if !strings.Contains(m.PopFile, "_rev_") || gamedata.MissionRequirement(m.ID) == "no_nav" {
+			t.Fatalf("unexpected reverse mission: %s", m.PopFile)
+		}
+	}
+	for _, enabled := range []bool{false, true} {
+		opt.reverse = enabled
+		file, err := os.CreateTemp(t.TempDir(), "plan")
+		if err != nil {
+			t.Fatal(err)
+		}
+		previous := os.Stdout
+		os.Stdout = file
+		err = writePlan(missions, []string{"normal", "surge"}, opt)
+		os.Stdout = previous
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := file.Seek(0, 0); err != nil {
+			t.Fatal(err)
+		}
+		decoder := json.NewDecoder(file)
+		cases := 0
+		for {
+			var row result
+			err := decoder.Decode(&row)
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			want := "unsupported_reverse"
+			if enabled {
+				want = "planned"
+			}
+			if row.State != want {
+				t.Errorf("%s state=%s want=%s", row.Mission, row.State, want)
+			}
+			cases++
+		}
+		if err := file.Close(); err != nil {
+			t.Fatal(err)
+		}
+		if cases != 122 {
+			t.Errorf("reverse cases=%d want=122", cases)
+		}
+	}
+}
+
+func TestOnlyCompletedReverseMissionsNeedTransitionSynchronization(t *testing.T) {
+	final := probeStatus{State: "passed", Pop: "mvm_rottenburg_rev_int_breaking_walls", Expected: 6, Max: 6}
+	if !reverseMissionTransitionPending(final) {
+		t.Fatal("final reverse wave did not wait for its natural transition")
+	}
+	ordinary := final
+	ordinary.Pop = "mvm_decoy_expert1"
+	earlier := final
+	earlier.Expected = 5
+	failed := final
+	failed.State = "failed"
+	empty := final
+	empty.Max = 0
+	empty.Expected = 0
+	for _, status := range []probeStatus{ordinary, earlier, failed, empty} {
+		if reverseMissionTransitionPending(status) {
+			t.Fatalf("unnecessary transition wait: %+v", status)
+		}
+	}
+}
+
+func TestDailyReverseBombProfileIncludesOnlyValidatedMissions(t *testing.T) {
+	opt := options{mission: "all", shards: 1, includeSig: true, startWave: 1, reverseBombs: true}
+	missions, err := selectMissions(opt)
+	if err != nil {
+		t.Fatal(err)
+	}
+	file, err := os.CreateTemp(t.TempDir(), "daily-plan")
+	if err != nil {
+		t.Fatal(err)
+	}
+	previous := os.Stdout
+	os.Stdout = file
+	err = writePlan(missions, []string{"normal", "surge"}, opt)
+	os.Stdout = previous
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := file.Seek(0, 0); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := file.Close(); err != nil {
+			t.Error(err)
+		}
+	})
+	decoder := json.NewDecoder(file)
+	counts := map[string]int{}
+	reverseCases := 0
+	for {
+		var row result
+		err := decoder.Decode(&row)
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+		counts[row.State]++
+		if row.State == "planned" && strings.Contains(row.Mission, "_rev_") {
+			reverseCases++
+		}
+		if row.Mission == "mvm_teien_rc6_rev_adv_shogun_slaughter" && row.State != "unsupported_reverse" {
+			t.Fatal("payload mission was enabled by the bomb profile")
+		}
+	}
+	if reverseCases != 34 || counts["planned"] != 2540 || counts["unsupported_reverse"] != 88 {
+		t.Fatalf("reverse=%d, plan=%v", reverseCases, counts)
+	}
+}
+
+func TestAuthoredReverseCombatWaveRequiresItsTargetDeathWitness(t *testing.T) {
+	if reverseObjectiveKind("mvm_coaltown_rev_adv_computer_crash", 6) != "combat" || reverseObjectiveKind("mvm_coaltown_rev_adv_computer_crash", 5) != "bomb" {
+		t.Fatal("authored final-wave objective differs from bomb waves")
+	}
+	status := probeStatus{State: "passed", PlayerTeam: 3, ObjectiveKind: "combat", BotSpawns: 12, Bots: 7}
+	if got := classifyWave(status, nil); got != "probe error" {
+		t.Fatalf("unwitnessed boss clear: %s", got)
+	}
+	status.TargetKills = 1
+	if got := classifyWave(status, nil); got != "passed" {
+		t.Fatalf("witnessed boss clear: %s", got)
+	}
+}
+
+func TestFullReverseProfileHasNoExcludedPlayableMissions(t *testing.T) {
+	opt := options{mission: "all", includeSig: true, reverseObjectives: true, shards: 1, startWave: 1}
+	missions, err := selectMissions(opt)
+	if err != nil {
+		t.Fatal(err)
+	}
+	total, reverse := 0, 0
+	for _, mission := range missions {
+		cases := int(mission.Waves) * 2
+		total += cases
+		if strings.Contains(mission.PopFile, "_rev_") {
+			reverse += cases
+			if !reverseEnabled(mission.PopFile, opt) {
+				t.Fatalf("excluded %s", mission.PopFile)
+			}
+		}
+	}
+	if total != 2628 || reverse != 122 {
+		t.Fatalf("coverage changed: %d total, %d reverse; inspect the playable catalog", total, reverse)
+	}
+}
+
+func TestSpecialReverseWitnessesCannotPassWithoutNativeEvidence(t *testing.T) {
+	for _, kind := range []string{"repair", "combat-victory", "route"} {
+		st := probeStatus{State: "passed", PlayerTeam: 3, ObjectiveKind: kind, BotSpawns: 10, Bots: 10}
+		if got := classifyWave(st, nil); got == "passed" {
+			t.Fatalf("%s accepted without objective evidence", kind)
+		}
+	}
+	st := probeStatus{State: "passed", PlayerTeam: 3, ObjectiveKind: "repair", BotSpawns: 10, Bots: 10, Repairs: 5, BluWon: 1}
+	if got := classifyWave(st, nil); got != "passed" {
+		t.Fatalf("native repair completion refused: %s", got)
+	}
+	st.Repairs = 4
+	if got := classifyWave(st, nil); got == "passed" {
+		t.Fatal("unfinished repair accepted")
+	}
+}
+
+func TestNativeReverseObjectivesCannotHideMissingEnemySpawns(t *testing.T) {
+	st := probeStatus{State: "passed", PlayerTeam: 3, ObjectiveKind: "repair", Repairs: 5, BluWon: 1}
+	if got := classifyWave(st, nil); got != "no enemies spawned" {
+		t.Fatalf("empty population passed: %s", got)
+	}
+}
+
+func TestAuthoredRepairCompletionSurvivesBuildingCleanup(t *testing.T) {
+	st := probeStatus{State: "passed", PlayerTeam: 3, ObjectiveKind: "repair", Repairs: 4, RepairComplete: 1, BluWon: 1, BotSpawns: 2, Bots: 2}
+	if got := classifyWave(st, nil); got != "passed" {
+		t.Fatalf("native repair completion lost after cleanup: %s", got)
+	}
+	st.RepairComplete = 0
+	if got := classifyWave(st, nil); got == "passed" {
+		t.Fatal("four repairs without completion accepted")
+	}
+}
+
+func TestReadNativeRepairCompletionAfterWorldCleanup(t *testing.T) {
+	reply := "WAVEPROBE state=passed reason=none map=mvm_robotfactory_b30 pop=mvm_robotfactory_b30_rev_adv_short_circuit_execution max=3 gamewave=2 expected=1 observed=1 botspawns=157 tankspawns=0 bots=112 tanks=0 attempts=114 alive=0 remaining=319 initial=1125 progress=71.6 defender=10 defteam=3 defclass=9 playerteam=3 enemyteam=2 elapsed=716.4 objectives=5 pickups=0 captures=0 configsready=1 objectivekind=repair targetkills=0 pointcaps=0 repairs=4 tankdeliveries=0 bluwon=1 escortstages=0 repaircomplete=1"
+	status, err := parseStatus(reply)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status.RepairComplete != 1 || status.Repairs != 4 || status.BluWon != 1 {
+		t.Fatalf("native completion evidence lost: %+v", status)
+	}
+	if got := classifyWave(status, nil); got != "passed" {
+		t.Fatalf("native completion after cleanup classified %s", got)
+	}
+}
+
+func TestArcticArrangementUsesAuthoredPointAndTankObjectives(t *testing.T) {
+	for wave := 1; wave <= 5; wave++ {
+		want := "route"
+		if wave == 4 {
+			want = "combat-victory"
+		}
+		if got := reverseObjectiveKind("mvm_cyberia_rc6a_rev_arctic_arrangement", wave); got != want {
+			t.Errorf("wave %d kind=%q want=%q", wave, got, want)
+		}
 	}
 }

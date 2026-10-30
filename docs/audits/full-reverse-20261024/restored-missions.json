@@ -1,0 +1,181 @@
+[
+  {
+    "id": 107,
+    "pop_file": "mvm_bogland_rc12_adv_swamp_fever",
+    "name": "Swamp Fever",
+    "map_id": 106,
+    "difficulty": "advanced",
+    "waves": 4,
+    "has_tank": true,
+    "has_giant": true,
+    "requires": "no_nav"
+  },
+  {
+    "id": 109,
+    "pop_file": "mvm_cyberia_rc6a_adv_silver_snow",
+    "name": "Silver Snow",
+    "map_id": 107,
+    "difficulty": "advanced",
+    "waves": 5,
+    "has_tank": true,
+    "has_giant": true,
+    "requires": "no_nav",
+    "pack": "mlarchive-assets.zip"
+  },
+  {
+    "id": 206,
+    "pop_file": "mvm_bogland_rc12_adv_bog_business",
+    "name": "Bog Business",
+    "map_id": 106,
+    "difficulty": "advanced",
+    "waves": 8,
+    "has_tank": true,
+    "has_giant": true,
+    "requires": "no_nav"
+  },
+  {
+    "id": 207,
+    "pop_file": "mvm_bogland_rc12_adv_dire_mire",
+    "name": "Dire Mire",
+    "map_id": 106,
+    "difficulty": "advanced",
+    "waves": 6,
+    "has_tank": true,
+    "has_giant": true,
+    "requires": "no_nav"
+  },
+  {
+    "id": 208,
+    "pop_file": "mvm_bogland_rc12_adv_mud_maker",
+    "name": "Mud Maker",
+    "map_id": 106,
+    "difficulty": "advanced",
+    "waves": 7,
+    "has_tank": true,
+    "has_giant": true,
+    "requires": "no_nav"
+  },
+  {
+    "id": 209,
+    "pop_file": "mvm_bogland_rc12_int_crocodile_operation",
+    "name": "Crocodile Operation",
+    "map_id": 106,
+    "difficulty": "intermediate",
+    "waves": 7,
+    "has_tank": true,
+    "has_giant": true,
+    "requires": "no_nav"
+  },
+  {
+    "id": 221,
+    "pop_file": "mvm_cyberia_rc6a_adv_frozen_freaks",
+    "name": "Frozen Freaks",
+    "map_id": 107,
+    "difficulty": "advanced",
+    "waves": 6,
+    "has_tank": true,
+    "has_giant": true,
+    "requires": "no_nav"
+  },
+  {
+    "id": 222,
+    "pop_file": "mvm_cyberia_rc6a_adv_launch_sequence",
+    "name": "Launch Sequence",
+    "map_id": 107,
+    "difficulty": "advanced",
+    "waves": 6,
+    "has_tank": true,
+    "has_giant": true,
+    "requires": "no_nav"
+  },
+  {
+    "id": 223,
+    "pop_file": "mvm_cyberia_rc6a_adv_rusty_rapture",
+    "name": "Rusty Rapture",
+    "map_id": 107,
+    "difficulty": "advanced",
+    "waves": 1,
+    "has_tank": true,
+    "has_giant": true,
+    "requires": "no_nav",
+    "pack": "mlarchive-assets.zip"
+  },
+  {
+    "id": 224,
+    "pop_file": "mvm_cyberia_rc6a_adv_snowblitz",
+    "name": "Snowblitz",
+    "map_id": 107,
+    "difficulty": "advanced",
+    "waves": 6,
+    "has_tank": true,
+    "has_giant": true,
+    "requires": "no_nav",
+    "pack": "mlarchive-assets.zip"
+  },
+  {
+    "id": 225,
+    "pop_file": "mvm_cyberia_rc6a_exp_cascading_steel_swarm",
+    "name": "Cascading Steel Swarm",
+    "map_id": 107,
+    "difficulty": "expert",
+    "waves": 5,
+    "has_tank": true,
+    "has_giant": true,
+    "requires": "no_nav"
+  },
+  {
+    "id": 226,
+    "pop_file": "mvm_cyberia_rc6a_exp_northern_lights",
+    "name": "Northern Lights",
+    "map_id": 107,
+    "difficulty": "expert",
+    "waves": 6,
+    "has_tank": true,
+    "has_giant": true,
+    "requires": "no_nav"
+  },
+  {
+    "id": 227,
+    "pop_file": "mvm_cyberia_rc6a_rev_arctic_arrangement",
+    "name": "Arctic Arrangement",
+    "map_id": 107,
+    "difficulty": "advanced",
+    "waves": 5,
+    "has_tank": true,
+    "has_giant": true,
+    "requires": "no_nav"
+  },
+  {
+    "id": 231,
+    "pop_file": "mvm_decompose_rc7_adv_deprecated_designs",
+    "name": "Deprecated Designs",
+    "map_id": 130,
+    "difficulty": "advanced",
+    "waves": 6,
+    "has_tank": true,
+    "has_giant": true,
+    "requires": "no_nav"
+  },
+  {
+    "id": 232,
+    "pop_file": "mvm_decompose_rc7_adv_ghoulish_genesis",
+    "name": "Ghoulish Genesis",
+    "map_id": 130,
+    "difficulty": "advanced",
+    "waves": 1,
+    "has_tank": true,
+    "has_giant": true,
+    "requires": "no_nav"
+  },
+  {
+    "id": 252,
+    "pop_file": "mvm_mansion_rc2c_adv_property_inspection",
+    "name": "Property Inspection",
+    "map_id": 133,
+    "difficulty": "advanced",
+    "waves": 8,
+    "has_tank": true,
+    "has_giant": true,
+    "requires": "no_nav"
+  }
+]

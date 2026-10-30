@@ -1,0 +1,78 @@
+{
+  "checked_utc": "2026-10-24T22:41:19.281319+00:00",
+  "phase": "60 of 61 extended retries complete; final retry active",
+  "workers": [
+    {
+      "worker": 0,
+      "running_server_version": "11138802",
+      "robot_limiter_enabled": true,
+      "probe_and_ap_hashes_unchanged": true
+    },
+    {
+      "worker": 1,
+      "running_server_version": "11138802",
+      "robot_limiter_enabled": true,
+      "probe_and_ap_hashes_unchanged": true
+    },
+    {
+      "worker": 2,
+      "running_server_version": "11138802",
+      "robot_limiter_enabled": true,
+      "probe_and_ap_hashes_unchanged": true
+    },
+    {
+      "worker": 3,
+      "running_server_version": "11138802",
+      "robot_limiter_enabled": true,
+      "probe_and_ap_hashes_unchanged": true
+    },
+    {
+      "worker": 4,
+      "running_server_version": "11138802",
+      "robot_limiter_enabled": true,
+      "probe_and_ap_hashes_unchanged": true
+    },
+    {
+      "worker": 5,
+      "running_server_version": "11138802",
+      "robot_limiter_enabled": true,
+      "probe_and_ap_hashes_unchanged": true
+    },
+    {
+      "worker": 6,
+      "running_server_version": "11138802",
+      "robot_limiter_enabled": true,
+      "probe_and_ap_hashes_unchanged": true
+    },
+    {
+      "worker": 7,
+      "running_server_version": "11138802",
+      "robot_limiter_enabled": true,
+      "probe_and_ap_hashes_unchanged": true
+    },
+    {
+      "worker": 8,
+      "running_server_version": "11138802",
+      "robot_limiter_enabled": true,
+      "probe_and_ap_hashes_unchanged": true
+    },
+    {
+      "worker": 9,
+      "running_server_version": "11138802",
+      "robot_limiter_enabled": true,
+      "probe_and_ap_hashes_unchanged": true
+    },
+    {
+      "worker": 10,
+      "running_server_version": "11138802",
+      "robot_limiter_enabled": true,
+      "probe_and_ap_hashes_unchanged": true
+    },
+    {
+      "worker": 11,
+      "running_server_version": "11138802",
+      "robot_limiter_enabled": true,
+      "probe_and_ap_hashes_unchanged": true
+    }
+  ]
+}

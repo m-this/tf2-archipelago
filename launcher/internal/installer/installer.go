@@ -152,33 +152,55 @@ func installCommunityArchives(archives []string, modDir string, serverMods []str
 	if removed > 0 {
 		logf("removed %d unsupported community mission popfile(s)", removed)
 	}
-	stampDir := filepath.Join(modDir, ".tf2ap-community")
+	catalog := communityCatalogIdentity()
 	for _, path := range archives {
-		info, err := os.Stat(path)
-		if err != nil {
-			return fmt.Errorf("cannot use community pack %s: %w", path, err)
-		}
-		identity := fmt.Sprintf("%s\n%d\n%d\nmods=%s\n", path, info.Size(), info.ModTime().UnixNano(), strings.Join(serverMods, ","))
-		sum := sha256.Sum256([]byte(path))
-		stamp := filepath.Join(stampDir, fmt.Sprintf("%x.stamp", sum[:8]))
-		if body, err := os.ReadFile(stamp); err == nil && string(body) == identity {
-			logf("community pack already installed: %s", filepath.Base(path))
-			continue
-		}
-		logf("installing community pack %s (this can take a minute)", filepath.Base(path))
-		if err := installCommunityZip(path, modDir, serverMods, logf); err != nil {
-			return fmt.Errorf("cannot install community pack %s: %w", path, err)
-		}
-		logf("installed community pack: %s", filepath.Base(path))
-		if err := os.MkdirAll(stampDir, 0o755); err != nil {
-			return err
-		}
-		if err := os.WriteFile(stamp, []byte(identity), 0o644); err != nil {
+		if err := installCommunityArchive(path, modDir, serverMods, catalog, logf); err != nil {
 			return err
 		}
 	}
 	if err := writeCommunityDownloadManifests(modDir); err != nil {
 		return fmt.Errorf("cannot prepare community asset downloads: %w", err)
+	}
+	return nil
+}
+
+// A catalog update can make a formerly excluded popfile installable even when
+// the ZIP and enabled mods are unchanged. Include that selection in the receipt.
+func communityCatalogIdentity() string {
+	var data strings.Builder
+	for _, mission := range gamedata.Missions {
+		data.WriteString(mission.PopFile)
+		data.WriteByte(0)
+		data.WriteString(gamedata.MissionRequirement(mission.ID))
+		data.WriteByte(0)
+	}
+	sum := sha256.Sum256([]byte(data.String()))
+	return fmt.Sprintf("%x", sum)
+}
+
+func installCommunityArchive(path, modDir string, serverMods []string, catalog string, logf func(string, ...any)) error {
+	stampDir := filepath.Join(modDir, ".tf2ap-community")
+	info, err := os.Stat(path)
+	if err != nil {
+		return fmt.Errorf("cannot use community pack %s: %w", path, err)
+	}
+	identity := fmt.Sprintf("%s\n%d\n%d\nmods=%s\ncatalog=%s\n", path, info.Size(), info.ModTime().UnixNano(), strings.Join(serverMods, ","), catalog)
+	sum := sha256.Sum256([]byte(path))
+	stamp := filepath.Join(stampDir, fmt.Sprintf("%x.stamp", sum[:8]))
+	if body, err := os.ReadFile(stamp); err == nil && string(body) == identity {
+		logf("community pack already installed: %s", filepath.Base(path))
+		return nil
+	}
+	logf("installing community pack %s (this can take a minute)", filepath.Base(path))
+	if err := installCommunityZip(path, modDir, serverMods, logf); err != nil {
+		return fmt.Errorf("cannot install community pack %s: %w", path, err)
+	}
+	logf("installed community pack: %s", filepath.Base(path))
+	if err := os.MkdirAll(stampDir, 0o755); err != nil {
+		return err
+	}
+	if err := os.WriteFile(stamp, []byte(identity), 0o644); err != nil {
+		return err
 	}
 	return nil
 }

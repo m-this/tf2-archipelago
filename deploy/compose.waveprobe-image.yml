@@ -1,0 +1,10 @@
+# Shared immutable game layers, private container writes. No shared writable game volume.
+services:
+  srcds:
+    cpus: ${WAVEPROBE_CPUS:-2}
+    mem_limit: ${WAVEPROBE_MEMORY:-3g}
+    volumes: !override
+      - ../community-content:/opt/tf2-community-pack:ro
+      - ../plugin/build/tf2_waveprobe.smx:/opt/tf2-archipelago/addons/sourcemod/plugins/tf2_waveprobe.smx:ro
+      - ../plugin/build/tf2_archipelago.smx:/opt/tf2-archipelago/addons/sourcemod/plugins/tf2_archipelago.smx:ro
+volumes: !reset {}

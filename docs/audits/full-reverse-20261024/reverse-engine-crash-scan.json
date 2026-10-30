@@ -1,0 +1,17 @@
+{
+  "scan_utc": "2026-10-24T22:38:27.336725+00:00",
+  "workers": [
+    {
+      "worker": "worker-0-console.log.gz",
+      "crash_signatures": 0
+    },
+    {
+      "worker": "worker-1-console.log.gz",
+      "crash_signatures": 0
+    },
+    {
+      "worker": "worker-2-console.log.gz",
+      "crash_signatures": 0
+    }
+  ]
+}

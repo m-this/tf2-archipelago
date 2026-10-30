@@ -1,0 +1,11 @@
+{
+  "mvm_decoy_expert1": {
+    "seconds": 5.38,
+    "exit_code": 0
+  },
+  "mvm_rottenburg_rev_int_breaking_walls": {
+    "seconds": 23.67,
+    "exit_code": 0
+  },
+  "total_seconds": 73.69
+}

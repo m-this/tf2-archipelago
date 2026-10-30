@@ -1,6 +1,12 @@
 package main
 
-import "testing"
+import (
+	"archive/zip"
+	"bytes"
+	"encoding/binary"
+	"strings"
+	"testing"
+)
 
 func TestMissionRowResolvesIncludesOnlyFromSelectedArchive(t *testing.T) {
 	popFile := "mvm_bronx_rc2_adv_point_of_impact"
@@ -35,6 +41,99 @@ func TestMissionIdentityUsesWholeFilenameSegments(t *testing.T) {
 		if !ok || difficulty != test.difficulty || title != test.title {
 			t.Errorf("missionIdentity(%q) = %q, %q, %t; want %q, %q, true",
 				test.popFile, difficulty, title, ok, test.difficulty, test.title)
+		}
+	}
+}
+
+func TestArchiveBSPNavigationFindsOnlyEngineSupportedEmbeddedNames(t *testing.T) {
+	for _, test := range []struct {
+		name string
+		want bool
+	}{
+		{"maps/mvm_embedded.nav", true},
+		{"maps/embed.nav", true},
+		{"maps/mvm_other.nav", false},
+		{"materials/embed.nav", false},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			var pak bytes.Buffer
+			writer := zip.NewWriter(&pak)
+			file, err := writer.Create(test.name)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := file.Write([]byte("navigation mesh")); err != nil {
+				t.Fatal(err)
+			}
+			if err := writer.Close(); err != nil {
+				t.Fatal(err)
+			}
+			body := make([]byte, 1036+pak.Len())
+			copy(body, "VBSP")
+			binary.LittleEndian.PutUint32(body[8+40*16:], 1036)
+			binary.LittleEndian.PutUint32(body[12+40*16:], uint32(pak.Len()))
+			copy(body[1036:], pak.Bytes())
+			entry := bspTestEntry(t, body)
+			got, err := archiveBSPNavigation(entry, "mvm_embedded")
+			if err != nil || got != test.want {
+				t.Fatalf("navigation=%t, err=%v; want %t", got, err, test.want)
+			}
+		})
+	}
+	for _, body := range [][]byte{[]byte("truncated"), make([]byte, 1036)} {
+		if _, err := archiveBSPNavigation(bspTestEntry(t, body), "mvm_embedded"); err == nil {
+			t.Fatal("accepted malformed BSP")
+		}
+	}
+	body := make([]byte, 1036)
+	copy(body, "VBSP")
+	binary.LittleEndian.PutUint32(body[8+40*16:], 1036)
+	binary.LittleEndian.PutUint32(body[12+40*16:], 100)
+	if _, err := archiveBSPNavigation(bspTestEntry(t, body), "mvm_embedded"); err == nil {
+		t.Fatal("accepted out-of-bounds pak lump")
+	}
+	body = make([]byte, 1036)
+	copy(body, "VBSP")
+	if got, err := archiveBSPNavigation(bspTestEntry(t, body), "mvm_embedded"); err != nil || got {
+		t.Fatalf("empty pak: %t, %v", got, err)
+	}
+}
+
+func bspTestEntry(t *testing.T, body []byte) *zip.File {
+	t.Helper()
+	var archive bytes.Buffer
+	writer := zip.NewWriter(&archive)
+	file, err := writer.Create("maps/mvm_embedded.bsp")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := file.Write(body); err != nil {
+		t.Fatal(err)
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	reader, err := zip.NewReader(bytes.NewReader(archive.Bytes()), int64(archive.Len()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return reader.File[0]
+}
+
+func TestRecoveredNavigationUpdatesRequirementWithoutChangingIdentity(t *testing.T) {
+	for _, body := range []string{"WaveSchedule { Wave {} }", "WaveSchedule\n{\nLuaScriptFile example.lua\nWave {}\n}"} {
+		catalog := manifest{Missions: []mission{{ID: 107, PopFile: "mvm_embedded_adv_test", Name: "Handwritten title", MapID: 106, Requires: "no_nav"}}}
+		added, marked, err := addMissions(&catalog, map[string]uint8{"mvm_embedded": 106}, map[string]bool{"mvm_embedded": true}, map[string]population{"mvm_embedded_adv_test": {body: []byte(body)}}, nil)
+		want := ""
+		if strings.Contains(body, "LuaScriptFile") {
+			want = "sigsegv-mvm"
+		}
+		if err != nil || added != 0 || marked != 1 {
+			t.Fatalf("added=%d, marked=%d, err=%v", added, marked, err)
+		}
+		row := catalog.Missions[0]
+		if row.ID != 107 || row.Name != "Handwritten title" || row.Requires != want {
+			t.Fatalf("updated row: %+v; want requirement %q", row, want)
 		}
 	}
 }

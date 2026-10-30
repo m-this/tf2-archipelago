@@ -235,16 +235,33 @@ defenderbots_sourcemod_sha256=$(defenderbots_pin SOURCEMOD_SHA256)
 # compiles and says nothing, and a build that silently used the old compiler is
 # the one failure this whole arrangement exists to stop.
 spcomp_stamp="$work/spcomp.ref"
-if [ ! -d "$work/spcomp" ] || [ "$(cat "$spcomp_stamp" 2>/dev/null)" != "$defenderbots_sourcemod_version" ]; then
-	echo "fetching SourceMod $defenderbots_sourcemod_version, which $defenderbots_module compiles with"
-	rm -rf "$work/spcomp"
-	mkdir -p "$work/spcomp"
-	curl -fsSL -o "$work/sourcemod.tar.gz" \
-		"https://sm.alliedmods.net/smdrop/$defenderbots_sourcemod_branch/sourcemod-$defenderbots_sourcemod_version-linux.tar.gz"
-	echo "$defenderbots_sourcemod_sha256  $work/sourcemod.tar.gz" | sha256sum -c -
-	tar xzf "$work/sourcemod.tar.gz" -C "$work/spcomp"
-	rm -f "$work/sourcemod.tar.gz"
-	printf '%s\n' "$defenderbots_sourcemod_version" >"$spcomp_stamp"
+compiler_version=$(printf '%s' "$defenderbots_sourcemod_version" | sed 's/-git/./')
+compiler_matches() {
+ [ -x "${1:-$work/spcomp}/addons/sourcemod/scripting/spcomp64" ] || return 1
+ ("${1:-$work/spcomp}/addons/sourcemod/scripting/spcomp64" 2>&1 || true) |
+  grep -Fxq "SourcePawn Compiler $compiler_version"
+}
+if [ "$(cat "$spcomp_stamp" 2>/dev/null)" != "$defenderbots_sourcemod_version" ] || ! compiler_matches; then
+ stage=$(mktemp -d "$work/spcomp-staging.XXXXXX")
+ archive="$stage/drop.tar.gz"
+ echo "fetching SourceMod $defenderbots_sourcemod_version, which $defenderbots_module compiles with"
+ if curl --retry 3 --retry-delay 2 -fsSL -o "$archive" "https://sm.alliedmods.net/smdrop/$defenderbots_sourcemod_branch/sourcemod-$defenderbots_sourcemod_version-linux.tar.gz"; then
+  echo "$defenderbots_sourcemod_sha256  $archive" | sha256sum -c -
+  tar xzf "$archive" -C "$stage"
+  rm "$archive"
+ else
+  rm -f "$archive"
+  echo "pinned drop unavailable; recovering its exact official SourceMod/SourcePawn source"
+  python3 "$root/deploy/bots/compiler-source.py" --version "$defenderbots_sourcemod_version" \
+   --branch "$defenderbots_sourcemod_branch" --ambuild "$AMBUILD_COMMIT" \
+   --work "$work/compiler-source" --output "$stage"
+ fi
+ compiler_matches "$stage" || { echo "downloaded or recovered compiler has the wrong version" >&2; exit 1; }
+ rm -rf "$work/spcomp"
+ mv "$stage" "$work/spcomp"
+ compiler_matches || { echo "recovered compiler does not match $defenderbots_sourcemod_version" >&2; exit 1; }
+ printf '%s\n' "$defenderbots_sourcemod_version" >"$spcomp_stamp"
+ rm -rf "$work/compiler-source"
 fi
 sm="$work/spcomp/addons/sourcemod/scripting"
 

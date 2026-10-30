@@ -1114,3 +1114,34 @@ func TestRemoveSigmodTakesTheWholeInstallOffTheDisk(t *testing.T) {
 		t.Error("removeSigmod reported an install it had already taken off")
 	}
 }
+
+func TestCatalogUpdateRestoresPreviouslyExcludedCachedMission(t *testing.T) {
+	root := t.TempDir()
+	archive := filepath.Join(root, "archive-assets.zip")
+	const pop = "mvm_bogland_rc12_adv_swamp_fever.pop"
+	if err := os.WriteFile(archive, zipWith(t, map[string]string{"tf/download/scripts/population/" + pop: "WaveSchedule {}"}), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	target := filepath.Join(root, "tf")
+	logf := func(string, ...any) {}
+	if err := installCommunityArchive(archive, target, nil, "old-catalog", logf); err != nil {
+		t.Fatal(err)
+	}
+	mission := filepath.Join(target, "scripts", "population", pop)
+	// The previous catalog excluded this file, while keeping the same ZIP receipt.
+	if err := os.Remove(mission); err != nil {
+		t.Fatal(err)
+	}
+	if err := installCommunityArchive(archive, target, nil, "old-catalog", logf); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(mission); !os.IsNotExist(err) {
+		t.Fatalf("unchanged receipt was not cached: %v", err)
+	}
+	if err := installCommunityArchive(archive, target, nil, communityCatalogIdentity(), logf); err != nil {
+		t.Fatal(err)
+	}
+	if body, err := os.ReadFile(mission); err != nil || string(body) != "WaveSchedule {}" {
+		t.Fatalf("catalog update did not restore mission: %q, %v", body, err)
+	}
+}

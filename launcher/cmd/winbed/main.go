@@ -132,7 +132,10 @@ func install(opt options, s settings.Settings, logger *slog.Logger) error {
 		if err == nil {
 			err = installer.StartAnyway(installer.UpdateGame(ctx, s.InstallRoot, logf), logf)
 		}
-		return errors.Join(err, finish(opt, s))
+		if err != nil {
+			return err
+		}
+		return finish(opt, s)
 	}
 	if _, err := installer.Ensure(ctx, s.InstallRoot, nil, nil, logf); err != nil {
 		return err

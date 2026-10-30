@@ -1,0 +1,8 @@
+{
+  "intentional_restart": true,
+  "cases": 26,
+  "passed": 25,
+  "seconds": 285.97,
+  "fixture_restored": true,
+  "limiter_enabled": true
+}
