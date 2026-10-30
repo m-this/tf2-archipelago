@@ -95,9 +95,9 @@ jobs:
   web:
     runs-on: ubuntu-latest
     container:
-      image: node:26.11.1-slim
+      image: node:26.13.0-slim
     steps:
-      # ca-certificates is not optional: node:26.11.1-slim ships none, so git cannot
+      # ca-certificates is not optional: node:26.13.0-slim ships none, so git cannot
       # verify github.com and checkout fails with "Problem with the SSL CA
       # cert" before anything else runs. npm needs it for the same reason.
       # The plugin job installs it on debian:stable-slim for the same reason.

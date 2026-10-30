@@ -130,7 +130,9 @@ func TestTestModeBindsItsOwnSeed(t *testing.T) {
 		go func() { stopped <- client.Run(ctx) }()
 		waitFor(t, "the handshake", func() bool { return client.Health().Connected })
 		cancel()
-		<-stopped
+		if err := <-stopped; err != nil {
+			t.Fatalf("Run after cancel: %v", err)
+		}
 	}
 
 	connect(startTestRoom(t))

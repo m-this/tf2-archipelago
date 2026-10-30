@@ -269,7 +269,9 @@ func runClientWith(t *testing.T, room *fakeRoom, store *state.Store) *Client {
 	go func() { stopped <- client.Run(ctx) }()
 	t.Cleanup(func() {
 		cancel()
-		<-stopped
+		if err := <-stopped; err != nil {
+			t.Errorf("Run after cancel: %v", err)
+		}
 	})
 	return client
 }
@@ -462,7 +464,9 @@ func TestTheSessionReconnectsWhenOnlyTheOutboundPumpStops(t *testing.T) {
 	go func() { stopped <- client.Run(ctx) }()
 	t.Cleanup(func() {
 		cancel()
-		<-stopped
+		if err := <-stopped; err != nil {
+			t.Errorf("Run after cancel: %v", err)
+		}
 	})
 	waitFor(t, "the first handshake", func() bool { return client.Health().Connected })
 	if _, err := store.AddCheck(mission.WaveLocationID(1)); err != nil {
