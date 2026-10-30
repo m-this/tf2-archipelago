@@ -12,7 +12,7 @@ import pkgutil
 from dataclasses import dataclass
 
 # A version mismatch is a hard stop: half-reading a moved table makes a seed wrong undetectably.
-FORMAT_VERSION = 7
+FORMAT_VERSION = 8
 
 
 class DataFormatError(Exception):
@@ -118,6 +118,7 @@ class Item:
     bot_tier: str
     bot_form: str
     bot_stock: bool
+    trap_key: str
 
 
 def _read_missions() -> tuple[Mission, ...]:
@@ -169,6 +170,7 @@ def _read_items() -> tuple[Item, ...]:
             bot_tier=entry.get("bot_tier", ""),
             bot_form=entry.get("bot_form", ""),
             bot_stock=entry.get("bot_stock", False),
+            trap_key=entry.get("trap_key", ""),
         )
         for entry in _load("items.json")["items"]
     )
@@ -253,6 +255,18 @@ STACKABLE_WEAPON_BUFF_NAMES: frozenset[str] = frozenset(
 TRAP_NAMES: tuple[str, ...] = tuple(item.name for item in ITEMS if item.kind == "trap")
 if not TRAP_NAMES:
     raise DataFormatError("the export has no trap items")
+# By wire key, in id order. The order is what the draw indexes, so it is the
+# export's and never a set's.
+TRAP_NAMES_BY_KEY: dict[str, str] = {
+    item.trap_key: item.name for item in ITEMS if item.kind == "trap"
+}
+if len(TRAP_NAMES_BY_KEY) != len(TRAP_NAMES) or "" in TRAP_NAMES_BY_KEY:
+    raise DataFormatError("every trap item needs a distinct trap_key")
+# What a seed that names no trap draws from: Team Jarate, the only trap there
+# was before the others, so a player file written then means what it meant.
+TRAP_KEY_DEFAULT = "team_jarate"
+if TRAP_KEY_DEFAULT not in TRAP_NAMES_BY_KEY:
+    raise DataFormatError(f"the export has no {TRAP_KEY_DEFAULT} trap")
 
 # Levers on the whole server, handed over as items. Useful, never progression:
 # a wave has to stay winnable without one, so no access rule may need them.

@@ -6,6 +6,18 @@ in the release notes, so this file is the only place to write it.
 
 ## Unreleased
 
+### Added
+
+- **Six new traps**, contributed by Lee Harrold: Team Mad Milk, Team On Fire,
+  Team Slow Down, Team Bleed, Team Marked For Death and Team Gas. Each hits
+  everybody on RED for ten seconds, like Team Jarate. They are off by default:
+  turn them on one by one under Rewards in the launcher, or list them in the
+  `traps` option. A run made before them still holds Team Jarate alone.
+- A seed made with this apworld needs this launcher or a newer one. An older
+  launcher refuses it when it connects and says to use the launcher the seed
+  was made for, instead of quietly dropping a trap it does not know. Seeds
+  made before keep playing on this one.
+
 ### Fixed
 
 - **Attribute lookups on the server read the right memory.** The plugin's

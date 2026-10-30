@@ -952,3 +952,36 @@ func TestAnArchiveOfAnotherRunIsNotRestored(t *testing.T) {
 		})
 	}
 }
+
+// The ids are numbers in seeds already played, so they are written as numbers
+// here. 7443006001 was Team Jarate before the others existed and still is.
+func TestEveryTrapIDReachesThePluginUnderItsKey(t *testing.T) {
+	tests := []struct {
+		id        int64
+		key, name string
+	}{
+		{7443006001, "team_jarate", "Trap: Team Jarate"},
+		{7443006002, "team_mad_milk", "Trap: Team Mad Milk"},
+		{7443006003, "team_on_fire", "Trap: Team On Fire"},
+		{7443006004, "team_slow_down", "Trap: Team Slow Down"},
+		{7443006005, "team_bleed", "Trap: Team Bleed"},
+		{7443006006, "team_marked_for_death", "Trap: Team Marked For Death"},
+		{7443006007, "team_gas", "Trap: Team Gas"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.key, func(t *testing.T) {
+			store := openTemp(t)
+			if err := store.ApplyItems(0, []int64{tt.id}); err != nil {
+				t.Fatal(err)
+			}
+			grants, _ := store.GrantsSince(0)
+			if len(grants) != 1 {
+				t.Fatalf("got %d grants, want 1", len(grants))
+			}
+			got := grants[0]
+			if got.Kind != "trap" || got.Key != tt.key || got.Name != tt.name || !got.OneShot {
+				t.Errorf("item %d reaches the plugin as %+v, want trap %s named %q", tt.id, got, tt.key, tt.name)
+			}
+		})
+	}
+}

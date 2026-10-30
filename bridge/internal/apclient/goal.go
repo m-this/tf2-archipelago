@@ -8,9 +8,12 @@ import (
 )
 
 // oldestFormatVersion is the oldest seed this bridge still reads. Every id of
-// formats 4 through 7 is still in gamedata/testdata/ids-frozen.json under the
+// formats 4 through 8 is still in gamedata/testdata/ids-frozen.json under the
 // same key, and a key a format 4 seed lacks reads as that feature off, which is
 // how the v1.11.0 to v1.13.0 apworlds played. Format 2 was never checked.
+//
+// Format 8 is the six traps after Team Jarate. A bridge that reads only up to 7
+// would drop their ids without a word, so it refuses the seed instead.
 const oldestFormatVersion = 4
 
 // validate rejects a seed from an apworld this binary may disagree with about what an id means.

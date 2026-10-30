@@ -127,6 +127,10 @@ type Options struct {
 	// drawing from it once it is spent. Docker test mode wants both: a tester
 	// clearing waves for an hour must not stop being rewarded halfway.
 	ShuffleRewards bool
+
+	// Traps is the trap keys the made-up seed holds, the generator's traps
+	// option. Empty is Team Jarate alone, as it is there.
+	Traps []string
 }
 
 // Start serves a fake room on loopback and returns it with the address the
@@ -153,7 +157,7 @@ func Start(ctx context.Context, options Options) (*Room, string, error) {
 	if modifiers == nil && options.DrawModifiers {
 		modifiers = DrawMissionModifiers(missions, options.ModifierMin, options.ModifierMax)
 	}
-	items := unlockOrder(start)
+	items := unlockOrder(start, options.Traps)
 	if options.ShuffleRewards {
 		rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
 	}
@@ -557,7 +561,11 @@ func (r *Room) say(ctx context.Context, conn *websocket.Conn, text string) {
 //
 // The weapon slot item is progressive, so its copies are handed out one at a
 // time and the count comes from the pool.
-func unlockOrder(held []int64) []int64 {
+func unlockOrder(held []int64, traps []string) []int64 {
+	if len(traps) == 0 {
+		trap, _ := gamedata.TrapByID(gamedata.TrapDefault)
+		traps = []string{trap.Key}
+	}
 	var classes, slots, rest []int64
 	taken := make(map[int64]int, len(held))
 	for _, id := range held {
@@ -578,6 +586,12 @@ func unlockOrder(held []int64) []int64 {
 		if item.Kind == gamedata.ItemWeaponBuff {
 			buff, known := gamedata.WeaponBuffByID(item.WeaponBuff)
 			if !known || !buff.Eligible {
+				continue
+			}
+		}
+		if item.Kind == gamedata.ItemTrap {
+			trap, known := gamedata.TrapByID(item.Trap)
+			if !known || !slices.Contains(traps, trap.Key) {
 				continue
 			}
 		}

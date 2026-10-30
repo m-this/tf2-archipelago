@@ -264,7 +264,33 @@ func rewardSpecs() []Spec {
 			"enabled", "disabled",
 			func(s State) bool { return s.Settings.MvmServerSettings },
 			func(s State, v bool) State { s.Settings.MvmServerSettings = v; return s }),
-	}, botCardRewardSpecs()...)
+	}, append(trapSpecs(), botCardRewardSpecs()...)...)
+}
+
+// trapSpecs is one row per trap in gamedata. None ticked is Team Jarate alone,
+// which the player file says out loud, because a seed with traps has to draw one.
+func trapSpecs() []Spec {
+	specs := make([]Spec, 0, len(gamedata.Traps))
+	for _, trap := range gamedata.Traps {
+		help := "When enabled, Trap: " + trap.Name + " can be one of the run's traps. Traps (%) decides how many there are."
+		if trap.ID == gamedata.TrapDefault {
+			help += " With no trap enabled the run uses this one."
+		}
+		specs = append(specs, twoWayToggle("rewards.trap."+trap.Key, "Rewards", "Trap: "+trap.Name,
+			help, "enabled", "disabled",
+			func(s State) bool { return slices.Contains(s.Settings.MvmTraps, trap.Key) },
+			func(s State, on bool) State {
+				has := slices.Contains(s.Settings.MvmTraps, trap.Key)
+				switch {
+				case on && !has:
+					s.Settings.MvmTraps = append(slices.Clone(s.Settings.MvmTraps), trap.Key)
+				case !on && has:
+					s.Settings.MvmTraps = slices.DeleteFunc(slices.Clone(s.Settings.MvmTraps), func(key string) bool { return key == trap.Key })
+				}
+				return s
+			}))
+	}
+	return specs
 }
 
 func botCardRewardSpecs() []Spec {

@@ -421,3 +421,28 @@ func TestASavedLoadoutIsOfferedByItsKey(t *testing.T) {
 		t.Fatalf("the Pyro's menu offers %v, want a value of %q", options, want)
 	}
 }
+
+func TestTrapRowsPickTheTraps(t *testing.T) {
+	s := base()
+	if !slices.Equal(s.Settings.MvmTraps, []string{"team_jarate"}) {
+		t.Fatalf("the default traps are %v, want team_jarate alone", s.Settings.MvmTraps)
+	}
+	steps := []struct {
+		field, value string
+		want         []string
+	}{
+		{"rewards.trap.team_mad_milk", "true", []string{"team_jarate", "team_mad_milk"}},
+		{"rewards.trap.team_jarate", "false", []string{"team_mad_milk"}},
+		{"rewards.trap.team_mad_milk", "false", []string{"team_jarate"}},
+	}
+	for _, step := range steps {
+		next, err := Apply(s, Env{}, Change{Field: step.field, Value: step.value})
+		if err != nil {
+			t.Fatalf("%s=%s: %v", step.field, step.value, err)
+		}
+		s = next
+		if got := settings.TrapKeys(s.Settings); !slices.Equal(got, step.want) {
+			t.Errorf("after %s=%s the seed draws %v, want %v", step.field, step.value, got, step.want)
+		}
+	}
+}

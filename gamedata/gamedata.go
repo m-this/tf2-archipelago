@@ -16,7 +16,7 @@ const (
 
 	// FormatVersion is the shape of the exported JSON. The apworld refuses to
 	// load an export whose version it does not know.
-	FormatVersion = 7
+	FormatVersion = 8
 )
 
 // Difficulty is a mission's tier. The keys are Valve's own, from the mvm_maps

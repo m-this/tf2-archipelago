@@ -263,6 +263,11 @@ type Settings struct {
 	// default only when the file never mentions the key.
 	MvmTrapPct int `json:"mvm_trap_percentage"`
 
+	// MvmTraps is the trap keys the seed draws from. A file written before
+	// the other traps never mentions it and loads Team Jarate alone, which is
+	// what it meant; empty is Team Jarate alone as well, see TrapKeys.
+	MvmTraps []string `json:"mvm_traps"`
+
 	/* A direct multiplier for every robot. 100 percent is neutral.
 	 *
 	 * Percentages rather than the mod's floats, because a settings page with
@@ -318,6 +323,7 @@ func Defaults() Settings {
 		MvmWeaponBuffPct:           75,
 		MvmWeaponBuffStackChance:   25,
 		MvmTrapPct:                 1,
+		MvmTraps:                   []string{defaultTrapKey()},
 		SrcdsBluHealthPct:          RobotHealthPercentNeutral,
 		MetricsPort:                24681,
 	}
@@ -430,14 +436,15 @@ func parse(data []byte) (Settings, error) {
 // one function that knows why these three are different from the rest.
 func (s Settings) withAppearanceDefaults(data []byte) Settings {
 	var said struct {
-		Hats                  *bool `json:"srcds_bot_hats"`
-		Effects               *bool `json:"srcds_bot_hat_effects"`
-		WeaponBuffPct         *int  `json:"mvm_weapon_buff_percentage"`
-		WeaponBuffStackChance *int  `json:"mvm_weapon_buff_stack_chance"`
-		TrapPct               *int  `json:"mvm_trap_percentage"`
-		CommunityMissions     *bool `json:"mvm_community_missions"`
-		ModifierMin           *int  `json:"mvm_minimum_mission_modifiers"`
-		ModifierMax           *int  `json:"mvm_maximum_mission_modifiers"`
+		Hats                  *bool     `json:"srcds_bot_hats"`
+		Effects               *bool     `json:"srcds_bot_hat_effects"`
+		WeaponBuffPct         *int      `json:"mvm_weapon_buff_percentage"`
+		WeaponBuffStackChance *int      `json:"mvm_weapon_buff_stack_chance"`
+		TrapPct               *int      `json:"mvm_trap_percentage"`
+		Traps                 *[]string `json:"mvm_traps"`
+		CommunityMissions     *bool     `json:"mvm_community_missions"`
+		ModifierMin           *int      `json:"mvm_minimum_mission_modifiers"`
+		ModifierMax           *int      `json:"mvm_maximum_mission_modifiers"`
 	}
 	// A file that parsed once parses again; anything else has already been
 	// reported by the caller.
@@ -459,6 +466,9 @@ func (s Settings) withAppearanceDefaults(data []byte) Settings {
 	}
 	if said.TrapPct == nil {
 		s.MvmTrapPct = d.MvmTrapPct
+	}
+	if said.Traps == nil {
+		s.MvmTraps = d.MvmTraps
 	}
 	/* A file written before this option existed loads it as off, and off means
 	   the generator draws no community mission at all. That was invisible until

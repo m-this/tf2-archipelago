@@ -94,6 +94,7 @@ tank.
 | Bonus d'arme | Un bonus permanent sur une famille d'armes : plus de dégâts, plus de projectiles, rechargement plus rapide, etc. La station d'amélioration affiche la liste des bonus de votre équipement. |
 | `Cash Bundle` | 200 crédits pour chaque joueur de RED, payés à la prochaine visite de la station d'amélioration |
 | `Trap: Team Jarate` | Dix secondes de Jarate pour toute l'équipe, pendant la vague suivante |
+| `Trap: Team Mad Milk`, `On Fire`, `Slow Down`, `Bleed`, `Marked For Death`, `Gas` | Pareil, avec cet effet à la place. Seulement dans une partie qui les demande. |
 | `Grappling Hook` | Active le grappin de Mannpower pour tout le monde jusqu'à la fin de la partie. Désactivé par défaut. |
 
 Les bonus, les crédits et les pièges remplissent les checks qui restent après

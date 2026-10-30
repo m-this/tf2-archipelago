@@ -245,9 +245,27 @@ The seed decides. A slot with `death_link` off never claims the tag, never
 hears a death, and drops what the plugin reports.
 
 `trap_percentage` is how much of the run's spare space holds traps rather
-than rewards. One percent by default; zero puts none in the pool.
+than rewards. One percent by default; zero puts none in the pool. `traps`
+names which ones the seed draws from. Absent or empty is Team Jarate alone,
+which is what every seed made before the others held.
 
-Built: **Jarate on the whole team**, ten seconds, bots included.
+Built, each on the whole team for ten seconds, bots included:
+
+| Key | Item | Effect |
+| --- | --- | --- |
+| `team_jarate` | `Trap: Team Jarate` | Jarate: +35% damage taken, no crits |
+| `team_mad_milk` | `Trap: Team Mad Milk` | Mad Milk: robots heal by hitting the team |
+| `team_on_fire` | `Trap: Team On Fire` | Set on fire. Pyros do not burn. |
+| `team_slow_down` | `Trap: Team Slow Down` | Slowed to half speed |
+| `team_bleed` | `Trap: Team Bleed` | Bleeding |
+| `team_marked_for_death` | `Trap: Team Marked For Death` | Every hit taken is a mini-crit |
+| `team_gas` | `Trap: Team Gas` | Gas Passer gas: the next fire ignites them |
+
+Lee Harrold contributed every trap after Jarate. The item ids are append-only
+(7443006001 onward). Seeds from this apworld on are data format 8, so a bridge
+from before the new traps refuses them out loud rather than drop an id it does
+not know. A plugin from before them that still receives one says so in chat
+and in the error log, then counts it as fired.
 
 A trap fires during a wave or not at all. The plugin holds one that arrives
 between waves until the next `wave_start`. It is the mirror of the credits

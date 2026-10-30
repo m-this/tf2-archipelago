@@ -492,7 +492,8 @@ class TF2MvMWorld(World):
         trap_count = min(
             open_slots, math.ceil(open_slots * self.options.trap_percentage.value / 100)
         )
-        pool += [self.create_item(self.random.choice(data.TRAP_NAMES)) for _ in range(trap_count)]
+        trap_names = self._trap_names()
+        pool += [self.create_item(self.random.choice(trap_names)) for _ in range(trap_count)]
         open_slots -= trap_count
 
         # Numeric buff permutations may repeat as levels; toggles remain unique.
@@ -592,6 +593,12 @@ class TF2MvMWorld(World):
                 ],
             },
         }
+
+    def _trap_names(self) -> tuple[str, ...]:
+        # A one-name tuple draws the way the Jarate-only seeds did, so a player
+        # file without traps regenerates the same seed it always did.
+        chosen = self.options.traps.value or {data.TRAP_KEY_DEFAULT}
+        return tuple(name for key, name in data.TRAP_NAMES_BY_KEY.items() if key in chosen)
 
     def _available_missions(self) -> list[data.Mission]:
         floor = data.DIFFICULTIES.index(self.options.difficulty_pool.current_key)

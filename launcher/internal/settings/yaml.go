@@ -57,6 +57,7 @@ func PlayerYAML(s Settings, archipelagoVersion string) string {
 	fmt.Fprintf(&b, "  weapon_buff_percentage: %d\n", s.MvmWeaponBuffPct)
 	fmt.Fprintf(&b, "  weapon_buff_stack_chance: %d\n", s.MvmWeaponBuffStackChance)
 	fmt.Fprintf(&b, "  trap_percentage: %d\n", s.MvmTrapPct)
+	writeYAMLList(&b, "traps", TrapKeys(s))
 	fmt.Fprintf(&b, "  server_settings: %t\n", s.MvmServerSettings)
 	fmt.Fprintf(&b, "  start_mission: %s\n", yamlString(StartMissionName(s)))
 	fmt.Fprintf(&b, "  start_class: %s\n", yamlString(startClassName(s)))
@@ -87,6 +88,27 @@ func ServerModKeys(s Settings) []string {
 		}
 	}
 	return keys
+}
+
+// TrapKeys is the traps the seed draws from, in gamedata's order, dropping
+// anything gamedata does not know. None left is Team Jarate alone, said out
+// loud so the player file reads as what it does.
+func TrapKeys(s Settings) []string {
+	var keys []string
+	for _, trap := range gamedata.Traps {
+		if slices.Contains(s.MvmTraps, trap.Key) {
+			keys = append(keys, trap.Key)
+		}
+	}
+	if len(keys) == 0 {
+		keys = []string{defaultTrapKey()}
+	}
+	return keys
+}
+
+func defaultTrapKey() string {
+	trap, _ := gamedata.TrapByID(gamedata.TrapDefault)
+	return trap.Key
 }
 
 // ExcludedMissionNames is what the apworld option excluded_missions takes, in

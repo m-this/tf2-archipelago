@@ -190,3 +190,22 @@ func TestThePluginFiresEveryTrap(t *testing.T) {
 		}
 	}
 }
+
+// The other way round: a row in the plugin's table that gamedata lacks is a
+// trap no seed can hold, which is a typo in one of the two.
+func TestThePluginFiresNoTrapGamedataLacks(t *testing.T) {
+	body, err := os.ReadFile(trapsSource)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows := regexp.MustCompile(`(?m)^\s*\{ "(\w+)",`).FindAllSubmatch(body, -1)
+	if len(rows) != len(Traps) {
+		t.Errorf("the plugin's table has %d rows and gamedata %d traps", len(rows), len(Traps))
+	}
+	for _, row := range rows {
+		key := string(row[1])
+		if !slices.ContainsFunc(Traps, func(trap Trap) bool { return trap.Key == key }) {
+			t.Errorf("the plugin fires %q, which gamedata does not have", key)
+		}
+	}
+}

@@ -125,6 +125,10 @@ type itemJSON struct {
 	// Slot names the loadout slot a class slot item opens, for the seeds that
 	// hand them out by name rather than in order. Absent on every other item.
 	Slot string `json:"slot,omitempty"`
+
+	// TrapKey is the trap's wire key, which the traps option names. Absent on
+	// every other item.
+	TrapKey string `json:"trap_key,omitempty"`
 }
 
 type weaponClassesFile struct {
@@ -206,6 +210,16 @@ func slotKey(id WeaponSlotID) string {
 		return ""
 	}
 	return slot.Key
+}
+
+// trapKey is the key of the trap an item fires, and empty for every item that
+// fires none.
+func trapKey(id TrapID) string {
+	trap, ok := TrapByID(id)
+	if !ok {
+		return ""
+	}
+	return trap.Key
 }
 
 func buildMetaFile() metaFile {
@@ -300,6 +314,7 @@ func buildItemsFile() itemsFile {
 			Stackable:      stackable,
 			Eligible:       eligible,
 			Slot:           slotKey(it.Slot),
+			TrapKey:        trapKey(it.Trap),
 		})
 	}
 	return file

@@ -7,7 +7,9 @@ precollected. That is the rule this world cannot get wrong, so the option sets
 below attack it from the corners: shortest run, longest, hardest starting tier.
 """
 
+import json
 import math
+import pathlib
 from typing import Any, ClassVar
 
 from BaseClasses import CollectionState, ItemClassification
@@ -428,6 +430,73 @@ class TestTraps(TF2MvMTestBase):
     def test_traps_are_classified_as_traps(self) -> None:
         traps = [item for item in self.multiworld.itempool if item.name in data.TRAP_NAMES]
         self.assertTrue(all(item.classification == ItemClassification.trap for item in traps))
+
+    def test_a_file_that_names_no_trap_draws_team_jarate_alone(self) -> None:
+        traps = {item.name for item in self.multiworld.itempool if item.name in data.TRAP_NAMES}
+        self.assertEqual({"Trap: Team Jarate"}, traps)
+
+
+class TestNoTrapNamedMeansTeamJarate(TF2MvMTestBase):
+    options: ClassVar[dict[str, Any]] = {"trap_percentage": 50, "traps": []}
+
+    def test_an_empty_list_draws_team_jarate_alone(self) -> None:
+        traps = {item.name for item in self.multiworld.itempool if item.name in data.TRAP_NAMES}
+        self.assertEqual({"Trap: Team Jarate"}, traps)
+
+
+class TestChosenTraps(TF2MvMTestBase):
+    options: ClassVar[dict[str, Any]] = {
+        "trap_percentage": 100,
+        "traps": ["team_mad_milk", "team_gas"],
+    }
+
+    def test_only_the_named_traps_are_drawn(self) -> None:
+        traps = {item.name for item in self.multiworld.itempool if item.name in data.TRAP_NAMES}
+        self.assertEqual({"Trap: Team Mad Milk", "Trap: Team Gas"}, traps)
+
+    def test_a_seed_with_a_new_trap_is_beyond_what_a_jarate_only_bridge_reads(self) -> None:
+        # Bridges before the new traps read seeds of format 7 at most and drop an
+        # id they do not know without a word. A newer format is what makes them
+        # refuse the seed out loud instead.
+        self.assertGreater(self.world.fill_slot_data()["format_version"], 7)
+
+
+class TestEveryTrapCanBeDrawn(TF2MvMTestBase):
+    options: ClassVar[dict[str, Any]] = {
+        "trap_percentage": 100,
+        "traps": sorted(data.TRAP_NAMES_BY_KEY),
+    }
+
+    def test_every_trap_has_an_item(self) -> None:
+        for key in data.TRAP_NAMES_BY_KEY:
+            self.assertIn(data.TRAP_NAMES_BY_KEY[key], data.ITEM_NAME_TO_ID, key)
+
+
+_BEFORE = json.loads(
+    (pathlib.Path(__file__).parent / "pool_before_new_traps.json").read_text(encoding="utf-8")
+)
+
+
+class TestARunMadeBeforeTheNewTrapsRegeneratesTheSame(TF2MvMTestBase):
+    """A player file written before the new traps names none of them. It has to
+    regenerate the very seed it made then: same draw, same pool, Jarate only.
+
+    The fixture came out of the apworld as it was before them. If an unrelated
+    change to the pool moves it, regenerate the fixture in that change and say so.
+    """
+
+    options: ClassVar[dict[str, Any]] = {}
+
+    def setUp(self) -> None:
+        pass
+
+    def test_the_pools_did_not_move(self) -> None:
+        for name, options in (("defaults", {}), ("traps_half", {"trap_percentage": 50})):
+            with self.subTest(pool=name):
+                self.options = options
+                self.world_setup(seed=_BEFORE["seed"])
+                pool = sorted(item.name for item in self.multiworld.itempool)
+                self.assertEqual(_BEFORE["pools"][name], pool)
 
 
 class TestUsefulUnlockModes(TF2MvMTestBase):

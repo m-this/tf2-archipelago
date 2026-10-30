@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -335,5 +336,53 @@ func TestClassSlotsOnCoversBothPerClassModes(t *testing.T) {
 	}
 	if ClassSlotsOff.On() || ClassSlots("").On() {
 		t.Error("off counted as per class")
+	}
+}
+
+// A settings file from before the six traps after Team Jarate never mentions
+// mvm_traps. It has to write the player file it always meant: Jarate alone.
+func TestASettingsFileFromBeforeTheNewTrapsStillMeansJarateAlone(t *testing.T) {
+	s, err := parse([]byte(`{"mvm_mission_count": 8, "mvm_trap_percentage": 20}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := TrapKeys(s); !slices.Equal(got, []string{"team_jarate"}) {
+		t.Errorf("an old file draws %v, want team_jarate alone", got)
+	}
+	if yaml := PlayerYAML(s, ""); !strings.Contains(yaml, "  trap_percentage: 20\n  traps:\n    - \"team_jarate\"\n") {
+		t.Errorf("an old file writes traps as:\n%s", yaml)
+	}
+}
+
+func TestTrapKeys(t *testing.T) {
+	tests := []struct {
+		name  string
+		saved []string
+		want  []string
+	}{
+		{"none means Jarate alone", nil, []string{"team_jarate"}},
+		{"an empty list means Jarate alone", []string{}, []string{"team_jarate"}},
+		{"only keys gamedata knows", []string{"team_gas", "team_nonsense"}, []string{"team_gas"}},
+		{"nothing known means Jarate alone", []string{"team_nonsense"}, []string{"team_jarate"}},
+		{"in gamedata's order", []string{"team_gas", "team_jarate", "team_bleed"}, []string{"team_jarate", "team_bleed", "team_gas"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := Defaults()
+			s.MvmTraps = tt.saved
+			if got := TrapKeys(s); !slices.Equal(got, tt.want) {
+				t.Errorf("TrapKeys(%v) = %v, want %v", tt.saved, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestExplicitlyNoTrapSurvivesASave(t *testing.T) {
+	s, err := parse([]byte(`{"mvm_traps": []}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(s.MvmTraps) != 0 {
+		t.Errorf("an empty trap list loaded as %v", s.MvmTraps)
 	}
 }

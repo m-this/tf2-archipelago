@@ -134,6 +134,7 @@ var EnvVars = []EnvVar{
 	bind("MVM_WEAPON_BUFF_PERCENTAGE", playerFile, number, func(s *Settings) *int { return &s.MvmWeaponBuffPct }),
 	bind("MVM_WEAPON_BUFF_STACK_CHANCE", playerFile, number, func(s *Settings) *int { return &s.MvmWeaponBuffStackChance }),
 	bind("MVM_TRAP_PERCENTAGE", playerFile, number, func(s *Settings) *int { return &s.MvmTrapPct }),
+	bind("MVM_TRAPS", playerFile, words, func(s *Settings) *[]string { return &s.MvmTraps }),
 	bind("BRIDGE_METRICS_PORT", nil, number, func(s *Settings) *int { return &s.MetricsPort }),
 }
 

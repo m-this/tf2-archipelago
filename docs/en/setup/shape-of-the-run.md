@@ -193,6 +193,7 @@ after the classes, the slots and the tickets.
 | Buff share | `weapon_buff_percentage` | `MVM_WEAPON_BUFF_PERCENTAGE` | `75` | With cash on, the share of spare checks that pay a buff. |
 | Buff stack chance | `weapon_buff_stack_chance` | `MVM_WEAPON_BUFF_STACK_CHANCE` | `25` | Chance that a buff adds a level to one already in the seed. |
 | Traps (%) | `trap_percentage` | `MVM_TRAP_PERCENTAGE` | `1` | The share of spare checks that hold a trap. |
+| Trap: ... | `traps` | `MVM_TRAPS` | `team_jarate` | Which traps the seed draws from. None means Team Jarate alone. |
 | Grappling Hook | `server_settings` | `MVM_SERVER_SETTINGS` | off | Put the Grappling Hook in the pool. |
 
 Each card's rarity and form are separate seed rolls: Common / Elite / Legendary
@@ -223,8 +224,22 @@ level each time. On/off buffs never repeat.
 ### Traps
 
 A trap is an item with a bad effect. Another player finds it, and your team
-pays for it. The one trap so far is `Trap: Team Jarate`: ten seconds of Jarate
-for everybody on RED, during the next wave. A trap never takes back an unlock.
+pays for it, for ten seconds, during the next wave. Everybody on RED takes it,
+bots included. A trap never takes back an unlock.
+
+| Trap | Effect |
+| --- | --- |
+| `Trap: Team Jarate` | Jarate: +35% damage taken and no crits |
+| `Trap: Team Mad Milk` | Mad Milk: the robots heal by hitting you |
+| `Trap: Team On Fire` | Everybody burns. Pyros do not. |
+| `Trap: Team Slow Down` | Everybody moves at half speed |
+| `Trap: Team Bleed` | Everybody bleeds |
+| `Trap: Team Marked For Death` | Every hit you take is a mini-crit |
+| `Trap: Team Gas` | Gas Passer gas: the next fire sets you alight |
+
+Only Team Jarate is on by default, because it was the only trap before the
+others. Lee Harrold contributed the six others. Turn them on one by one in the
+launcher.
 
 ## Balancing
 

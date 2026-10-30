@@ -1,5 +1,5 @@
 {
-  "format_version": 7,
+  "format_version": 8,
   "items": [
     {
       "id": 7443001001,
@@ -157194,7 +157194,56 @@
       "name": "Trap: Team Jarate",
       "kind": "trap",
       "classification": "trap",
-      "count": 0
+      "count": 0,
+      "trap_key": "team_jarate"
+    },
+    {
+      "id": 7443006002,
+      "name": "Trap: Team Mad Milk",
+      "kind": "trap",
+      "classification": "trap",
+      "count": 0,
+      "trap_key": "team_mad_milk"
+    },
+    {
+      "id": 7443006003,
+      "name": "Trap: Team On Fire",
+      "kind": "trap",
+      "classification": "trap",
+      "count": 0,
+      "trap_key": "team_on_fire"
+    },
+    {
+      "id": 7443006004,
+      "name": "Trap: Team Slow Down",
+      "kind": "trap",
+      "classification": "trap",
+      "count": 0,
+      "trap_key": "team_slow_down"
+    },
+    {
+      "id": 7443006005,
+      "name": "Trap: Team Bleed",
+      "kind": "trap",
+      "classification": "trap",
+      "count": 0,
+      "trap_key": "team_bleed"
+    },
+    {
+      "id": 7443006006,
+      "name": "Trap: Team Marked For Death",
+      "kind": "trap",
+      "classification": "trap",
+      "count": 0,
+      "trap_key": "team_marked_for_death"
+    },
+    {
+      "id": 7443006007,
+      "name": "Trap: Team Gas",
+      "kind": "trap",
+      "classification": "trap",
+      "count": 0,
+      "trap_key": "team_gas"
     },
     {
       "id": 7443007001,

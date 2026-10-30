@@ -1,6 +1,7 @@
 package fakeroom
 
 import (
+	"slices"
 	"testing"
 	"time"
 
@@ -15,7 +16,7 @@ else is fifty mission tickets ahead of sixteen thousand buffs. Without this the
 first buff lands about sixty waves in, which is not a test.
 */
 func TestABuffArrivesEarlyEnoughToTry(t *testing.T) {
-	order := unlockOrder(nil)
+	order := unlockOrder(nil, nil)
 
 	kind := make(map[int64]gamedata.ItemKind, len(gamedata.Items))
 	for _, item := range gamedata.Items {
@@ -40,7 +41,7 @@ func TestABuffArrivesEarlyEnoughToTry(t *testing.T) {
 // The ones brought forward are different weapons and effects, not sixteen
 // levels of the same thing, which is what taking the first few would give.
 func TestThePromotedBuffsAreNotAllOneWeapon(t *testing.T) {
-	order := unlockOrder(nil)
+	order := unlockOrder(nil, nil)
 
 	buff := make(map[int64]uint16, len(gamedata.Items))
 	for _, item := range gamedata.Items {
@@ -62,7 +63,7 @@ func TestThePromotedBuffsAreNotAllOneWeapon(t *testing.T) {
 // Every item a seed could grant in this mode survives reordering, with its
 // normal copy count. Ineligible permutations never enter the test pool.
 func TestPromotingKeepsEveryItem(t *testing.T) {
-	order := unlockOrder(nil)
+	order := unlockOrder(nil, nil)
 
 	counted := map[int64]int{}
 	for _, id := range order {
@@ -72,9 +73,13 @@ func TestPromotingKeepsEveryItem(t *testing.T) {
 	for _, item := range gamedata.Items {
 		copies := 0
 		switch item.Kind {
-		case gamedata.ItemMissionTicket, gamedata.ItemClass,
-			gamedata.ItemWeaponSlot, gamedata.ItemTrap:
+		case gamedata.ItemMissionTicket, gamedata.ItemClass, gamedata.ItemWeaponSlot:
 			copies = max(int(item.Count), 1)
+		case gamedata.ItemTrap:
+			// A room that names no trap holds Team Jarate alone, as a seed does.
+			if item.Trap == gamedata.TrapDefault {
+				copies = 1
+			}
 		case gamedata.ItemWeaponBuff:
 			buff, known := gamedata.WeaponBuffByID(item.WeaponBuff)
 			if known && buff.Eligible {
@@ -96,8 +101,22 @@ func TestPromotingKeepsEveryItem(t *testing.T) {
 // The promotion must not be slow: it runs when a test-mode room starts.
 func TestPromotingIsNotQuadratic(t *testing.T) {
 	start := time.Now()
-	unlockOrder(nil)
+	unlockOrder(nil, nil)
 	if took := time.Since(start); took > 2*time.Second {
 		t.Errorf("building the order took %s", took)
+	}
+}
+
+func TestTheTestPoolHoldsTheChosenTraps(t *testing.T) {
+	order := unlockOrder(nil, []string{"team_gas", "team_bleed"})
+	var got []string
+	for _, id := range order {
+		if item, known := gamedata.ItemByID(id); known && item.Kind == gamedata.ItemTrap {
+			trap, _ := gamedata.TrapByID(item.Trap)
+			got = append(got, trap.Key)
+		}
+	}
+	if !slices.Equal(got, []string{"team_bleed", "team_gas"}) {
+		t.Errorf("the test pool holds the traps %v, want team_bleed and team_gas", got)
 	}
 }

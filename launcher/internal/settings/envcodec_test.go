@@ -112,6 +112,7 @@ func everyField() Settings {
 		MvmWeaponBuffPct:           25,
 		MvmWeaponBuffStackChance:   30,
 		MvmTrapPct:                 15,
+		MvmTraps:                   []string{"team_gas", "team_bleed"},
 		MetricsPort:                9101,
 	}
 }

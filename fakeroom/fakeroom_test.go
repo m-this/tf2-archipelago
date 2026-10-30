@@ -139,7 +139,7 @@ func TestGiftsAreFillerRatherThanProgression(t *testing.T) {
 // nothing is handed out twice.
 func TestTheUnlockOrderDropsWhatTheRunAlreadyHolds(t *testing.T) {
 	start := startingInventory("mvm_decoy", "")
-	order := unlockOrder(start)
+	order := unlockOrder(start, nil)
 
 	slots := 0
 	for _, id := range order {
@@ -173,7 +173,7 @@ func TestTheUnlockOrderDropsWhatTheRunAlreadyHolds(t *testing.T) {
 }
 
 func TestTestRewardsUseOnlySeedEligibleWeaponBuffs(t *testing.T) {
-	order := unlockOrder(startingInventory("mvm_decoy", ""))
+	order := unlockOrder(startingInventory("mvm_decoy", ""), nil)
 	buffs := 0
 	for _, id := range order {
 		item, known := gamedata.ItemByID(id)
@@ -586,7 +586,7 @@ func TestTheRoomIgnoresOrdinaryChat(t *testing.T) {
 // behind every class and every weapon slot, so the first one lands on the tenth
 // check and a mission worth nine cannot reach it.
 func TestTakeNextTicketMovesItToTheFront(t *testing.T) {
-	items := unlockOrder(startingInventory("mvm_decoy", ""))
+	items := unlockOrder(startingInventory("mvm_decoy", ""), nil)
 
 	firstTicket := -1
 	for index, id := range items {

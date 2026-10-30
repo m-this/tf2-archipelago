@@ -208,6 +208,7 @@ checks qui restent après les classes, les emplacements et les tickets.
 | Buff share | `weapon_buff_percentage` | `MVM_WEAPON_BUFF_PERCENTAGE` | `75` | Avec les crédits activés, la part des checks libres qui paient un bonus. |
 | Buff stack chance | `weapon_buff_stack_chance` | `MVM_WEAPON_BUFF_STACK_CHANCE` | `25` | La chance qu'un bonus ajoute un niveau à un bonus déjà dans la seed. |
 | Traps (%) | `trap_percentage` | `MVM_TRAP_PERCENTAGE` | `1` | La part des checks libres qui contiennent un piège. |
+| Trap: ... | `traps` | `MVM_TRAPS` | `team_jarate` | Les pièges que la seed peut tirer. Aucun veut dire Team Jarate seul. |
 | Grappling Hook | `server_settings` | `MVM_SERVER_SETTINGS` | désactivé | Mettre le grappin dans la réserve. |
 
 La rareté et la forme sont tirées séparément : Commune / Élite / Légendaire
@@ -243,9 +244,22 @@ répètent jamais.
 ### Pièges
 
 Un piège est un objet avec un mauvais effet. Un autre joueur le trouve, et
-votre équipe le paie. Le seul piège pour l'instant est `Trap: Team Jarate` :
-dix secondes de Jarate pour tout le monde sur RED, pendant la vague suivante.
-Un piège ne reprend jamais un déblocage.
+votre équipe le paie pendant dix secondes, à la vague suivante. Tout le monde
+sur RED le subit, bots compris. Un piège ne reprend jamais un déblocage.
+
+| Piège | Effet |
+| --- | --- |
+| `Trap: Team Jarate` | Jarate : +35 % de dégâts subis et pas de critiques |
+| `Trap: Team Mad Milk` | Mad Milk : les robots se soignent en vous frappant |
+| `Trap: Team On Fire` | Tout le monde brûle, sauf les Pyros |
+| `Trap: Team Slow Down` | Tout le monde avance à moitié de sa vitesse |
+| `Trap: Team Bleed` | Tout le monde saigne |
+| `Trap: Team Marked For Death` | Chaque coup reçu est un mini-critique |
+| `Trap: Team Gas` | Gaz du Gas Passer : le prochain feu vous enflamme |
+
+Seul Team Jarate est activé par défaut, parce que c'était le seul piège avant
+les autres. Lee Harrold a proposé les six autres. Activez-les un par un dans
+le launcher.
 
 ## Équilibrage
 

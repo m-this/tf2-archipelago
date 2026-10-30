@@ -388,6 +388,7 @@ func StartTestRoom(
 		StartClass:       s.MvmStartClass,
 		DeathLink:        s.MvmDeathLink,
 		MissionModifiers: modifiers,
+		Traps:            settings.TrapKeys(s),
 		Log:              emit,
 	})
 	if err != nil {

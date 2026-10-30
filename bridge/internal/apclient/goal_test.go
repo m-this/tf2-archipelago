@@ -31,3 +31,17 @@ func TestPreviousFormatStillRuns(t *testing.T) {
 		t.Fatalf("existing room was rejected: %v", err)
 	}
 }
+
+// Seeds made before the six traps after Team Jarate are format 7. Written as a
+// number on purpose: FormatVersion - 1 moves with the next bump, and these runs
+// do not.
+func TestASeedFromBeforeTheNewTrapsStillRuns(t *testing.T) {
+	seed := SlotData{
+		FormatVersion: 7,
+		Missions:      []string{"mvm_decoy"},
+		Goal:          "missionsanity", MissionsanityTarget: 1,
+	}
+	if err := seed.validate(); err != nil {
+		t.Fatalf("a format 7 room was rejected: %v", err)
+	}
+}

@@ -436,8 +436,9 @@ class TrapPercentage(Range):
     """How much of the run's spare space is traps, in percent.
 
     A trap is an item with a negative effect: another player opens a chest and
-    your team gets Jarate. They come out of the same space as the weapon buffs
-    and the cash, so raising this lowers those rather than adding checks.
+    your team pays for it, with Jarate or fire for instance. Traps decides which
+    ones. They come out of the same space as the weapon buffs and the cash, so
+    raising this lowers those rather than adding checks.
 
     One percent by default, so a run meets a trap now and then; zero leaves
     them out. A trap can cost the team a wave and never costs the run an
@@ -448,6 +449,26 @@ class TrapPercentage(Range):
     range_start = 0
     range_end = 100
     default = 1
+
+
+class Traps(OptionSet):
+    """Which traps the run can hold, by key. Trap Percentage decides how many.
+
+    team_jarate: Jarate on the whole team, +35% damage taken.
+    team_mad_milk: Mad Milk on the whole team, robots heal by hitting you.
+    team_on_fire: sets the whole team on fire. Pyros do not burn.
+    team_slow_down: slows the whole team down.
+    team_bleed: the whole team bleeds.
+    team_marked_for_death: every hit on the team is a mini-crit.
+    team_gas: Gas Passer gas on the whole team, which the next fire ignites.
+
+    Each lasts ten seconds. Empty means team_jarate alone, which is how every
+    run made before the others existed plays.
+    """
+
+    display_name = "Traps"
+    valid_keys = frozenset(data.TRAP_NAMES_BY_KEY)
+    default = frozenset({data.TRAP_KEY_DEFAULT})
 
 
 @dataclass
@@ -476,6 +497,7 @@ class TF2MvMOptions(PerGameCommonOptions):
     weapon_buff_percentage: WeaponBuffPercentage
     weapon_buff_stack_chance: WeaponBuffStackChance
     trap_percentage: TrapPercentage
+    traps: Traps
     server_settings: ServerSettings
     medal_on_clear: MedalOnClear
     victory_caches: VictoryCaches
@@ -528,6 +550,7 @@ option_groups = [
             WeaponBuffPercentage,
             WeaponBuffStackChance,
             TrapPercentage,
+            Traps,
         ],
     ),
 ]

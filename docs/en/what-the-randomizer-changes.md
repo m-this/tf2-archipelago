@@ -87,6 +87,7 @@ victory caches, milestones, a check per giant and per tank.
 | Weapon buffs | A permanent bonus on one weapon family: more damage, more pellets, faster reload, and so on. The upgrade station shows a list of the buffs on your loadout. |
 | `Cash Bundle` | 200 credits for each player on RED, paid at the next upgrade station visit |
 | `Trap: Team Jarate` | Ten seconds of Jarate for the whole team, during the next wave |
+| `Trap: Team Mad Milk`, `On Fire`, `Slow Down`, `Bleed`, `Marked For Death`, `Gas` | The same, with that effect instead. Only in a run that asks for them. |
 | `Grappling Hook` | Turns Mannpower's hook on for everybody for the rest of the run. Off by default. |
 
 Buffs, cash and traps fill the checks left over after the classes, slots and
