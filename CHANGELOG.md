@@ -20,6 +20,9 @@ in the release notes, so this file is the only place to write it.
 
 ### Fixed
 
+- **Servers work on the TF2 update of 29 October 2026.** Windows servers
+  load SigMod again, so the community missions that need it start at their
+  first wave instead of staying on wave 0.
 - **Attribute lookups on the server read the right memory.** The plugin's
   TF2Attributes lookup handed over its result in the form SourceMod 1.13
   uses, to a TF2Attributes that did not read it that way. TF2Attributes is now
