@@ -17,7 +17,7 @@ COPY launcher launcher
 RUN CGO_ENABLED=0 go build -trimpath -o /out/playeryaml ./launcher/cmd/playeryaml
 
 
-FROM python:3.13.17-slim AS build
+FROM python:3.13.18-slim AS build
 
 ARG ARCHIPELAGO_VERSION
 
@@ -58,7 +58,7 @@ RUN rm -f /ap/custom_worlds/tf2_mvm.apworld
 CMD ["python", "-m", "unittest", "discover", "-s", "worlds/tf2_mvm/test", "-t", "."]
 
 
-FROM python:3.13.17-slim
+FROM python:3.13.18-slim
 
 # ModuleUpdate.py blocks on input() over every world's optional dependencies.
 ARG ARCHIPELAGO_VERSION

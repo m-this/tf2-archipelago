@@ -280,8 +280,8 @@ func (s *Supervisor) await(ctx context.Context, run session) {
 	first of the two meant Stop returned while the game server still held the
 	game port and the rcon port, and the Start after it bound neither. */
 	select {
-	case <-run.bridgeErr:
-	case <-run.srcdsErr:
+	case <-run.bridgeErr: //nolint:errcheck // the first exit is the reason; this one only says it stopped too
+	case <-run.srcdsErr: //nolint:errcheck // as above
 	case <-time.After(exitGrace):
 		s.emit("the game server has not exited yet, carrying on without it")
 	}

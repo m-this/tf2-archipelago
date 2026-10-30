@@ -47,8 +47,11 @@ func TestDockerTestModeServesEverySigModMission(t *testing.T) {
 	t.Cleanup(func() {
 		cancel()
 		_ = room.Close(context.Background())
-		if stopped != nil {
-			<-stopped
+		if stopped == nil {
+			return
+		}
+		if err := <-stopped; err != nil {
+			t.Errorf("Run after cancel: %v", err)
 		}
 	})
 

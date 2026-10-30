@@ -37,7 +37,9 @@ func runDeathLinkClient(t *testing.T, room *fakeRoom) (*Client, *deathlink.Feed)
 	go func() { stopped <- client.Run(ctx) }()
 	t.Cleanup(func() {
 		cancel()
-		<-stopped
+		if err := <-stopped; err != nil {
+			t.Errorf("Run after cancel: %v", err)
+		}
 	})
 	return client, feed
 }
