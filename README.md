@@ -5,7 +5,8 @@
 [![Docker stability](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fm-this%2Ftf2-archipelago%2Fstability-badges%2Fdocker.json)](https://github.com/m-this/tf2-archipelago/releases/tag/stability)
 
 Daily checks use the latest TF2 server. Badges show **passed / planned**;
-red means a check failed. [Report and test setup](docs/stability.md).
+red means a check failed. Understood failures listed in
+`deploy/stability-known.json` are set apart. [Report and test setup](docs/stability.md).
 Check the report date: results expire after 36 hours.
 
 An [Archipelago](https://archipelago.gg) randomizer for Team Fortress 2, in
