@@ -17,6 +17,12 @@ from waveprobe_partition import assignment
 from stability_errors import install_error
 
 ENVIRONMENTS = {"ubuntu24": "Ubuntu 24.04", "windows": "Windows", "docker": "Docker"}
+KNOWN_PATH = Path(__file__).with_name("stability-known.json")
+KNOWN_FIELDS = {"mission", "wave", "mode", "outcome", "bead", "expires", "env"}
+KNOWN_OUTCOMES = ("wave failed", "wave 0", "no enemies spawned", "wave timed out", "probe error",
+                  "changelevel failure", "load blocked", "inconclusive")
+KNOWN_MODES = ("normal", "surge")
+BEAD = re.compile(r"apw-[0-9a-z]+")
 
 
 def read_json(path):
@@ -105,12 +111,91 @@ def combine_shards(source, plan_path, shards, commit, partition_path=None):
                                stdout=stream, check=True)
 
 
-def evaluate(meta, summary, commit, latest=None):
+def load_known(path):
+    """Read the known-failure list; any malformed entry stops the report."""
+    entries = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(entries, list):
+        raise ValueError(f"{path.name}: expected a list of entries")
+    seen = set()
+    for index, entry in enumerate(entries):
+        where = f"{path.name} entry {index}"
+        if not isinstance(entry, dict) or not {"mission", "wave", "mode", "outcome", "bead", "expires"} <= entry.keys() <= KNOWN_FIELDS:
+            raise ValueError(f"{where}: needs mission, wave, mode, outcome, bead, expires and optionally env")
+        if not isinstance(entry["mission"], str) or not entry["mission"]:
+            raise ValueError(f"{where}: mission must be a non-empty string")
+        if type(entry["wave"]) is not int or entry["wave"] < 1:
+            raise ValueError(f"{where}: wave must be a positive integer")
+        if entry["mode"] not in KNOWN_MODES:
+            raise ValueError(f"{where}: mode must be one of {', '.join(KNOWN_MODES)}")
+        if entry["outcome"] not in KNOWN_OUTCOMES:
+            raise ValueError(f"{where}: outcome must be one of {', '.join(KNOWN_OUTCOMES)}")
+        if not isinstance(entry["bead"], str) or not BEAD.fullmatch(entry["bead"]):
+            raise ValueError(f"{where}: bead must look like apw-xxxx")
+        if "env" in entry and entry["env"] not in ENVIRONMENTS:
+            raise ValueError(f"{where}: env must be one of {', '.join(ENVIRONMENTS)}")
+        if not isinstance(entry["expires"], str):
+            raise ValueError(f"{where}: expires must be an ISO date")
+        try:
+            dt.date.fromisoformat(entry["expires"])
+        except ValueError:
+            raise ValueError(f"{where}: expires must be an ISO date") from None
+        identity = (entry["mission"], entry["wave"], entry["mode"], entry.get("env"))
+        if identity in seen:
+            raise ValueError(f"{where}: duplicate of an earlier entry")
+        seen.add(identity)
+    return entries
+
+
+def apply_known(issues, entries, today, complete):
+    """Mark failures an unexpired entry matches exactly; crashes never match.
+
+    `complete` lists the environments whose whole plan ran, the only ones where
+    a missing failure proves the entry is obsolete.
+    Returns the issues, the tolerated count per environment label, and notes
+    on the entries that need a human."""
+    labels = {label: key for key, label in ENVIRONMENTS.items()}
+    failing = {}
+    for issue in issues:
+        if issue["stage"] == "final" and issue.get("outcome"):
+            failing[(labels[issue["environment"]], issue["mission"], issue["wave"], issue["mode"])] = issue["outcome"]
+    matched = set()
+    marked, tolerated = [], {label: 0 for label in ENVIRONMENTS.values()}
+    for issue in issues:
+        if issue["stage"] == "final" and issue.get("outcome"):
+            key = labels[issue["environment"]]
+            for index, entry in enumerate(entries):
+                if (entry["mission"], entry["wave"], entry["mode"], entry["outcome"]) == (issue["mission"], issue["wave"], issue["mode"], issue["outcome"]) \
+                        and entry.get("env", key) == key and dt.date.fromisoformat(entry["expires"]) >= today:
+                    matched.add(index)
+                    tolerated[issue["environment"]] += 1
+                    issue = {**issue, "stage": f"known ({entry['bead']})"}
+                    break
+        marked.append(issue)
+    notes = []
+    for index, entry in enumerate(entries):
+        name = f"{entry['mission']} wave {entry['wave']} {entry['mode']} ({entry['bead']})"
+        applies = [entry["env"]] if "env" in entry else list(ENVIRONMENTS)
+        if dt.date.fromisoformat(entry["expires"]) < today:
+            notes.append(f"expired on {entry['expires']}, failures stay red: {name}")
+        elif index in matched:
+            continue
+        elif any((key, entry["mission"], entry["wave"], entry["mode"]) in failing for key in applies):
+            notes.append(f"verdict changed, failure stays red: {name}")
+        elif all(key in complete for key in applies):
+            notes.append(f"no longer fails, remove it: {name}")
+    return marked, tolerated, notes
+
+
+def evaluate(meta, summary, commit, latest=None, tolerated=0):
     eligible = summary.get("eligible_cases", 0)
     passed = summary.get("passed_cases", 0)
     tested = summary.get("tested_cases", 0)
     counts_valid = (all(type(n) is int for n in (passed, tested, eligible))
                     and eligible > 0 and 0 <= passed <= tested <= eligible)
+    if counts_valid:
+        assert 0 <= tolerated <= tested - passed, "more known failures than failures"
+        eligible -= tolerated
+        tested -= tolerated
     valid = (meta.get("commit") == commit and meta.get("startup") is True
              and meta.get("fresh") is True and meta.get("robot_limiter") is True
              and counts_valid
@@ -233,7 +318,8 @@ def collect_issues(root, environment, meta):
             part = next((p for p in parts if p.get("shard") == shard), {})
             error = part_errors.get(shard, part.get("error", "no case result returned"))
         return dict(environment=environment, map=plan[key]["map"], mission=key[0], wave=key[2],
-                    mode=key[1], shard=shard, stage=stage, error=f"{result}: {error}" if error != result else result)
+                    mode=key[1], shard=shard, stage=stage, outcome=result,
+                    error=f"{result}: {error}" if error != result else result)
     for key in sorted(plan, key=lambda k: (plan[k]["map"], k[0], k[2], k[1])):
         result = outcome(key)
         if result not in ("passed", "reverse objective"):
@@ -270,7 +356,7 @@ def issue_table(issues, title):
     return lines + ["", "</details>", ""]
 
 
-def main(source, output, commit, run_url, check_live=False, scope="full", *, measured_utc=None, latest=None, run_attempt=1):
+def main(source, output, commit, run_url, check_live=False, scope="full", *, measured_utc=None, latest=None, run_attempt=1, known_path=KNOWN_PATH):
     if run_attempt < 1:
         raise ValueError("run attempt must be positive")
     output.mkdir(parents=True, exist_ok=True)
@@ -284,21 +370,26 @@ def main(source, output, commit, run_url, check_live=False, scope="full", *, mea
             latest = runner.live_version()
         except (OSError, ValueError, KeyError, TypeError):
             latest = "unverified"
-    results = {key: evaluate(read_json(source / key / "environment.json"),
-                             read_json(source / key / "SUMMARY.json"), commit, latest)
-               for key in ENVIRONMENTS}
+    entries = load_known(known_path)
+    metas = {key: read_json(source / key / "environment.json") for key in ENVIRONMENTS}
+    all_issues = [issue for key, label in ENVIRONMENTS.items() for issue in collect_issues(source / key, label, metas[key])]
+    summaries = {key: read_json(source / key / "SUMMARY.json") for key in ENVIRONMENTS}
+    complete = {key for key in ENVIRONMENTS if metas[key].get("completed") is True
+                and summaries[key].get("tested_cases") == summaries[key].get("eligible_cases")}
+    all_issues, tolerated, known_notes = apply_known(all_issues, entries, now.date(), complete if scope == "full" else set())
+    results = {key: evaluate(metas[key], summaries[key], commit, latest, tolerated[label])
+               for key, label in ENVIRONMENTS.items()}
     dashboard = {"scope": scope, "measured_utc": now.isoformat(), "commit": commit, "run_url": run_url,
                  "run_attempt": run_attempt, "stale_after_hours": 36, "latest_at_report": latest, "environments": results}
     lines = ["# TF2-AP stability" if scope == "full" else "# TF2-AP smoke check", "",
              f"Measured **{now:%Y-%m-%d %H:%M UTC}** · [Actions run]({run_url}) · commit `{commit[:12]}`", "",
-             "Percentage = passed / planned; missing cases count against it. Red means a check failed. Results expire after 36 hours.", "",
+             "Percentage = passed / planned; missing cases count against it. Known failures listed in `deploy/stability-known.json` leave the denominator and show apart. Red means a check failed. Results expire after 36 hours.", "",
              "| Environment | Startup | TF2 build | Passed / planned | Tested | Stability | Result |",
              "| --- | --- | --- | ---: | ---: | ---: | --- |"]
     if scope != "full":
         lines.insert(2, "**Smoke subset; does not update full-catalog badges.**\n")
     if all(result["tested"] == 0 for result in results.values()):
         lines.insert(2, "**No waves ran: setup did not complete.**\n")
-    all_issues = []
     for key, label in ENVIRONMENTS.items():
         result = results[key]
         score = f"{result['score']:.2f}%" if result["score"] is not None else "n/a"
@@ -311,7 +402,9 @@ def main(source, output, commit, run_url, check_live=False, scope="full", *, mea
         badge = {"schemaVersion": 1, "label": label, "message": score,
                  "color": "brightgreen" if result["status"] == "passed" else "red", "cacheSeconds": 300}
         (output / f"{key}.json").write_text(json.dumps(badge) + "\n")
-        all_issues.extend(collect_issues(source / key, label, meta))
+    lines += ["", "Known failures left out of the percentages: " + " · ".join(f"{label} {tolerated[label]}" for label in ENVIRONMENTS.values()) + "."]
+    if known_notes:
+        lines += ["", f"**{len(known_notes)} known-failure entries need attention**; see the full report."]
     # A release per run AND attempt keeps old summaries and downloaded reports
     # tied to their evidence after the rolling dashboard advances or a run retries.
     run = re.fullmatch(r"(https?://[^/]+/[^/]+/[^/]+)/actions/runs/(\d+)(?:/attempts/\d+)?/?", run_url)
@@ -332,15 +425,19 @@ def main(source, output, commit, run_url, check_live=False, scope="full", *, mea
         lines += ["Crash context is the last observed case, not proof of its cause.", ""]
     for key, label in ENVIRONMENTS.items():
         issues = [issue for issue in all_issues if issue["environment"] == label]
-        final = [issue for issue in issues if issue["stage"] != "recovered retry"]
+        known = [issue for issue in issues if issue["stage"].startswith("known")]
+        final = [issue for issue in issues if issue["stage"] != "recovered retry" and issue not in known]
         recovered = [issue for issue in issues if issue["stage"] == "recovered retry"]
         lines += [f"## {label}", ""]
         if not issues:
             lines += ["No issues recorded.", ""]
             continue
-        lines += issue_table(final, f"{len(final)} issues")
+        lines += issue_table(final, f"{len(final)} issues") if final else ["No unlisted issues.", ""]
+        lines += issue_table(known, f"{len(known)} known failures, left out of the percentage")
         if recovered:
             lines += issue_table(recovered, f"{len(recovered)} earlier failures recovered on retry")
+    if known_notes:
+        lines += ["## Known-failure list", "", *[f"- {safe(note)}" for note in known_notes], ""]
     report = "\n".join(lines)
     (output / "REPORT.md").write_text(report, encoding="utf-8")
     with zipfile.ZipFile(output / "stability-evidence.zip", "w", zipfile.ZIP_DEFLATED) as archive:
@@ -365,10 +462,11 @@ if __name__ == "__main__":
     parser.add_argument("--shards", type=int, default=1)
     parser.add_argument("--plan", type=Path, help="canonical full plan emitted by the build job")
     parser.add_argument("--partition", type=Path, help="balanced mission manifest from the same build")
+    parser.add_argument("--known", type=Path, default=KNOWN_PATH, help="known-failure list")
     parser.add_argument("--scope", choices=["full", "smoke"], default="full")
     args = parser.parse_args()
     if args.plan is not None:
         combine_shards(args.source, args.plan, args.shards, args.commit, args.partition)
     elif args.shards > 1:
         parser.error("--plan is required with --shards")
-    raise SystemExit(0 if main(args.source, args.output, args.commit, args.run_url, args.check_live, args.scope, run_attempt=args.run_attempt) else 1)
+    raise SystemExit(0 if main(args.source, args.output, args.commit, args.run_url, args.check_live, args.scope, run_attempt=args.run_attempt, known_path=args.known) else 1)

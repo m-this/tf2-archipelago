@@ -66,6 +66,31 @@ Crashes include the last observed map/mission/wave when captured; that context
 does not establish which code caused the crash. Raw logs and timelines remain
 in the evidence archive. Release notes stay small even when many cases fail.
 
+## Known failures
+
+`deploy/stability-known.json` lists failures that are understood, tracked in a
+bead, and not worth a red badge every day. Each entry names the mission, wave,
+mode (`normal` or `surge`), the exact outcome (`wave failed`, `wave timed out`,
+`probe error` and so on), a bead (`apw-xxxx`), an `expires` date, and
+optionally one `env` (`ubuntu24`, `docker`, `windows`; absent means all).
+
+`stability-report.py` marks a failure as known only when mission, wave, mode,
+environment and outcome all match an unexpired entry. Known cases leave the
+denominator and appear apart in the report, as "known (apw-xxxx)". Everything
+else stays red:
+
+- a listed case that fails with a different outcome;
+- an unlisted case;
+- a case whose entry has expired (the report names it);
+- any engine crash. Crashes are never listed, and `crash_free=false` keeps the
+  environment red whatever else is known.
+
+An entry whose case now passes is reported as "remove it". That note does not
+fail the run. The file is validated on every report; a malformed entry, a bad
+bead, a bad date or a duplicate stops the report. Set `expires` about 30 days
+out and renew it only with the bead's current status. Do not list failures that
+do not reproduce.
+
 The daily and local sweeps enable `-reverse-objectives`: all 122 catalog
 reverse wave/mode cases count in the score, with zero reverse exclusions.
 The probe observes native bomb capture, control-point capture, authored boss
