@@ -227,9 +227,12 @@ jobs:
     if: github.server_url == 'https://github.com' && needs.watch.outputs.stale == 'yes'
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Reads only: every write below (push, pull request, dispatch) is made with
+    # SIGSEGV_DISPATCH_TOKEN, because a push or a pull request made with the
+    # job's own token starts no CI run and cannot start sigsegv-mvm-win's beds.
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
+      pull-requests: read
       issues: read
     env:
       GH_TOKEN: ${{ github.token }}
@@ -239,6 +242,8 @@ jobs:
       SIGMOD_REPO: m-this/sigsegv-mvm-win
     steps:
       - uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.SIGSEGV_DISPATCH_TOKEN || github.token }}
 
       - name: stop when the pull request already exists
         id: existing
@@ -277,6 +282,21 @@ jobs:
           done
           echo "no SigMod for Windows release for $CURRENT yet; the next run looks again"
           echo "found=no" >> "$GITHUB_OUTPUT"
+
+      # No fallback to the job's token: it would push a branch and open a pull
+      # request that no CI run ever checks.
+      - name: require the token that starts CI
+        if: steps.release.outputs.found == 'yes' && !inputs.dry_run
+        env:
+          SIGMOD_TOKEN: ${{ secrets.SIGSEGV_DISPATCH_TOKEN }}
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          if [ -z "$SIGMOD_TOKEN" ]; then
+            msg="SigMod for Windows $TAG exists for TF2 $CURRENT, but the secret SIGSEGV_DISPATCH_TOKEN is not set, so no pins pull request was opened."
+            echo "::error::$msg"
+            echo "$msg" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
 
       - name: write the pins
         id: pins
@@ -344,6 +364,7 @@ jobs:
         id: pr
         if: steps.release.outputs.found == 'yes' && !inputs.dry_run
         env:
+          GH_TOKEN: ${{ secrets.SIGSEGV_DISPATCH_TOKEN }}
           BRANCH: ${{ steps.existing.outputs.branch }}
         run: |
           set -euo pipefail
@@ -358,37 +379,31 @@ jobs:
           echo "$url"
           echo "url=$url" >> "$GITHUB_OUTPUT"
 
-      # Needs a token that can start workflows in m-this/sigsegv-mvm-win, which
-      # the job's own cannot. Without the secret this says so in the pull
-      # request instead of staying quiet.
+      # The token starts workflows in m-this/sigsegv-mvm-win, which the job's own cannot.
       - name: launch the beds
         if: steps.pr.outputs.url != ''
         env:
-          SIGMOD_TOKEN: ${{ secrets.SIGSEGV_DISPATCH_TOKEN }}
+          GH_TOKEN: ${{ secrets.SIGSEGV_DISPATCH_TOKEN }}
           BRANCH: ${{ steps.existing.outputs.branch }}
           PR_URL: ${{ steps.pr.outputs.url }}
         run: |
           set -euo pipefail
-          if [ -z "$SIGMOD_TOKEN" ]; then
-            beds="The beds were not launched: no SIGSEGV_DISPATCH_TOKEN secret to start workflows in $SIGMOD_REPO. Run Linux bed and Windows package there with archipelago_ref=$BRANCH and bots on."
-          else
-            beds="Beds on this branch, with defender bots:"
-            for workflow in linuxbed.yml windows.yml; do
-              started=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-              GH_TOKEN=$SIGMOD_TOKEN gh workflow run "$workflow" -R "$SIGMOD_REPO" --ref main \
-                -f archipelago_ref="$BRANCH" -f bots=true
-              run=
-              for _ in 1 2 3 4 5 6; do
-                sleep 10
-                run=$(GH_TOKEN=$SIGMOD_TOKEN gh run list -R "$SIGMOD_REPO" -w "$workflow" --event workflow_dispatch \
-                  --json databaseId,createdAt --jq "map(select(.createdAt >= \"$started\")) | .[0].databaseId // empty")
-                [ -z "$run" ] || break
-              done
-              [ -n "$run" ] || { echo "no $workflow run appeared within a minute" >&2; exit 1; }
-              beds="$beds
-          - $workflow: https://github.com/$SIGMOD_REPO/actions/runs/$run"
+          beds="Beds on this branch, with defender bots:"
+          for workflow in linuxbed.yml windows.yml; do
+            started=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            gh workflow run "$workflow" -R "$SIGMOD_REPO" --ref main \
+              -f archipelago_ref="$BRANCH" -f bots=true
+            run=
+            for _ in 1 2 3 4 5 6; do
+              sleep 10
+              run=$(gh run list -R "$SIGMOD_REPO" -w "$workflow" --event workflow_dispatch \
+                --json databaseId,createdAt --jq "map(select(.createdAt >= \"$started\")) | .[0].databaseId // empty")
+              [ -z "$run" ] || break
             done
-          fi
+            [ -n "$run" ] || { echo "no $workflow run appeared within a minute" >&2; exit 1; }
+            beds="$beds
+          - $workflow: https://github.com/$SIGMOD_REPO/actions/runs/$run"
+          done
           python3 -I - "$beds" <<'PY'
           import sys
           body = open("/tmp/pr-body.md").read().replace("@@BEDS@@", sys.argv[1] + "\n")
