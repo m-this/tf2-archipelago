@@ -4,6 +4,15 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
+## Unreleased
+
+### Changed
+
+- **Windows servers load SigMod after a TF2 update that leaves the game's
+  binaries alone.** SigMod now checks the six binaries it patches instead of
+  the TF2 build number, so a content-only update no longer stops the
+  community missions that need it from starting.
+
 ## v1.18.6
 
 ### Fixed
