@@ -58,10 +58,11 @@ func crossCheck(running, pinnedFor string, versions map[string]string, got scan)
 	if running != "" && pinnedFor != "" && running != pinnedFor {
 		found = append(found, fmt.Sprintf(
 			"TF2 is on build %s, and the versions above were checked against %s.\n"+
-				"      SigMod knows one TF2 ServerVersion. On any other, IAddr_FixedAddr\n"+
-				"      refuses every fixed address, so SigMod resolves nothing and the server\n"+
-				"      faults: at extension load, when anybody buys an upgrade, or when a\n"+
-				"      player inspects a weapon. A launcher release with a SigMod build for\n"+
+				"      SigMod's addresses belong to one build of the TF2 binaries. If the\n"+
+				"      update moved them, SigMod either refuses to load or, in a build\n"+
+				"      that does not check, resolves nothing and the server faults: at\n"+
+				"      extension load, when anybody buys an upgrade, or when a player\n"+
+				"      inspects a weapon. A launcher release with a SigMod build for\n"+
 				"      %s is what fixes it.", running, pinnedFor, running))
 	}
 
