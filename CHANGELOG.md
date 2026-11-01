@@ -4,6 +4,14 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
+## Unreleased
+
+### Fixed
+
+- **Servers work on the TF2 update of 30 October 2026.** Windows servers
+  load SigMod again, so the community missions that need it start at their
+  first wave instead of staying on wave 0.
+
 ## v1.18.5
 
 ### Added
