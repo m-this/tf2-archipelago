@@ -16,6 +16,7 @@ func Availability(s State, env Env) availability.Server {
 		PacksPresent:      env.CommunityAvailable,
 		ModsSelected:      settings.ServerModKeys(s.Settings),
 		ModsVerified:      env.ServerModsReady,
+		ModsBlocked:       env.ServerModsBlocked,
 		ManagedExternally: env.ManagedExternally,
 	}
 }

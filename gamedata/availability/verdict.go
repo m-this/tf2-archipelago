@@ -21,6 +21,8 @@ const (
 	// ModUnverified: the mod is turned on, and its installation was not found
 	// or did not check out.
 	ModUnverified
+	// ModBlocked: the server refused to load the mod on its TF2 build.
+	ModBlocked
 	// PackOff: the pack is on disk but not ticked, so Start never installs it.
 	PackOff
 )
@@ -39,6 +41,8 @@ func (r Reason) String() string {
 		return "mod off"
 	case ModUnverified:
 		return "mod unverified"
+	case ModBlocked:
+		return "mod did not load"
 	case PackOff:
 		return "pack off"
 	}
@@ -88,6 +92,8 @@ func (v Verdict) Why() string {
 			return mod.Name + " files are missing or incomplete in the server volume; recreate the container"
 		}
 		return mod.Name + " is selected but its installation is missing or incomplete; press Download / set up selected server mods"
+	case ModBlocked:
+		return mod.Name + " did not load on this TF2 build; update the launcher"
 	case PackOff:
 		return "tick " + pack
 	}

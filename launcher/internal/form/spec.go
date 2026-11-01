@@ -117,7 +117,10 @@ type Env struct {
 	// stamp were found. Platform is GOOS; tests may leave it blank for the
 	// normal platform-neutral form.
 	ServerModsReady []string
-	Platform        string
+	// ServerModsBlocked names mods the server refused to load on its TF2
+	// build, which no button here fixes.
+	ServerModsBlocked []string
+	Platform          string
 	// ManagedExternally means Docker Compose owns installation and server
 	// restart; the browser only edits the selected mod and loading mode.
 	ManagedExternally bool

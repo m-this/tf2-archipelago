@@ -32,6 +32,7 @@ import (
 	apruntime "github.com/m-this/tf2-archipelago/launcher/internal/runtime"
 	"github.com/m-this/tf2-archipelago/launcher/internal/session"
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
+	"github.com/m-this/tf2-archipelago/launcher/internal/sigmodload"
 	"github.com/m-this/tf2-archipelago/launcher/internal/tailscalefastdl"
 )
 
@@ -56,23 +57,26 @@ type Event struct {
 type App struct {
 	mu sync.Mutex
 
-	settings            settings.Settings
-	supervisor          *apruntime.Supervisor
-	logs                []apruntime.Line
-	busy                bool
-	activity            string
-	install             context.CancelFunc
-	steamURL            string
-	mission             string
-	snapshot            session.Snapshot
-	fetchErr            error
-	notice              string
-	noticeSeq           uint64
-	draft               *form.State
-	formPage            string
-	community           []string
-	imported            []string
-	serverMods          []string
+	settings   settings.Settings
+	supervisor *apruntime.Supervisor
+	logs       []apruntime.Line
+	busy       bool
+	activity   string
+	install    context.CancelFunc
+	steamURL   string
+	mission    string
+	snapshot   session.Snapshot
+	fetchErr   error
+	notice     string
+	noticeSeq  uint64
+	draft      *form.State
+	formPage   string
+	community  []string
+	imported   []string
+	serverMods []string
+	// modsBlocked are mods the running server refused to load, learned from
+	// its own output and forgotten when the server starts again.
+	modsBlocked         []string
 	smAsked             bool
 	smHeld              bool
 	itemServer          string
@@ -154,11 +158,20 @@ func (a *App) append(line apruntime.Line) {
 			restart = !a.smHeld
 		}
 	}
+	refusal, refused := sigmodload.Parse(line.Text)
+	refused = refused && (line.Source == "srcds" || line.Source == "sourcemod") && !slices.Contains(a.modsBlocked, sigmodload.Key)
+	if refused {
+		a.modsBlocked = append(a.modsBlocked, sigmodload.Key)
+		stateChanged = true
+	}
 	a.publishLocked(Event{Name: "log", Data: line})
 	if stateChanged {
 		a.publishLocked(Event{Name: "state", Data: struct{}{}})
 	}
 	a.mu.Unlock()
+	if refused {
+		a.Notify(refusal.Message())
+	}
 	if restart {
 		a.Say("SourceMod updated its gamedata. Restarting the server to load it.")
 		a.Restart()
@@ -263,6 +276,7 @@ func (a *App) boot(s settings.Settings) {
 	}
 	a.mu.Lock()
 	a.serverMods = installer.ReadyServerMods(s.InstallRoot)
+	a.modsBlocked = nil
 	readyMods := slices.Clone(a.serverMods)
 	a.mu.Unlock()
 	if err := settings.CheckServerModsReady(s, readyMods); err != nil {

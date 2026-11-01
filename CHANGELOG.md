@@ -6,6 +6,13 @@ in the release notes, so this file is the only place to write it.
 
 ## Unreleased
 
+### Added
+
+- **The launcher says when SigMod cannot load.** If the server refuses SigMod
+  after a TF2 update, the launcher names the DLL that changed and says to
+  update the launcher. SigMod missions then show as unavailable and are left
+  out of the next seed, instead of sitting on wave 0 with no explanation.
+
 ### Changed
 
 - **Windows servers load SigMod after a TF2 update that leaves the game's

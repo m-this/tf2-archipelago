@@ -41,6 +41,7 @@ func (a *App) FilePath(ctx context.Context, target launcherv1.FileTarget) (strin
 	if err != nil {
 		return "", err
 	}
+	s = a.seedSettings(s)
 	switch target {
 	case launcherv1.FileTarget_FILE_TARGET_PLAYER_FILE:
 		if err := settings.CheckServerModsReady(s, a.readyServerMods()); err != nil {

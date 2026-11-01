@@ -118,6 +118,24 @@ func TestCheck(t *testing.T) {
 			why:     "turn on SigMod, then save and recreate the containers",
 		},
 		{
+			name: "a SigMod mission when the server refused to load SigMod",
+			server: Server{
+				Platform: "linux", PacksSelected: []string{potato}, PacksPresent: []string{potato},
+				ModsSelected: []string{sigmod}, ModsVerified: []string{sigmod}, ModsBlocked: []string{sigmod},
+			},
+			popFile: pointOfImpact,
+			want:    ModBlocked,
+			why:     "SigMod did not load on this TF2 build; update the launcher",
+		},
+		{
+			name: "a Valve mission when the server refused to load SigMod",
+			server: Server{
+				Platform: "linux", ModsSelected: []string{sigmod}, ModsVerified: []string{sigmod}, ModsBlocked: []string{sigmod},
+			},
+			popFile: decoy,
+			want:    Playable,
+		},
+		{
 			name: "a SigMod mission with SigMod ticked and not verified",
 			server: Server{
 				Platform: "linux", PacksSelected: []string{potato}, PacksPresent: []string{potato},

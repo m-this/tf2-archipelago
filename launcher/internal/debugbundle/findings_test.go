@@ -137,12 +137,30 @@ func TestAServerWithoutThePluginIsNamed(t *testing.T) {
 // SigMod for Windows refuses a TF2 build it was not made for, and a bundle
 // should say so rather than leave the refused missions unexplained.
 func TestASigModForAnotherBuildIsNamed(t *testing.T) {
-	got := readLog(t,
-		`22:23:31  srcds    [SM] Unable to load extension "sigsegv.ext": this SigMod build is for TF2 ServerVersion 11068238, and the server is 11076587`,
-	).report()
-	if !strings.Contains(got, "SigMod did not load") || !strings.Contains(got, "TF2 updated") {
-		t.Fatalf("the refused SigMod was not reported:\n%s", got)
+	tests := []struct {
+		name string
+		line string
+	}{
+		{"table without Keys", `22:23:31  srcds    [SM] Unable to load extension "sigsegv.ext": this SigMod build is for TF2 ServerVersion 11068238, and the server is 11076587`},
+		{"table with Keys", `22:23:31  srcds    [SM] Unable to load extension "sigsegv.ext": server.dll is TimeDateStamp 0x6ad30000 SizeOfImage 0xcb7000, the address table for ServerVersion 11191711 was made from 0x6ad26f14 0xcb6000, and the server is 11200000`},
 	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := readLog(t, test.line).report()
+			if !strings.Contains(got, "SigMod did not load") || !strings.Contains(got, "TF2 updated") {
+				t.Fatalf("the refused SigMod was not reported:\n%s", got)
+			}
+		})
+	}
+
+	t.Run("a SigMod that loaded is not reported", func(t *testing.T) {
+		got := readLog(t,
+			`22:23:31  srcds    SigMod: address table made for ServerVersion 11191711, the server is 11200000; the 6 binaries it reads are the same`,
+		).report()
+		if strings.Contains(got, "SigMod did not load") {
+			t.Fatalf("a loaded SigMod was reported as refused:\n%s", got)
+		}
+	})
 }
 
 /*
@@ -225,7 +243,7 @@ func TestAPinForAnotherBuildIsStated(t *testing.T) {
 	if !strings.Contains(got, "11076587") || !strings.Contains(got, "11068238") {
 		t.Fatalf("neither build is named:\n%s", got)
 	}
-	if !strings.Contains(got, "IAddr_FixedAddr") {
+	if !strings.Contains(got, "refuses to load") {
 		t.Errorf("the summary does not say what the mismatch does:\n%s", got)
 	}
 }
