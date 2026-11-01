@@ -244,6 +244,7 @@ func (a *App) formEnvLocked() form.Env {
 	return form.Env{
 		BotCardItems:       received,
 		CommunityAvailable: slices.Clone(a.community), ServerModsReady: slices.Clone(a.serverMods),
+		ServerModsBlocked:       slices.Clone(a.modsBlocked),
 		CommunityHashMismatches: installer.PendingCommunityArchiveHashMismatches(settings.KnownCommunityArchives(a.draft.Settings.CommunityContentDir)),
 		Platform:                runtime.GOOS, AppDirDefault: appDir, ManagedExternally: a.attached,
 	}
@@ -304,6 +305,7 @@ func (a *App) Dispatch(id string) error {
 }
 
 func (a *App) checkMissionSelection(s settings.Settings) {
+	s = a.seedSettings(s)
 	if modErr := settings.CheckServerModsReady(s, a.readyServerMods()); modErr != nil {
 		a.Notify(modErr.Error())
 		return
@@ -356,6 +358,14 @@ func (a *App) setPool(all bool) {
 	a.notice = map[bool]string{true: "every mission is in the pool", false: "every mission is left out"}[all]
 	a.noticeSeq++
 	a.publishLocked(Event{Name: "state", Data: struct{}{}})
+}
+
+// seedSettings is the draft as a seed should be made from it: without the
+// mods, and the missions, the running server refused to load.
+func (a *App) seedSettings(s settings.Settings) settings.Settings {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	return settings.WithoutServerMods(s, a.modsBlocked)
 }
 
 func (a *App) readyServerMods() []string {

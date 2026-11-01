@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/m-this/tf2-archipelago/launcher/internal/sigmodload"
 )
 
 /* findings is what a reader would otherwise grep for.
@@ -97,14 +99,15 @@ var rules = []rule{
 		"      Machine: nothing locked, no checks sent, the settings above ignored.\n" +
 		"      Look under tf-dedicated/tf/addons for metamod.vdf, metamod/bin and\n" +
 		"      sourcemod/bin. The launcher reinstalls whichever is missing on the next start."},
-	{"SigMod did not load", func(l string) bool { return strings.Contains(l, "this SigMod build is for TF2 ServerVersion") }, "TF2 updated after this SigMod build was made, and the Windows build only\n" +
-		"      runs on the TF2 build it was made for. The server plays without it:\n" +
-		"      missions that need SigMod are refused. A launcher release with a new\n" +
-		"      SigMod build fixes it."},
+	{"SigMod did not load", func(l string) bool { _, refused := sigmodload.Parse(l); return refused }, "TF2 updated after this SigMod build was made. The Windows build loads only\n" +
+		"      on the TF2 binaries its address table was made from, and the line above\n" +
+		"      says which one differs (or, in an older build, which TF2 build it is\n" +
+		"      for). The server plays without it: missions that need SigMod are\n" +
+		"      refused. A launcher release with a new SigMod build fixes it."},
 	/* The other half of the same trouble, and the half that was read by hand.
 
-	   A SigMod build that checks the TF2 ServerVersion refuses to load and says
-	   so, which the rule above catches. A build without that check loads and
+	   A SigMod build that checks the TF2 binaries (or, older, the ServerVersion)
+	   refuses to load and says so, which the rule above catches. A build without that check loads and
 	   then resolves nothing: every address it wants comes back FAIL and the
 	   first one it uses faults. Shysoul's bundle was 96 of these for
 	   CBaseEntity::m_DataMap alone, reported as a line that repeats a lot. */

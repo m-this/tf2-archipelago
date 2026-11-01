@@ -140,9 +140,10 @@ jobs:
             printf 'Worst first.\n\n'
 
             printf '### SigMod for Windows, pinned at `SIGSEGV_MVM_WINDOWS_VERSION=%s`\n\n' "$SIGSEGV_MVM_WINDOWS_VERSION"
-            printf 'A SigMod build knows one TF2 ServerVersion. On any other, `IAddr_FixedAddr`\n'
-            printf 'refuses every fixed address and the server faults: at extension load, when\n'
-            printf 'anybody buys an upgrade (bots included), or when a player inspects a weapon.\n'
+            printf "A SigMod build's addresses belong to one build of the TF2 binaries. If the\n"
+            printf 'update moved them, SigMod refuses to load, or in a build that does not check,\n'
+            printf 'resolves nothing and the server faults: at extension load, when anybody buys\n'
+            printf 'an upgrade (bots included), or when a player inspects a weapon.\n'
             printf 'Regenerate `package-windows.zip` in `m-this/sigsegv-mvm-win` against %s,\n' "$CURRENT"
             printf 'then bump `SIGSEGV_MVM_WINDOWS_VERSION` and `SIGSEGV_MVM_WINDOWS_SHA256`.\n\n'
 

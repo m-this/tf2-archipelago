@@ -45,6 +45,9 @@ type Server struct {
 	// pinned installation was found and checked.
 	ModsSelected []string
 	ModsVerified []string
+	// ModsBlocked are mods the server refused to load on its TF2 build, as it
+	// said so itself. Nothing on this server can fix that.
+	ModsBlocked []string
 
 	// ManagedExternally means Docker Compose owns the install, so the fix for a
 	// missing mod is recreating a container rather than pressing a button.
@@ -83,6 +86,8 @@ func (s Server) reason(mission gamedata.Mission) Reason {
 		switch {
 		case s.Platform != "" && !mod.BuildsOn(s.Platform):
 			return ModNoBuild
+		case slices.Contains(s.ModsBlocked, key):
+			return ModBlocked
 		case !slices.Contains(s.ModsSelected, key):
 			return ModOff
 		case !slices.Contains(s.ModsVerified, key):
