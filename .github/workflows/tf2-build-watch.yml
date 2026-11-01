@@ -249,7 +249,12 @@ jobs:
           prs=$(gh pr list --state all --head "$branch" --json number --jq 'length')
           if [ "$prs" != 0 ] || git ls-remote --exit-code --heads origin "$branch" > /dev/null; then
             echo "$branch already exists; nothing to open"
-            echo "done=yes" >> "$GITHUB_OUTPUT"
+            if [ "$DRY_RUN" = true ]; then
+              echo "dry run: going on anyway, to show what would have been opened"
+              echo "done=no" >> "$GITHUB_OUTPUT"
+            else
+              echo "done=yes" >> "$GITHUB_OUTPUT"
+            fi
           else
             echo "done=no" >> "$GITHUB_OUTPUT"
           fi
