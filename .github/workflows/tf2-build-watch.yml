@@ -55,6 +55,9 @@ jobs:
     permissions:
       contents: read
       issues: write
+    outputs:
+      stale: ${{ steps.check.outputs.stale }}
+      current: ${{ steps.check.outputs.current }}
     steps:
       - uses: actions/checkout@v7
 
@@ -88,6 +91,28 @@ jobs:
           echo "known=$known" >> "$GITHUB_OUTPUT"
           echo "current=$current" >> "$GITHUB_OUTPUT"
 
+      - name: see which depots moved
+        if: steps.check.outputs.stale == 'yes'
+        run: |
+          set -euo pipefail
+          . deploy/env/versions.env
+          deploy/tf2-depot-manifests.sh > /tmp/tf2-depots.txt
+          declare -A names=([232250]="content, both platforms" [232255]="Windows binaries" [232256]="Linux binaries")
+          {
+            while read -r depot manifest; do
+              pin="TF2_DEPOT_${depot}_MANIFEST"
+              if [ -z "${!pin:-}" ]; then
+                state="no pinned manifest to compare with, taken as moved"
+              elif [ "${!pin}" = "$manifest" ]; then
+                state="unchanged"
+              else
+                state="moved from ${!pin}"
+              fi
+              printf -- '- %s (%s): manifest %s, %s\n' "$depot" "${names[$depot]}" "$manifest" "$state"
+            done < /tmp/tf2-depots.txt
+          } > /tmp/tf2-depots.md
+          cat /tmp/tf2-depots.md
+
       # The pins go in the text rather than a link to the file, so somebody
       # reading this on a phone at 23:00 already has the values.
       - name: write the alert
@@ -106,6 +131,11 @@ jobs:
             printf 'is %s, so the pins keyed to the game are a build behind. Each one below fails\n' "$KNOWN"
             printf 'differently and none of them warn first: without this issue the first report is\n'
             printf 'a player saying the server died.\n\n'
+
+            printf '### Which depots moved\n\n'
+            cat /tmp/tf2-depots.md
+            printf '\n232255 and 232256 hold server.dll and the Linux binaries: when one is\n'
+            printf 'unchanged, that platform'\''s SigMod only needs a new build key.\n\n'
 
             printf 'Worst first.\n\n'
 
@@ -138,6 +168,9 @@ jobs:
             printf '### Then close this\n\n'
             printf 'Set `TF2_SERVER_VERSION=%s` in `deploy/env/versions.env` once the pins above\n' "$CURRENT"
             printf 'are right. That is what stops this being filed again.\n\n'
+            printf 'Once m-this/sigsegv-mvm-win has published a Windows release for this build, the\n'
+            printf 'same workflow opens a pull request with those pins and launches the beds, and\n'
+            printf 'this issue is the one it closes.\n\n'
 
             printf -- '---\n\n'
             printf 'Valve'\''s own answer, no credentials: `ISteamApps/UpToDateCheck/v1` for app 440.\n'
@@ -179,3 +212,181 @@ jobs:
             --title "${titled}is live (pins are for $KNOWN)" \
             --assignee "$OWNER" \
             --body-file /tmp/tf2-build-alert.md
+
+  # Step one of the TF2 update, done by the machine: once the Windows SigMod
+  # release for the new build exists, the pull request that moves every pin keyed
+  # to it. Everything in it is read, none of it typed: the version and the
+  # checksum off the release (its .sha256 asset, never recomputed), the manifests
+  # off Steam. Merging and tagging stay a person's.
+  #
+  # Runs every two hours with the watcher until the release is there, and is a
+  # no-op after the branch exists, merged or not, so the pull request is opened
+  # once per build.
+  pins:
+    needs: watch
+    if: github.server_url == 'https://github.com' && needs.watch.outputs.stale == 'yes'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      CURRENT: ${{ needs.watch.outputs.current }}
+      DRY_RUN: ${{ inputs.dry_run }}
+      SIGMOD_REPO: m-this/sigsegv-mvm-win
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: stop when the pull request already exists
+        id: existing
+        run: |
+          set -euo pipefail
+          branch="mfe/chore/tf2-$CURRENT"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          prs=$(gh pr list --state all --head "$branch" --json number --jq 'length')
+          if [ "$prs" != 0 ] || git ls-remote --exit-code --heads origin "$branch" > /dev/null; then
+            echo "$branch already exists; nothing to open"
+            echo "done=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "done=no" >> "$GITHUB_OUTPUT"
+          fi
+
+      # The newest of the last five releases that says it is for this build.
+      # Not yet published is a normal state, not a failure: the next run looks again.
+      - name: find the Windows SigMod release for this build
+        id: release
+        if: steps.existing.outputs.done == 'no'
+        run: |
+          set -euo pipefail
+          for tag in $(gh api "repos/$SIGMOD_REPO/releases?per_page=5" --jq '.[].tag_name'); do
+            build=$(gh release download "$tag" -R "$SIGMOD_REPO" -p package-windows.build.json -O - | jq -r .build)
+            if [ "$build" = "$CURRENT" ]; then
+              sha256=$(gh release download "$tag" -R "$SIGMOD_REPO" -p package-windows.zip.sha256 -O - | cut -d' ' -f1)
+              echo "SigMod for Windows $tag is for $CURRENT, package-windows.zip $sha256"
+              { echo "found=yes"; echo "tag=$tag"; echo "sha256=$sha256"; } >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "no SigMod for Windows release for $CURRENT yet; the next run looks again"
+          echo "found=no" >> "$GITHUB_OUTPUT"
+
+      - name: write the pins
+        id: pins
+        if: steps.release.outputs.found == 'yes'
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
+          SHA256: ${{ steps.release.outputs.sha256 }}
+        run: |
+          set -euo pipefail
+          . deploy/env/versions.env
+          deploy/tf2-depot-manifests.sh > /tmp/tf2-depots.txt
+
+          # The release names the Windows depot manifest it was made from. If
+          # Steam serves another one now, the release is for a build that is no
+          # longer the live one and a pin made from the two would be a lie.
+          release_manifest=$(gh release download "$TAG" -R "$SIGMOD_REPO" -p package-windows.build.json -O - | jq -r .manifest)
+          served=$(awk '$1 == 232255 { print $2 }' /tmp/tf2-depots.txt)
+          [ "$release_manifest" = "$served" ] || { echo "release $TAG was made from depot 232255 manifest $release_manifest, Steam serves $served" >&2; exit 1; }
+
+          declare -A names=([232250]="content" [232255]="Windows binaries" [232256]="Linux binaries")
+          moved=()
+          while read -r depot manifest; do
+            pin="TF2_DEPOT_${depot}_MANIFEST"
+            [ "${!pin:-}" = "$manifest" ] || moved+=("$depot (${names[$depot]})")
+          done < /tmp/tf2-depots.txt
+          list=$(printf '%s, ' "${moved[@]}")
+          echo "moved=${list%, }" >> "$GITHUB_OUTPUT"
+
+          args=()
+          while read -r depot manifest; do args+=(--manifest "$depot=$manifest"); done < /tmp/tf2-depots.txt
+          python3 deploy/tf2_pins.py --versions deploy/env/versions.env --changelog CHANGELOG.md \
+            --build "$CURRENT" --windows-version "$TAG" --windows-sha256 "$SHA256" "${args[@]}"
+          git --no-pager diff
+
+      - name: write the description
+        if: steps.release.outputs.found == 'yes'
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
+          MOVED: ${{ steps.pins.outputs.moved }}
+        run: |
+          set -euo pipefail
+          . deploy/env/versions.env
+          issue=$(gh issue list --state open --limit 100 --json number,title \
+            --jq "map(select(.title | startswith(\"TF2 server build $CURRENT \"))) | .[0].number // empty")
+          # shellcheck disable=SC2016
+          {
+            printf 'TF2 %s moved depot(s) %s. SigMod for Windows %s is the build made for it.\n\n' "$CURRENT" "$MOVED" "$TAG"
+            printf -- '- `SIGSEGV_MVM_WINDOWS_VERSION` and `_SHA256`: release %s, the checksum is the one in its `package-windows.zip.sha256`.\n' "$TAG"
+            printf -- '- `TF2_SERVER_VERSION` and `SOURCEMOD_TF2_SERVER_VERSION` move to %s, with the three depot manifests.\n' "$CURRENT"
+            printf -- '- CHANGELOG: an Unreleased entry.\n\n'
+            printf '@@BEDS@@\n'
+            printf 'To check before merging: the comments above the pins, which still describe the previous build,\n'
+            printf 'and `SIGSEGV_MVM_VERSION` / `SOURCEMOD_VERSION` if a bed shows they need to move. After merge: `docker compose restart srcds`.\n'
+            if [ -n "$issue" ]; then printf '\nCloses #%s\n' "$issue"; fi
+          } > /tmp/pr-body.md
+
+      - name: dry run, nothing is pushed
+        if: steps.release.outputs.found == 'yes' && inputs.dry_run
+        run: |
+          echo "dry run: branch ${{ steps.existing.outputs.branch }} and its pull request were not made. Title and description:"
+          echo "chore(deps): pin everything keyed to TF2 $CURRENT"
+          sed 's/^@@BEDS@@$/(the beds are not launched in a dry run)/' /tmp/pr-body.md
+
+      - name: open the pull request
+        id: pr
+        if: steps.release.outputs.found == 'yes' && !inputs.dry_run
+        env:
+          BRANCH: ${{ steps.existing.outputs.branch }}
+        run: |
+          set -euo pipefail
+          git config user.name github-actions
+          git config user.email github-actions@users.noreply.github.com
+          git checkout -b "$BRANCH"
+          git commit -am "chore(deps): pin everything keyed to TF2 $CURRENT"
+          git push origin "$BRANCH"
+          url=$(gh pr create --base main --head "$BRANCH" \
+            --title "chore(deps): pin everything keyed to TF2 $CURRENT" \
+            --body-file /tmp/pr-body.md)
+          echo "$url"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      # Needs a token that can start workflows in m-this/sigsegv-mvm-win, which
+      # the job's own cannot. Without the secret this says so in the pull
+      # request instead of staying quiet.
+      - name: launch the beds
+        if: steps.pr.outputs.url != ''
+        env:
+          SIGMOD_TOKEN: ${{ secrets.SIGSEGV_DISPATCH_TOKEN }}
+          BRANCH: ${{ steps.existing.outputs.branch }}
+          PR_URL: ${{ steps.pr.outputs.url }}
+        run: |
+          set -euo pipefail
+          if [ -z "$SIGMOD_TOKEN" ]; then
+            beds="The beds were not launched: no SIGSEGV_DISPATCH_TOKEN secret to start workflows in $SIGMOD_REPO. Run Linux bed and Windows package there with archipelago_ref=$BRANCH and bots on."
+          else
+            beds="Beds on this branch, with defender bots:"
+            for workflow in linuxbed.yml windows.yml; do
+              started=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+              GH_TOKEN=$SIGMOD_TOKEN gh workflow run "$workflow" -R "$SIGMOD_REPO" --ref main \
+                -f archipelago_ref="$BRANCH" -f bots=true
+              run=
+              for _ in 1 2 3 4 5 6; do
+                sleep 10
+                run=$(GH_TOKEN=$SIGMOD_TOKEN gh run list -R "$SIGMOD_REPO" -w "$workflow" --event workflow_dispatch \
+                  --json databaseId,createdAt --jq "map(select(.createdAt >= \"$started\")) | .[0].databaseId // empty")
+                [ -z "$run" ] || break
+              done
+              [ -n "$run" ] || { echo "no $workflow run appeared within a minute" >&2; exit 1; }
+              beds="$beds
+          - $workflow: https://github.com/$SIGMOD_REPO/actions/runs/$run"
+            done
+          fi
+          python3 -I - "$beds" <<'PY'
+          import sys
+          body = open("/tmp/pr-body.md").read().replace("@@BEDS@@", sys.argv[1] + "\n")
+          open("/tmp/pr-body.md", "w").write(body)
+          PY
+          gh pr edit "$PR_URL" --body-file /tmp/pr-body.md
