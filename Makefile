@@ -387,6 +387,7 @@ test: embed-placeholders proto
 	CGO_ENABLED=1 $(SPENV) $(REQUIRE_SPSHELL) go test -race -shuffle=on ./...
 	python3 -m unittest discover -s deploy -p '*probe*_test.py'
 	python3 -m unittest discover -s deploy -p 'stability*_test.py'
+	python3 -m unittest discover -s deploy -p 'tf2_pins_test.py'
 
 test-fast: embed-placeholders proto
 	$(SPENV) go test ./...
