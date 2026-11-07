@@ -34,10 +34,16 @@ in English and French.
 
 ## Compatibility
 
-Every day, automated test games run on Ubuntu, Windows and Docker, with the
-latest version of TF2. Each badge shows how many of those test games went
-well on that system. A full badge means everything worked. A red badge means
-the game may crash on that system right now.
+Every day, automated test games run on Ubuntu, Windows and Docker with the
+latest version of TF2. A badge shows the share of test games that were
+completed on that system. How to read it:
+
+- Green: every test game was completed and the game did not crash.
+- Red: at least one test game failed or was missing, the game crashed, or the
+  test could not run (0% means it did not start).
+- Failures the developers already understand and track are not counted.
+- Click a badge to see the date and the list of failed games. After 36 hours,
+  the result is out of date.
 
 [![Ubuntu 24.04 stability](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fm-this%2Ftf2-archipelago%2Fstability-badges%2Fubuntu24.json)](https://github.com/m-this/tf2-archipelago/releases/tag/stability)
 [![Windows stability](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fm-this%2Ftf2-archipelago%2Fstability-badges%2Fwindows.json)](https://github.com/m-this/tf2-archipelago/releases/tag/stability)
