@@ -140,7 +140,7 @@ jobs:
     timeout-minutes: 120
     env:
       GH_TOKEN: ${{ github.token }}
-      SIGMOD_TRACE_RUN: '42851156426'
+      SIGMOD_TRACE_RUN: '42870544082'
     steps:
       - name: Wait for the instrumented SigMod build
         run: |
