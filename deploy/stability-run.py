@@ -331,7 +331,9 @@ def main(opt):
             f"base_port={port}\nstarted_utc={meta['started_utc']}\nsource_commit={meta['commit']}\n")
         meta["latest_before"] = live_version()
         meta["install_attempts"] = install_with_retries(run,
-            [binary("winbed"), "-root", str(root), "-probe", str(bed / "tf2_waveprobe.smx"), "-install"],
+            [binary("winbed"), "-root", str(root),
+             *(["-sigmod", os.environ["STABILITY_SIGMOD_ZIP"]] if os.environ.get("STABILITY_SIGMOD_ZIP") else []),
+             "-probe", str(bed / "tf2_waveprobe.smx"), "-install"],
             out, deadline, shard)
         # The player launcher tolerates a failed update; the measurement cannot.
         meta["installed_version"] = installed_version(game)

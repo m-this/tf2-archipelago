@@ -133,9 +133,48 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
+  # Measurement only: the Windows shards play the instrumented SigMod of this
+  # run of m-this/sigsegv-mvm-win instead of the pinned release.
+  sigmod-trace:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SIGMOD_TRACE_RUN: '42809641379'
+    steps:
+      - name: Wait for the instrumented SigMod build
+        run: |
+          for attempt in $(seq 1 180); do
+            state=$(gh api "repos/m-this/sigsegv-mvm-win/actions/runs/$SIGMOD_TRACE_RUN/jobs?per_page=100" -q '.jobs[] | select(.name == "build") | "\(.status) \(.conclusion)"') || state='api error'
+            echo "attempt $attempt: $state"
+            case "$state" in
+              'completed success') exit 0 ;;
+              completed*) exit 1 ;;
+            esac
+            sleep 30
+          done
+          echo 'the SigMod build did not finish in 90 minutes'
+          exit 1
+      - uses: actions/download-artifact@v8
+        with:
+          name: package-windows
+          path: sigmod-trace
+          repository: m-this/sigsegv-mvm-win
+          run-id: ${{ env.SIGMOD_TRACE_RUN }}
+          github-token: ${{ github.token }}
+      - name: Check the package against its checksum
+        working-directory: sigmod-trace
+        run: sha256sum -c package-windows.zip.sha256
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sigmod-trace
+          path: sigmod-trace
+          retention-days: 30
+          if-no-files-found: error
+
   measure:
-    needs: [build, image]
-    if: always() && needs.build.result == 'success'
+    needs: [build, image, sigmod-trace]
+    if: always() && needs.build.result == 'success' && needs.sigmod-trace.result == 'success'
     strategy:
       fail-fast: false
       max-parallel: ${{ fromJSON(needs.build.outputs.parallel) }}
@@ -205,8 +244,37 @@ jobs:
       - name: Load the shared production Docker image
         if: matrix.environment == 'docker'
         run: docker image load --input image/stability-image.tar.gz
+      - uses: actions/download-artifact@v8
+        if: matrix.environment == 'windows'
+        with:
+          name: sigmod-trace
+          path: sigmod-trace
+      # The same settings as sigsegv-mvm-win's tools/winport/bed/install.ps1:
+      # WER for a crash, silent process exit monitoring for a server that ends itself.
+      - name: Keep a dump of a server that crashes or ends itself
+        if: matrix.environment == 'windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $dumps = Join-Path $env:STABILITY_GAME_PARENT 'stability-dumps'
+          New-Item -ItemType Directory -Force (Join-Path $dumps 'exit') | Out-Null
+          $wer = 'HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\srcds.exe'
+          New-Item -Force $wer | Out-Null
+          Set-ItemProperty $wer DumpFolder $dumps -Type ExpandString
+          Set-ItemProperty $wer DumpType 1 -Type DWord
+          Set-ItemProperty $wer DumpCount 10 -Type DWord
+          $spe = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SilentProcessExit\srcds.exe'
+          New-Item -Force $spe | Out-Null
+          Set-ItemProperty $spe ReportingMode 2 -Type DWord
+          Set-ItemProperty $spe LocalDumpFolder (Join-Path $dumps 'exit') -Type String
+          Set-ItemProperty $spe DumpType 0 -Type DWord
+          $ifeo = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\srcds.exe'
+          New-Item -Force $ifeo | Out-Null
+          Set-ItemProperty $ifeo GlobalFlag 0x200 -Type DWord
       - name: Start the mod and run every eligible wave in both modes
         shell: python
+        env:
+          STABILITY_SIGMOD_ZIP: ${{ matrix.environment == 'windows' && format('{0}\sigmod-trace\package-windows.zip', github.workspace) || '' }}
         run: |
           import os, pathlib, secrets, subprocess, sys
           bed = pathlib.Path('beds') / os.environ['STABILITY_BED']
@@ -225,6 +293,19 @@ jobs:
               '--reverse-objectives', '--hours', '4.5', '--speed', os.environ['STABILITY_SPEED'],
               '--shards', os.environ['STABILITY_SHARDS'], '--shard', os.environ['STABILITY_SHARD'],
               '--partition', 'beds/partition.json', '--mission', os.environ['STABILITY_MISSION']]))
+      - name: Collect the SigMod exit trace and the dumps
+        if: always() && matrix.environment == 'windows'
+        shell: pwsh
+        run: |
+          $trace = 'stability-result\windows-trace'
+          New-Item -ItemType Directory -Force $trace | Out-Null
+          $roots = @($env:STABILITY_ROOT, (Join-Path $env:STABILITY_GAME_PARENT 'stability-dumps')) | Where-Object { $_ -and (Test-Path $_) }
+          $files = @($roots | ForEach-Object { Get-ChildItem $_ -Recurse -File -Include 'sigsegv_exit*', '*.dmp', '*.mdmp' -ErrorAction SilentlyContinue })
+          foreach ($file in $files) {
+            Copy-Item $file.FullName (Join-Path $trace ($file.Directory.Name + '-' + $file.Name))
+            Write-Host "collected $($file.FullName) $($file.Length)"
+          }
+          Write-Host "$($files.Count) trace files"
       - name: Preserve results even when startup or waves fail
         if: always()
         uses: actions/upload-artifact@v7
