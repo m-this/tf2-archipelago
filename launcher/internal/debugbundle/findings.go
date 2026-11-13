@@ -85,13 +85,33 @@ const crashRule = "the game server crashed"
 // rather than refused. See the rule below for why both shapes exist.
 const sigmodUnresolvedRule = "SigMod cannot find the game's addresses"
 
+// replayRule is the engine giving up on replay_srv.so, the first library it
+// loads after the game's own.
+const replayRule = "the engine could not load replay_srv.so"
+
+/* sigmodBinariesCheck is the Windows build saying it compared the TF2 binaries
+ * it reads with the ones its address table was made from, and found them
+ * the same. Past this line, a failed lookup is not the install's doing. */
+var sigmodBinariesCheck = regexp.MustCompile(`SigMod: address table made for ServerVersion \d+, the server is \d+; the \d+ binaries it reads are the same`)
+
 var rules = []rule{
 	{crashRule, func(l string) bool {
 		return strings.Contains(l, "CRASHED") ||
 			strings.Contains(l, "exit status 0xc0") ||
 			strings.Contains(l, "signal: segmentation fault") ||
+			strings.Contains(l, "Segmentation fault") ||
 			strings.Contains(l, "signal: abort")
 	}, ""},
+	/* srcds_run restarts a server that dies on its way up, so the launcher
+	   never sees it exit and writes no CRASHED line. LuigiFan45's bundle was
+	   half an hour of this under "nothing matched". */
+	{replayRule, func(l string) bool { return strings.Contains(l, "FATAL ERROR: Could not load: replay_srv.so") }, "srcds could not open replay_srv.so, quit, and srcds_run started it again.\n" +
+		"      The steamclient line above says whether the link srcds loads\n" +
+		"      steamclient.so through resolves. If it does, a 32-bit library\n" +
+		"      replay_srv.so needs is missing from the system. From the install root,\n" +
+		"      ldd tf-dedicated/tf/bin/replay_srv.so | grep \"not found\"\n" +
+		"      names it; the Linux dedicated server page of the TF2 wiki says which\n" +
+		"      package holds it on each distribution."},
 	{pluginMissingRule, func(l string) bool {
 		return strings.Contains(l, `Unknown command "tf2ap_`) ||
 			strings.Contains(l, `Unknown command "sm_redbots_manager`)
@@ -197,6 +217,8 @@ type scan struct {
 	// refused and taken count this run's bot purchases, the two outcomes.
 	refused int
 	taken   int
+	// sigmodBinariesMatch is SigMod having checked the game binaries itself.
+	sigmodBinariesMatch bool
 }
 
 // sawCrash says whether a crash was among the hits, which decides whether a
@@ -260,12 +282,7 @@ func scanLogs(sources ...source) scan {
 				}
 			}
 			if src.current {
-				switch {
-				case strings.Contains(line, purchaseRefused):
-					got.refused++
-				case purchaseTaken(line):
-					got.taken++
-				}
+				countCurrentRun(&got, line)
 			}
 			key := shapeOf(line)
 			if key == "" {
@@ -285,6 +302,19 @@ func scanLogs(sources ...source) scan {
 		got.tf2Build = anyBuild
 	}
 	return got
+}
+
+// countCurrentRun reads what only means something about the run this bundle
+// was made from.
+func countCurrentRun(s *scan, line string) {
+	switch {
+	case strings.Contains(line, purchaseRefused):
+		s.refused++
+	case purchaseTaken(line):
+		s.taken++
+	case sigmodBinariesCheck.MatchString(line):
+		s.sigmodBinariesMatch = true
+	}
 }
 
 func (s scan) report() string {

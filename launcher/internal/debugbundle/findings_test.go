@@ -378,3 +378,53 @@ func TestRefusedPurchasesOnlyBlameAnOldSourceMod(t *testing.T) {
 		t.Errorf("refusals on git7255 without SigMod trouble were misexplained:\n%s", fixed)
 	}
 }
+
+/*
+LuigiFan45's bundle on 2026-11-11: srcds_run printed "FATAL ERROR: Could not
+load: replay_srv.so", segfaulted, and restarted every 15 seconds for half an
+hour. The launcher never saw the process end, so no CRASHED line, and the
+summary said "nothing matched" over a server that never came up.
+*/
+func TestTheReplayCrashLoopIsFound(t *testing.T) {
+	got := readLog(t,
+		`16:23:27  srcds    server_srv.so loaded for "Team Fortress"`,
+		`16:23:27  srcds    Could not load: replay_srv.so`,
+		`16:23:27  srcds    FATAL ERROR: Could not load: replay_srv.so`,
+		`16:23:28  srcds    /home/p/tf2-archipelago/tf-dedicated/srcds_run: line 324: 220177 Segmentation fault         (core dumped) $HL_CMD`,
+		`16:23:28  srcds    Wed Nov 11 04:23:28 PM CST 2026: Server restart in 10 seconds`,
+	)
+	if !got.sawCrash() {
+		t.Fatalf("srcds_run's segfault was not counted as a crash:\n%s", got.report())
+	}
+	report := got.report()
+	if !strings.Contains(report, replayRule) {
+		t.Fatalf("the replay_srv.so failure was not named:\n%s", report)
+	}
+	if !strings.Contains(report, "ldd") {
+		t.Errorf("the summary does not say how to find the missing library:\n%s", report)
+	}
+}
+
+/*
+De_Bones's bundle on 2026-11-12: the summary said "updated halfway, press
+Repair", they did, Steam verified 15 GB, and the server crashed exactly as
+before. SigMod had already checked the six binaries it reads against its table
+and said they were the same, so the game files were never the question. What
+it could not resolve is what the Windows port has not found yet.
+*/
+func TestSigModThatCheckedItsBinariesDoesNotBlameTheGameFiles(t *testing.T) {
+	got := readLog(t,
+		`18:48:06  srcds    SigMod: address table made for ServerVersion 11191711, the server is 11191711; the 6 binaries it reads are the same`,
+		`18:48:08  srcds    AddrManager::GetAddr FAIL: cannot resolve addr for name "CAttributeList::GetAttributeByName"`,
+	)
+	if !got.sigmodBinariesMatch {
+		t.Fatal("SigMod's own binary check was not read")
+	}
+	same := crossCheck("11191711", "11191711", map[string]string{"sourcemod": "1.13.0-git7481"}, got)
+	if strings.Contains(same, "updated halfway") || strings.Contains(same, "Press") {
+		t.Errorf("a checked install was sent to Repair:\n%s", same)
+	}
+	if !strings.Contains(same, "port has not found yet") || !strings.Contains(same, "turn SigMod off") {
+		t.Errorf("the summary does not say where the failure is, or how to play meanwhile:\n%s", same)
+	}
+}

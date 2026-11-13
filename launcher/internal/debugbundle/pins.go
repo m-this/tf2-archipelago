@@ -80,8 +80,11 @@ func crossCheck(running, pinnedFor string, versions map[string]string, got scan)
 	}
 
 	unresolved := got.found[sigmodUnresolvedRule] != nil
-	if line, ok := halfUpdatedInstall(running, pinnedFor, unresolved); ok {
+	if line, ok := halfUpdatedInstall(running, pinnedFor, unresolved && !got.sigmodBinariesMatch); ok {
 		found = append(found, line)
+	}
+	if unresolved && got.sigmodBinariesMatch {
+		found = append(found, unportedAddresses())
 	}
 	if line, ok := everyPurchaseRefused(got, versions["sourcemod"], unresolved); ok {
 		found = append(found, line)
@@ -143,6 +146,24 @@ func halfUpdatedInstall(running, pinnedFor string, unresolved bool) (string, boo
 			"      the engine, not from the server binary SigMod reads, so an install\n"+
 			"      updated halfway reports the new build and still holds old files. Press\n"+
 			"      Repair in Settings: the next start verifies every game file.", running), true
+}
+
+/*
+	unportedAddresses is SigMod resolving less than it needs on binaries it
+
+checked itself. The Windows build tests the TF2 binaries against its table
+before it loads, so when it says they are the same, Repair verifies files that
+were already right. De_Bones pressed it, Steam checked 15 GB, and the server
+crashed as before.
+*/
+func unportedAddresses() string {
+	return "SigMod checked the TF2 binaries it reads against its address table and\n" +
+		"      found them the same, so the game files are not the cause and Repair\n" +
+		"      will not help. The addresses it could not resolve are ones the Windows\n" +
+		"      port has not found yet, and the crash is SigMod's. To play until a\n" +
+		"      SigMod build fixes it, turn SigMod off on the Missions page and leave\n" +
+		"      its missions out, then generate a new seed: the launcher refuses to\n" +
+		"      start a pool that still holds SigMod missions without SigMod."
 }
 
 /*
