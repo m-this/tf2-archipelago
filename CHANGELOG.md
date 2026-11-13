@@ -4,6 +4,19 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
+## v1.18.8
+
+### Fixed
+
+- **The debug bundle no longer tells Windows players to press Repair when
+  Repair cannot help.** SigMod already checks the game files it reads, and when
+  it finds them right the summary now says so, says the crash comes from SigMod
+  on Windows, and explains how to play without it until a fix ships.
+- **The debug bundle sees a Linux server that crashes on `replay_srv.so`.** It
+  used to report "nothing matched" while the server restarted every few
+  seconds. It now names the error and gives the command that finds the missing
+  32-bit system library.
+
 ## v1.18.7
 
 ### Added
