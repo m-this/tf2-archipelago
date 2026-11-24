@@ -1,0 +1,88 @@
+diff --git a/extension/sourcesdk/baseentity.cpp b/extension/sourcesdk/baseentity.cpp
+index 8e538af..66f0571 100644
+--- a/extension/sourcesdk/baseentity.cpp
++++ b/extension/sourcesdk/baseentity.cpp
+@@ -157,8 +157,13 @@ bool CBaseEntity::Init(SourceMod::IGameConfig* config, char* error, size_t maxle
+ 		return false;
+ 	}
+ 
++	void* touchTrace = nullptr;
+ 	uint8_t* addr = nullptr;
+-	if (config->GetMemSig("CBaseEntity::PhysicsMarkEntitiesAsTouching", (void**)&addr) && addr)
++	if (config->GetMemSig("g_TouchTrace", &touchTrace) && touchTrace)
++	{
++		g_pTouchTrace = reinterpret_cast<trace_t*>(touchTrace);
++	}
++	else if (config->GetMemSig("CBaseEntity::PhysicsMarkEntitiesAsTouching", (void**)&addr) && addr)
+ 	{
+ 		int offset;
+ 		if (!config->GetOffset("g_TouchTrace", &offset) || !offset)
+diff --git a/extension/sourcesdk/nav_mesh.cpp b/extension/sourcesdk/nav_mesh.cpp
+index 62a9a04..db8616c 100644
+--- a/extension/sourcesdk/nav_mesh.cpp
++++ b/extension/sourcesdk/nav_mesh.cpp
+@@ -28,8 +28,16 @@ DETOUR_DECL_MEMBER0(CNavMesh_Load, NavErrorType)
+ 
+ bool CNavMesh::Init(SourceMod::IGameConfig* config, char* error, size_t maxlength)
+ {
++	void* navMesh = nullptr;
++	void* navAreas = nullptr;
+ 	uint8_t* addr = nullptr;
+-	if (config->GetMemSig("CNavMesh::Load", (void**)&addr) && addr)
++	if (config->GetMemSig("TheNavMesh", &navMesh) && navMesh
++		&& config->GetMemSig("TheNavAreas", &navAreas) && navAreas)
++	{
++		TheNavMesh = *reinterpret_cast<CNavMesh**>(navMesh);
++		pTheNavAreas = reinterpret_cast<NavAreaVector*>(navAreas);
++	}
++	else if (config->GetMemSig("CNavMesh::Load", (void**)&addr) && addr)
+ 	{
+ 		int offset;
+ 		if (!config->GetOffset("TheNavMesh", &offset) || !offset)
+diff --git a/gamedata/cbasenpc.txt b/gamedata/cbasenpc.txt
+index 4cb897a..745f1ce 100644
+--- a/gamedata/cbasenpc.txt
++++ b/gamedata/cbasenpc.txt
+@@ -11,18 +11,15 @@
+ 			// Locate CNavMesh::Load, first dword is TheNavMesh second is TheNavAreas
+ 			"TheNavMesh"
+ 			{
+-				"linux"		"813"
+ 				"windows"	"481"
+ 			}
+ 			"TheNavAreas"
+ 			{
+-				"linux"		"1201"
+ 				"windows"	"687"
+ 			}
+ 			// Locate CBaseEntity::PhysicsMarkEntitiesAsTouching, first dword is g_TouchTrace
+ 			"g_TouchTrace"
+ 			{
+-				"linux"		"53"
+ 				"windows"	"10"
+ 			}
+ 			"g_EntityListPool"
+@@ -271,6 +268,23 @@
+ 				"windows"		"\x55\x8B\xEC\x83\xEC\x08\x53\x56\x8B\xF1\x57\x8D\x2A\x2A\xC7\x06"
+ 				"linux"			"@_ZN11CBaseEntityC2Eb"
+ 			}
++			// Linux reads these globals by symbol: since TF2 11267535 server_srv.so is
++			// PIC and the code holds GOT-relative displacements, not their addresses.
++			"TheNavMesh"
++			{
++				"library"		"server"
++				"linux"			"@TheNavMesh"
++			}
++			"TheNavAreas"
++			{
++				"library"		"server"
++				"linux"			"@TheNavAreas"
++			}
++			"g_TouchTrace"
++			{
++				"library"		"server"
++				"linux"			"@_ZL12g_TouchTrace"
++			}
+ 			// Find "add 0x%p: %s-%s (%d-%d) [%d in play, %d max]\n" to find CBaseEntity::PhysicsMarkEntityAsTouched
+ 			// jump to the function calling this one, there can be only one and it's CBaseEntity::PhysicsMarkEntitiesAsTouching
+ 			"CBaseEntity::PhysicsMarkEntitiesAsTouching"
