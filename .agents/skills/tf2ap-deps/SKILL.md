@@ -10,7 +10,7 @@ fix them in this order and prove each step before the next.
 
 | Repository | What it pins | Where |
 | --- | --- | --- |
-| m-this/sigsegv-mvm-win | SigMod for Windows (branch `main`) and for Linux (branch `master`, rafradek's code rebuilt) | `gamedata/sigsegv/windows.txt`, `tools/winport/overrides.json` |
+| m-this/sigsegv-mvm-win | SigMod for Windows and for Linux (both built from branch `main`; the Linux one is rafradek's code rebuilt) | `gamedata/sigsegv/windows.txt`, `tools/winport/overrides.json` |
 | m-this/tf2-mvm-bots-go | the defender bots and the SourceMod they compile with | `plugin/testbed/versions.env` |
 | m-this/tf2-archipelago | everything a server runs | `deploy/env/versions.env` (the only place a pin lives; read its comments first) |
 
@@ -22,20 +22,14 @@ The bots are pinned by tf2-archipelago's `go.mod`, not by `versions.env`:
 The watcher (`.github/workflows/tf2-build-watch.yml`) opens an issue naming the
 new ServerVersion. It lists the pins keyed to the game. Work through it:
 
-1. **Windows SigMod addresses.** In sigsegv-mvm-win, the scheduled `Address
-   table` workflow (`addrs.yml`) carries `overrides.json` to the new build with
-   `tools/winport/carry.py`. Dispatch it on `main` with `commit=true`. Read its
-   log: "carried N of M overrides" and the list of entries that did not carry.
-   Each one that did not carry is resolved by hand against the new
-   `server.dll` (disassembly, call graph from known callers, the Linux
-   `server_srv.so` symbols as reference) and added to `overrides.json`. Never
-   guess an address: a wrong one faults at runtime, a missing one only drops a
-   detour.
-2. **Windows bed.** Dispatch `windows.yml` on the branch with
-   `archipelago_ref=main`. It builds `package-windows.zip` and plays every
-   SigMod community mission over 8 shards. A crash names a module and offset;
-   look up the function and check whether an address it calls is unresolved
-   ("called unresolved function" in the console) before suspecting the code.
+1. **Port SigMod** on both platforms with the `update-sigmod` skill: the
+   Windows address table, the Linux symbols and patches, and both beds. Never
+   guess an address: a wrong one faults at runtime, a missing one drops a
+   detour or makes a thunk return false.
+2. **Windows bed.** The port ends with `windows.yml` green on the branch. A
+   crash names a module and offset; look up the function and check whether an
+   address it calls is unresolved ("called unresolved function" in the
+   console) before suspecting the code.
 3. **Windows release.** Push a date tag `YYYYMMDD` on `main`
    (`gh api repos/m-this/sigsegv-mvm-win/git/refs -f ref=refs/tags/YYYYMMDD -f sha=...`).
    The tag run builds, publishes the release, and plays the bed. Take the
@@ -46,7 +40,7 @@ new ServerVersion. It lists the pins keyed to the game. Work through it:
    build. Unchanged SDK means the Linux build is the same binary: prove it on
    the new game build with `linuxbed.yml` (`archipelago_ref=main`, `bots=true`)
    and keep the pin. Changed SDK: dispatch `main.yml` (Build and Release) on
-   `master`, play its artifact with `linuxbed.yml sigmod_run=<run id>`, then
+   `main`, play its artifact with `linuxbed.yml sigmod_run=<run id>`, then
    publish `linux-YYYYMMDD`.
 5. **SourceMod.** A TF2 update can move the KeyValues layout SourceMod reads
    (alliedmodders/sourcemod#2587). The symptom is silent: bots shop and buy
@@ -69,8 +63,8 @@ new ServerVersion. It lists the pins keyed to the game. Work through it:
   version is too old to load (8, max is 9)"; the 9 is the minimum it accepts,
   the message calls it the max). SigMod (both platforms), REST in Pawn, Actions
   and CBaseNPC are therefore all built against the SourceMod commit of the pin:
-  SigMod by m-this/sigsegv-mvm-win (`sourcemod_ref` input of `main.yml` on
-  `master` and of `windows.yml` on `main`), the other three by
+  SigMod by m-this/sigsegv-mvm-win (`sourcemod_ref` input of `main.yml` and of
+  `windows.yml`, both on `main`), the other three by
   `deploy/bots/build-extensions.sh`, which `.github/workflows/extensions.yml`
   runs on Linux and Windows and the image runs in a stage of its own. Moving
   the SourceMod commit means the patches under `deploy/patches/` still apply
@@ -96,18 +90,17 @@ new ServerVersion. It lists the pins keyed to the game. Work through it:
 
 ## Upstream SigMod
 
-rafradek/sigsegv-mvm `master` is merged into sigsegv-mvm-win `master`. The value
+rafradek/sigsegv-mvm `master` is merged into sigsegv-mvm-win `main`. The value
 is in its open pull requests, which upstream does not merge often. For each:
 
 ```bash
 cd sigsegv-mvm-win
 git fetch https://github.com/rafradek/sigsegv-mvm pull/N/head:refs/remotes/upr/N
-git cherry origin/master upr/N   # + means not taken yet
-git cherry origin/main upr/N
+git cherry origin/main upr/N   # + means not taken yet
 ```
 
-Take a fix into `master` (Linux) and, where the code is shared, into `main`
-(Windows), then play both beds. A patch that hardcodes bytes or an absolute
+Take a fix into `main`, which builds both Linux and Windows, then play both
+beds. A patch that hardcodes bytes or an absolute
 address for one game build will break on the next one: mask the address
 instead of copying the new bytes.
 
