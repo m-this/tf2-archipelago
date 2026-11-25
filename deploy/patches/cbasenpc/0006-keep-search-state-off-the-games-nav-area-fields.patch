@@ -1,0 +1,394 @@
+diff --git a/extension/sourcesdk/nav_area.cpp b/extension/sourcesdk/nav_area.cpp
+index 7826e82..6e7d64a 100644
+--- a/extension/sourcesdk/nav_area.cpp
++++ b/extension/sourcesdk/nav_area.cpp
+@@ -6,6 +6,7 @@
+ #include "sourcesdk/nav_area.h"
+ #include "sourcesdk/nav_mesh.h"
+ #include "toolsnav_mesh.h"
++#include <unordered_map>
+ 
+ NavAreaVector TheNavAreas;
+ 
+@@ -636,66 +637,118 @@ NavDirType CNavArea::ComputeDirection( Vector *point ) const
+ 	return NUM_DIRECTIONS;
+ }
+ 
++//--------------------------------------------------------------------------------------------------------------
++// The game's CNavArea carries m_marker, m_openMarker, m_nextOpen and m_prevOpen for its own searches,
++// stamped against its own master marker. Both sides read them as "this search's", so a stamp left by
++// the game that equals this side's marker makes an area look open or closed here and its stale links
++// corrupt the open list: a cycle, and a search that never ends. This side keeps its search state in a
++// table of its own and never reads nor writes those four fields. The table is emptied by every new search.
++namespace
++{
++	struct SearchState
++	{
++		CNavArea *next = NULL;
++		CNavArea *prev = NULL;
++		bool open = false;
++		bool marked = false;
++	};
++
++	std::unordered_map<const CNavArea *, SearchState> s_searchState;
++
++	// Every area on the list has an entry, so a walk longer than the table is a cycle.
++	void AbandonSearch( CNavArea **openList, CNavArea **openListTail )
++	{
++		g_pSM->LogError( myself, "Nav area open list is corrupt, abandoning the search." );
++		s_searchState.clear();
++		*openList = NULL;
++		*openListTail = NULL;
++	}
++}
++
++void CNavArea::Mark( void )
++{
++	s_searchState[this].marked = true;
++}
++
++BOOL CNavArea::IsMarked( void ) const
++{
++	auto it = s_searchState.find( this );
++	return ( it != s_searchState.end() && it->second.marked ) ? true : false;
++}
++
++bool CNavArea::IsOpen( void ) const
++{
++	auto it = s_searchState.find( this );
++	return it != s_searchState.end() && it->second.open;
++}
++
+ //--------------------------------------------------------------------------------------------------------------
+ /**
+  * Add to open list in decreasing value order
+  */
+ void CNavArea::AddToOpenList( void )
+ {
+-	if ( IsOpen() )
++	SearchState &self = s_searchState[this];
++	if ( self.open )
+ 	{
+ 		// already on list
+ 		return;
+ 	}
+ 
+-	// mark as being on open list for quick check
+-	m_openMarker = m_masterMarker;
++	self.open = true;
+ 
+ 	// if list is empty, add and return
+ 	if ( m_openList == NULL )
+ 	{
+ 		m_openList = this;
+ 		m_openListTail = this;
+-		this->m_prevOpen = NULL;
+-		this->m_nextOpen = NULL;
++		self.prev = NULL;
++		self.next = NULL;
+ 		return;
+ 	}
+ 
+ 	// insert self in ascending cost order
+ 	CNavArea *area, *last = NULL;
+-	for( area = m_openList; area; area = area->m_nextOpen )
++	size_t walkMax = s_searchState.size();
++	for( area = m_openList; area; area = s_searchState[area].next )
+ 	{
+ 		if ( GetTotalCost() < area->GetTotalCost() )
+ 		{
+ 			break;
+ 		}
+ 		last = area;
++
++		if ( walkMax-- == 0 )
++		{
++			AbandonSearch( &m_openList, &m_openListTail );
++			return;
++		}
+ 	}
+ 
+ 	if ( area )
+ 	{
+ 		// insert before this area
+-		this->m_prevOpen = area->m_prevOpen;
++		SearchState &before = s_searchState[area];
++		self.prev = before.prev;
+ 
+-		if ( this->m_prevOpen )
++		if ( self.prev )
+ 		{
+-			this->m_prevOpen->m_nextOpen = this;
++			s_searchState[self.prev].next = this;
+ 		}
+ 		else
+ 		{
+ 			m_openList = this;
+ 		}
+ 
+-		this->m_nextOpen = area;
+-		area->m_prevOpen = this;
++		self.next = area;
++		before.prev = this;
+ 	}
+ 	else
+ 	{
+ 		// append to end of list
+-		last->m_nextOpen = this;
+-		this->m_prevOpen = last;
+-	
+-		this->m_nextOpen = NULL;
++		s_searchState[last].next = this;
++		self.prev = last;
++		self.next = NULL;
+ 
+ 		m_openListTail = this;
+ 	}
+@@ -707,30 +760,30 @@ void CNavArea::AddToOpenList( void )
+  */
+ void CNavArea::AddToOpenListTail( void )
+ {
+-	if ( IsOpen() )
++	SearchState &self = s_searchState[this];
++	if ( self.open )
+ 	{
+ 		// already on list
+ 		return;
+ 	}
+ 
+-	// mark as being on open list for quick check
+-	m_openMarker = m_masterMarker;
++	self.open = true;
+ 
+ 	// if list is empty, add and return
+ 	if ( m_openList == NULL )
+ 	{
+ 		m_openList = this;
+ 		m_openListTail = this;
+-		this->m_prevOpen = NULL;
+-		this->m_nextOpen = NULL;
++		self.prev = NULL;
++		self.next = NULL;
+ 		return;
+ 	}
+ 
+ 	// append to end of list
+-	m_openListTail->m_nextOpen = this;
++	s_searchState[m_openListTail].next = this;
+ 
+-	this->m_prevOpen = m_openListTail;
+-	this->m_nextOpen = NULL;
++	self.prev = m_openListTail;
++	self.next = NULL;
+ 
+ 	m_openListTail = this;
+ }
+@@ -738,32 +791,51 @@ void CNavArea::AddToOpenListTail( void )
+ //--------------------------------------------------------------------------------------------------------------
+ void CNavArea::RemoveFromOpenList( void )
+ {
+-	if ( m_openMarker == 0 )
++	auto it = s_searchState.find( this );
++	if ( it == s_searchState.end() || !it->second.open )
+ 	{
+ 		// not on the list
+ 		return;
+ 	}
+ 
+-	if ( m_prevOpen )
++	SearchState &self = it->second;
++
++	if ( self.prev )
+ 	{
+-		m_prevOpen->m_nextOpen = m_nextOpen;
++		s_searchState[self.prev].next = self.next;
+ 	}
+ 	else
+ 	{
+-		m_openList = m_nextOpen;
++		m_openList = self.next;
+ 	}
+-	
+-	if ( m_nextOpen )
++
++	if ( self.next )
+ 	{
+-		m_nextOpen->m_prevOpen = m_prevOpen;
++		s_searchState[self.next].prev = self.prev;
+ 	}
+ 	else
+ 	{
+-		m_openListTail = m_prevOpen;
++		m_openListTail = self.prev;
+ 	}
+-	
+-	// zero is an invalid marker
+-	m_openMarker = 0;
++
++	self.open = false;
++}
++
++//--------------------------------------------------------------------------------------------------------------
++CNavArea *CNavArea::PopOpenList( void )
++{
++	CNavArea *area = m_openList;
++	if ( area )
++	{
++		// disconnect from list
++		area->RemoveFromOpenList();
++
++		SearchState &state = s_searchState[area];
++		state.prev = NULL;
++		state.next = NULL;
++	}
++
++	return area;
+ }
+ 
+ //--------------------------------------------------------------------------------------------------------------
+@@ -773,23 +845,33 @@ void CNavArea::RemoveFromOpenList( void )
+  */
+ void CNavArea::UpdateOnOpenList( void )
+ {
++	SearchState &self = s_searchState[this];
++	size_t walkMax = s_searchState.size();
++
+ 	// since value can only decrease, bubble this area up from current spot
+-	while( m_prevOpen && this->GetTotalCost() < m_prevOpen->GetTotalCost() )
++	while( self.prev && this->GetTotalCost() < self.prev->GetTotalCost() )
+ 	{
++		if ( walkMax-- == 0 )
++		{
++			AbandonSearch( &m_openList, &m_openListTail );
++			return;
++		}
++
+ 		// swap position with predecessor
+-		CNavArea *other = m_prevOpen;
+-		CNavArea *before = other->m_prevOpen;
+-		CNavArea *after  = this->m_nextOpen;
++		CNavArea *other = self.prev;
++		SearchState &otherState = s_searchState[other];
++		CNavArea *before = otherState.prev;
++		CNavArea *after  = self.next;
+ 
+-		this->m_nextOpen = other;
+-		this->m_prevOpen = before;
++		self.next = other;
++		self.prev = before;
+ 
+-		other->m_prevOpen = this;
+-		other->m_nextOpen = after;
++		otherState.prev = this;
++		otherState.next = after;
+ 
+ 		if ( before )
+ 		{
+-			before->m_nextOpen = this;
++			s_searchState[before].next = this;
+ 		}
+ 		else
+ 		{
+@@ -798,7 +880,7 @@ void CNavArea::UpdateOnOpenList( void )
+ 
+ 		if ( after )
+ 		{
+-			after->m_prevOpen = other;
++			s_searchState[after].prev = other;
+ 		}
+ 		else
+ 		{
+@@ -814,7 +896,7 @@ void CNavArea::UpdateOnOpenList( void )
+ void CNavArea::ClearSearchLists( void )
+ {
+ 	// effectively clears all open list pointers and closed flags
+-	CNavArea::MakeNewMarker();
++	s_searchState.clear();
+ 
+ 	m_openList = NULL;
+ 	m_openListTail = NULL;
+diff --git a/extension/sourcesdk/nav_area.h b/extension/sourcesdk/nav_area.h
+index f6ab3cc..0a98a59 100644
+--- a/extension/sourcesdk/nav_area.h
++++ b/extension/sourcesdk/nav_area.h
+@@ -291,8 +291,8 @@ class CNavArea : protected CNavAreaCriticalData
+ 
+ 		//- A* pathfinding algorithm ------------------------------------------------------------------------
+ 		static void MakeNewMarker( void )	{ ++m_masterMarker; if (m_masterMarker == 0) m_masterMarker = 1; }
+-		void Mark( void )					{ m_marker = m_masterMarker; };
+-		BOOL IsMarked( void ) const			{ return (m_marker == m_masterMarker) ? true : false; };
++		void Mark( void );
++		BOOL IsMarked( void ) const;
+ 
+ 		void SetParent( CNavArea *parent, NavTraverseType how = NUM_TRAVERSE_TYPES )	{ m_parent = parent; m_parentHow = how; }
+ 		CNavArea *GetParent( void ) const	{ return m_parent; }
+@@ -428,9 +428,8 @@ class CNavArea : protected CNavAreaCriticalData
+ 
+ 		//- A* pathfinding algorithm ------------------------------------------------------------------------
+ 
+-		// A case can arise where both this and the game's CNavArea::m_masterMarker may conflict and introduce confusion to pathfinding algorithms, especially if both
+-		// CBaseNPC and the game's NextBots are used simultaneously. It's not a common case, but the possibility is there.
+-		// Consider modifying the engine's variables instead to prevent this from happening?
++		// The search state (open, marked, next, prev) is kept in a table in nav_area.cpp, never in the
++		// game's m_marker, m_openMarker, m_nextOpen and m_prevOpen, which the game's own NextBots use.
+ 		static unsigned int m_masterMarker;
+ 
+ 		static CNavArea *m_openList;
+@@ -509,36 +508,12 @@ inline CNavArea *CNavArea::GetAdjacentArea( NavDirType dir, int i ) const
+ 	return m_connect[dir][i].area;
+ }
+ 
+-//--------------------------------------------------------------------------------------------------------------
+-inline bool CNavArea::IsOpen( void ) const
+-{
+-	return (m_openMarker == m_masterMarker) ? true : false;
+-}
+-
+ //--------------------------------------------------------------------------------------------------------------
+ inline bool CNavArea::IsOpenListEmpty( void )
+ {
+ 	return (m_openList) ? false : true;
+ }
+ 
+-//--------------------------------------------------------------------------------------------------------------
+-inline CNavArea *CNavArea::PopOpenList( void )
+-{
+-	if ( m_openList )
+-	{
+-		CNavArea *area = m_openList;
+-	
+-		// disconnect from list
+-		area->RemoveFromOpenList();
+-		area->m_prevOpen = NULL;
+-		area->m_nextOpen = NULL;
+-
+-		return area;
+-	}
+-
+-	return NULL;
+-}
+-
+ //--------------------------------------------------------------------------------------------------------------
+ inline bool CNavArea::IsClosed( void ) const
+ {
+diff --git a/extension/sourcesdk/nav_mesh.cpp b/extension/sourcesdk/nav_mesh.cpp
+index cd297fb..f10b660 100644
+--- a/extension/sourcesdk/nav_mesh.cpp
++++ b/extension/sourcesdk/nav_mesh.cpp
+@@ -175,8 +175,16 @@ bool NavAreaBuildPath( CNavArea *startArea, CNavArea *goalArea, Vector *goalPos,
+ 	float closestAreaDist = startArea->GetTotalCost();
+ 
+ 	// do A* search
++	constexpr int32_t popsMax = 1 << 20;
++	int32_t pops = 0;
+ 	while (!CNavArea::IsOpenListEmpty())
+ 	{
++		if (++pops > popsMax)
++		{
++			g_pSM->LogError(myself, "Nav area search popped more than %d areas, failing the path.", popsMax);
++			return false;
++		}
++
+ 		// get next area to check
+ 		CNavArea* area = CNavArea::PopOpenList();
+ 
