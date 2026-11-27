@@ -47,6 +47,7 @@ type options struct {
 	noSigmod    bool
 	testMode    bool
 	botTeamSize int
+	config      string
 }
 
 func main() {
@@ -63,6 +64,7 @@ func main() {
 	flag.BoolVar(&opt.testMode, "test-mode", os.Getenv("WINBED_TEST_MODE") == "1", "serve a test multiworld, as the launcher's test mode does (WINBED_TEST_MODE=1)")
 	flag.IntVar(&opt.botTeamSize, "bot-team-size", envInt("WINBED_BOT_TEAM_SIZE", 6), "defender bots on RED (WINBED_BOT_TEAM_SIZE)")
 	flag.BoolVar(&opt.bots, "bots", os.Getenv("WINBED_BOTS") == "1", "fill RED with defender bots, which shop at the upgrade station (WINBED_BOTS=1)")
+	flag.StringVar(&opt.config, "config", os.Getenv("WINBED_CONFIG"), "a player's launcher config.json to play instead of the defaults; the bed keeps its own machine, room and server fields (WINBED_CONFIG)")
 	flag.Parse()
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	if err := run(opt, logger); err != nil {
@@ -78,7 +80,14 @@ func run(opt options, logger *slog.Logger) error {
 	if opt.install == opt.serve {
 		return errors.New("give one of -install and -serve")
 	}
-	s := bedSettings(opt)
+	base := settings.Defaults()
+	if opt.config != "" {
+		var err error
+		if base, err = settings.ReadFile(opt.config); err != nil {
+			return err
+		}
+	}
+	s := bedSettings(opt, base)
 	if opt.install {
 		return install(opt, s, logger)
 	}
@@ -87,11 +96,16 @@ func run(opt options, logger *slog.Logger) error {
 	return tfruntime.RunServer(ctx, s, logger)
 }
 
-// bedSettings is the launcher's defaults with what the Docker probe sets:
-// a LAN server with no room, SigMod loaded whatever the mission. Bots are off
-// unless asked for; with them on, their purchases go through the upgrade code.
-func bedSettings(opt options) settings.Settings {
-	s := settings.Defaults()
+// bedSettings is base, the launcher's defaults or a player's file, with what
+// the Docker probe sets: a LAN server with no room, SigMod loaded whatever the
+// mission. Without a file bots are off unless asked for; with them on, their
+// purchases go through the upgrade code. A file keeps its own bot settings.
+func bedSettings(opt options, base settings.Settings) settings.Settings {
+	s := base
+	d := settings.Defaults()
+	s.APHost, s.APPort, s.APTls, s.APRoomURL, s.APSlotName, s.APPassword = d.APHost, d.APPort, d.APTls, d.APRoomURL, d.APSlotName, d.APPassword
+	s.SrcdsToken, s.SrcdsPw, s.SrcdsJoinHost, s.SrcdsAdminSteamIDs = "", "", "", ""
+	s.SrcdsMods = nil
 	s.InstallRoot = opt.root
 	s.CommunityContentDir = filepath.Join(opt.root, "community")
 	s.CommunityPacks = strings.Split(opt.packs, ",")
@@ -103,12 +117,15 @@ func bedSettings(opt options) settings.Settings {
 	s.SrcdsPort = opt.port
 	s.SrcdsMaxPlayers = 32
 	s.SrcdsReach = settings.ReachLan
-	s.SrcdsBots = opt.bots
-	s.BotUpgradesChat = opt.bots
 	s.TestMode = opt.testMode
-	if opt.botTeamSize > 0 {
-		s.SrcdsBotTeamSize = opt.botTeamSize
+	if opt.config == "" {
+		s.SrcdsBots = opt.bots
+		s.BotUpgradesChat = opt.bots
+		if opt.botTeamSize > 0 {
+			s.SrcdsBotTeamSize = opt.botTeamSize
+		}
 	}
+	s.SrcdsBots = s.SrcdsBots || opt.bots
 	s.FastDLPort = 0
 	s.SrcdsStartMap = "mvm_decoy"
 	s.SrcdsHostname = "TF2 Archipelago Wave Probe"
