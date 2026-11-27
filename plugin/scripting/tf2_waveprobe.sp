@@ -172,6 +172,7 @@ public void OnConfigsExecuted()
 
 public void OnMapEnd()
 {
+    CheckTeamLists("mapend");
     g_ConfigsReady = false;
 }
 
@@ -1629,4 +1630,64 @@ public void AuthoredObjectiveOutput(const char[] output, int caller, int activat
             LogMessage("WAVEPROBE native escort stage=%d", g_ObjectiveEscortStages);
         }
     }
+}
+
+char g_TeamListLast[1024];
+
+void CheckTeamLists(const char[] where)
+{
+    char report[1024];
+    report[0] = '\0';
+    int seen[MAXPLAYERS + 1];
+    int team = -1;
+    while ((team = FindEntityByClassname(team, "tf_team")) != -1) {
+        int num = GetEntProp(team, Prop_Send, "m_iTeamNum");
+        int size = GetEntPropArraySize(team, Prop_Send, "player_array");
+        for (int i = 0; i < size && i < 64; i++) {
+            int idx = GetEntProp(team, Prop_Send, "player_array", _, i);
+            if (idx <= 0) continue;
+            bool bad = idx > MaxClients || !IsClientInGame(idx) || GetClientTeam(idx) != num;
+            if (idx <= MaxClients) {
+                if (seen[idx] != 0) bad = true;
+                seen[idx] = num + 1;
+            }
+            if (!bad) continue;
+            char name[32] = "?";
+            int real = -1;
+            if (idx <= MaxClients && IsClientInGame(idx)) {
+                GetClientName(idx, name, sizeof(name));
+                real = GetClientTeam(idx);
+            }
+            Format(report, sizeof(report), "%s team%d[%d]=%d(%s,team=%d)", report, num, i, idx, name, real);
+        }
+    }
+    if (StrEqual(report, g_TeamListLast)) return;
+    strcopy(g_TeamListLast, sizeof(g_TeamListLast), report);
+    PrintToServer("TEAMLIST where=%s%s", where, report[0] ? report : " ok");
+}
+
+public Action Timer_TeamLists(Handle timer)
+{
+    CheckTeamLists("tick");
+    return Plugin_Continue;
+}
+
+public void Event_TeamListDeath(Event event, const char[] name, bool dontBroadcast)
+{
+    int client = GetClientOfUserId(event.GetInt("userid"));
+    if (client > 0) PrintToServer("TEAMLIST event=%s client=%d team=%d", name, client, GetClientTeam(client));
+    CheckTeamLists(name);
+}
+
+public void OnAllPluginsLoaded()
+{
+    CreateTimer(0.1, Timer_TeamLists, _, TIMER_REPEAT);
+    HookEvent("player_team", Event_TeamListDeath);
+    HookEvent("player_death", Event_TeamListDeath);
+    HookEvent("player_disconnect", Event_TeamListDeath);
+}
+
+public void OnClientDisconnect_Post(int client)
+{
+    CheckTeamLists("disconnect");
 }
