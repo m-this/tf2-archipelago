@@ -534,6 +534,9 @@ func TestARefusedConnectionStopsTheClient(t *testing.T) {
 	case <-time.After(3 * time.Second):
 		t.Fatal("the client kept retrying a refused connection")
 	}
+	if health := client.Health(); health.Connected || !strings.Contains(health.LastError, "InvalidSlot") {
+		t.Fatalf("health = %+v, want not connected with the refusal as last_error", health)
+	}
 }
 
 // archipelago.gg hands a closed room's port to another multiworld. Reaching
