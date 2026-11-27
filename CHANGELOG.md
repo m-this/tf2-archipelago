@@ -4,6 +4,18 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
+## v1.18.9
+
+### Fixed
+
+- **Servers work on the TF2 update of 26 November 2026.** Windows, Linux and
+  Docker servers start and play again, and the community missions that need
+  SigMod load at their first wave instead of staying on wave 0.
+- **Servers no longer hang with defender bots.** A server could stop answering
+  in the middle of a wave once a defender bot joined.
+- **A crash is fixed** that could stop a server while a bot was searching for
+  its way across a map.
+
 ## v1.18.8
 
 ### Fixed
