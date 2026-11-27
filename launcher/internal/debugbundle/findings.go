@@ -109,11 +109,11 @@ var rules = []rule{
 	   half an hour of this under "nothing matched". */
 	{replayRule, func(l string) bool { return strings.Contains(l, "FATAL ERROR: Could not load: replay_srv.so") }, "srcds could not open replay_srv.so, quit, and srcds_run started it again.\n" +
 		"      The steamclient line above says whether the link srcds loads\n" +
-		"      steamclient.so through resolves. If it does, a 32-bit library\n" +
-		"      replay_srv.so needs is missing from the system. From the install root,\n" +
-		"      ldd tf-dedicated/tf/bin/replay_srv.so | grep \"not found\"\n" +
-		"      names it; the Linux dedicated server page of the TF2 wiki says which\n" +
-		"      package holds it on each distribution."},
+		"      steamclient.so through resolves, and the libraries line which 32-bit\n" +
+		"      library replay_srv.so needs is missing from the system. On Fedora and\n" +
+		"      Bazzite it is libcurl-gnutls.so.4, which the launcher links to\n" +
+		"      libcurl.i686 once that is installed. By hand, from the install root:\n" +
+		"      LD_LIBRARY_PATH=tf-dedicated/bin ldd tf-dedicated/bin/replay_srv.so | grep \"not found\""},
 	{pluginMissingRule, func(l string) bool {
 		return strings.Contains(l, `Unknown command "tf2ap_`) ||
 			strings.Contains(l, `Unknown command "sm_redbots_manager`)

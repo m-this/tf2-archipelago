@@ -184,6 +184,10 @@ func summary(s settings.Settings, versions map[string]string, pinnedTF2Build str
 	fmt.Fprintf(&b, "tf2 build     %s\n", tf2BuildNote(got.tf2Build, pinnedTF2Build))
 	if goruntime.GOOS != "windows" {
 		fmt.Fprintf(&b, "steamclient   %s\n", steamClientNote(installer.InspectSteamClient(s.InstallRoot)))
+		gameDir := filepath.Join(s.InstallRoot, "tf-dedicated")
+		missing, err := installer.MissingLibraries(context.Background(), gameDir)
+		standIn, _ := os.Readlink(filepath.Join(gameDir, "bin", installer.CurlGnutls))
+		fmt.Fprintf(&b, "libraries     %s\n", librariesNote(missing, err, standIn))
 	}
 
 	b.WriteString(configDrift(s))
@@ -211,6 +215,20 @@ func steamClientNote(got installer.SteamClient) string {
 		return fmt.Sprintf("%s -> %s, DOES NOT RESOLVE: %v", got.Link, target, got.Err)
 	}
 	return fmt.Sprintf("%s -> %s, resolves", got.Link, target)
+}
+
+// librariesNote is what ldd says of the libraries srcds loads on its way up,
+// and the curl the installer linked in for replay_srv.so, if it did.
+func librariesNote(missing []string, err error, standIn string) string {
+	switch {
+	case err != nil:
+		return fmt.Sprintf("NOT CHECKED: %v", err)
+	case len(missing) > 0:
+		return fmt.Sprintf("MISSING %s: srcds crashes at replay_srv.so without it", strings.Join(missing, ", "))
+	case standIn != "":
+		return fmt.Sprintf("all found by ldd, %s -> %s", installer.CurlGnutls, standIn)
+	}
+	return "all found by ldd"
 }
 
 // tf2BuildNote is the build the server started on, and the build the pins
