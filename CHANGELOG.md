@@ -20,6 +20,10 @@ in the release notes, so this file is the only place to write it.
   When SourceMod updates its gamedata while a settings page is open, the
   launcher waits and restarts the server once you apply or cancel. It now
   shows a notice with the reason instead of restarting for no visible cause.
+- **The launcher says why the server is not on your multiworld.** A wrong
+  room address, a wrong slot name or a refused connection used to leave the
+  Missions page empty with no reason. The reason is now kept in the launcher's
+  state, and a refusal that stops the server is shown as a notice.
 
 ## v1.18.9
 
