@@ -445,12 +445,16 @@ func TestTheRelayLineNamesTheAddressSrcdsGotOrSaysThereWasNone(t *testing.T) {
 		lines []string
 		want  string
 	}{
-		{"allocated", steamSettings(),
+		{
+			"allocated", steamSettings(),
 			[]string{"FakeIP allocation succeeded: 169.254.13.42:20232, 20233"},
-			"169.254.13.42:20232"},
-		{"none", steamSettings(),
+			"169.254.13.42:20232",
+		},
+		{
+			"none", steamSettings(),
 			[]string{"Connection to Steam servers successful."},
-			"no \"FakeIP allocation succeeded\" line"},
+			"no \"FakeIP allocation succeeded\" line",
+		},
 		{"not steam", settings.Defaults(), []string{"anything"}, ""},
 		{"no logs", steamSettings(), nil, ""},
 	}
