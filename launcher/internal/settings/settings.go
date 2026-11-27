@@ -6,7 +6,9 @@ package settings
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io/fs"
 	"maps"
 	"os"
 	"path/filepath"
@@ -401,10 +403,16 @@ func Load() (Settings, error) {
 	if err != nil {
 		return Settings{}, err
 	}
-	data, err := os.ReadFile(path)
-	if os.IsNotExist(err) {
+	s, err := ReadFile(path)
+	if errors.Is(err, fs.ErrNotExist) {
 		return Defaults(), nil
 	}
+	return s, err
+}
+
+// ReadFile reads a config file at any path the way Load reads the player's.
+func ReadFile(path string) (Settings, error) {
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return Settings{}, fmt.Errorf("cannot read %s: %w", path, err)
 	}
