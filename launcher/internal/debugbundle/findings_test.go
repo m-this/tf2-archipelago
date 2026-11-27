@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 )
 
 func writeLog(t *testing.T, lines ...string) string {
@@ -426,5 +428,45 @@ func TestSigModThatCheckedItsBinariesDoesNotBlameTheGameFiles(t *testing.T) {
 	}
 	if !strings.Contains(same, "port has not found yet") || !strings.Contains(same, "turn SigMod off") {
 		t.Errorf("the summary does not say where the failure is, or how to play meanwhile:\n%s", same)
+	}
+}
+
+func steamSettings() settings.Settings {
+	s := settings.Defaults()
+	s.SrcdsReach = settings.ReachSteam
+	s.SrcdsToken = "ABCDEF"
+	return s
+}
+
+func TestTheRelayLineNamesTheAddressSrcdsGotOrSaysThereWasNone(t *testing.T) {
+	cases := []struct {
+		name  string
+		s     settings.Settings
+		lines []string
+		want  string
+	}{
+		{"allocated", steamSettings(),
+			[]string{"FakeIP allocation succeeded: 169.254.13.42:20232, 20233"},
+			"169.254.13.42:20232"},
+		{"none", steamSettings(),
+			[]string{"Connection to Steam servers successful."},
+			"no \"FakeIP allocation succeeded\" line"},
+		{"not steam", settings.Defaults(), []string{"anything"}, ""},
+		{"no logs", steamSettings(), nil, ""},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got := readLog(t, c.lines...)
+			if len(c.lines) == 0 {
+				got = scan{}
+			}
+			note := relayNote(c.s, got)
+			if c.want == "" && note != "" {
+				t.Fatalf("note = %q, want none", note)
+			}
+			if !strings.Contains(note, c.want) {
+				t.Fatalf("note = %q, want %q", note, c.want)
+			}
+		})
 	}
 }

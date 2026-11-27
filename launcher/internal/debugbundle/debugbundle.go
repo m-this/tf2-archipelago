@@ -188,6 +188,9 @@ func summary(s settings.Settings, versions map[string]string, pinnedTF2Build str
 
 	b.WriteString(configDrift(s))
 	b.WriteString(crossCheck(got.tf2Build, pinnedTF2Build, versions, got))
+	if note := relayNote(s, got); note != "" {
+		fmt.Fprintf(&b, "relay         %s", note)
+	}
 	b.WriteString(got.report())
 	b.WriteString(crashDumpNote(s, got))
 

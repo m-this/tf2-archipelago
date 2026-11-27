@@ -8,6 +8,8 @@ import (
 	"sort"
 	"strings"
 
+	apruntime "github.com/m-this/tf2-archipelago/launcher/internal/runtime"
+	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 	"github.com/m-this/tf2-archipelago/launcher/internal/sigmodload"
 )
 
@@ -219,6 +221,8 @@ type scan struct {
 	taken   int
 	// sigmodBinariesMatch is SigMod having checked the game binaries itself.
 	sigmodBinariesMatch bool
+	// relayAddress is the FakeIP srcds got from Valve this run, if it did.
+	relayAddress string
 }
 
 // sawCrash says whether a crash was among the hits, which decides whether a
@@ -308,6 +312,8 @@ func scanLogs(sources ...source) scan {
 // was made from.
 func countCurrentRun(s *scan, line string) {
 	switch {
+	case apruntime.FakeIPAddress(line) != "":
+		s.relayAddress = apruntime.FakeIPAddress(line)
 	case strings.Contains(line, purchaseRefused):
 		s.refused++
 	case purchaseTaken(line):
@@ -377,4 +383,19 @@ func clip(line string) string {
 		return line
 	}
 	return line[:quotedLineMax] + " ..."
+}
+
+// relayNote says which end failed for a server reached over Steam: whether
+// srcds got an address from Valve, which is the only address a player can
+// join. Without a log there is nothing to say.
+func relayNote(s settings.Settings, got scan) string {
+	if got.lines == 0 || s.EffectiveReach() != settings.ReachSteam {
+		return ""
+	}
+	if got.relayAddress != "" {
+		return "Steam relay address " + got.relayAddress + " was allocated this run; the Join button hands out this one.\n"
+	}
+	return "Steam networking is on and srcds printed no \"FakeIP allocation succeeded\" line this run, so Valve\n" +
+		"gave this server no address and a player has nothing to join. The login token or the Steam account is\n" +
+		"what Valve answers to.\n"
 }
