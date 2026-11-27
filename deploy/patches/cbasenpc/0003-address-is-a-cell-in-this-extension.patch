@@ -12,7 +12,7 @@ index bbb3cfb..7c50445 100644
  	/**
  	 * Retrieves the parameter index of a named pose parameter.
 diff --git a/scripting/include/cbasenpc/baseanimatingoverlay.inc b/scripting/include/cbasenpc/baseanimatingoverlay.inc
-index d7de063..e2358f4 100644
+index d7de063..2204cfe 100644
 --- a/scripting/include/cbasenpc/baseanimatingoverlay.inc
 +++ b/scripting/include/cbasenpc/baseanimatingoverlay.inc
 @@ -43,16 +43,16 @@ enum //CAnimationLayer
@@ -35,7 +35,14 @@ index d7de063..e2358f4 100644
  		}
  	}
  	
-@@ -66,12 +66,12 @@ methodmap CAnimationOverlay
+@@ -60,18 +60,18 @@ methodmap CAnimationOverlay
+ 	{
+ 		public get()  
+ 		{
+-			return this.Address == Address_Null; 
++			return this.Address == 0; 
+ 		}
+ 	}
  
  	public any Get(int iOffset) 
  	{ 

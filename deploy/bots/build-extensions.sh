@@ -191,7 +191,7 @@ build() {
 build cbasenpc --extension-only
 build actions
 build ripext --enable-optimize
-# SourceMod 1.13.0-git7481 leaves DHooksInfo::int64_address unset on a virtual
+# SourceMod 1.13.0-git7477 to git7496 leave DHooksInfo::int64_address unset on a virtual
 # hook, so a callback's Address `this` is sometimes an int64 passed by reference
 # (a stack address in the plugin) and sometimes a cell. Patched and built here
 # until a drop carries the fix; patch 0002 makes the build produce only dhooks.
