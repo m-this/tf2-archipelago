@@ -465,3 +465,17 @@ func TestARefusedTeamSaveIsTheDispatchError(t *testing.T) {
 		}
 	}
 }
+
+func TestSourceModUpdateWaitsForTheSettingsWindow(t *testing.T) {
+	app := New(settings.Defaults(), nil)
+	app.OpenSettings("Bots")
+	app.append(apruntime.Line{Source: "srcds", Text: "[UPDATER] SourceMod has been updated. Please restart"})
+	if !app.smHeld {
+		t.Fatal("the updater's restart was not held while the settings window is open")
+	}
+	for _, line := range app.logs {
+		if strings.Contains(line.Text, "Restarting") {
+			t.Fatalf("restarted under an open settings window: %q", line.Text)
+		}
+	}
+}
