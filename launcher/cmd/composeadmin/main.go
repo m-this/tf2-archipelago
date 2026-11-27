@@ -5,7 +5,9 @@ package main
 
 import (
 	"log/slog"
+	"net"
 	"os"
+	"strconv"
 
 	"github.com/m-this/tf2-archipelago/launcher/internal/settings"
 	"github.com/m-this/tf2-archipelago/launcher/internal/webapi"
@@ -23,6 +25,7 @@ func run(logger *slog.Logger) error {
 	s := settings.ApplyEnv(settings.ComposeDefaults())
 	authority := env("TF2AP_ADMIN_AUTHORITY", "127.0.0.1:8477")
 	logger.Info("TF2 Archipelago admin UI", "url", "http://"+authority)
+	logJoinAddress(logger, s)
 	logger.Info("Docker Compose owns server lifecycle; the Settings tab writes .env")
 	return webapi.Run(s, logger, webapi.Options{
 		Address:           env("TF2AP_ADMIN_LISTEN", "0.0.0.0:8477"),
@@ -36,6 +39,22 @@ func run(logger *slog.Logger) error {
 			{Path: env("TF2AP_ADMIN_BRIDGE_LOG", "/srv/bridge/bridge.log"), Source: "bridge"},
 		},
 	})
+}
+
+// logJoinAddress says what a player types into the game. The address is the one
+// TF2AP_JOIN_HOST names; left unset it is loopback, which only the machine
+// running the stack can use, so that case says so instead of printing it as if
+// it were an answer.
+func logJoinAddress(logger *slog.Logger, s settings.Settings) {
+	host := s.SrcdsJoinHost
+	if host == "" {
+		host = "127.0.0.1"
+	}
+	port := strconv.Itoa(s.SrcdsPort)
+	logger.Info("players join with", "console", "connect "+net.JoinHostPort(host, port))
+	if ip := net.ParseIP(host); ip != nil && ip.IsLoopback() {
+		logger.Warn("TF2AP_JOIN_HOST is not set, so that address works on this machine only; set it in .env to this server's public IP or DNS name")
+	}
 }
 
 func env(name, fallback string) string {
