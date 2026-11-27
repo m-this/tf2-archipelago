@@ -85,6 +85,16 @@ export class MissionList {
     return `${unlocked} of ${missions.length} unlocked, ${played} played`;
   });
 
+  /** Why the list is empty, when the launcher knows: the bridge is down or it could not join the room. */
+  readonly emptyReason = computed(() => {
+    const unreachable = this.store.sessionError();
+    if (unreachable !== '') {
+      return `The launcher cannot reach the bridge: ${unreachable}`;
+    }
+    const refused = this.store.health()?.lastError ?? '';
+    return refused === '' ? '' : `Not on the multiworld: ${refused}`;
+  });
+
   readonly switchHint = computed(() => {
     if (!this.running()) {
       return 'Start the server to load a mission.';

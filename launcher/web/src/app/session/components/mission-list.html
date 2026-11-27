@@ -5,7 +5,11 @@
 
 @if (rows().length === 0) {
   <app-empty-state>
-    No missions yet. They arrive once the bridge is on the multiworld.
+    @if (emptyReason(); as reason) {
+      {{ reason }}
+    } @else {
+      No missions yet. They arrive once the bridge is on the multiworld.
+    }
   </app-empty-state>
 } @else {
   <app-missions-table
