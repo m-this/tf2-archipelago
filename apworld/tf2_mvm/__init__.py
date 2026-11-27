@@ -716,22 +716,26 @@ class TF2MvMWorld(World):
         per_class = bool(self.options.class_weapon_slots.value)
         any_order = self.options.class_weapon_slots.value == ANY_ORDER
 
-        def deployable_classes(state: CollectionState) -> int:
-            # A class counts once it is held with the slots the tier asks
-            # for: its free first slot, plus the ones it has earned. Which is
-            # copies of one item, or that many of its named slots.
+        classes_gate = self.options.class_unlock_importance.current_key == "progression"
+        slots_gate = self.options.weapon_slot_importance.current_key == "progression"
+
+        def has_slots(state: CollectionState, class_name: str) -> bool:
+            # Its free first slot, plus the ones it has earned: copies of one
+            # item, or that many of its named slots.
             if any_order:
-                return sum(
-                    1
-                    for class_name, names in data.CLASS_NAMED_SLOT_ITEMS.items()
-                    if state.has(class_name, player)
-                    and sum(state.has(name, player) for name in names) >= requirement.slots - 1
-                )
+                names = data.CLASS_NAMED_SLOT_ITEMS[class_name]
+                return sum(state.has(name, player) for name in names) >= requirement.slots - 1
+            return state.has(data.CLASS_SLOT_ITEMS[class_name], player, requirement.slots - 1)
+
+        def deployable_classes(state: CollectionState) -> int:
+            # A class counts once it is held with the slots the tier asks for.
+            # An item that is not progression never counts in logic, so only
+            # what gates is asked for.
             return sum(
                 1
-                for class_name, slot_item in data.CLASS_SLOT_ITEMS.items()
-                if state.has(class_name, player)
-                and state.has(slot_item, player, requirement.slots - 1)
+                for class_name in data.CLASS_NAMES
+                if (not classes_gate or state.has(class_name, player))
+                and (not slots_gate or has_slots(state, class_name))
             )
 
         def can_deploy(state: CollectionState) -> bool:
@@ -740,10 +744,7 @@ class TF2MvMWorld(World):
                 or state.has(ticket, player)
             )
             if per_class:
-                ready = (
-                    self.options.class_unlock_importance.current_key != "progression"
-                    and self.options.weapon_slot_importance.current_key != "progression"
-                ) or deployable_classes(state) >= requirement.classes
+                ready = deployable_classes(state) >= requirement.classes
                 classes_ready = slots_ready = ready
             else:
                 classes_ready = (

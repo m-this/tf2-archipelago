@@ -620,6 +620,56 @@ class TestDisabledSlotsWithProgressionClasses(TF2MvMTestBase):
         self.assertTrue(any(item.name in data.CLASS_NAMES for item in self.multiworld.itempool))
 
 
+class TestUsefulSlotsWithProgressionClasses(TF2MvMTestBase):
+    """De_Bones, Discord 2026-11-14: per-class slots with useful slots could not generate.
+
+    A useful slot item never counts in logic, so a class must not wait for one.
+    WorldTestBase's all-state test is the check: every mission was unreachable.
+    """
+
+    options: ClassVar[dict[str, Any]] = {
+        "class_weapon_slots": "any_order",
+        "class_unlock_importance": "progression",
+        "weapon_slot_importance": "useful",
+        "difficulty_pool": "advanced",
+    }
+
+    def test_a_held_class_deploys_without_its_slots(self) -> None:
+        self.collect_all_but(
+            [name for names in data.CLASS_NAMED_SLOT_ITEMS.values() for name in names]
+        )
+        self.assertTrue(all(self.can_reach_region(mission.name) for mission in self.world.missions))
+
+
+class TestUsefulProgressiveSlotsWithProgressionClasses(TF2MvMTestBase):
+    options: ClassVar[dict[str, Any]] = {
+        "class_weapon_slots": "progressive",
+        "class_unlock_importance": "progression",
+        "weapon_slot_importance": "useful",
+        "difficulty_pool": "advanced",
+    }
+
+
+class TestUsefulClassesWithProgressionSlots(TF2MvMTestBase):
+    """The other way round: a useful class item never counts in logic either."""
+
+    options: ClassVar[dict[str, Any]] = {
+        "class_weapon_slots": "any_order",
+        "class_unlock_importance": "useful",
+        "weapon_slot_importance": "progression",
+        "difficulty_pool": "advanced",
+    }
+
+
+class TestUsefulClassesWithProgressiveSlots(TF2MvMTestBase):
+    options: ClassVar[dict[str, Any]] = {
+        "class_weapon_slots": "progressive",
+        "class_unlock_importance": "useful",
+        "weapon_slot_importance": "progression",
+        "difficulty_pool": "advanced",
+    }
+
+
 class TestDisabledBuffsWithCashEnabled(TF2MvMTestBase):
     options: ClassVar[dict[str, Any]] = {
         "weapon_buff_importance": "disabled",
