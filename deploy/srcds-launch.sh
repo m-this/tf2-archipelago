@@ -94,4 +94,23 @@ args_file=$(mktemp)
 mapfile -d '' -t args <"$args_file"
 rm -f "$args_file"
 
+# With sv_lan on the launcher leaves -ip out, so srcds binds rcon to whatever
+# the container's own hostname resolves to. On a container attached to more
+# than one network that changes between boots, and the published port and the
+# bridge's by-name queries stop reaching it. The service name resolves, through
+# the Compose network's DNS, to the address on that network alone.
+bind_name=${TF2AP_BIND_NAME:-srcds}
+has_ip=0
+for arg in "${args[@]}"; do
+	[ "$arg" = -ip ] && has_ip=1
+done
+if [ "$has_ip" = 0 ]; then
+	bind_ip=$(getent ahostsv4 "$bind_name" | awk 'NR == 1 { print $1 }')
+	if [ -n "$bind_ip" ]; then
+		args+=(-ip "$bind_ip")
+	else
+		echo "[AP] $bind_name does not resolve, so srcds binds to whatever the hostname resolves to" >&2
+	fi
+fi
+
 exec bash "${STEAMAPPDIR}/srcds_run" "${args[@]}"

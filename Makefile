@@ -152,6 +152,12 @@ seed: .env
 
 up: .env
 	$(COMPOSE) up -d
+	@port="$$(sed -n 's/^TF2AP_ADMIN_PORT=//p' .env)"; \
+	host="$$(sed -n 's/^TF2AP_JOIN_HOST=//p' .env)"; \
+	game="$$(sed -n 's/^SRCDS_PORT=//p' .env)"; \
+	echo "control panel: http://127.0.0.1:$${port:-8477} (on this machine; over SSH: ssh -L $${port:-8477}:127.0.0.1:$${port:-8477} <server>)"; \
+	echo "players join:  connect $${host:-127.0.0.1}:$${game:-27015}"; \
+	case "$${host:-127.0.0.1}" in 127.*|localhost) echo "  that address works on this machine only: set TF2AP_JOIN_HOST in .env to the server's public IP or DNS name" ;; esac
 
 down: .env
 	$(COMPOSE) down
@@ -748,6 +754,11 @@ compose-release:
 		echo '#'; \
 		echo '#   docker compose --profile seed run --rm seed  # writes ./seed, upload it'; \
 		echo '#   docker compose up -d'; \
+		echo '#'; \
+		echo '# Then open the control panel at http://127.0.0.1:8477 on the machine running'; \
+		echo '# it (over SSH: ssh -L 8477:127.0.0.1:8477 <server>). Players type'; \
+		echo '# "connect <TF2AP_JOIN_HOST>:27015" in the game console, with TF2AP_JOIN_HOST'; \
+		echo '# set in .env to the public IP or DNS name of this server, and 27015/udp open.'; \
 		echo '#'; \
 		echo '# TF2AP_VERSION picks the release the images come from.'; \
 		echo '# https://github.com/m-this/tf2-archipelago'; \

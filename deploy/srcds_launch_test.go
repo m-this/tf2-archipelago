@@ -49,7 +49,7 @@ func runLaunchWithStuckUpdates(t *testing.T, stuck int) launchRun {
 	}
 	files := map[string]string{
 		filepath.Join(steamcmdDir, "steamcmd.sh"):          fakeSteamcmd,
-		filepath.Join(game, "srcds_run"):                   "echo srcds started\n",
+		filepath.Join(game, "srcds_run"):                   "echo srcds started \"$@\"\n",
 		filepath.Join(root, "stuck"):                       strconv.Itoa(stuck) + "\n",
 		filepath.Join(steamapps, "appmanifest_232250.acf"): "\"StateFlags\" \"6\"\n",
 		// Installed at the pins already, so nothing is downloaded.
@@ -83,6 +83,7 @@ func runLaunchWithStuckUpdates(t *testing.T, stuck int) launchRun {
 		"SRCDS_RCONPW=test",
 		"SRCDS_LAN=1",
 		"TF2AP_PROVISION="+provisionBinary,
+		"TF2AP_BIND_NAME=localhost",
 	)
 	output, err := command.CombinedOutput()
 	calls, readErr := os.ReadFile(callsPath)
@@ -160,5 +161,15 @@ func TestAnUpdateStillStuckAfterTheRecoveryFails(t *testing.T) {
 	}
 	if aside := asideManifests(t, run.steamapps); len(aside) != 1 {
 		t.Fatalf("manifests moved aside = %q, want one", aside)
+	}
+}
+
+func TestALanServerIsBoundToTheAddressTheServiceNameResolvesTo(t *testing.T) {
+	run := runLaunchWithStuckUpdates(t, 0)
+	if run.err != nil {
+		t.Fatalf("launch failed: %v\n%s", run.err, run.output)
+	}
+	if !strings.Contains(run.output, "-ip 127.0.0.1") {
+		t.Fatalf("srcds was started without -ip for the resolved name:\n%s", run.output)
 	}
 }

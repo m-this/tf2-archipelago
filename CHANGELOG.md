@@ -4,6 +4,19 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
+## v1.18.10
+
+### Fixed
+
+- **A Docker server now tells you which address to join.** `make up` and the
+  admin container's log print the `connect` line players type, and warn when
+  `TF2AP_JOIN_HOST` is still the loopback default that only works on the host
+  itself. The released `compose.yaml` says where the control panel is and what
+  to give players.
+- **A Docker server on a LAN no longer loses its RCON port when the container
+  is on a second network.** The game server binds to the address of its own
+  Compose network instead of whichever one its hostname resolved to that boot.
+
 ## v1.18.9
 
 ### Fixed
