@@ -16,6 +16,10 @@ in the release notes, so this file is the only place to write it.
 - **A Docker server on a LAN no longer loses its RCON port when the container
   is on a second network.** The game server binds to the address of its own
   Compose network instead of whichever one its hostname resolved to that boot.
+- **The launcher says why the server is not on your multiworld.** A wrong
+  room address, a wrong slot name or a refused connection used to leave the
+  Missions page empty with no reason. The reason is now kept in the launcher's
+  state, and a refusal that stops the server is shown as a notice.
 
 ## v1.18.9
 

@@ -288,7 +288,7 @@ func (a *App) boot(s settings.Settings) {
 	}
 	if err := a.supervisor.Start(func(err error) {
 		if err != nil {
-			a.Say("%v", err)
+			a.Notify(err.Error())
 		}
 		a.publishState()
 	}); err != nil {

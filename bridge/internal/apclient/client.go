@@ -185,10 +185,10 @@ func (c *Client) Run(ctx context.Context) error {
 		if ctx.Err() != nil {
 			return nil //nolint:nilerr // a cancelled context is a clean stop
 		}
+		c.setDisconnected(err)
 		if _, unfixable := errors.AsType[permanentError](err); unfixable {
 			return err
 		}
-		c.setDisconnected(err)
 
 		// A session that stayed up was not a bad address, so the next attempt starts short.
 		if time.Since(start) > backoffMax {
