@@ -1639,26 +1639,32 @@ void CheckTeamLists(const char[] where)
     char report[1024];
     report[0] = '\0';
     int seen[MAXPLAYERS + 1];
+    Address clientAddr[MAXPLAYERS + 1];
+    for (int c = 1; c <= MaxClients; c++) {
+        clientAddr[c] = IsClientInGame(c) ? GetEntityAddress(c) : Address_Null;
+    }
+    int listOffset = FindSendPropInfo("CTFTeam", "m_szTeamname") - 20;
     int team = -1;
     while ((team = FindEntityByClassname(team, "tf_team")) != -1) {
         int num = GetEntProp(team, Prop_Send, "m_iTeamNum");
-        int size = GetEntPropArraySize(team, Prop_Send, "player_array");
-        for (int i = 0; i < size && i < 64; i++) {
-            int idx = GetEntProp(team, Prop_Send, "player_array", _, i);
-            if (idx <= 0) continue;
-            bool bad = idx > MaxClients || !IsClientInGame(idx) || GetClientTeam(idx) != num;
-            if (idx <= MaxClients) {
-                if (seen[idx] != 0) bad = true;
-                seen[idx] = num + 1;
+        Address elements = view_as<Address>(GetEntData(team, listOffset));
+        int count = GetEntData(team, listOffset + 12);
+        for (int i = 0; i < count && i < 128; i++) {
+            Address player = view_as<Address>(LoadFromAddress(elements + view_as<Address>(i * 4), NumberType_Int32));
+            int idx = 0;
+            for (int c = 1; c <= MaxClients; c++) {
+                if (clientAddr[c] == player) { idx = c; break; }
             }
+            bool bad = idx == 0 || GetClientTeam(idx) != num || seen[idx] != 0;
+            if (idx != 0) seen[idx] = num + 1;
             if (!bad) continue;
             char name[32] = "?";
             int real = -1;
-            if (idx <= MaxClients && IsClientInGame(idx)) {
+            if (idx != 0) {
                 GetClientName(idx, name, sizeof(name));
                 real = GetClientTeam(idx);
             }
-            Format(report, sizeof(report), "%s team%d[%d]=%d(%s,team=%d)", report, num, i, idx, name, real);
+            Format(report, sizeof(report), "%s team%d[%d]=%d(%x,%s,team=%d)", report, num, i, idx, player, name, real);
         }
     }
     if (StrEqual(report, g_TeamListLast)) return;
