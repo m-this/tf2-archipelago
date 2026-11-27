@@ -8,6 +8,9 @@ in the release notes, so this file is the only place to write it.
 
 ### Fixed
 
+- **Seeds generate again with weapon slots per class.** With "weapon slots
+  per class" on and class unlocks or weapon slots set to useful instead of
+  progression, generation failed with "No more spots to place" items.
 - **A Docker server now tells you which address to join.** `make up` and the
   admin container's log print the `connect` line players type, and warn when
   `TF2AP_JOIN_HOST` is still the loopback default that only works on the host
@@ -18,9 +21,7 @@ in the release notes, so this file is the only place to write it.
   Compose network instead of whichever one its hostname resolved to that boot.
 - **The debug bundle says whether Steam gave the server an address.** For a
   server played over Steam, the summary now names the relay address srcds got,
-  or says it got none, which is why nobody could join. The earlier bug where
-  the launcher missed an address srcds had written only to its console file is
-  already fixed.
+  or says it got none, which is why nobody could join.
 - **The server restart after a long time in a settings page now says why.**
   When SourceMod updates its gamedata while a settings page is open, the
   launcher waits and restarts the server once you apply or cancel. It now
