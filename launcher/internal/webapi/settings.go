@@ -124,7 +124,7 @@ func (a *App) SaveSettings(restart bool) error {
 			a.Say("settings saved. Restarting the server to apply them.")
 			a.Restart()
 		case heldRestart:
-			a.Say("SourceMod updated its gamedata. Restarting the server to load it.")
+			a.Notify("SourceMod updated its gamedata while settings were open. Restarting the server to load it, whatever was changed.")
 			a.Restart()
 		case plan.Restart:
 			a.Say("settings saved. The server is still playing on what it started with: press Restart to apply them.")
@@ -221,7 +221,7 @@ func (a *App) CancelSettings() {
 	a.publishLocked(Event{Name: "state", Data: struct{}{}})
 	a.mu.Unlock()
 	if heldRestart {
-		a.Say("SourceMod updated its gamedata. Restarting the server to load it.")
+		a.Notify("SourceMod updated its gamedata while settings were open. Restarting the server to load it, whatever was changed.")
 		a.Restart()
 	}
 }

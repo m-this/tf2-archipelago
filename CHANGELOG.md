@@ -16,6 +16,10 @@ in the release notes, so this file is the only place to write it.
 - **A Docker server on a LAN no longer loses its RCON port when the container
   is on a second network.** The game server binds to the address of its own
   Compose network instead of whichever one its hostname resolved to that boot.
+- **The server restart after a long time in a settings page now says why.**
+  When SourceMod updates its gamedata while a settings page is open, the
+  launcher waits and restarts the server once you apply or cancel. It now
+  shows a notice with the reason instead of restarting for no visible cause.
 
 ## v1.18.9
 
