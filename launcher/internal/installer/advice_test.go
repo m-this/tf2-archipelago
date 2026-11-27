@@ -111,3 +111,12 @@ func TestAnyOtherInstallFailureStillAdvisesRepair(t *testing.T) {
 		t.Errorf("advice = %q", advice)
 	}
 }
+
+// A missing system library is the system's to install: Repair downloads the
+// same game files and crashes on the same replay_srv.so.
+func TestAMissingSystemLibraryIsNotARepair(t *testing.T) {
+	advice := Advice(fmt.Errorf("install: %w", libraryError([]string{CurlGnutls})))
+	if advice == RepairAdvice || !strings.Contains(advice, "package") {
+		t.Errorf("advice = %q", advice)
+	}
+}

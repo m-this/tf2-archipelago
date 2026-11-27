@@ -4,6 +4,17 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
+## v1.18.12
+
+### Fixed
+
+- **A Linux server on Fedora or Bazzite no longer restarts forever at
+  "Could not load: replay_srv.so".** The game server needs a curl library
+  under a name only Debian and Arch ship. The launcher now points it at
+  Fedora's own 32-bit curl, and when that is not installed it says so before
+  starting: `sudo dnf install libcurl.i686`, or `rpm-ostree install
+  libcurl.i686` and a reboot on Bazzite.
+
 ## v1.18.11
 
 ### Fixed

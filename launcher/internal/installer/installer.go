@@ -124,6 +124,9 @@ func Ensure(ctx context.Context, installRoot string, communityArchives, serverMo
 	if err := ensureSteamClient(ctx, installRoot, result.SteamcmdDir, logf); err != nil {
 		return result, err
 	}
+	if err := ensureLibraries(ctx, result.GameDir, libraryDirs32, logf); err != nil {
+		return result, err
+	}
 
 	if err := installMods(ctx, filepath.Join(result.GameDir, "tf"), logf); err != nil {
 		return result, err

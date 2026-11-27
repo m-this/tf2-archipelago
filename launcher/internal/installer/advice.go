@@ -33,6 +33,9 @@ down: alliedmods.net answered 404 for the Metamod tarball for an evening, and
 Repair would have asked it again.
 */
 func Advice(err error) string {
+	if errors.Is(err, ErrMissingLibrary) {
+		return "Repair cannot fix this: the library comes from the system, so install the package named above"
+	}
 	host, ok := errors.AsType[*HostError](err)
 	if !ok {
 		return RepairAdvice
