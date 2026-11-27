@@ -4,6 +4,16 @@ What each release changes, for somebody who plays the game. The workflow in
 `.github/workflows/release.yml` reads the section matching the tag and puts it
 in the release notes, so this file is the only place to write it.
 
+## v1.18.11
+
+### Fixed
+
+- **A Windows server no longer crashes as the defender bots take their seats
+  when you gave a class or a seat its own loadout.** Since the TF2 update of
+  November, a server with any non-stock bot loadout died a second after "the
+  named team filled" with exit 0xc0000374 and no crash dump. Teams on stock
+  weapons and Linux servers were not affected.
+
 ## v1.18.10
 
 ### Fixed
