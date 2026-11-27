@@ -16,6 +16,11 @@ in the release notes, so this file is the only place to write it.
 - **A Docker server on a LAN no longer loses its RCON port when the container
   is on a second network.** The game server binds to the address of its own
   Compose network instead of whichever one its hostname resolved to that boot.
+- **The debug bundle says whether Steam gave the server an address.** For a
+  server played over Steam, the summary now names the relay address srcds got,
+  or says it got none, which is why nobody could join. The earlier bug where
+  the launcher missed an address srcds had written only to its console file is
+  already fixed.
 - **The server restart after a long time in a settings page now says why.**
   When SourceMod updates its gamedata while a settings page is open, the
   launcher waits and restarts the server once you apply or cancel. It now
